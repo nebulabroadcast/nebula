@@ -1,0 +1,7 @@
+{
+    "site_name" : "nebula",
+    "db_host" : "localhost",
+    "db_user" : "nebula",
+    "db_pass" : "nebula",
+    "db_name" : "nebula"
+}

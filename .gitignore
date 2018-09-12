@@ -1,0 +1,6 @@
+*.pyc
+vendor/
+test.py
+_old/
+test-*
+_import.py
