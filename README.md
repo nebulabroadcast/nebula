@@ -1,7 +1,8 @@
 Nebula
 ======
 
-Nebula is a media asset management and workflow automation system for TV and radio broadcast. Version 5 is under development.
+Nebula is a media asset management and workflow automation system for TV and radio broadcast.
+Version 5 is under development.
 
 Key features
 ------------
@@ -41,6 +42,10 @@ Installation
 ------------
 
 See **nebula-setup** repository for installation scripts and instructions.
+
+After initial setup, use `make install` to create symlinks for command line utilities and create your first user using `./manage.py adduser` command.
+
+Then you can start Nebula. Open GNU screen and run ./nebula.py in one window and `./manage run hub` (API server) in the second one.
 
 Need help?
 ----------

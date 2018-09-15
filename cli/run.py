@@ -55,7 +55,8 @@ def run(*args):
                 if time.time() - last_run >= loop_delay:
                     break
         except (KeyboardInterrupt):
-            sys.exit(0)
+            logging.warning("Keyboard interrupt")
+            break
         except (SystemExit):
             break
         except:
