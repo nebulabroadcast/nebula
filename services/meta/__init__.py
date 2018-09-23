@@ -135,6 +135,7 @@ class Service(BaseService):
         elif asset["status"] in (CREATING, OFFLINE):
             logging.goodnews("{}: Turning online".format(asset))
             asset["status"] = ONLINE
+            asset["qc/state"] = 0
             asset.save()
 
             db = DB()

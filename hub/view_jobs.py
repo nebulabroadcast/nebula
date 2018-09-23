@@ -27,7 +27,10 @@ def get_jobs(conds, db=False):
             a.id = j.id_asset
             AND c.id = j.id_action
             AND ({})
-            ORDER BY j.start_time DESC
+            ORDER BY
+                end_time DESC NULLS FIRST,
+                start_time DESC NULLS LAST,
+                creation_time DESC
         LIMIT 500
             """.format(conds)
 
@@ -78,6 +81,3 @@ class ViewJobs(CherryAdminView):
         self["jobs"] = get_jobs(conds, db=db)
         self["mode"] = mode
         self["show_job_title"] = True
-
-
-

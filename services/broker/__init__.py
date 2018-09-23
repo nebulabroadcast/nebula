@@ -28,7 +28,8 @@ class Service(BaseService):
                 result = send_to(
                         asset.id,
                         action.id,
-                        restart_existing=True,
+                        restart_existing=False,
+                        restart_running=False,
                         db=asset.db
                     )
 

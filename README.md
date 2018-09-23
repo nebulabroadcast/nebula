@@ -2,52 +2,31 @@ Nebula
 ======
 
 Nebula is a media asset management and workflow automation system for TV and radio broadcast.
-Version 5 is under development.
 
 Key features
 ------------
 
  - media asset management, metadata handling
- - conversion, video and audio normalization
+ - process automation (media conversion and analysis)
  - programme planning, scheduling
  - linear playout control ([CasparCG](http://www.casparcg.com) and [Liquidsoap](http://liquidsoap.fm))
  - VOD and pseudolinear output automation
- - dynamic CG and DVE
- - web publishing
+ - web and social publishing
  - statistics, reporting
-
-### Ingest
-
-Import service normalizes and transcodes all incoming files to the production format.
-
-This process includes metadata extraction, aspect ratio fixing, crop and rotation detection, smart frame rate and size normalization and EBU R128 loudness correction.
-
-### Asset management
-
-Nebula uses extendable, EBUCore based metadata model backed by a powerful database engine.
-
-Python scripting allows limitless extendability and automation.
-
-### Scheduling
-
-Client application Firefly allows simple drag&drop block (EPG) based scheduling and creating and applying templates
-
-Optional Dramatica engine - template based scheduler with smart solving algorithm enables automatic or semi-automatic playlist creation including "selector style" music blocks solving.
-
-### Playout
-
-Nebula uses CasparCG playout server for 24/7 multichannel playback in various resolutions and frame rates.
 
 Installation
 ------------
 
-See **nebula-setup** repository for installation scripts and instructions.
+See [nebula-setup](https://github.com/nebulabroadcast/nebula-setup)
+for installation scripts and instructions.
 
-After initial setup, use `make install` to create symlinks for command line utilities and create your first user using `./manage.py adduser` command.
+After initial setup, use `make install` to create symlinks for command line utilities
+and create your first user using `./manage.py adduser` command.
 
-Then you can start Nebula. Open GNU screen and run ./nebula.py in one window and `./manage run hub` (API server) in the second one.
+To start Nebula, open a screen session and run `./nebula.py` in one window
+and `./manage run hub` (API server) in the second one.
 
 Need help?
 ----------
 
-Professional support for Nebula is provided by [Nebula broadcast](https://nebulabroadcast.com)
+Professional support for Nebula is provided by [Nebula Broadcast](https://nebulabroadcast.com)
