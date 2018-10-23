@@ -9,7 +9,7 @@ __all__ = ["api_schedule"]
 
 def api_schedule(**kwargs):
     if not kwargs.get("user", None):
-        return {'response' : 401, 'message' : 'unauthorized'}
+        return NebulaResponse(ERROR_UNAUTHORISED)
 
     id_channel = kwargs.get("id_channel", 0)
     start_time = kwargs.get("start_time", 0)
@@ -20,13 +20,11 @@ def api_schedule(**kwargs):
 
     #TODO: Other channel types
     if not id_channel or id_channel not in config["playout_channels"]:
-        return {"response" : 400, "message" : "Bad request. Unknown playout channel ID {}".format(id_channel)}
+        return NebulaResponse(ERROR_BAD_REQUEST, "Unknown playout channel ID {}".format(id_channel))
     channel_config = config["playout_channels"][id_channel]
 
     if "user" in kwargs:
         user = User(meta=kwargs.get("user"))
-        if not user.has_right("channel_edit", id_channel):
-            return {"response" : 403, "message" : "You are not allowed to edit this channel"}
     else:
         user = User(meta={"login" : "Nebula"})
 
@@ -39,6 +37,8 @@ def api_schedule(**kwargs):
     #
 
     for id_event in delete:
+        if not user.has_right("channel_edit", id_channel):
+            return NebulaResponse(ERROR_ACCESS_DENIED, "You are not allowed to edit this channel")
         event = Event(id_event, db=db)
         if not event:
             logging.warning("Unable to delete non existent event ID {}".format(id_event))
@@ -46,10 +46,7 @@ def api_schedule(**kwargs):
         try:
             event.bin.delete()
         except psycopg2.IntegrityError:
-            return {
-                    "response" : 423,
-                    "message" : "Unable to delete {}. Already aired.".format(event)
-                }
+            NebulaResponse(ERROR_LOCKED, "Unable to delete {}. Already aired.".format(event))
         else:
             event.delete()
         changed_event_ids.append(event.id)
@@ -59,6 +56,8 @@ def api_schedule(**kwargs):
     #
 
     for event_data in events:
+        if not user.has_right("channel_edit", id_channel):
+            return NebulaResponse(ERROR_ACCESS_DENIED, "You are not allowed to edit this channel")
         id_event = event_data.get("id", False)
 
         db.query("SELECT meta FROM events WHERE id_channel=%s and start=%s", [id_channel, event_data["start"]])
@@ -114,6 +113,19 @@ def api_schedule(**kwargs):
         for key in event_data:
             if key == "id_magic" and not event_data[key]:
                 continue
+
+            if key == "_items":
+                for item_data in event_data["_items"]:
+                    if not pbin.items:
+                        pos = 0
+                    else:
+                        pos = pbin.items[-1]["position"]
+                    item = Item(meta=item_data, db=db)
+                    item["position"] = pos
+                    item["id_bin"] = pbin.id
+                    item.save()
+                continue
+
             event[key] = event_data[key]
 
         changed_event_ids.append(event.id)
@@ -162,4 +174,4 @@ def api_schedule(**kwargs):
                 event_meta["duration"] = ebin.duration
             result.append(event_meta)
 
-    return {"response" : 200, "message" : "OK", "data" : result}
+    return NebulaResponse(200, data=result)

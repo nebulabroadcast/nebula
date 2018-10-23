@@ -22,6 +22,8 @@ def get_validator(object_type, **kwargs):
         except:
             log_traceback("Unable to load plugin {}".format(plugin_name))
             return
+    else:
+        return
 
     if not "Plugin" in dir(py_mod):
         logging.error("No plugin class found in {}".format(f))
@@ -29,10 +31,9 @@ def get_validator(object_type, **kwargs):
     return py_mod.Plugin(**kwargs)
 
 
-
 def api_set(**kwargs):
     if not kwargs.get("user", None):
-        return {'response' : 401, 'message' : 'unauthorized'}
+        return NebulaResponse(ERROR_UNAUTHORISED)
 
     object_type = kwargs.get("object_type", "asset")
     ids  = kwargs.get("objects", [])
@@ -41,7 +42,8 @@ def api_set(**kwargs):
     db   = kwargs.get("db", DB())
 
     if not (data and ids):
-        return {"response" : 304, "message" : "No object created or modified"}
+        #TODO: Use 304?
+        return NebulaResponse(200, "No object created or modified")
 
     object_type_class = {
                 "asset" : Asset,
@@ -60,13 +62,12 @@ def api_set(**kwargs):
         if object_type == "asset":
             id_folder = data.get("id_folder", False) or obj["id_folder"]
             if not user.has_right("asset_edit", id_folder):
-                return {
-                        "response" : 403,
-                        "message" : "{} is not allowed to edit {} folder".format(
+                return NebulaResponse(ERROR_ACCESS_DENIED,
+                        "{} is not allowed to edit {} folder".format(
                             user,
                             config["folders"][id_folder]["title"]
                         )
-                    }
+                    )
 
         changed = False
         for key in data:
@@ -84,18 +85,14 @@ def api_set(**kwargs):
             try:
                 obj = validator.validate(obj)
             except Exception:
-                return {
-                        "response" : 500,
-                        "message" : log_traceback("Unable to validate object changes.")
-                    }
+                return NebulaResponse(ERROR_INTERNAL, log_traceback("Unable to validate object changes."))
+
             if not isinstance(obj, BaseObject):
-                return {
-                        "response" : 409,
-                        "message" : "Unable to save {}: {}".format(tt, obj)
-                    }
+                # TODO: use 409-conflict?
+                return NebulaResponse(ERROR_BAD_REQUEST, "Unable to save {}:\n\n{}".format(tt, obj))
 
         if changed:
-            obj.save()
+            obj.save(notify=False)
             changed_objects.append(obj.id)
             if object_type == "item" and obj["id_bin"] not in affected_bins:
                 affected_bins.append(obj["id_bin"])
@@ -106,5 +103,5 @@ def api_set(**kwargs):
     if affected_bins:
         bin_refresh(affected_bins, db=db)
 
-    return {"response" : 200, "data" : changed_objects}
+    return NebulaResponse(200, data=changed_objects)
 

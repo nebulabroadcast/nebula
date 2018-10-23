@@ -111,6 +111,7 @@ class Item(ItemMixIn, ServerObject):
     def bin(self):
         if not hasattr(self, "_bin"):
             self._bin = Bin(self["id_bin"], db=self.db)
+        return self._bin
 
     @property
     def event(self):

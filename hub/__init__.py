@@ -67,8 +67,8 @@ def page_context_helper():
 hub_config = {
         "host" : config.get("hub_host", "0.0.0.0"),
         "port" : config.get("hub_port", 8080),
-        "static_dir" : config.get("hub_static_dir", "hub/static"),
-        "templates_dir" : config.get("hub_templates_dir", "hub/templates"),
+        "static_dir" : config.get("hub_static_dir", "/opt/nebula-frontend/dist/static"),
+        "templates_dir" : config.get("hub_templates_dir", "/opt/nebula-frontend/dist/templates"),
         "login_helper" : login_helper,
         "site_context_helper" : site_context_helper,
         "page_context_helper" : page_context_helper,
@@ -103,6 +103,7 @@ hub_config = {
                 "playout" : api_playout,
                 "actions" : api_actions,
                 "send" : api_send,
+                "solve" : api_solve,
                 "system" : api_system,
             }
     }

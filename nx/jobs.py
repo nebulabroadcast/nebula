@@ -185,7 +185,7 @@ class Job():
 
     def abort(self, message="Aborted"):
         logging.warning("{} aborted".format(self))
-        self.db.query("UPDATE jobs SET id_service=NULL, end_time=%s, status=4, message=%s WHERE id=%s", [time.time(), message, self.id])
+        self.db.query("UPDATE jobs SET end_time=%s, status=4, message=%s WHERE id=%s", [time.time(), message, self.id])
         self.db.commit()
         messaging.send("job_progress", id=self.id, id_asset=self.id_asset, id_action=self.id_action, status=4, progress=0, message=message)
 
@@ -218,7 +218,6 @@ class Job():
     def done(self, message="Completed"):
         self.db.query(
             """UPDATE jobs SET
-                    id_service=NULL,
                     status=2,
                     progress=100,
                     end_time=%s,

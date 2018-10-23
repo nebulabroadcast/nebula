@@ -12,8 +12,8 @@ DEFAULT_STATUS = {"status" : OFFLINE, "size" : 0, "mtime" : 0}
 
 def get_scheduled_assets(id_channel, **kwargs):
     db = kwargs.get("db", DB())
-    start = kwargs.get("start_time", time.time())
-    stop  = kwargs.get("end_time", start + (3600*24))
+    start = kwargs.get("start_time", time.time() - 3600*72)
+    stop  = kwargs.get("end_time", time.time() + (3600*72))
     db.query("""
             SELECT DISTINCT(i.id_asset), a.meta FROM events as e, items as i, assets as a
             WHERE e.id_channel = %s

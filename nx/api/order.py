@@ -8,29 +8,27 @@ __all__ = ["api_order"]
 
 def api_order(**kwargs):
     if not kwargs.get("user", None):
-        return {'response' : 401, 'message' : 'unauthorized'}
+        return NebulaResponse(ERROR_UNAUTHORISED)
 
     id_channel = kwargs.get("id_channel", 0)
     id_bin = kwargs.get("id_bin", False)
     order  = kwargs.get("order", [])
 
     if not id_channel in config["playout_channels"]:
-        return {
-                "response" : 400,
-                "message" : "No such channel ID {}".format(id_channel)
-            }
+        return NebulaResponse(ERROR_BAD_REQUEST, "No such channel ID {}".format(id_channel))
+
     playout_config = config["playout_channels"][id_channel]
     append_cond = playout_config.get("rundown_accepts", "True")
 
     if "user" in kwargs:
         user = User(meta=kwargs.get("user"))
         if id_channel and not user.has_right("rundown_edit", id_channel):
-            return {"response" : 403, "message" : "You are not allowed to edit this rundown"}
+            return NebulaResponse(ERROR_ACCESS_DENIED, "You are not allowed to edit this rundown")
     else:
         user = User(meta={"login" : "Nebula"})
 
     if not (id_bin and order):
-        return {"response" : 400, "message" : "Bad \"order\" request<br>id_bin: {}<br>order: {}".format(id_bin, order)}
+        return NebulaResponse(ERROR_BAD_REQUEST, "Bad \"order\" request<br>id_bin: {}<br>order: {}".format(id_bin, order))
 
     logging.info("{} executes bin_order method".format(user))
     affected_bins = [id_bin]
@@ -75,13 +73,12 @@ def api_order(**kwargs):
         if not item or item["position"] != pos or item["id_bin"] != id_bin:
             item["position"] = pos
             item["id_bin"]   = id_bin
-            item.save()
+            item.save(notify=False) # bin_refresh called later should be enough to trigger rundown reload
         pos += 1
 
+
+    # Update bin duration
     for id_bin in affected_bins:
-        # Update bin duration
         bin_refresh(affected_bins, db=db)
 
-
-    messaging.send("objects_changed", objects=affected_bins, object_type="bin")
-    return {"response" : 200, "message" : "OK"}
+    return NebulaResponse(200)

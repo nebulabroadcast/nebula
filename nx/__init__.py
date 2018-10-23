@@ -61,6 +61,15 @@ def load_settings(force=False):
                     "title" : title
                 }
 
+    #TODO: do we need the rest of the settings?
+    db.query("SELECT id, service_type, host, title FROM services")
+    for id, service_type, host, title in db.fetchall():
+        config["services"][id] = {
+            "service_type" : service_type,
+            "host": host,
+            "title" : title,
+        }
+
     #
     # Init all
     #

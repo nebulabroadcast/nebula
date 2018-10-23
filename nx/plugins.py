@@ -1,10 +1,12 @@
-__all__ = ["plugin_path", "PlayoutPlugin", "PlayoutPluginSlot", "WorkerPlugin", "ValidatorPlugin"]
+__all__ = ["plugin_path", "PlayoutPlugin", "PlayoutPluginSlot", "WorkerPlugin", "ValidatorPlugin", "SolverPlugin"]
 
 import os
 import sys
 
 from nebulacore import *
 
+from .objects import *
+from .helpers import *
 from .connection import *
 
 #
@@ -158,3 +160,93 @@ class WorkerPlugin(object):
 
     def on_main(self):
         pass
+
+
+#
+# Rundown solver plugin
+#
+
+class SolverPlugin(object):
+    def __init__(self, placeholder, **kwargs):
+        self.db = kwargs.get("db", DB())
+        self.placeholder = placeholder
+        self.bin = self.placeholder.bin
+        self.event = self.placeholder.event
+        self.new_items = []
+        self._next_event = None
+        self._needed_duration = 0
+
+    @property
+    def next_event(self):
+        if not self._next_event:
+            self.db.query(
+                    "SELECT meta FROM events WHERE id_channel = %s AND start > %s",
+                    [self.event["id_channel"], self.event["start"]]
+                )
+            try:
+                self._next_event = Event(meta=self.db.fetchall()[0][0], db=self.db)
+            except:
+                self._next_event = Event(meta={
+                        "id_channel" : self.event["id_channel"],
+                        "start" : self.event["start"] + 3600
+                    })
+        return self._next_event
+
+    @property
+    def current_duration(self):
+        dur = 0
+        for item in self.new_items:
+            dur += item.duration
+        return dur
+
+    @property
+    def needed_duration(self):
+        if not self._needed_duration:
+            dur = self.next_event["start"] - self.event["start"]
+            for item in self.bin.items:
+                if item.id == self.placeholder.id:
+                    continue
+                dur -= item.duration
+            self._needed_duration = dur
+        print ("need", self._needed_duration)
+        return self._needed_duration
+
+    def main(self):
+        message = "Solver returned no items. Keeping placeholder."
+        try:
+            for new_item in self.solve():
+                self.new_items.append(new_item)
+        except Exception:
+            message = log_traceback()
+            self.new_items = []
+
+        if not self.new_items:
+            return NebulaResponse(501, message)
+
+        i = 0
+        for item in self.bin.items:
+            i +=1
+            if item.id == self.placeholder.id:
+                item.delete()
+                for new_item in self.new_items:
+                    i+=1
+                    new_item["id_bin"] = self.bin.id
+                    new_item["position"] = i
+                    new_item.save()
+            if item["position"] != i:
+                item["position"] = i
+                item.save()
+
+        bin_refresh([self.bin.id], db=self.db)
+        messaging.send("objects_changed", objects=[self.bin.id], object_type="bin")
+        return NebulaResponse(200, "ok")
+
+
+
+    def solve(self):
+        """
+        This method must return a list or yield items
+        (no need to specify order or bin values) which
+        replaces the original placeholder.
+        """
+        return []

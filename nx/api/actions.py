@@ -4,16 +4,16 @@ __all__ = ["api_actions"]
 
 def api_actions(**kwargs):
     if not kwargs.get("user", None):
-        return {'response' : 401, 'message' : 'unauthorized'}
+        return NebulaResponse(ERROR_UNAUTHORISED)
 
     ids = kwargs.get("ids", [])
     db = kwargs.get("db", DB())
     user = User(meta=kwargs.get("user"))
     if not user:
-        return {"response" : 403, "message" : "You are not allowed to execute any actions"}
+        return NebulaResponse(ERROR_UNAUTHORISED, "You are not allowed to execute any actions")
 
     if not ids:
-        return {"response" : 400, "message" : "No asset selected"}
+        return NebulaResponse(ERROR_BAD_REQUEST, "No asset selected")
 
     result = []
 
@@ -35,4 +35,4 @@ def api_actions(**kwargs):
             if user.has_right("job_control", id):
                 result.append((id, title))
 
-    return {'response' : 200, 'message' : 'OK', 'data' : result }
+    return NebulaResponse(200, data=result)

@@ -8,7 +8,7 @@ __all__ = ["api_message"]
 
 def api_message(**kwargs):
     if not kwargs.get("user", None):
-        return {'response' : 401, 'message' : 'unauthorized'}
+        return NebulaResponse(ERROR_UNAUTHORISED)
 
-    return {'response' : 501, 'message' : 'Not implemented'}
+    return NebulaResponse(ERROR_NOT_IMPLEMENTED)
 

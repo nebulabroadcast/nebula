@@ -4,15 +4,15 @@ __all__ = ["api_jobs"]
 
 def api_jobs(**kwargs):
     if not kwargs.get("user", None):
-        return {'response' : 401, 'message' : 'unauthorized'}
+        return NebulaResponse(ERROR_UNAUTHORISED)
 
     db = kwargs.get("db", DB())
     user = User(meta=kwargs["user"])
 
-    if not user.has_right("jobs_control"):
-        #TODO: Based on action type?
-        return {'response' : 403, 'message' : 'Access denied'}
 
+    for k in ["restart", "abort"]:
+        if k in kwargs and not user.has_right("jobs_control"):
+            return NebulaResponse(ERROR_ACCESS_DENIED)
 
     if "restart" in kwargs:
         jobs = [int(i) for i in kwargs["restart"]]
@@ -34,7 +34,7 @@ def api_jobs(**kwargs):
         db.commit()
         logging.info("Restarted jobs {}".format(result))
         #TODO: smarter message
-        return {"response" : 200, "data" : result, "message" : "Jobs restarted"}
+        return NebulaResponse(200, "Jobs restarted", data=result)
 
     if "abort" in kwargs:
         jobs = [int(i) for i in kwargs["abort"]]
@@ -53,7 +53,7 @@ def api_jobs(**kwargs):
         logging.info("Aborted jobs {}".format(result))
         db.commit()
         #TODO: smarter message
-        return {"response" : 200, "data" : result, "message" : "Jobs abort"}
+        return NebulaResponse(200, "Jobs aborted", data=result)
 
     view = kwargs.get("view", "all")
 #TODO
@@ -62,11 +62,14 @@ def api_jobs(**kwargs):
 
     cond = ""
     if view == "active":
+        # Pending, in_progress, restart
         cond = "WHERE status IN (0, 1, 5) OR end_time > {}".format(time.time() - 30)
     elif view == "finished":
-        cond = "WHERE status IN (2, 6)"
+        # completed, aborted, skipped
+        cond = "WHERE status IN (2, 4, 6)"
     elif view == "failed":
-        cond = "WHERE status IN (3, 4)"
+        # failed
+        cond = "WHERE status IN (3)"
 
     data = []
     db.query("""SELECT
@@ -109,4 +112,4 @@ def api_jobs(**kwargs):
             }
         data.append(row)
 
-    return {"response" : 200, "data" : data}
+    return NebulaResponse(200, data=data)

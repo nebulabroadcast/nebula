@@ -5,7 +5,7 @@ __all__ = ["api_send"]
 
 def api_send(**kwargs):
     if not kwargs.get("user", None):
-        return {'response' : 401, 'message' : 'unauthorized'}
+        return NebulaResponse(ERROR_UNAUTHORISED)
 
     ids       = kwargs.get("ids", [])
     id_action = kwargs.get("id_action", False)
@@ -17,17 +17,17 @@ def api_send(**kwargs):
     if "user" in kwargs:
         user = User(meta=kwargs.get("user"))
         if not user:
-            return {"response" : 403, "message" : "You are not allowed to execute this action"}
+            return NebulaResponse(ERROR_ACCESS_DENIED, "You are not allowed to execute this action")
         #TODO: Better ACL
 
     if not id_action:
-        return {"response" : 400, "message" : "No valid action selected"}
+        return NebulaResponse(ERROR_BAD_REQUEST, "No valid action selected")
 
     if not ids:
-        return {"response" : 400, "message" : "No asset selected"}
+        return NebulaResponse(ERROR_BAD_REQUEST,  "No asset selected")
 
     if not user.has_right("job_control", id_action):
-        return {"response" : 403, "message" : "You are not allowed to start this action"}
+        return NebulaResponse(ERROR_ACCESS_DENIED, "You are not allowed to start this action")
 
     logging.info("{} is starting action {} for following assets: {}".format(user, id_action, ", ".join([str (i) for i in  ids]) ))
 
@@ -42,5 +42,5 @@ def api_send(**kwargs):
                 db=db
             )
 
-    return {"response" : 202, "message" : "Starting {} jobs".format(len(ids))}
+    return NebulaResponse(SUCCESS_ACCEPTED, "Starting {} jobs".format(len(ids)))
 

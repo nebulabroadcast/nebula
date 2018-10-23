@@ -75,7 +75,8 @@ class Service(BaseService):
                 asset.save()
             return
 
-        if fmtime != asset["file/mtime"] or asset["status"] == RESET:
+
+        if fmtime != asset["file/mtime"] or asset["status"] in [RESET, RETRIEVING]:
             try:
                 f = asset_file.open("rb")
             except Exception:
@@ -92,7 +93,7 @@ class Service(BaseService):
             # Filesize must be changed to update metadata automatically.
             # It sucks, but mtime only condition is.... errr doesn't work always
 
-            if fsize == asset["file/size"] and asset["status"] != RESET:
+            if fsize == asset["file/size"] and asset["status"] not in [RESET, RETRIEVING]:
                 logging.debug("{}: File mtime has been changed. Updating.".format(asset))
                 asset["file/mtime"] = fmtime
                 asset.save(set_mtime=False, notify=False)

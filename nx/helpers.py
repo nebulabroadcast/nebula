@@ -145,7 +145,7 @@ def bin_refresh(bins, **kwargs):
     sender = kwargs.get("sender", False)
     for id_bin in bins:
         b = Bin(id_bin, db=db)
-        b.save()
+        b.save(notify=False)
         #cache.delete("2-" + str(id_bin))
     bq = ", ".join([str(b) for b in bins if b])
     changed_events = []
@@ -161,6 +161,12 @@ def bin_refresh(bins, **kwargs):
         event = Event(meta=meta, db=db)
         if event.id not in changed_events:
             changed_events.append(event.id)
+    messaging.send(
+            "objects_changed",
+            sender=sender,
+            objects=bins,
+            object_type="bin"
+        )
     if changed_events:
         messaging.send(
                 "objects_changed",

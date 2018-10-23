@@ -75,7 +75,7 @@ def get_objects(ObjectType, **kwargs):
 
 def api_get(**kwargs):
     if not kwargs.get("user", None):
-        return {'response' : 401, 'message' : 'unauthorized'}
+        return NebulaResponse(401, 'unauthorized')
 
     object_type = kwargs.get("object_type", "asset")
     ids         = kwargs.get("ids", [])
@@ -83,6 +83,8 @@ def api_get(**kwargs):
     user        = kwargs.get("user", anonymous)
     db          = kwargs.get("db", DB())
     id_view     = kwargs.get("id_view", 0)
+
+    kwargs["limit"] = kwargs.get("limit", 1000)
 
     if not "conds" in kwargs:
         kwargs["conds"] = []

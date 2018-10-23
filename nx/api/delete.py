@@ -6,7 +6,7 @@ __all__ = ["api_delete"]
 
 def api_delete(**kwargs):
     if not kwargs.get("user", None):
-        return {'response' : 401, 'message' : 'unauthorized'}
+        return NebulaResponse(ERROR_UNAUTHORISED)
 
     object_type = kwargs.get("object_type", "asset")
     ids = kwargs.get("objects", [])
@@ -14,7 +14,7 @@ def api_delete(**kwargs):
     user = User(meta=kwargs["user"])
 
     if not (ids):
-        return {"response" : 304, "message" : "No object deleted"}
+        return NebulaResponse(200, "No object deleted")
 
     object_type_class = {
                 "asset" : Asset,
@@ -34,21 +34,15 @@ def api_delete(**kwargs):
             try:
                 obj.delete()
             except psycopg2.IntegrityError:
-                return {
-                        "response" : 423,
-                        "message" : "Unable to delete {}. Already aired.".format(obj)
-                    }
+                return NebulaResponse(ERROR_LOCKED, "Unable to delete {}. Already aired.".format(obj))
             if obj["id_bin"] not in affected_bins:
                 affected_bins.append(obj["id_bin"])
         else:
             #TODO ?
-            return {
-                    "response" : 501,
-                    "message" : "{} deletion is not implemented".format(object_type)
-                }
+            return NebulaResponse(ERROR_NOT_IMPLEMENTED, "{} deletion is not implemented".format(object_type))
 
         num += 1
 
     if affected_bins:
         bin_refresh(affected_bins, db=db)
-    return {"response" : 200, "message" : "{} objects deleted".format(num)}
+    return NebulaResponse(200, " {} objects deleted".format(num))

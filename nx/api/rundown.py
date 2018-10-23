@@ -132,16 +132,15 @@ def get_rundown(id_channel, start_time=False, db=False):
 
 def api_rundown(**kwargs):
     if not kwargs.get("user", None):
-        return {'response' : 401, 'message' : 'unauthorized'}
+        return NebulaResponse(ERROR_UNAUTHORISED)
 
-    id_channel = int(kwargs["id_channel"])
+    id_channel = int(kwargs.get("id_channel", -1))
     start_time = kwargs.get("start_time", 0)
 
     process_start_time = time.time()
-    if not id_channel:
-        return {"response" : 400, message : "Request params error"}
+
     if not id_channel in config["playout_channels"]:
-        return {"response" : 400, message : "No such playout channel"}
+        return NebulaResponse(ERROR_BAD_REQUEST, "Invalid playout channel specified")
 
     rows = []
     i = 0
@@ -159,8 +158,4 @@ def api_rundown(**kwargs):
             i+=1
 
     process_time = time.time() - process_start_time
-    return {
-            "response" : 200,
-            "message" : "Rundown loaded in {:.02f} seconds".format(process_time),
-            "data" : rows
-            }
+    return NebulaResponse(200, "Rundown loaded in {:.02f} seconds".format(process_time), data=rows)

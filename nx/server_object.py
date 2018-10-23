@@ -71,6 +71,9 @@ class ServerObject(BaseObject):
         self.cache()
         self.text_changed = self.meta_changed = False
         self.is_new = False
+        if kwargs.get("notify", True):
+            messaging.send("objects_changed", objects=[self.id], object_type=self.object_type)
+
 
     def _insert(self, **kwargs):
         meta = json.dumps(self.meta)

@@ -9,5 +9,6 @@ from .schedule import *
 from .send import *
 from .set import *
 from .settings import *
+from .solve import *
 from .system import *
 from .playout import *

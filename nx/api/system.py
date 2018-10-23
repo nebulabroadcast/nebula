@@ -17,7 +17,7 @@ __all__ = ["api_system"]
 
 def api_system(**kwargs):
     if not kwargs.get("user", None):
-        return {'response' : 401, 'message' : 'unauthorized'}
+        return NebulaRespone(ERROR_UNAUTHORISED)
 
     request = kwargs.get("request", [
             "services",
@@ -28,28 +28,28 @@ def api_system(**kwargs):
     if "stop" in kwargs:
         id_service = kwargs["stop"]
         if not type(id_service) == int:
-            return {"response" : 400, "message" : "Bad request (id_service to stop)"}
+            return NebulaResponse(ERROR_BAD_REQUEST, "Invalid ID service to stop")
         db.query("UPDATE services SET state=3 WHERE id=%s", [id_service])
         db.commit()
 
     if "start" in kwargs:
         id_service = kwargs["start"]
         if not type(id_service) == int:
-            return {"response" : 400, "message" : "Bad request (id_service to start)"}
+            return NebulaResponse(ERROR_BAD_REQUEST, "Invalid ID service to start")
         db.query("UPDATE services SET state=2 WHERE id=%s", [id_service])
         db.commit()
 
     if "kill" in kwargs:
         id_service = kwargs["kill"]
         if not type(id_service) == int:
-            return {"response" : 400, "message" : "Bad request (id_service to kill)"}
+            return NebulaResponse(ERROR_BAD_REQUEST, "Invalid ID service to kill")
         db.query("UPDATE services SET state=4 WHERE id=%s", [id_service])
         db.commit()
 
     if "set_autostart" in kwargs:
         id_service = kwargs["set_autostart"]
         if not type(id_service) in int:
-            return {"response" : 400, "message" : "Bad request (id_service to set autostart)"}
+            return NebulaResponse(ERROR_BAD_REQUEST, "Invalid ID service to set autostart")
         db.query("UPDATE services SET autostart=NOT autostart WHERE id=%s", [id_service])
         db.commit()
 
@@ -80,4 +80,4 @@ def api_system(**kwargs):
             hosts.append(host)
         result["hosts"] = hosts
 
-    return {"response" : 200, "message" : "OK", "data" : result}
+    return NebulaResponse(200, data=result)
