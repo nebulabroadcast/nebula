@@ -1,0 +1,215 @@
+{% extends "_base.html" %}
+
+{% block header %}
+<h2>{{ page.title }}</h2>
+
+<nav class="navbar navbar-expand-sm module-navbar">
+
+    {# navbar left (folder select) #}
+    <ul class="navbar-nav pull-sm-left">
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown">
+                {{ site.folders[page.id_folder]["title"] }}
+            </a>
+            <div class="dropdown-menu">
+                {% for id_folder in site.folders %}
+                {% if page.new_asset %}
+                    <a class="dropdown-item" href="/detail?new_asset=1&folder_change={{ id_folder }}">
+                {% else %}
+                    <a class="dropdown-item" href="/detail/{{ page.asset.id }}?folder_change={{ id_folder }}">
+                {% endif%}
+                    {{ site.folders[id_folder]["title"] }}
+                </a>
+                {% endfor %}
+            </div>
+        </li>
+    </ul>
+
+    {# navbar center (duration, qc) #}
+    <ul class="navbar-nav mx-auto">
+        <li class="nav-item">
+            <input type="text" class="form-control input-timecode" name="duration" id="input-duration" value="{{ page.asset.duration | s2tc(page.asset.fps) }}" {% if page.asset.status != 0 %} disabled {% endif %} >
+        </li>
+        <!--
+        <li class="nav-item">&nbsp;</li> {# add some space between duration and qc buttons #}
+        <li class="nav-item">
+            <div class="btn-group" role="group" aria-label="Basic example">
+                <button type="button" class="btn btn-qcstate" data-href="4"><i class="{% if page.asset["qc/state"] == 4 %}fas{% else %}far{% endif %} fa-flag text-success"></i></button>
+                <button type="button" class="btn btn-qcstate" data-href="0"><i class="{% if page.asset["qc/state"] not in [3, 4] %}fas{% else %}far{% endif %} fa-flag text-secondary"></i></button>
+                <button type="button" class="btn btn-qcstate" data-href="3"><i class="{% if page.asset["qc/state"] == 3 %}fas{% else %}far{% endif %} fa-flag text-danger"></i></button>
+            </div>
+        </li>
+        -->
+    </ul>
+
+
+    {# navbar right (buttons) #}
+    <ul class="navbar-nav pull-sm-right">
+        <li class="nav-item">
+        <form class="form-inline">
+
+            <div class="btn-group" role="group">
+                <a href="#" class="btn dropdown-toggle" data-toggle="dropdown">
+                    <i class="fas fa-atom"></i>
+                </a>
+                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="btnGroupDrop1">
+                    <a href="/jobs?id_asset={{ page.asset.id }}" class="dropdown-item" href="#">Show existing jobs</a>
+                    {% if page.actions %}
+                        <div class="dropdown-divider"></div>
+                        <h6 class="dropdown-header">Send to...</h6>
+                        {% for action in page.actions %}
+                        <a class="dropdown-item" href="#">Dropdown link</a>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+
+            <a href="/detail/{{ page.asset.id }}" class="btn" title="Revert changes">
+                <i class="fas fa-undo"></i>
+            </a>
+            <a href="#" class="btn" title="Save changes" id="button-save">
+                <i class="far fa-save"></i>
+            </a>
+
+
+        </form>
+        </li>
+    </ul>
+
+</nav>
+{% endblock %}
+
+
+{% block content %}
+{% if page.asset or page.new_asset %}
+<ul class="nav nav-tabs" id=tab-nav-detail" role="tablist">
+    <li class="nav-item">
+        <a class="nav-link active" id="tab-main" data-toggle="tab" href="#tab-panel-main" role="tab">Main</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="tab-extended" data-toggle="tab" href="#tab-panel-extended" role="tab">Extended</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="tab-technical" data-toggle="tab" href="#tab-panel-technical" role="tab">Technical</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="tab-preview" data-toggle="tab" href="#tab-panel-preview" role="tab">Preview</a>
+    </li>
+</ul>
+
+<div class="tab-content" id="tab-panels-detail">
+    <div class="tab-pane fade show active" id="tab-panel-main">
+    {% if page.new_asset %}
+        <form method="post" action="/detail?new_asset=1" id="form-edit">
+    {% else %}
+        <form method="post" action="/detail/{{ page.asset.id }}" id="form-edit">
+    {% endif %}
+
+
+    <input type="hidden" name="id_folder" value="{{ page.id_folder }}">
+    <input type="hidden" name="qc/state" value="{{ page.asset["qc/state"] }}">
+    {% if page.asset.status == 0 %}
+        <input id="input-form-duration" type="hidden" name="duration" value="{{ page.asset["duration"] | s2tc(page.asset.fps) }}">
+    {% endif %}
+
+
+
+    {% for key, key_config in page.meta_set %}
+        <div class="form-group row">
+
+            <label for="input-key-{{ loop.index }}" class="col-sm-2 col-form-label">
+                {{ site.meta_types[key].alias() | replace(" ", "&nbsp;")}}
+            </label>
+
+            <div class="col-sm-10">
+                {% set key_class = site.meta_types[key]["class"] %}
+                {% if key_class == 0 %} {# string #}
+                    <input name="{{ key }}" class="form-control" type="text" value="{{ page.asset[key] }}" id="input-key-{{ loop.index }}">
+
+                {% elif key_class == 1 %} {# text#}
+                    <textarea name="{{ key }}" class="form-control" id="input_key-{{ loop.index }}" rows="3">{{ page.asset[key]  }}</textarea>
+
+                {% elif key_class == 2 %} {# integer #}
+                    <input name="{{ key }}" class="form-control" type="number" value="{{ page.asset[key] }}" id="input-key-{{ loop.index }}">
+
+                {% elif key_class == 3 %} {# numeric #}
+                    <input name="{{ key }}" class="form-control" type="number" value="{{ page.asset[key] }}" id="input-key-{{ loop.index }}">
+
+                {% elif key_class == 4 %} {# boolean #}
+                    <div>
+                        <label class='switch'>
+                            <input type="hidden" name="{{ key }}" value="{{ page.asset[key] | int }}"><input type='checkbox' onclick="this.previousSibling.value=1-this.previousSibling.value" {% if page.asset[key]  %} checked{% endif %}>
+                            <span class='slider'></span>
+                        </label>
+                    </div>
+
+                {% elif key_class == 5 %} {# datetime #}
+                    {% if site.meta_types[key]["mode"] == "date" %}
+                        <input name="{{ key }}" type="text" class="datepicker" value="{{ page.asset.show(key, format="%Y-%m-%d", never_placeholder="") }}" id="input-key-{{ loop.index }}">
+                    {% else %}
+                        {{ site.meta_types[key]["mode"] }} is not supported yet
+                    {% endif %}
+
+                {% elif key_class == 6 %} {# timecode #}
+                    {{ page.asset.show(key) }}
+
+                {% elif key_class == 7 %} {# regions #}
+                    {{ page.asset.show(key) }}
+
+                {% elif key_class == 8 %} {# fraction #}
+                    {{ page.asset.show(key) }}
+
+                {% elif key_class == 9 %} {# select #}
+                    <select name="{{ key }}" class="form-control" id="input-key-{{ loop.index }}">
+                    {% for r in page.asset.show(key, full=True) %}
+                        <option value="{{ r.value }}"{% if r.selected %} selected{% endif %}>{{ r.alias }}</option>
+                    {% endfor %}
+                    </select>
+
+                {% elif key_class == 10 %} {# list #}
+                    {{ page.asset.show(key) }}
+
+                {% elif key_class == 11 %} {# color #}
+                    {{ page.asset.show(key) }}
+
+                {%endif%}
+                </div>
+            </div>
+        {% endfor %}
+    </form>
+    </div> <!-- tab-main -->
+
+    <div class="tab-pane fade" id="tab-panel-extended">
+        <table class="table">
+        {% for key in page["extended_keys"] %}
+        <tr>
+            <td>{{ site.meta_types[key].alias() | replace(" ", "&nbsp;") }}</td>
+            <td>{{ page.asset.show(key) }}</td>
+        </tr>
+        {% endfor%}
+        </table>
+    </div> <!-- tab-extended -->
+
+    <div class="tab-pane fade" id="tab-panel-technical">
+        <table class="table">
+        {% for key in page["technical_keys"] %}
+        <tr>
+            <td>{{ site.meta_types[key].alias() | replace(" ", "&nbsp;") }}</td>
+            <td>{{ page.asset.show(key) }}</td>
+        </tr>
+        {% endfor%}
+        </table>
+    </div> <!-- tab-technical -->
+
+    <div class="tab-pane fade" id="tab-panel-preview">
+        <div id="preview-container">
+            <video src="{{ page.asset.proxy_url }}" id="video-player" controls></video>
+        </div>
+    </div> <!-- tab-preview -->
+</div>
+
+{% else %}
+    <h2>No such asset</h2>
+{% endif %}
+
+{% endblock %}

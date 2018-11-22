@@ -12,7 +12,7 @@ def get_objects(ObjectType, **kwargs):
     do_count    = kwargs.get("count", False)
     limit       = kwargs.get("limit", False)
     offset      = kwargs.get("offset", False)
-    order       = kwargs.get("order", False)
+    order       = kwargs.get("order", "ctime DESC")
     id_view     = kwargs.get("id_view", False)
 
     view_count = False
@@ -30,10 +30,10 @@ def get_objects(ObjectType, **kwargs):
                     raw_conds.append("{}={}".format(col, view_config[key][0]))
                 else:
                     raw_conds.append("{} IN ({})".format(col, ",".join([str(v) for v in view_config[key]])))
-        try:
-            view_count = int(cache.load("view-count-"+str(id_view)))
-        except:
-            pass
+#        try:
+#            view_count = int(cache.load("view-count-"+str(id_view)+))
+#        except:
+#            pass
 
 
     conds = []
@@ -74,20 +74,17 @@ def get_objects(ObjectType, **kwargs):
 
 
 def api_get(**kwargs):
-    if not kwargs.get("user", None):
-        return NebulaResponse(401, 'unauthorized')
-
     object_type = kwargs.get("object_type", "asset")
     ids         = kwargs.get("ids", [])
     result_type = kwargs.get("result", False)
-    user        = kwargs.get("user", anonymous)
     db          = kwargs.get("db", DB())
     id_view     = kwargs.get("id_view", 0)
-
+    user        = kwargs.get("user", anonymous)
+    kwargs["conds"] = kwargs.get("conds", [])
     kwargs["limit"] = kwargs.get("limit", 1000)
 
-    if not "conds" in kwargs:
-        kwargs["conds"] = []
+    if not user:
+        return NebulaResponse(ERROR_UNAUTHORISED)
 
     start_time = time.time()
 
@@ -151,8 +148,8 @@ def api_get(**kwargs):
     # response
     #
 
-    if id_view and (not kwargs.get("view_count")) and result["count"]:
-        cache.save("view-count-"+str(id_view), result["count"])
+#    if id_view and (not kwargs.get("view_count")) and result["count"]:
+#        cache.save("view-count-"+str(id_view), result["count"])
 
     result["response"] = 200
     result["message"] = "{} {}s returned in {:.02}s".format(

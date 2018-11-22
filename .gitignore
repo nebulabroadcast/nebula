@@ -4,3 +4,5 @@ test.py
 _old/
 test-*
 _import.py
+_scripts
+_res/

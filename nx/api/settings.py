@@ -13,7 +13,13 @@ def api_settings(**kwargs):
         return NebulaResponse(ERROR_UNAUTHORISED)
 
     data = copy.deepcopy(config)
-    for key in ["db_host", "db_port", "db_user", "db_pass", "db_name"]:
+    for key in [
+            "db_host",
+            "db_port",
+            "db_user",
+            "db_pass",
+            "db_name"
+        ]:
         if key in data:
             del(data[key])
     return NebulaResponse(200, data=data)

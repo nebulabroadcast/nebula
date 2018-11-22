@@ -37,13 +37,20 @@ class ServiceMonitor(BaseAgent):
 
     def main(self):
         db = DB()
-        db.query("SELECT id, service_type, title, autostart, loop_delay, settings, state, pid FROM services WHERE host=%s", [config["host"]])
+        db.query("SELECT id, service_type, title, autostart, loop_delay, settings, state, pid, last_seen FROM services WHERE host=%s", [config["host"]])
 
         #
         # Start / stop service
         #
 
-        for id, service_type, title, autostart, loop_delay, settings, state, pid in db.fetchall():
+        for id, service_type, title, autostart, loop_delay, settings, state, pid, last_seen in db.fetchall():
+            messaging.send(
+                    "service_state",
+                    id=id,
+                    state=state,
+                    autostart=autostart,
+                    last_seen=last_seen
+                )
             if state == STARTING: # Start service
                 if not id in self.services.keys():
                     self.start_service(id, title, db = db)

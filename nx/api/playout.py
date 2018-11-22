@@ -9,10 +9,10 @@ from nx import *
 __all__ = ["api_playout"]
 
 def api_playout(**kwargs):
-    if not kwargs.get("user", None):
+    user = kwargs.get("user", anonymous)
+    if not user:
         return NebulaResponse(ERROR_UNAUTHORISED)
 
-    user = User(meta=kwargs["user"])
     action = kwargs.get("action", False)
     id_channel = int(kwargs.get("id_channel", False))
 
@@ -30,11 +30,13 @@ def api_playout(**kwargs):
             channel_config.get("controller_host", "localhost"),
             channel_config.get("controller_port", 42100)
         )
+
+    kwargs["user"] = user.meta
+
     try:
         response = requests.post(controller_url + "/" + action, data=kwargs)
     except Exception:
-        msg = log_traceback()
-        return NebulaResponsei(ERROR_BAD_GATEWAY," Unable to connect playout service")
+        return NebulaResponse(ERROR_BAD_GATEWAY," Unable to connect playout service")
 
     if response.status_code >= 400:
         return NebulaResponse(response.status_code, response.text)

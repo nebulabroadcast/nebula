@@ -14,7 +14,7 @@ from nx import *
 __all__ = ["get_rundown", "api_rundown"]
 
 
-def get_rundown(id_channel, start_time=False, db=False):
+def get_rundown(id_channel, start_time=False, end_time=False, db=False):
     db = db or DB()
     if not start_time:
         # default today
@@ -24,7 +24,7 @@ def get_rundown(id_channel, start_time=False, db=False):
         rundown_date = time.strftime("%Y-%m-%d", time.localtime(time.time()))
         start_time = datestr2ts(rundown_date, hh=sh, mm=sm)
 
-    end_time = start_time + (3600 * 24)
+    end_time = end_time or start_time + (3600 * 24)
 
     item_runs = get_item_runs(id_channel, start_time, end_time, db=db)
 
@@ -131,11 +131,12 @@ def get_rundown(id_channel, start_time=False, db=False):
 
 
 def api_rundown(**kwargs):
-    if not kwargs.get("user", None):
-        return NebulaResponse(ERROR_UNAUTHORISED)
-
+    user = kwargs.get("user", anonymous)
     id_channel = int(kwargs.get("id_channel", -1))
     start_time = kwargs.get("start_time", 0)
+
+    if not (user.has_right("rundown_view", id_channel) or user.has_right("rundown_edit", id_channel)):
+        return NebulaResponse(ERROR_ACCESS_DENIED)
 
     process_start_time = time.time()
 

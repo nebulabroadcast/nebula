@@ -7,6 +7,17 @@ __all__ = ["ServerObject"]
 
 def create_ft_index(meta):
     ft = {}
+    if "subclips" in meta:
+        weight = 8
+        for sc in [k.get("title","") for k in meta["subclips"]]:
+            try:
+                for word in slugify(sc, make_set=True, min_length=3):
+                    if not word in ft:
+                        ft[word] = weight
+                    else:
+                        ft[word] = max(ft[word], weight)
+            except Exception:
+                logging.error("Unable to slugify key {} , value {}".format(key, meta[key]))
     for key in meta:
         if not key in meta_types:
             continue

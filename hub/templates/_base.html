@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="Nebula broadcast automation system administration interface">
+        <meta name="author" content="imm studios, z.s.">
+        <meta name="msapplication-TileColor" content="#2a2e30">
+        <meta name="theme-color" content="#2a2e30">
+
+        <title>{{ page.title }} - {{ site.name }}</title>
+
+        {% for stylesheet in site.css %}
+            <link href="{{ stylesheet }}" rel="stylesheet">
+        {% endfor %}
+
+        {% for stylesheet in page.css %}
+            <link href="{{ stylesheet }}" rel="stylesheet">
+        {% endfor %}
+
+        <link rel="apple-touch-icon" sizes="180x180" href="/static/img/apple-touch-icon.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="/static/img/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/static/img/favicon-16x16.png">
+        <link rel="manifest" href="/static/site.webmanifest">
+        <link rel="mask-icon" href="/static/img/safari-pinned-tab.svg" color="#2a2e30">
+
+        <script>
+            var site_name = "{{ site.name }}";
+        </script>
+    </head>
+    <body id="{{ page.name }}">
+
+        {% if page.name != "login" %}
+            {% include "includes/navbar.html" %}
+        {% endif %}
+
+        <main id="content">
+            {% block header %}<h1>{{ page.title }}</h1>{% endblock %}
+            {% include "includes/messages.html" %}
+            {% block content %}{% endblock %}
+        </main>
+
+        {% for script in site.js %}
+            <script src="{{ script }}"></script>
+        {% endfor %}
+        {% for script in page.js %}
+            <script src="{{ script }}"></script>
+        {% endfor %}
+    </body>
+</html>

@@ -1,0 +1,89 @@
+{% extends "_base.html" %}
+
+
+{% block header %}
+<nav class="navbar navbar-expand-sm module-navbar">
+
+    <ul class="navbar-nav">
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown">
+                {{ site.views[page.id_view]["title"] }}
+            </a>
+            <div class="dropdown-menu">
+                {% for id_view in site.views %}
+                    {% if site.views[id_view]["title"] == "-" %}
+                        <div class="dropdown-divider"></div>
+                    {% else%}
+                        <a class="dropdown-item select-view-link" href="#" data-href="{{ id_view }}">
+                            {{ site.views[id_view]["title"] }}
+                        </a>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </li>
+        <li class="nav-item">
+            <a href="/detail?new_asset=1" id="btn-new-asset" class="btn" title="Create new asset">
+                <i class="fas fa-plus"></i>
+            </a>
+        </li>
+    </ul>
+
+
+    <ul class="navbar-nav ml-auto">
+    <form class="form-inline" id="form-search" action="/assets" method="get">
+        <input id="select-view" type="hidden" name="v" value="{{ page.id_view }}">
+        <input type="hidden" name="lv" value="{{ page.id_view }}">
+        <input type="hidden" name="lq" value="{{ page.query }}">
+        <li class="nav-item">
+            <input id="input-query" name="q" type="text" class="form-control"
+            placeholder="Search query..."
+            {% if page.query %} value="{{ page.query }}"{% endif %}>
+        </li>
+        {% if page.page_count > 1 %}
+        <li class="nav-item">
+            <select class="custom-select" id="select-page" name="p" title="Result page">
+                {% for p in range(1, page.page_count ) %}
+                    <option {% if p == page.current_page %}selected{% endif %} value="{{ p }}">{{ p }}</option>
+                {% endfor %}
+            </select>
+        </li>
+        {% endif %}
+
+        <li class="nav-item">
+            <a href="#" id="btn-clear" class="btn" title="Clear search query">
+                <i class="fas fa-times"></i>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="#" id="btn-search" class="btn" title="Search assets">
+                <i class="fas fa-search"></i>
+            </a>
+        </li>
+    </form>
+    </ul>
+</nav>
+{% endblock %}
+
+
+{% block content %}
+<table id="browser-table" class="table table-hover">
+    <thead>
+        <tr>
+        {% for column in page.columns %}
+            <th>{{ site.meta_types[column].header() }}</th>
+        {% endfor %}
+        </tr>
+    </thead>
+    <tbody id="browser-body">
+    {% for asset in page.assets %}
+        <tr class="browser-row" data-href="{{ asset.id }}">
+        {% for key in page.columns %}
+            <td>
+            {% include "includes/cellformat.html" %}
+            </td>
+        {% endfor %}
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -170,6 +170,7 @@ class Job():
 
     def set_progress(self, progress, message="In progress"):
         db = DB()
+        progress=round(progress,2)
         db.query(
             """UPDATE jobs SET
                     progress=%s,
@@ -298,7 +299,7 @@ def get_job(id_service, action_ids, db=False):
 
 
 def send_to(id_asset, id_action, settings={}, id_user=None, priority=3, restart_existing=True, restart_running=False, db=False):
-    db  = db or DB()
+    db = db or DB()
     if not id_asset:
         NebulaResponse(401, message="You must specify existing object")
 

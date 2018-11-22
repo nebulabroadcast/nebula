@@ -1,4 +1,12 @@
-__all__ = ["plugin_path", "PlayoutPlugin", "PlayoutPluginSlot", "WorkerPlugin", "ValidatorPlugin", "SolverPlugin"]
+__all__ = [
+        "plugin_path",
+        "PlayoutPlugin",
+        "PlayoutPluginSlot",
+        "WorkerPlugin",
+        "ValidatorPlugin",
+        "SolverPlugin",
+        "WebToolPlugin"
+    ]
 
 import os
 import sys
@@ -84,12 +92,28 @@ class PlayoutPlugin(object):
         return result
 
     @property
+    def id_channel(self):
+        return self.service.id_channel
+
+    @property
+    def channel_config(self):
+        return self.service.channel_config
+
+    @property
     def current_asset(self):
         return self.service.current_asset
 
     @property
     def current_item(self):
         return self.service.current_item
+
+    @property
+    def position(self):
+        return self.service.controller.position
+
+    @property
+    def duration(self):
+        return self.service.controller.duration
 
     def main(self):
         if not self.busy:
@@ -142,7 +166,6 @@ class ValidatorPlugin(object):
                 self._db = DB()
         return self._db
 
-
 #
 # Worker service plugin
 #
@@ -160,7 +183,6 @@ class WorkerPlugin(object):
 
     def on_main(self):
         pass
-
 
 #
 # Rundown solver plugin
@@ -208,7 +230,6 @@ class SolverPlugin(object):
                     continue
                 dur -= item.duration
             self._needed_duration = dur
-        print ("need", self._needed_duration)
         return self._needed_duration
 
     def main(self):
@@ -242,7 +263,6 @@ class SolverPlugin(object):
         return NebulaResponse(200, "ok")
 
 
-
     def solve(self):
         """
         This method must return a list or yield items
@@ -250,3 +270,35 @@ class SolverPlugin(object):
         replaces the original placeholder.
         """
         return []
+
+
+class WebToolPlugin(object):
+    def __init__(self, view, name):
+        self.native = True
+        self.view = view
+        self.name = name
+
+    def render(self, template):
+        import jinja2
+        tpl_dir = os.path.join(plugin_path, "webtools", self.name)
+        jinja = jinja2.Environment(
+                    loader=jinja2.FileSystemLoader(tpl_dir)
+                )
+        jinja.filters["format_time"] = format_time
+        jinja.filters["s2tc"] = s2tc
+        jinja.filters["slugify"] = slugify
+        template = jinja.get_template("{}.html".format(template))
+        return template.render(**self.context)
+
+    def __getitem__(self, key):
+        return self.view[key]
+
+    def __setitem__(self, key, value):
+        self.view[key] = value
+
+    @property
+    def context(self):
+        return self.view.context
+
+    def build(self, *args, **kwargs):
+        pass

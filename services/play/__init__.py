@@ -368,15 +368,20 @@ class Service(BaseService):
                     except IndexError:
                         pass
             else:
-                id_item = next_event.bin.items[0].id
-                if id_item != self.controller.next_item.id:
+                try:
+                    id_item = next_event.bin.items[0].id
+                except KeyError:
+                    id_item = 0
+                if not self.controller.cued_item:
+                    return
+                if id_item != self.controller.cued_item.id:
                     self.cue(
                             id_channel=self.id_channel,
                             id_item=id_item,
                             db=db
                         )
                     self.auto_event = next_event.id
-                    return
+                return
 
         elif run_mode == RUN_HARD:
             logging.info("Hard cue", next_event)

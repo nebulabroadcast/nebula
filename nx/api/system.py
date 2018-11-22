@@ -16,40 +16,54 @@ from nx import *
 __all__ = ["api_system"]
 
 def api_system(**kwargs):
-    if not kwargs.get("user", None):
+
+    user = kwargs.get("user", anonymous)
+    if not user:
         return NebulaRespone(ERROR_UNAUTHORISED)
+
+    db = DB()
 
     request = kwargs.get("request", [
             "services",
             "hosts"
         ])
-    db = DB()
 
     if "stop" in kwargs:
         id_service = kwargs["stop"]
         if not type(id_service) == int:
             return NebulaResponse(ERROR_BAD_REQUEST, "Invalid ID service to stop")
+        if not user.has_right("service_control", id_service):
+            return NebulaResponse(ERROR_ACCESS_DENIED, "You are not allowed to control this service")
         db.query("UPDATE services SET state=3 WHERE id=%s", [id_service])
         db.commit()
+        logging.info("{} requested service {} ({}) stop".format(user, config["services"][id_service]["title"], id_service))
 
     if "start" in kwargs:
         id_service = kwargs["start"]
         if not type(id_service) == int:
             return NebulaResponse(ERROR_BAD_REQUEST, "Invalid ID service to start")
+        if not user.has_right("service_control", id_service):
+            return NebulaResponse(ERROR_ACCESS_DENIED, "You are not allowed to control this service")
         db.query("UPDATE services SET state=2 WHERE id=%s", [id_service])
         db.commit()
+        logging.info("{} requested service {} ({}) start".format(user, config["services"][id_service]["title"], id_service))
 
     if "kill" in kwargs:
         id_service = kwargs["kill"]
         if not type(id_service) == int:
             return NebulaResponse(ERROR_BAD_REQUEST, "Invalid ID service to kill")
+        if not user.has_right("service_control", id_service):
+            return NebulaResponse(ERROR_ACCESS_DENIED, "You are not allowed to control this service")
         db.query("UPDATE services SET state=4 WHERE id=%s", [id_service])
         db.commit()
+        logging.info("{} requested service {} ({}) kill".format(user, config["services"][id_service]["title"], id_service))
 
-    if "set_autostart" in kwargs:
-        id_service = kwargs["set_autostart"]
-        if not type(id_service) in int:
+    if "autostart" in kwargs:
+        id_service = kwargs["autostart"]
+        if not type(id_service) == int:
             return NebulaResponse(ERROR_BAD_REQUEST, "Invalid ID service to set autostart")
+        if not user.has_right("service_control", id_service):
+            return NebulaResponse(ERROR_ACCESS_DENIED, "You are not allowed to control this service")
         db.query("UPDATE services SET autostart=NOT autostart WHERE id=%s", [id_service])
         db.commit()
 

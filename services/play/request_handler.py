@@ -29,11 +29,11 @@ class PlayoutRequestHandler(BaseHTTPRequestHandler):
         self.wfile.write(encode_if_py3(istring))
 
     def result(self, data):
-        self._do_headers(response=data.get("response", 200))
+        self._do_headers()
         self._echo(json.dumps(data))
 
     def error(self, response, message=""):
-        self._do_headers(response=response)
+        self._do_headers() # return 200 anyway
         self._echo(json.dumps({
                 "response" : response,
                 "message" : message

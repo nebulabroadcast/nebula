@@ -122,7 +122,7 @@ class Service(BaseService):
     def listen(self):
         while True:
             try:
-                data, addr = self.sock.recvfrom(1024)
+                data, addr = self.sock.recvfrom(4092)
             except (socket.error):
                 continue
 

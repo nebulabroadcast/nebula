@@ -32,14 +32,14 @@ def get_validator(object_type, **kwargs):
 
 
 def api_set(**kwargs):
-    if not kwargs.get("user", None):
-        return NebulaResponse(ERROR_UNAUTHORISED)
-
     object_type = kwargs.get("object_type", "asset")
     ids  = kwargs.get("objects", [])
     data = kwargs.get("data", {})
-    user = User(meta=kwargs["user"])
+    user = kwargs.get("user", anonymous)
     db   = kwargs.get("db", DB())
+
+    if not user:
+        return NebulaResponse(ERROR_UNAUTHORISED)
 
     if not (data and ids):
         #TODO: Use 304?

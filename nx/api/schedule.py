@@ -8,28 +8,18 @@ from nx import *
 __all__ = ["api_schedule"]
 
 def api_schedule(**kwargs):
-    if not kwargs.get("user", None):
-        return NebulaResponse(ERROR_UNAUTHORISED)
-
     id_channel = kwargs.get("id_channel", 0)
     start_time = kwargs.get("start_time", 0)
     end_time = kwargs.get("end_time", 0)
     events = kwargs.get("events", []) # Events to add/update
     delete = kwargs.get("delete", []) # Event ids to delete
+    db = kwargs.get("db", DB())
+    user = kwargs.get("user", anonymous)
 
-
-    #TODO: Other channel types
     if not id_channel or id_channel not in config["playout_channels"]:
         return NebulaResponse(ERROR_BAD_REQUEST, "Unknown playout channel ID {}".format(id_channel))
+
     channel_config = config["playout_channels"][id_channel]
-
-    if "user" in kwargs:
-        user = User(meta=kwargs.get("user"))
-    else:
-        user = User(meta={"login" : "Nebula"})
-
-
-    db = DB()
     changed_event_ids = []
 
     #
@@ -37,7 +27,7 @@ def api_schedule(**kwargs):
     #
 
     for id_event in delete:
-        if not user.has_right("channel_edit", id_channel):
+        if not user.has_right("scheduler_edit", id_channel):
             return NebulaResponse(ERROR_ACCESS_DENIED, "You are not allowed to edit this channel")
         event = Event(id_event, db=db)
         if not event:
@@ -46,7 +36,7 @@ def api_schedule(**kwargs):
         try:
             event.bin.delete()
         except psycopg2.IntegrityError:
-            NebulaResponse(ERROR_LOCKED, "Unable to delete {}. Already aired.".format(event))
+            return NebulaResponse(ERROR_LOCKED, "Unable to delete {}. Already aired.".format(event))
         else:
             event.delete()
         changed_event_ids.append(event.id)
@@ -56,7 +46,7 @@ def api_schedule(**kwargs):
     #
 
     for event_data in events:
-        if not user.has_right("channel_edit", id_channel):
+        if not user.has_right("scheduler_edit", id_channel):
             return NebulaResponse(ERROR_ACCESS_DENIED, "You are not allowed to edit this channel")
         id_event = event_data.get("id", False)
 
@@ -125,7 +115,6 @@ def api_schedule(**kwargs):
                     item["id_bin"] = pbin.id
                     item.save()
                 continue
-
             event[key] = event_data[key]
 
         changed_event_ids.append(event.id)
@@ -137,6 +126,8 @@ def api_schedule(**kwargs):
     #
     # Return existing events
     #
+
+    #TODO: ACL scheduler view
 
     result = []
     if start_time and end_time:

@@ -3,15 +3,18 @@ from nx import *
 __all__ = ["api_jobs"]
 
 def api_jobs(**kwargs):
-    if not kwargs.get("user", None):
+    formatted = kwargs.get("formatted", False) # load titles etc
+    user = kwargs.get("user", anonymous)
+    query = kwargs.get("query", "")
+    id_asset = kwargs.get("id_asset", False)
+    view = kwargs.get("view", "active")
+    db = kwargs.get("db", DB())
+
+    if not user:
         return NebulaResponse(ERROR_UNAUTHORISED)
 
-    db = kwargs.get("db", DB())
-    user = User(meta=kwargs["user"])
-
-
     for k in ["restart", "abort"]:
-        if k in kwargs and not user.has_right("jobs_control"):
+        if k in kwargs and not user.has_right("job_control", anyval=True):
             return NebulaResponse(ERROR_ACCESS_DENIED)
 
     if "restart" in kwargs:
@@ -23,6 +26,7 @@ def api_jobs(**kwargs):
                 creation_time=%s,
                 start_time=NULL,
                 end_time=NULL,
+                id_service=NULL,
                 message='Restart requested'
             WHERE
                 id IN %s
@@ -55,38 +59,46 @@ def api_jobs(**kwargs):
         #TODO: smarter message
         return NebulaResponse(200, "Jobs aborted", data=result)
 
-    view = kwargs.get("view", "all")
-#TODO
-    query = kwargs.get("query", "")
-    id_asset = kwargs.get("id_asset", False)
+
+    #TODO: fulltext
+
+    try:
+        id_asset = int(id_asset)
+    except ValueError:
+        id_asset = False
 
     cond = ""
-    if view == "active":
+    if id_asset:
+        cond = "AND j.id_asset = {}".format(id_asset)
+
+    elif view == "active":
         # Pending, in_progress, restart
-        cond = "WHERE status IN (0, 1, 5) OR end_time > {}".format(time.time() - 30)
+        cond = "AND (j.status IN (0, 1, 5) OR j.end_time > {})".format(time.time() - 30)
     elif view == "finished":
         # completed, aborted, skipped
-        cond = "WHERE status IN (2, 4, 6)"
+        cond = "AND j.status IN (2, 4, 6)"
     elif view == "failed":
         # failed
-        cond = "WHERE status IN (3)"
+        cond = "AND j.status IN (3)"
 
     data = []
     db.query("""SELECT
-                id,
-                id_asset,
-                id_action,
-                id_service,
-                id_user,
-                priority,
-                retries,
-                status,
-                progress,
-                message,
-                creation_time,
-                start_time,
-                end_time
-            FROM jobs
+                j.id,
+                j.id_asset,
+                j.id_action,
+                j.id_service,
+                j.id_user,
+                j.priority,
+                j.retries,
+                j.status,
+                j.progress,
+                j.message,
+                j.creation_time,
+                j.start_time,
+                j.end_time,
+                a.meta
+            FROM jobs AS j, assets AS a
+            WHERE a.id = j.id_asset
             {}
             ORDER BY
                 end_time DESC NULLS FIRST,
@@ -94,7 +106,7 @@ def api_jobs(**kwargs):
                 creation_time DESC
             LIMIT 100
             """.format(cond))
-    for id, id_asset, id_action, id_service, id_user, priority, retries, status, progress, message, ctime, stime, etime in db.fetchall():
+    for id, id_asset, id_action, id_service, id_user, priority, retries, status, progress, message, ctime, stime, etime, meta in db.fetchall():
         row = {
                 "id" : id,
                 "id_asset" : id_asset,
@@ -106,10 +118,20 @@ def api_jobs(**kwargs):
                 "status" : status,
                 "progress" : progress,
                 "message" : message,
-                "ctime" : ctime,
-                "stime" : stime,
-                "etime" : etime
+                "ctime" : format_time(ctime, never_placeholder="(not yet)") if formatted else ctime,
+                "stime" : format_time(stime, never_placeholder="(not yet)") if formatted else stime,
+                "etime" : format_time(etime, never_placeholder="(not yet)") if formatted else etime
             }
+        if formatted:
+            asset = Asset(meta=meta)
+            row["asset_title"] = asset["title"]
+            row["action_title"] = config["actions"][id_action]["title"]
+            if id_service:
+                service = config["services"][id_service]
+                row["service_title"] = "{}@{}".format(service["title"], service["host"])
+            else:
+                row["service_title"] = ""
+
         data.append(row)
 
     return NebulaResponse(200, data=data)

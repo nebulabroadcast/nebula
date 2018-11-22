@@ -5,13 +5,13 @@ from nx import *
 __all__ = ["api_delete"]
 
 def api_delete(**kwargs):
-    if not kwargs.get("user", None):
-        return NebulaResponse(ERROR_UNAUTHORISED)
-
     object_type = kwargs.get("object_type", "asset")
-    ids = kwargs.get("objects", [])
+    ids = kwargs.get("ids", kwargs.get("objects", [])) #TODO: objects is deprecated. use ids!
     db = kwargs.get("db", DB())
-    user = User(meta=kwargs["user"])
+    user = kwargs.get("user", anonymous)
+
+    if not user:
+        return NebulaResponse(ERROR_UNAUTHORISED)
 
     if not (ids):
         return NebulaResponse(200, "No object deleted")
@@ -30,7 +30,8 @@ def api_delete(**kwargs):
         obj = object_type_class(id_object, db=db)
 
         if object_type == "item":
-            #TODO: ACL
+            if not user.has_right("rundown_edit", anyval=True):
+                return NebulaResponse(ERROR_ACCESS_DENIED)
             try:
                 obj.delete()
             except psycopg2.IntegrityError:

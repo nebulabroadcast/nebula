@@ -35,6 +35,11 @@ def api_solve(**kwargs):
     id_item = kwargs.get("id_item", False)
     solver_name = kwargs.get("solver", False)
     items = kwargs.get("items", [])
+    user = kwargs.get("user", anonymous)
+
+    #TODO: SMARTER ACL
+    if not user.has_right("rundown_edit", anyval=True):
+        return NebulaResponse(ERROR_ACCESS_DENIED)
 
     if id_item:
         items.append(id_item)
@@ -54,4 +59,3 @@ def api_solve(**kwargs):
             return response
 
     return response
-

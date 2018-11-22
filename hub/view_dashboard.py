@@ -1,5 +1,9 @@
+import cherrypy
+
 from nebula import *
 from cherryadmin import CherryAdminView
+
+from hub.view_tool import ViewTool
 
 class ViewDashboard(CherryAdminView):
     def build(self, *args, **kwargs):
@@ -8,6 +12,32 @@ class ViewDashboard(CherryAdminView):
         self["js"] = [
                 "/static/js/dashboard.js"
             ]
+
+        custom_dash = self["user"]["dashboard"]
+
+        if custom_dash:
+            try:
+                Plugin, title = self["site"]["webtools"].tools[custom_dash]
+            except KeyError:
+                raise cherrypy.HTTPError(404, "No such tool {}".format(custom_dash))
+
+            try:
+                args = args[1:]
+            except IndexError:
+                args = []
+            plugin = Plugin(self, custom_dash)
+            self["title"] = title
+            self.view="tool"
+
+            body = plugin.build(*args, **kwargs)
+            if plugin.native:
+                self.is_raw = False
+                self["body"] = body
+            else:
+                self.is_raw = True
+                self.body = body
+            return
+
 
         #
         # Hosts information (node status)
