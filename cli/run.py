@@ -8,11 +8,11 @@ def run(*args):
         try:
             hub_instance = hub.CherryAdmin(**hub.hub_config)
         except KeyboardInterrupt:
-            sys.exit(0)
+            return
         except Exception:
             log_traceback()
             critical_error("Unhandled exception in Hub")
-        sys.exit(0)
+        return
 
     try:
         id_service = int(id_service)

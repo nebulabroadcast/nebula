@@ -7,6 +7,7 @@ class WebTools():
         self.load()
 
     def load(self):
+        logging.info("Reloading webtools")
         self.tools = {}
         global plugin_path
         if not plugin_path:

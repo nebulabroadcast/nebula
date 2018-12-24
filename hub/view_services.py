@@ -3,12 +3,6 @@ from cherryadmin import CherryAdminView
 
 class ViewServices(CherryAdminView):
     def build(self, *args, **kwargs):
-        self["name"] = "services"
-        self["title"] = "Services"
-        self["js"] = [
-                "/static/js/services.js"
-            ]
-
         state_label = {
                 STOPPED  : "<span class='label text-primary'>Stopped</span>",
                 STARTED  : "<span class='label text-success'>Running</span>",
@@ -34,4 +28,8 @@ class ViewServices(CherryAdminView):
             if time.time() - last_seen > 120:
                 service["message"] = "Not responding for {}".format(s2words(time.time() - last_seen))
             services.append(service)
+
+        self["name"] = "services"
+        self["title"] = "Services"
+        self["js"] = ["/static/js/services.js"]
         self["data"]  = services

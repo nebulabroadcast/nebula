@@ -144,9 +144,11 @@ class Service(BaseService):
                 UPDATE jobs SET
                     status=5,
                     retries=0,
+                    progress=0,
                     creation_time=%s,
                     start_time=NULL,
                     end_time=NULL,
+                    id_service=NULL,
                     message='Restarting after source update'
                 WHERE
                     id_asset=%s

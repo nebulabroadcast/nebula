@@ -50,6 +50,8 @@ class Asset(AssetMixIn, ServerObject):
 
     @property
     def proxy_full_path(self):
+        if not self.id:
+            return ""
         if not hasattr(self, "_proxy_full_path"):
             self._proxy_full_path = os.path.join(
                         storages[self.proxy_storage].local_path,
@@ -63,14 +65,12 @@ class Asset(AssetMixIn, ServerObject):
 
     @property
     def proxy_path(self):
+        if not self.id:
+            return ""
         if not hasattr(self, "_proxy_path"):
-            #TODO: Customisable path
-            self._proxy_path = os.path.join(
-                        ".nx",
-                        "proxy",
-                        str(int(self.id / 1000)).zfill(4),
-                        "{}.mp4".format(self.id)
-                    )
+            tpl = config.get("proxy_path", ".nx/proxy/{id1000:04d}/{id}.mp4")
+            id1000 = int(self.id/1000)
+            self._proxy_path = tpl.format(id1000=id1000, **self.meta)
         return self._proxy_path
 
     def get_playout_name(self, id_channel):

@@ -1,6 +1,10 @@
 {% extends "_base.html" %}
 
 {% block header %}
+{% endblock %}
+
+{% block content %}
+
 <script>
     var mode = "{{ page.mode }}";
     var id_asset = {{ page.id_asset }};
@@ -17,9 +21,7 @@
         <a href="/jobs/failed" class="nav-link{% if page.mode == "failed" %} active{% endif %}">Failed</a>
     </li>
 </ul>
-{% endblock %}
 
-{% block content %}
 <table id="job-table" class="table table-hover">
     <thead>
         <tr>

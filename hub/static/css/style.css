@@ -1,9 +1,6 @@
 html {
     overflow : hidden;
-}
-
-main {
-    padding: 20px;
+	height:100%;
 }
 
 #content {
@@ -13,6 +10,7 @@ main {
     left : 5px;
     right : 5px;
     overflow : auto;
+	padding: 20px
 }
 
 h1 {
@@ -83,11 +81,10 @@ h2 {
  *****************/
 
 #login {
-    /* background: #161616; */
-}
-
-#login-window {
-    margin-top : 20px;
+	background: #2a2e30;
+	background: -moz-radial-gradient(center, ellipse cover, #2a2e30 0%, #000000 100%);
+	background: -webkit-radial-gradient(center, ellipse cover, #2a2e30 0%,#000000 100%);
+	background: radial-gradient(ellipse at center, #2a2e30 0%,#000000 100%);
 }
 
 #login-window img {
@@ -103,7 +100,6 @@ h2 {
 #login-window input:-webkit-autofill {
     -webkit-box-shadow: 0 0 0px 1000px white inset;
 }
-
 
 #error-window {
     width: 400px;
@@ -140,4 +136,8 @@ h2 {
     width: 120px;
     font-family: monospace;
     text-align: center;
+}
+
+#preview-container {
+    margin: 0 auto;
 }

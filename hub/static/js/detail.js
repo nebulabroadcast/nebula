@@ -1,6 +1,5 @@
 function save_asset() {
-    console.log($("#input-duration").val());
-    console.log($("#input-form-duration").val());
+    console.log("Saving asset");
     if ($("#input-duration").val() != $("#input-form-duration").val()){
         $("#input-form-duration").val($("#input-duration").val());
         console.log("changing duration to", $("#input-form-duration").val());
@@ -31,8 +30,14 @@ $(document).ready(function(){
     });
 
     $(".btn-qcstate").click(function(){
-        console.log("set qc/state to" + $(this).attr("data-href"));
-        //TODO
+        console.log("set qc/state to " + $(this).attr("data-href"));
+        $("#input-form-qc-state").val($(this).attr("data-href"));
+        save_asset();
+    });
+
+    $(".btn-sendto").click(function() {
+        $("#input-id-action").val($(this).attr("data-href"));
+        $("#form-sendto").submit();
     });
 
 });

@@ -259,11 +259,12 @@ def get_job(id_service, action_ids, db=False):
         job.retries = retries
         job.id_user = id_user
         for pre in action.settings.findall("pre"):
-            try:
-                exec(pre.text)
-            except Exception:
-                log_traceback()
-                continue
+            if pre.text:
+                try:
+                    exec(pre.text)
+                except Exception:
+                    log_traceback()
+                    continue
         if not action:
             logging.warning("Unable to get job. No such action ID {}".format(id_action))
             continue

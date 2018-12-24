@@ -44,6 +44,8 @@ if __name__ == "__main__":
 
     try:
         modules[module](*args)
+    except SystemExit:
+        pass
     except:
         log_traceback()
 

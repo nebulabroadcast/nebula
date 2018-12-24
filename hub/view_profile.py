@@ -6,15 +6,8 @@ from cherryadmin import CherryAdminView
 
 class ViewProfile(CherryAdminView):
     def build(self, *args, **kwargs):
-        self["name"] = "profile"
-        self["title"] = "User profile"
-        self["js"] = []
-
         db = DB()
         user = self["user"]
-
-        db.query("SELECT meta FROM users WHERE meta->>'is_admin' = 'true'")
-        self["admins"] = [User(meta=meta) for meta, in db.fetchall()]
 
         password = kwargs.get("password", False)
         full_name = kwargs.get("full_name", False)
@@ -44,6 +37,11 @@ class ViewProfile(CherryAdminView):
                 self.context.message("User profile saved")
 
 
+        db.query("SELECT meta FROM users WHERE meta->>'is_admin' = 'true'")
+
+        self["admins"] = [User(meta=meta) for meta, in db.fetchall()]
+        self["name"] = "profile"
+        self["title"] = "User profile"
         self["rights"] = [
                 ["asset_edit",      "Edit assets", "folders"],
                 ["asset_create",    "Create assets", "folders"],

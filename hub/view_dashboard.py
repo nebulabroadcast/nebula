@@ -7,11 +7,10 @@ from hub.view_tool import ViewTool
 
 class ViewDashboard(CherryAdminView):
     def build(self, *args, **kwargs):
-        self["name"] = "dashboard"
-        self["title"] = "Dashboard"
-        self["js"] = [
-                "/static/js/dashboard.js"
-            ]
+
+        #
+        # If user has custom dashboard, load webtool plugin
+        #
 
         custom_dash = self["user"]["dashboard"]
 
@@ -38,7 +37,6 @@ class ViewDashboard(CherryAdminView):
                 self.body = body
             return
 
-
         #
         # Hosts information (node status)
         #
@@ -62,9 +60,6 @@ class ViewDashboard(CherryAdminView):
             if not storage_info:
                 storage_info = status["stor"]
 
-        self["hosts"] = hosts
-        self["storages"] = storage_info
-
         #
         # MAM statistics
         #
@@ -74,5 +69,10 @@ class ViewDashboard(CherryAdminView):
             db.query("SELECT COUNT(id) FROM {}".format(obj_type))
             object_counts[obj_type] = db.fetchall()[0][0]
 
-        self["object_counts"] = object_counts
 
+        self["name"] = "dashboard"
+        self["title"] = "Dashboard"
+        self["js"] = ["/static/js/dashboard.js"]
+        self["hosts"] = hosts
+        self["storages"] = storage_info
+        self["object_counts"] = object_counts

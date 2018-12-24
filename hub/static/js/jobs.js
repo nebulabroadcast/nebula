@@ -24,7 +24,7 @@ function load_jobs(){
             rctime = row["ctime"];
             rstime = row["stime"];
             retime = row["etime"];
-            rtitle = row["asset_title"];
+            rtitle = "<a href='/detail/"+ row["id_asset"] +"'>" + row["asset_title"] + "</a>";
             raction = row["action_title"];
 
             if (rstatus == 1){
@@ -101,6 +101,10 @@ function seismic_handler(data){
 
 
 $(document).ready(function() {
+    if (window.history.replaceState) {
+        window.history.replaceState( null, null, window.location.href );
+    }
+
     load_jobs();
 
     notify = new seismicNotify(site_name, seismic_handler);

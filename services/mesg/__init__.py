@@ -146,6 +146,7 @@ class Service(BaseService):
                 if time.time() - self.last_message > 3:
                     logging.debug("Heartbeat")
                     messaging.send("heartbeat")
+                    self.last_message = time.time()
                 continue
 
             message = self.queue.pop(0)

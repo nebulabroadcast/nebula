@@ -16,6 +16,8 @@ def update_host_info():
     stor = []
     for id_storage in storages:
         storage = storages[id_storage]
+        if not storage:
+            continue
         usage = psutil.disk_usage(storage.local_path)
         stor.append({
                 "id" : id_storage,

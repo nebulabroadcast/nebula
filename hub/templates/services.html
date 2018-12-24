@@ -26,12 +26,9 @@
             </td>
             <td class="service-autostart">
             </td>
-            {% if user.has_right("service_control", service["id"]) %}
-            <td class="service-actions">
+            <td {% if user.has_right("service_control", service["id"]) %} class="service-actions"{% endif%}>
+                <button type="button" class="btn btn-sm" disabled>...</button>
             </td>
-            {% else %}
-            <td></td>
-            {% endif%}
         </tr>
         {% endfor %}
     </tbody>

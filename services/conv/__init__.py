@@ -127,9 +127,10 @@ class Service(BaseService):
                 return
             job_params = encoder.params
 
-        for success_script in  action.settings.findall("success"):
-            success_script = success_script.text
-            exec(success_script)
+        for success_script in action.settings.findall("success"):
+            if success_script:
+                success_script = success_script.text
+                exec(success_script)
 
         elapsed_time = time.time() - job_start_time
         duration = asset["duration"] or 1

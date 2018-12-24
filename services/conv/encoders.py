@@ -25,11 +25,12 @@ class NebulaFFMPEG(BaseEncoder):
                         self.ffparams.append(value)
 
             elif p.tag == "script":
-                try:
-                    exec(p.text)
-                except Exception:
-                    log_traceback()
-                    return NebulaResponse(500, message="Error in task 'pre' script.")
+                if p.text:
+                    try:
+                        exec(p.text)
+                    except Exception:
+                        log_traceback()
+                        return NebulaResponse(500, message="Error in task 'pre' script.")
 
             elif p.tag == "paramset" and eval(p.attrib["condition"]):
                 for pp in p.findall("param"):
@@ -66,8 +67,11 @@ class NebulaFFMPEG(BaseEncoder):
                         log_traceback()
                         return NebulaResponse(500, message="Unable to create output directory {}".format(target_dir))
 
-                self.files[temp_path] = target_path
-                self.ffparams.append(temp_path)
+                if not p.attrib.get("direct", False):
+                    self.files[temp_path] = target_path
+                    self.ffparams.append(temp_path)
+                else:
+                    self.ffparams.append(target_path)
 
         return NebulaResponse(200, message="Job configured")
 

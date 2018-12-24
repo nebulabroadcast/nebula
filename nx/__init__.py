@@ -3,6 +3,7 @@ from nebulacore import *
 from .connection import *
 from .objects import *
 from .helpers import *
+from .mediaprobe import *
 from .api import *
 from .base_service import *
 

@@ -3,6 +3,7 @@
 {% block header %}
 <h2>{{ page.title }}</h2>
 
+
 <nav class="navbar navbar-expand-sm module-navbar">
 
     {# navbar left (folder select) #}
@@ -28,10 +29,10 @@
     {# navbar center (duration, qc) #}
     <ul class="navbar-nav mx-auto">
         <li class="nav-item">
-            <input type="text" class="form-control input-timecode" name="duration" id="input-duration" value="{{ page.asset.duration | s2tc(page.asset.fps) }}" {% if page.asset.status != 0 %} disabled {% endif %} >
+            <input type="text" class="form-control input-timecode" name="duration" id="input-duration" value="{{ page.asset.duration | s2tc(page.asset.fps) }}" {% if page.asset.status != 0 and not page.new_asset %} disabled {% endif %} >
         </li>
-        <!--
         <li class="nav-item">&nbsp;</li> {# add some space between duration and qc buttons #}
+
         <li class="nav-item">
             <div class="btn-group" role="group" aria-label="Basic example">
                 <button type="button" class="btn btn-qcstate" data-href="4"><i class="{% if page.asset["qc/state"] == 4 %}fas{% else %}far{% endif %} fa-flag text-success"></i></button>
@@ -39,40 +40,47 @@
                 <button type="button" class="btn btn-qcstate" data-href="3"><i class="{% if page.asset["qc/state"] == 3 %}fas{% else %}far{% endif %} fa-flag text-danger"></i></button>
             </div>
         </li>
-        -->
     </ul>
 
 
     {# navbar right (buttons) #}
     <ul class="navbar-nav pull-sm-right">
         <li class="nav-item">
-        <form class="form-inline">
-
             <div class="btn-group" role="group">
                 <a href="#" class="btn dropdown-toggle" data-toggle="dropdown">
-                    <i class="fas fa-atom"></i>
+                    <i class="fas fa-cogs"></i>
                 </a>
-                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="btnGroupDrop1">
-                    <a href="/jobs?id_asset={{ page.asset.id }}" class="dropdown-item" href="#">Show existing jobs</a>
+                <div class="dropdown-menu dropdown-menu-right">
+                    <a href="/jobs?id_asset={{ page.asset.id }}" class="dropdown-item" href="#">
+                        Show existing jobs
+                    </a>
                     {% if page.actions %}
-                        <div class="dropdown-divider"></div>
-                        <h6 class="dropdown-header">Send to...</h6>
-                        {% for action in page.actions %}
-                        <a class="dropdown-item" href="#">Dropdown link</a>
-                        {% endfor %}
+                    <div class="dropdown-divider"></div>
+                    <h6 class="dropdown-header">Send to...</h6>
+                    {% for id_action, action_title  in page.actions %}
+                        <a class="dropdown-item btn-sendto" href="#" data-href="{{ id_action }}">
+                            {{ action_title }}
+                        </a>
+                    {% endfor %}
                     {% endif %}
                 </div>
             </div>
+            <form action="/jobs" method="POST" id="form-sendto">
+                <input type="hidden" name="id_asset" id="input-id-asset" value="{{ page.asset.id }}">
+                <input type="hidden" name="id_action" id="input-id-action" value="">
+            </form>
+        </li>
 
+        <li class="nav-item">
             <a href="/detail/{{ page.asset.id }}" class="btn" title="Revert changes">
                 <i class="fas fa-undo"></i>
             </a>
+        </li>
+
+        <li class="nav-item">
             <a href="#" class="btn" title="Save changes" id="button-save">
                 <i class="far fa-save"></i>
             </a>
-
-
-        </form>
         </li>
     </ul>
 
@@ -82,6 +90,11 @@
 
 {% block content %}
 {% if page.asset or page.new_asset %}
+
+<script>
+    var id_asset = {{ page.asset.id }};
+</script>
+
 <ul class="nav nav-tabs" id=tab-nav-detail" role="tablist">
     <li class="nav-item">
         <a class="nav-link active" id="tab-main" data-toggle="tab" href="#tab-panel-main" role="tab">Main</a>
@@ -107,14 +120,14 @@
 
 
     <input type="hidden" name="id_folder" value="{{ page.id_folder }}">
-    <input type="hidden" name="qc/state" value="{{ page.asset["qc/state"] }}">
+    <input type="hidden" id="input-form-qc-state" name="qc/state" value="{{ page.asset["qc/state"] }}">
     {% if page.asset.status == 0 %}
         <input id="input-form-duration" type="hidden" name="duration" value="{{ page.asset["duration"] | s2tc(page.asset.fps) }}">
     {% endif %}
 
 
 
-    {% for key, key_config in page.meta_set %}
+    {% for key, key_config in page.main_keys %}
         <div class="form-group row">
 
             <label for="input-key-{{ loop.index }}" class="col-sm-2 col-form-label">

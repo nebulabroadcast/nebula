@@ -30,7 +30,6 @@ class ViewPassReset(CherryAdminView):
     def build(self, *args, **kwargs):
         self["name"] = "passreset"
         self["title"] = "Password reset"
-        self["js"] = []
         self["mode"] = "email-entry"
 
         #
@@ -67,7 +66,7 @@ class ViewPassReset(CherryAdminView):
                     "site_name" : config["site_name"],
                     "hub_url" : config.get(
                             "hub_url",
-                            "https://{}.nebulabroadcast.com".format(config["site_name"])
+                            "https://{}.nbla.cloud".format(config["site_name"])
                         ),
                     "token" : token
                 }
@@ -139,4 +138,3 @@ class ViewPassReset(CherryAdminView):
 
             self["mode"] = "pass-entry"
             return
-
