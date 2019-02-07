@@ -1,12 +1,13 @@
-#
-# Changes order of items in bin/rundown, creates new items from assets
-#
 
 from nx import *
 
 __all__ = ["api_order"]
 
 def api_order(**kwargs):
+    """
+    Changes order of items in bin/rundown, creates new items from assets
+    """
+
     id_channel = kwargs.get("id_channel", 0)
     id_bin = kwargs.get("id_bin", False)
     order  = kwargs.get("order", [])

@@ -1,14 +1,23 @@
-#
-# Relays commands to "play" service
-#
-
-import requests
+__all__ = ["api_playout"]
 
 from nx import *
 
-__all__ = ["api_playout"]
+import requests
+
+try:
+    import eventlet
+except ImportError:
+    has_eventlet = False
+else:
+    has_eventlet = True
+    eventlet.monkey_patch()
+
 
 def api_playout(**kwargs):
+    """
+    Relays commands to "play" service
+    """
+
     user = kwargs.get("user", anonymous)
     if not user:
         return NebulaResponse(ERROR_UNAUTHORISED)
@@ -24,6 +33,7 @@ def api_playout(**kwargs):
 
     if not action in ["cue", "take", "abort", "freeze", "retake", "plugin_list", "plugin_exec", "stat", "recover"]:
         return NebulaResponse(ERROR_BAD_REQUEST, "Unsupported action {}".format(action))
+
     channel_config = config["playout_channels"][id_channel]
 
     controller_url = "http://{}:{}".format(
@@ -31,11 +41,17 @@ def api_playout(**kwargs):
             channel_config.get("controller_port", 42100)
         )
 
-    kwargs["user"] = user.meta
+    if "user" in kwargs:
+        del(kwargs["user"])
 
     try:
-        response = requests.post(controller_url + "/" + action, data=kwargs)
+        if has_eventlet:
+            with eventlet.Timeout(1):
+                response = requests.post(controller_url + "/" + action, timeout=4, data=kwargs)
+        else:
+            response = requests.post(controller_url + "/" + action, timeout=4, data=kwargs)
     except Exception:
+        log_traceback()
         return NebulaResponse(ERROR_BAD_GATEWAY," Unable to connect playout service")
 
     if response.status_code >= 400:

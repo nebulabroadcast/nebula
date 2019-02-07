@@ -1,6 +1,3 @@
-#
-# WORK IN PROGRESS
-#
 import psycopg2
 
 from nx import *

@@ -104,4 +104,3 @@ def api_set(**kwargs):
         bin_refresh(affected_bins, db=db)
 
     return NebulaResponse(200, data=changed_objects)
-

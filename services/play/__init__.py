@@ -9,6 +9,10 @@ from .request_handler import *
 from .caspar_controller import *
 from .plugins import *
 
+DEFAULT_STATUS = {
+        "status" : OFFLINE,
+        }
+
 class Service(BaseService):
     def on_init(self):
         if not config["playout_channels"]:
@@ -36,6 +40,8 @@ class Service(BaseService):
         self.current_live = False
         self.cued_live = False
         self.auto_event = 0
+
+        self.status_key = "playout_status/{}".format(self.id_channel)
 
         self.plugins = PlayoutPlugins(self)
         self.controller = CasparController(self)
@@ -95,10 +101,10 @@ class Service(BaseService):
             return NebulaResponse(400, "Unable to cue virtual {}".format(item))
 
         asset = item.asset
-        playout_path = asset.get_playout_full_path(self.id_channel)
+        playout_status = asset.get(self.status_key, DEFAULT_STATUS)["status"]
 
-        if not os.path.exists(playout_path):
-            return NebulaResponse(404, "Unable to cue. Playout path {} does not exist".format(playout_path))
+        if playout_status not in [ONLINE, CREATING, UNKNOWN]:
+            return NebulaResponse(404, "Unable to cue {} playout file ".format(get_object_state_name(playout_status)))
 
         kwargs["mark_in"] = item["mark_in"]
         kwargs["mark_out"] = item["mark_out"]
@@ -205,6 +211,7 @@ class Service(BaseService):
         data["request_time"]  = self.controller.request_time
         data["paused"]        = self.controller.paused
         data["stopped"]       = self.controller.stopped
+        data["cueing"]        = self.controller.cueing
         data["id_event"]      = self.current_event.id if self.current_event else False
         data["fps"]           = self.fps
 
@@ -218,12 +225,6 @@ class Service(BaseService):
 
         for plugin in self.plugins:
             plugin.main()
-
-#        if self.controller.current_item and (not self.controller.cued_item) and (not self.controller.cueing):  # and not channel._next_studio and not channel._now_studio:
-#            self.cue_next()
-
-#        if channel.stopped and channel._next_studio and channel._next_studio == channel.cued_item:
-#            self.on_studio_enter(channel)
 
 
     def on_change(self):

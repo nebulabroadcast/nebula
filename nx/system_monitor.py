@@ -28,7 +28,7 @@ def update_host_info():
 
     status = {
             "cpu" : psutil.cpu_percent(),
-            "mem" : [mem.total, mem.free],
+            "mem" : [mem.total, mem.available],
             "swp" : [swp.total, swp.free],
             "stor" : stor
         }

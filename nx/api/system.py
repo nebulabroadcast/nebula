@@ -1,21 +1,20 @@
-#
-# Returns system status and controls services
-#
-# Arguments:
-#
-# request       list of information to show.
-#               defaults to everything ["services", "hosts"]
-# stop          stop service by its ID
-# start         start service by its ID
-# kill          kill service by its ID
-# set_autostart toggle service autostart param (True/False)
-#
 
 from nx import *
 
 __all__ = ["api_system"]
 
 def api_system(**kwargs):
+    """
+    Returns system status and controls services
+    Arguments:
+
+    request       list of information to show.
+                  defaults to everything ["services", "hosts"]
+    stop          stop service by its ID
+    start         start service by its ID
+    kill          kill service by its ID
+    set_autostart toggle service autostart param (True/False)
+    """
 
     user = kwargs.get("user", anonymous)
     if not user:

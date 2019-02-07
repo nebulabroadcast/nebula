@@ -56,7 +56,6 @@ class ServerObject(BaseObject):
                 self.meta = json.loads(cache_data)
                 return True
         except Exception:
-            log_traceback()
             pass
         logging.debug("Loading {} ID:{} from DB".format(self.__class__.__name__, id))
         self.db.query("SELECT meta FROM {} WHERE id = {}".format(self.table_name, id))

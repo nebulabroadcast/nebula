@@ -75,7 +75,6 @@ def get_bin_first_item(id_bin, db=False):
 
 def get_item_event(id_item, **kwargs):
     db = kwargs.get("db", DB())
-    lcache = kwargs.get("cahce", cache)
     #TODO: Use db mogrify
     db.query("""SELECT e.id, e.meta FROM items AS i, events AS e WHERE e.id_magic = i.id_bin AND i.id = {} and e.id_channel in ({})""".format(
         id_item,
@@ -88,7 +87,7 @@ def get_item_event(id_item, **kwargs):
 
 def get_item_runs(id_channel, from_ts, to_ts, db=False):
     db = db or DB()
-    db.query("SELECT id_item, start, stop FROM asrun WHERE start >= %s and start < %s ORDER BY start ASC", [int(from_ts), int(to_ts)] )
+    db.query("SELECT id_item, start, stop FROM asrun WHERE start >= %s and start < %s ORDER BY start DESC", [int(from_ts), int(to_ts)] )
     result = {}
     for id_item, start, stop in db.fetchall():
         result[id_item] = (start, stop)
@@ -105,9 +104,8 @@ def get_next_item(item, **kwargs):
         logging.error("Unexpected get_next_item argument {}".format(item))
         return False
 
-    lcache = kwargs.get("cache", cache)
-    logging.debug("Looking for item following {}".format(item))
-    current_bin = Bin(current_item["id_bin"], db=db, cache=lcache)
+    logging.debug("Looking for item following {}".format(current_item))
+    current_bin = Bin(current_item["id_bin"], db=db)
 
     for item in current_bin.items:
         if item["position"] > current_item["position"]:
@@ -123,13 +121,13 @@ def get_next_item(item, **kwargs):
             item.asset
             return item
     else:
-        current_event = get_item_event(item.id, db=db, cache=lcache)
+        current_event = get_item_event(item.id, db=db)
         db.query(
                 "SELECT meta FROM events WHERE id_channel = %s and start > %s ORDER BY start ASC LIMIT 1",
                 [current_event["id_channel"], current_event["start"]]
             )
         try:
-            next_event = Event(meta=db.fetchall()[0][0], db=db, cache=lcache)
+            next_event = Event(meta=db.fetchall()[0][0], db=db)
             if not next_event.bin.items:
                 logging.debug("Next playlist is empty")
                 raise Exception

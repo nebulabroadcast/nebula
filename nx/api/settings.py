@@ -2,8 +2,6 @@
 # Returns system settins
 #
 
-import copy
-
 from nx import *
 
 __all__ = ["api_settings"]
@@ -11,15 +9,25 @@ __all__ = ["api_settings"]
 def api_settings(**kwargs):
     if not kwargs.get("user", None):
         return NebulaResponse(ERROR_UNAUTHORISED)
-
-    data = copy.deepcopy(config)
+    data = {}
     for key in [
-            "db_host",
-            "db_port",
-            "db_user",
-            "db_pass",
-            "db_name"
-        ]:
-        if key in data:
-            del(data[key])
+            "actions",
+            "cs",
+            "folders",
+            "ingest_channels",
+            "meta_types",
+            "playout_channels",
+            "proxy_url",
+            "services",
+            "seismic_addr",
+            "seismic_port",
+            "site_name",
+            "views"
+            ]:
+        if key in config:
+            data[key] = config[key]
+
+    data["storages"] = {}
+    for k in config["storages"]:
+        data["storages"][k] = {"title" : config["storages"][k]["title"]}
     return NebulaResponse(200, data=data)

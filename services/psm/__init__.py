@@ -15,20 +15,34 @@ DEFAULT_STATUS = {
 
 def get_scheduled_assets(id_channel, **kwargs):
     db = kwargs.get("db", DB())
-    start = kwargs.get("start_time", time.time() - 3600*12)
-    stop  = kwargs.get("end_time", time.time() + (3600*72))
+    playout_config = config["playout_channels"][id_channel]
+    id_action = playout_config.get("send_action", False)
+    if not id_action:
+        return []
+    #TODO: Why DISTINCT does not DISTINCT?
     db.query("""
-            SELECT DISTINCT(i.id_asset), a.meta FROM events as e, items as i, assets as a
-            WHERE e.id_channel = %s
-            AND a.id = i.id_asset
-            AND e.start > %s
-            AND e.start < %s
-            AND i.id_bin = e.id_magic
-            AND i.id_asset > 0""",
-            [id_channel, start, stop]
+            SELECT
+                DISTINCT (i.id_asset),
+                ABS(e.start - extract(epoch from now())) AS dist,
+                a.meta
+            FROM
+                events as e, items as i, assets as a
+            WHERE
+                    e.start > extract(epoch from now()) - 86400*7
+                AND e.id_channel = %s
+                AND a.id = i.id_asset
+                AND i.id_bin = e.id_magic
+                AND i.id_asset > 0
+            ORDER BY
+                dist ASC
+            """, [id_channel]
         )
-    for id, meta, in db.fetchall():
-        yield Asset(meta=meta, db=db)
+    ids = []
+    for id, dist, meta in db.fetchall():
+        if id in ids:
+            continue
+        ids.append(id)
+        yield Asset(meta=meta, db=db), dist < 86400
 
 
 def check_file_validity(asset, id_channel):
@@ -66,7 +80,7 @@ class PlayoutStorageTool(object):
             return
         storage_path = storage.local_path
 
-        for asset in get_scheduled_assets(self.id_channel, db=db):
+        for asset, scheduled in get_scheduled_assets(self.id_channel, db=db):
             old_status = asset.get(self.status_key, DEFAULT_STATUS)
 
             # read playout file props
@@ -83,7 +97,14 @@ class PlayoutStorageTool(object):
                 file_size = file_mtime = 0
 
 
-            file_status = [OFFLINE, ONLINE][file_exists]
+            if file_exists:
+                if file_size:
+                    file_status = ONLINE
+                else:
+                    file_status = CORRUPTED
+            else:
+                file_status = OFFLINE
+
 
             ostatus = old_status.get("status", OFFLINE)
             omtime = old_status.get("mtime", 0)
@@ -93,21 +114,19 @@ class PlayoutStorageTool(object):
             now = time.time()
 
             # if file changed, check using ffprobe
-            if omtime != file_mtime or osize != file_size:
-                if file_exists:
+            if file_status == ONLINE:
+                if omtime != file_mtime or osize != file_size:
                     file_status, duration = check_file_validity(asset, self.id_channel)
-                else:
-                    file_status = OFFLINE
 
-            elif file_status == ONLINE:
-                if ostatus == CREATING:
-                    if now - file_mtime > 10 and omtime == file_mtime:
-                        file_status = ONLINE
-                    else:
-                        file_status = CREATING
-                elif ostatus == UNKNOWN:
-                    if now - file_mtime > 10:
-                        file_status = CORRUPTED
+                else:
+                    if ostatus == CREATING:
+                        if now - file_mtime > 10 and omtime == file_mtime:
+                            file_status = ONLINE
+                        else:
+                            file_status = CREATING
+                    elif ostatus == UNKNOWN:
+                        if now - file_mtime > 10:
+                            file_status = CORRUPTED
 
 
             if ostatus != file_status or omtime != file_mtime or osize != file_size:
@@ -125,7 +144,7 @@ class PlayoutStorageTool(object):
                         }
                 asset.save()
 
-            if file_status not in [ONLINE, CREATING] and self.send_action and asset["status"] == ONLINE:
+            if file_status not in [ONLINE, CREATING, CORRUPTED] and self.send_action and asset["status"] == ONLINE and scheduled:
                 result = send_to(
                         asset.id,
                         self.send_action,

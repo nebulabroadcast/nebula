@@ -25,6 +25,7 @@ class PlayoutPlugins(object):
 
             if not os.path.exists(plugin_path):
                 logging.error("Plugin {} does not exist".format(plugin_name))
+                continue
 
             try:
                 py_mod = imp.load_source(plugin_name, plugin_path)

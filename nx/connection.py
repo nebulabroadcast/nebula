@@ -92,6 +92,9 @@ class Cache():
         except pylibmc.ConnectionError:
             self.connect()
             result = False
+        except ValueError:
+#            logging.warning("Unable to read key {} from cache".format(key))
+            result = False
         return result
 
     def save(self, key, value):

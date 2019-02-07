@@ -13,12 +13,25 @@ class WebTools():
         if not plugin_path:
             return
         tooldir = os.path.join(plugin_path, "webtools")
-        for plugin_path in get_files(tooldir,recursive=False, hidden=False, exts=["py"]):
+        if not os.path.isdir(tooldir):
+            return
+        for plugin_entry in os.listdir(tooldir):
+            entry_path = os.path.join(tooldir, plugin_entry)
+            if os.path.isdir(entry_path):
+                plugin_path = os.path.join(entry_path, plugin_entry + ".py")
+                if not os.path.exists(plugin_path):
+                    continue
+            elif not os.path.splitext(plugin_entry)[1] == ".py":
+                continue
+            else:
+                plugin_path = os.path.join(tooldir, plugin_entry)
+
+            plugin_path = FileObject(plugin_path)
             plugin_name = plugin_path.base_name
             try:
                 py_mod = imp.load_source(plugin_name, plugin_path.path)
             except Exception:
-                log_traceback("Unable to load plugin {}".format(plugin_name))
+                log_traceback("Unable to load plugin {} ({})".format(plugin_name, plugin_path))
                 continue
 
             if not "Plugin" in dir(py_mod):
@@ -30,6 +43,7 @@ class WebTools():
                 title = Plugin.title
             else:
                 title = plugin_name.capitalize()
+            logging.info("Loaded plugin {} ({})".format(plugin_name, plugin_path))
             self.tools[plugin_name] = [Plugin, title]
 
 

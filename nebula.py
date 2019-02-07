@@ -48,6 +48,7 @@ if __name__ == "__main__":
     from nx.service_monitor import ServiceMonitor
     from nx.system_monitor import SystemMonitor
 
+
     def are_running(agents):
         for agent in agents:
             if agent.is_running:
@@ -75,9 +76,31 @@ if __name__ == "__main__":
 
     while True:
         try:
-            time.sleep(1)
+
+            cron_target = "/etc/cron.d/nebula"
+            delcron = True
+            # Update crontab
+            if plugin_path:
+                cron_source = os.path.join(plugin_path, "cron", config["host"])
+                if os.path.exists(cron_source):
+                    delcron = False
+                    if not os.path.isdir("/etc/cron.d"):
+                        os.makedirs("/etc/cron.d")
+                    if (not os.path.exists(cron_target)) or os.path.getmtime(cron_target) < os.path.getmtime(cron_source):
+                        logging.info("Installing new crontab")
+                        src = open(cron_source).read()
+                        with open(cron_target, "w") as f:
+                            f.write(src)
+            if delcron and os.path.exists(cron_target):
+                logging.info("Removing crontab")
+                os.remove(cron_target)
+
+            time.sleep(10)
         except KeyboardInterrupt:
             break
+        except Exception:
+            log_traceback()
+            time.sleep(10)
 
     print()
     try:

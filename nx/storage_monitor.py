@@ -50,7 +50,7 @@ class StorageMonitor(BaseAgent):
                     storage_status[id_storage] = [False, 240, time.time()]
                     continue
 
-            self.mount(storage["protocol"], storage["path"], storage.local_path, storage["login"], storage["password"])
+            self.mount(storage)
 
             if ismount(storage.local_path):
                 logging.goodnews("{} mounted successfully".format(storage))
@@ -66,18 +66,34 @@ class StorageMonitor(BaseAgent):
             storage_status[id_storage][2] = time.time()
 
 
-    def mount(self, protocol, source, destination, username="", password=""):
-        if protocol == "samba":
-            if username and password:
-                credentials = "user="+username+",pass="+password
-            else:
-                credentials = ""
-            host = source.split("/")[2]
+    def mount(self, storage):
+        if storage["protocol"] == "samba":
+            smbopts = {}
+            if storage.get("login"):
+                smbopts["user"] = storage["login"]
+            if storage.get("password"):
+                smbopts["pass"] = storage["password"]
+            smbver = storage.get("samba_version", "3.0")
+            if smbver:
+                smbopts["vers"] = smbver
+
+            host = storage["path"].split("/")[2]
             executable = "mount.cifs"
-            cmd = "mount.cifs {} {} -o '{}'".format(source, destination, credentials)
+            if smbopts:
+                opts = " -o '{}'".format(",".join(
+                        ["{}={}".format(k, smbopts[k]) for k in smbopts]
+                    ))
+            else:
+                opts = ""
+
+            cmd = "mount.cifs {} {}{}".format(storage["path"], storage.local_path, opts)
+
+
         elif protocol == NFS:
             executable = "mount.nfs"
-            cmd = "mount.nfs {} {}".format(source, destination)
+            cmd = "mount.nfs {} {}".format(storage["path"], storage.local_path)
+
+
         else:
             return
         c = Shell(cmd)

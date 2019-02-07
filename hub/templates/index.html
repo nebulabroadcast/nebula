@@ -28,14 +28,12 @@
     <div class="panel panel-default">
         <div class="panel-heading">Storage utilization</div>
         <div class="panel-body">
-
             <div class="list-group">
                 {% for storage in page.storages %}
                 <div class="list-group-item">
                     <div class="row-content">
-                        <h4 class="list-group-item-heading">{{ storage.title }}</h4>
                         <p class="list-group-item-text">
-                        <small>{{ storage["free"] | filesizeformat }} of {{ storage["total"] | filesizeformat }} free.</small>
+                             <b>{{ storage.title }}</b> : {{ storage["free"] | filesizeformat }} of {{ storage["total"] | filesizeformat }} free.</small>
                         </p>
                         <div class="progress">
                             <div class="progress-bar" style="width:{{ 100*((storage["total"]-storage["free"])/storage["total"] ) }}%"></div>
@@ -44,47 +42,42 @@
                 </div>
                 {% endfor %}
             </div>
-
         </div>
     </div>
 </div>
 
+</div>
 
+
+<hr>
+
+<div class="row">
+{% for hostname in page.hosts %}{% set host = page.hosts[hostname] %}
 <div class="col">
     <div class="panel panel-default">
-        <div class="panel-heading">Performance</div>
-
-            <div class="list-group">
-                {% for hostname in page.hosts %}{% set host = page.hosts[hostname] %}
-                <div class="list-group-item">
-                    <div class="row-content">
-                        <h4 class="list-group-item-heading">{{ hostname }}</h4>
-                        <p class="list-group-item-text">
-                            <small>CPU</small>
-                            <div class="progress">
-                                <div class="progress-bar" style="width : {{ host.cpu }}%"></div>
-                            </div>
-                        </p>
-                        <p class="list-group-item-text">
-                        <small>MEM ({{ host.mem_free | filesizeformat }} of {{ host.mem_total | filesizeformat }} free)</small>
-                            <div class="progress">
-                                <div class="progress-bar" style="width : {{ 100*((host.mem_total - host.mem_free) / host.mem_total) }}%"></div>
-                            </div>
-                        </p>
-                        <p class="list-group-item-text">
-                            <small>SWP ({{ host.swp_free | filesizeformat }} of {{ host.swp_total | filesizeformat }} free)</small>
-                            <div class="progress">
-                                <div class="progress-bar" style="width : {{ 100*((host.swp_total - host.swp_free) / host.swp_total) }}%"></div>
-                            </div>
-                        </p>
-                    </div>
-                </div>
-                {% endfor %}
+        <div class="panel-heading">{{ hostname }}</div>
+        <p class="list-group-item-text">
+            <small>CPU</small>
+            <div class="progress">
+                <div class="progress-bar" style="width : {{ host.cpu }}%"></div>
             </div>
-
-
+        </p>
+        <p class="list-group-item-text">
+        <small>MEM ({{ host.mem_free | filesizeformat }} of {{ host.mem_total | filesizeformat }} free)</small>
+            <div class="progress">
+                <div class="progress-bar" style="width : {{ 100*((host.mem_total - host.mem_free) / host.mem_total) }}%"></div>
+            </div>
+        </p>
+        <p class="list-group-item-text">
+            <small>SWP ({{ host.swp_free | filesizeformat }} of {{ host.swp_total | filesizeformat }} free)</small>
+            <div class="progress">
+                <div class="progress-bar" style="width : {{ 100*((host.swp_total - host.swp_free) / host.swp_total) }}%"></div>
+            </div>
+        </p>
     </div>
 </div>
+{% endfor %}
+
 </div>
 
 {% endblock %}
