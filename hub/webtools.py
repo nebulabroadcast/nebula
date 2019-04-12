@@ -12,26 +12,26 @@ class WebTools():
         global plugin_path
         if not plugin_path:
             return
-        tooldir = os.path.join(plugin_path, "webtools")
+        tooldir = os.path.join(str(plugin_path), "webtools")
         if not os.path.isdir(tooldir):
             return
         for plugin_entry in os.listdir(tooldir):
             entry_path = os.path.join(tooldir, plugin_entry)
             if os.path.isdir(entry_path):
-                plugin_path = os.path.join(entry_path, plugin_entry + ".py")
-                if not os.path.exists(plugin_path):
+                plugin_module_path = os.path.join(entry_path, plugin_entry + ".py")
+                if not os.path.exists(plugin_module_path):
                     continue
             elif not os.path.splitext(plugin_entry)[1] == ".py":
                 continue
             else:
-                plugin_path = os.path.join(tooldir, plugin_entry)
+                plugin_module_path = os.path.join(tooldir, plugin_entry)
 
-            plugin_path = FileObject(plugin_path)
-            plugin_name = plugin_path.base_name
+            plugin_module_path = FileObject(plugin_module_path)
+            plugin_name = plugin_module_path.base_name
             try:
-                py_mod = imp.load_source(plugin_name, plugin_path.path)
+                py_mod = imp.load_source(plugin_name, plugin_module_path.path)
             except Exception:
-                log_traceback("Unable to load plugin {} ({})".format(plugin_name, plugin_path))
+                log_traceback("Unable to load plugin {} ({})".format(plugin_name, plugin_module_path))
                 continue
 
             if not "Plugin" in dir(py_mod):
@@ -43,13 +43,13 @@ class WebTools():
                 title = Plugin.title
             else:
                 title = plugin_name.capitalize()
-            logging.info("Loaded plugin {} ({})".format(plugin_name, plugin_path))
+            logging.info("Loaded plugin {} ({})".format(plugin_name, plugin_module_path))
             self.tools[plugin_name] = [Plugin, title]
 
 
     @property
     def links(self):
-        return [[k, self.tools[k][1]] for k in sorted(self.tools.keys())]
+        return [[k, self.tools[k][1]] for k in sorted(self.tools.keys()) if self.tools[k][0].gui]
 
 
 webtools = WebTools()

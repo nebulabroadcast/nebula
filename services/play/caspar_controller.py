@@ -127,7 +127,7 @@ class CasparController(object):
 #        self.recovery_time = time.time()
 
         if cued_fname and (not self.paused) and (info["pos"] == self.fpos) and (not self.stopped) and not self.parent.current_live and self.cued_item and (not self.cued_item["run_mode"]):
-            if self.stalled > time.time() - 2:
+            if self.stalled > time.time() - 4:
                 logging.warning("Taking stalled clip (pos: {})".format(self.fpos))
                 self.take()
             elif not self.stalled:
@@ -139,18 +139,12 @@ class CasparController(object):
         self.fpos = info["pos"]
         self.fdur = info["dur"]
 
+
         #
         # Playlist advancing
         #
 
         advanced = False
-
-#        print("***************", self.cueing)
-#        print("current (is):", current_fname)
-#        print("current (should):", self.current_fname, self.current_item)
-#        print("cued (is):", cued_fname)
-#        print("cued (should):", self.cued_fname, self.cued_item)
-
 
         if self.cueing and self.cueing == current_fname and not cued_fname and not self.parent.cued_live:
             logging.warning("Using short clip workaround")
@@ -163,7 +157,6 @@ class CasparController(object):
             self.cued_item = False
             self.cueing = False
             self.cued_fname = False
-
 
         elif (not cued_fname) and (current_fname) and not self.parent.cued_live:
             if current_fname == self.cued_fname:
@@ -186,7 +179,10 @@ class CasparController(object):
             self.parent.on_live_enter()
 
         if advanced:
-            self.parent.on_change()
+            try:
+                self.parent.on_change()
+            except Exception:
+                log_traceback("Playout on_change failed")
 
         if self.current_item and not self.cued_item and not self.cueing:
             self.parent.cue_next()
@@ -209,7 +205,10 @@ class CasparController(object):
             self.cued_item = False
 
 
-        self.parent.on_progress()
+        try:
+            self.parent.on_progress()
+        except Exception:
+            log_traceback("Playout on_main failed")
         self.current_fname = current_fname
         self.cued_fname = cued_fname
 
@@ -218,14 +217,17 @@ class CasparController(object):
         auto       = kwargs.get("auto", True)
         layer      = kwargs.get("layer", self.parent.caspar_feed_layer)
         play       = kwargs.get("play", False)
+        loop       = kwargs.get("loop", False)
         mark_in    = item.mark_in()
         mark_out   = item.mark_out()
 
         marks = ""
-        if mark_in and mark_out > 0:
-            marks += " SEEK {}".format(int(float(mark_in) * self.parser.seek_fps))
+        if loop:
+            marks += " LOOP"
+        if mark_in:
+            marks += " SEEK {}".format(int(mark_in * self.parser.seek_fps))
         if mark_out and mark_out < item["duration"] and mark_out > mark_in:
-            marks += " LENGTH {}".format(int((float(mark_out) - float(mark_in)) * self.parser.seek_fps))
+            marks += " LENGTH {}".format(int((mark_out - mark_in) * self.parser.seek_fps))
 
         if play:
             q = "PLAY {}-{} {}{}".format(

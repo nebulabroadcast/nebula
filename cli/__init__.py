@@ -5,6 +5,7 @@ import cli.a
 import cli.s
 import cli.j
 import cli.t
+import cli.l
 
 __all__ = ["modules"]
 
@@ -15,5 +16,6 @@ modules = {
         "a" : a.a,
         "s" : s.s,
         "j" : j.j,
-        "t" : t.t
+        "t" : t.t,
+        "l" : l.l
     }

@@ -67,4 +67,4 @@ def do_import(self, fname, asset):
     except:
         pass
 
-    logging.goodnews("Import {} completed".format(asset))
+    logging.goodnews("Import transcoding {} completed".format(asset))

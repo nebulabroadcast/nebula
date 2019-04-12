@@ -59,8 +59,6 @@ def version_backup(asset):
         logging.warning("Unable to create version backup of {}".format(asset))
 
 
-
-
 def do_import(parent, import_file, asset):
     probe = mediaprobe(import_file)
     match = True
@@ -92,7 +90,6 @@ def do_import(parent, import_file, asset):
 
         themis.add_output(asset.file_path, **parent.profile)
 
-
         if themis.start():
             backup_path = os.path.join(
                     storages[parent.import_storage].local_path,
@@ -108,6 +105,15 @@ def do_import(parent, import_file, asset):
             logging.error("{} import failed".format(asset))
             mk_error(import_file, "Import failed")
 
+    allkeys = list(asset.meta)
+    for key in allkeys:
+        if meta_types[key]["ns"] in ["q", "f"]:
+            del(asset.meta[key])
+    asset["status"] = CREATING
+
+    asset.save()
+
+    logging.goodnews("Import {} completed".format(asset))
 
 
 

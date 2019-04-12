@@ -94,7 +94,7 @@ def api_schedule(**kwargs):
                 for key in meta_types:
                     if meta_types[key]["ns"] != "m":
                         continue
-                    if asset[key]:
+                    if key in asset.meta:
                         event[key] = asset[key]
 
         for key in event_data:

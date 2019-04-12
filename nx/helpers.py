@@ -90,12 +90,14 @@ def get_item_runs(id_channel, from_ts, to_ts, db=False):
     db.query("SELECT id_item, start, stop FROM asrun WHERE start >= %s and start < %s ORDER BY start DESC", [int(from_ts), int(to_ts)] )
     result = {}
     for id_item, start, stop in db.fetchall():
-        result[id_item] = (start, stop)
+        if not id_item in result:
+            result[id_item] = (start, stop)
     return result
 
 
 def get_next_item(item, **kwargs):
     db = kwargs.get("db", DB())
+    force = kwargs.get("force", False)
     if type(item) == int and item > 0:
         current_item = Item(item, db=db)
     elif isinstance(item, Item):
@@ -107,9 +109,13 @@ def get_next_item(item, **kwargs):
     logging.debug("Looking for item following {}".format(current_item))
     current_bin = Bin(current_item["id_bin"], db=db)
 
-    for item in current_bin.items:
-        if item["position"] > current_item["position"]:
-            if item["item_role"] == "lead_out":
+    items = current_bin.items
+    if force == "prev":
+        items.reverse()
+
+    for item in items:
+        if (force == "prev" and item["position"] < current_item["position"]) or (force != "prev" and item["position"] > current_item["position"]):
+            if item["item_role"] == "lead_out" and not force:
                 logging.info("Cueing Lead In")
                 for i, r in enumerate(current_bin.items):
                     if r["item_role"] == "lead_in":
@@ -118,12 +124,19 @@ def get_next_item(item, **kwargs):
                     next_item = current_bin.items[0]
                     next_item.asset
                     return next_item
+            if item["run_mode"] == RUN_SKIP:
+                continue
             item.asset
             return item
     else:
         current_event = get_item_event(item.id, db=db)
+        direction = ">"
+        order = "ASC"
+        if force == "prev":
+            direction = "<"
+            order = "DESC"
         db.query(
-                "SELECT meta FROM events WHERE id_channel = %s and start > %s ORDER BY start ASC LIMIT 1",
+                "SELECT meta FROM events WHERE id_channel = %s and start {} %s ORDER BY start {} LIMIT 1".format(direction, order),
                 [current_event["id_channel"], current_event["start"]]
             )
         try:
@@ -134,7 +147,10 @@ def get_next_item(item, **kwargs):
             if next_event["run_mode"] and not kwargs.get("force_next_event", False):
                 logging.debug("Next playlist run mode is not auto")
                 raise Exception
-            next_item = next_event.bin.items[0]
+            if force == "prev":
+                next_item = next_event.bin.items[-1]
+            else:
+                next_item = next_event.bin.items[0]
             next_item.asset
             return next_item
         except Exception:

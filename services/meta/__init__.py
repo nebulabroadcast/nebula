@@ -152,7 +152,7 @@ class Service(BaseService):
                     message='Restarting after source update'
                 WHERE
                     id_asset=%s
-                    AND status IN (1,2,3,4)
+                    AND status IN (1,2,3,4,6)
                 RETURNING id
                 """,
                     [time.time(), asset.id]

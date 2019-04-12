@@ -155,7 +155,7 @@ class Service(BaseService):
             if message.method != "log":
                 self.relay_message(message.json)
 
-            if self.log_dir and message.method == "log":
+            elif self.log_dir:
                 log = format_log_message(message)
                 if not log:
                     continue

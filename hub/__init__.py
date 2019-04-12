@@ -92,6 +92,7 @@ hub_config = {
         "page_context_helper" : page_context_helper,
         "user_context_helper" : user_context_helper,
         "sessions_dir" : os.path.join("/tmp", config["site_name"] + "-sessions"),
+        "sessions_timeout" : 60*24*120,
         "blocking" : True,
         "minify_html" : True,
         "views" : {

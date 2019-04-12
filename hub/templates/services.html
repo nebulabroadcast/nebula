@@ -33,5 +33,12 @@
         {% endfor %}
     </tbody>
 </table>
+
+{% if user.is_admin %}
+<div class="text-center">
+    <a href="/services/reload_settings">Reload system settings</a>
+</div>
+{% endif %}
+
 {% endblock %}
 

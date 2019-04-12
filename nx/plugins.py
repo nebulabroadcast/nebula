@@ -64,6 +64,10 @@ class PlayoutPlugin(object):
     def __init__(self, service):
         self.service = service
         self.id_layer = self.service.caspar_feed_layer + 1
+        self.playout_dir = os.path.join(
+                storages[self.channel_config["playout_storage"]].local_path,
+                self.channel_config["playout_dir"]
+            )
         self.slots = []
         self.tasks = []
         self.on_init()
@@ -273,10 +277,14 @@ class SolverPlugin(object):
 
 
 class WebToolPlugin(object):
+    gui = True
+    native = True
+    public = False
+
     def __init__(self, view, name):
-        self.native = True
         self.view = view
         self.name = name
+        self["name"] = self.title
 
     def render(self, template):
         import jinja2

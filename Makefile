@@ -1,5 +1,5 @@
 .PHONY: install uninstall
-SYMLINKS = /usr/bin/nxa /usr/bin/nxt /usr/bin/nxs
+SYMLINKS = /usr/bin/nxa /usr/bin/nxt /usr/bin/nxs /usr/bin/nxl
 
 install : $(SYMLINKS)
 

@@ -45,6 +45,9 @@ def api_order(**kwargs):
                 item.meta.update(meta)
             else:
                 item = Item(id_object, db=db)
+                if not item["id_bin"]:
+                    logging.error("Inserting asset data {} {} {} to item. This should never happen".format(object_type, id_object, meta))
+                    continue
 
                 if not item:
                     logging.debug("Skipping {}".format(item))
@@ -55,17 +58,26 @@ def api_order(**kwargs):
 
         elif object_type == "asset":
             asset = Asset(id_object, db=db)
+            if not asset:
+                logging.error("Unable to append {} {} {}. Asset does not exist".format(object_type, id_object, meta))
+                continue
             try:
                 can_append = eval(append_cond)
             except Exception:
                 log_traceback("Unable to evaluate rundown accept condition: {}".format(append_cond))
                 continue
-            if not asset or not can_append:
+            if not can_append:
+                logging.error("Unable to append {} {} {}. Condition failed".format(object_type, id_object, meta))
                 continue
             item = Item(db=db)
+            for key in meta:
+                if key in ["id", "id_bin", "id_asset"]:
+                    continue
+                item[key] = meta[key]
             item["id_asset"] = asset.id
             item.meta.update(meta)
         else:
+            logging.error("Unable to append {} {} {}. Unexpected object".format(object_type, id_object, meta))
             continue
 
         if not item or item["position"] != pos or item["id_bin"] != id_bin:

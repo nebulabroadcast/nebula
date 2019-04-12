@@ -4,6 +4,9 @@ from nebula import *
 from cherryadmin import CherryAdminRawView
 
 class ViewTool(CherryAdminRawView):
+    def auth(self, *args, **kwargs):
+        return True
+
     def build(self, *args, **kwargs):
         self.is_raw = False
         self["name"] = "tool"
@@ -26,6 +29,10 @@ class ViewTool(CherryAdminRawView):
 
         plugin = Plugin(self, tool_name)
         self["title"] = title
+
+        if not (plugin.public or self["user"]):
+            raise cherrypy.HTTPError(403, "You are not allowed to run this tool")
+
 
         body = plugin.build(*args, **kwargs)
         if plugin.native:

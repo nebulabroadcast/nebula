@@ -123,8 +123,9 @@ def get_rundown(id_channel, start_time=False, end_time=False, db=False):
 
             item.meta["status"] = istatus
 
-            ts_scheduled += item.duration
-            ts_broadcast += item.duration
+            if item["run_mode"] != RUN_SKIP:
+                ts_scheduled += item.duration
+                ts_broadcast += item.duration
 
             event.items.append(item)
 

@@ -30,6 +30,8 @@ def get_objects(ObjectType, **kwargs):
                     raw_conds.append("{}={}".format(col, view_config[key][0]))
                 else:
                     raw_conds.append("{} IN ({})".format(col, ",".join([str(v) for v in view_config[key]])))
+        for cond in view_config.get("conds", []):
+            raw_conds.append(cond)
 
     conds = []
     for cond in raw_conds:

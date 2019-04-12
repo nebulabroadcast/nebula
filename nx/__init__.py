@@ -26,9 +26,12 @@ def load_settings(force=False):
 
     db.query("SELECT id, settings FROM storages")
 
+    config["storages"] = {}
     for id, settings in db.fetchall():
         config["storages"][id] = settings
 
+    config["playout_channels"] = {}
+    config["ingest_channels"] = {}
     db.query("SELECT id, channel_type, settings FROM channels")
     for id, channel_type, settings in db.fetchall():
         if channel_type == 0:
@@ -36,24 +39,29 @@ def load_settings(force=False):
         elif channel_type == 1:
             config["ingest_channels"][id] = settings
 
+    config["folders"] = {}
     db.query("SELECT id, settings FROM folders")
     for id, settings in db.fetchall():
         config["folders"][id] = settings
 
+    config["meta_types"] = {}
     db.query("SELECT key, settings FROM meta_types")
     for key, settings in db.fetchall():
         config["meta_types"][key] = settings
 
+    config["cs"] = {}
     db.query("SELECT cs, value, settings FROM cs")
     for cst, value, settings in db.fetchall():
         if not cst in config["cs"]:
             config["cs"][cst] = []
         config["cs"][cst].append([value, settings])
 
+    config["views"] = {}
     db.query("SELECT id, settings FROM views")
     for id, settings in db.fetchall():
         config["views"][id] = settings
 
+    config["actions"] = {}
     db.query("SELECT id, service_type, title FROM actions")
     for id, service_type, title in db.fetchall():
         config["actions"][id] = {
@@ -62,7 +70,7 @@ def load_settings(force=False):
                     "title" : title
                 }
 
-    #TODO: do we need the rest of the settings?
+    config["services"] = {}
     db.query("SELECT id, service_type, host, title FROM services")
     for id, service_type, host, title in db.fetchall():
         config["services"][id] = {

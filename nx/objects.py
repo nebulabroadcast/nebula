@@ -186,6 +186,16 @@ class Event(EventMixIn, ServerObject):
                 self._bin = Bin(self["id_magic"], db=self.db)
         return self._bin
 
+    @property
+    def asset(self):
+        if not hasattr(self, "_asset"):
+            #TODO: non-playout events (by channel_type)
+            if not self["id_asset"]:
+                self._asset = False
+            else:
+                self._asset = Asset(self["id_asset"], db=self.db)
+        return self._asset
+
 
 class User(UserMixIn, ServerObject):
     table_name = "users"

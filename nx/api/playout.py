@@ -4,15 +4,6 @@ from nx import *
 
 import requests
 
-try:
-    import eventlet
-except ImportError:
-    has_eventlet = False
-else:
-    has_eventlet = True
-    eventlet.monkey_patch()
-
-
 def api_playout(**kwargs):
     """
     Relays commands to "play" service
@@ -31,7 +22,19 @@ def api_playout(**kwargs):
     if not user.has_right("mcr", id_channel):
         return NebulaResponse(ERROR_ACCESS_DENIED, "You are not permitted to operate this channel")
 
-    if not action in ["cue", "take", "abort", "freeze", "retake", "plugin_list", "plugin_exec", "stat", "recover"]:
+    if not action in [
+            "cue",
+            "take",
+            "abort",
+            "freeze",
+            "retake",
+            "plugin_list",
+            "plugin_exec",
+            "stat",
+            "recover",
+            "cue_forward",
+            "cue_backward"
+            ]:
         return NebulaResponse(ERROR_BAD_REQUEST, "Unsupported action {}".format(action))
 
     channel_config = config["playout_channels"][id_channel]
@@ -45,11 +48,7 @@ def api_playout(**kwargs):
         del(kwargs["user"])
 
     try:
-        if has_eventlet:
-            with eventlet.Timeout(1):
-                response = requests.post(controller_url + "/" + action, timeout=4, data=kwargs)
-        else:
-            response = requests.post(controller_url + "/" + action, timeout=4, data=kwargs)
+        response = requests.post(controller_url + "/" + action, timeout=4, data=kwargs)
     except Exception:
         log_traceback()
         return NebulaResponse(ERROR_BAD_GATEWAY," Unable to connect playout service")
