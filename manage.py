@@ -24,9 +24,9 @@ if orig_dir != "/opt/nebula":
     os.chdir("/opt/nebula")
 
 from nebula import *
-from cli import *
+logging.user = "nebula"
 
-logging.user = "Manager"
+from cli import *
 
 if __name__ == "__main__":
     command = os.path.basename(sys.argv[0])

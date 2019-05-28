@@ -1,34 +1,6 @@
-import imp
-
 from nx import *
 
 __all__ = ["api_solve"]
-
-def get_solver(solver_name):
-    plugin_path = os.path.join(
-            storages[int(config.get("plugin_storage", 1))].local_path,
-            config.get("plugin_root", ".nx/scripts/v5")
-        )
-    if not os.path.exists(plugin_path):
-        return
-
-    f = FileObject(plugin_path, "solver", solver_name + ".py")
-    if f.exists:
-        try:
-            py_mod = imp.load_source(solver_name, f.path)
-        except:
-            log_traceback("Unable to load plugin {}".format(solver_name))
-            return
-    else:
-        logging.error("{} does not exist".format(f))
-        return
-
-    if not "Plugin" in dir(py_mod):
-        logging.error("No plugin class found in {}".format(f))
-        return
-    return py_mod.Plugin
-
-
 
 
 def api_solve(**kwargs):

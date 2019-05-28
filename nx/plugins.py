@@ -5,11 +5,13 @@ __all__ = [
         "WorkerPlugin",
         "ValidatorPlugin",
         "SolverPlugin",
-        "WebToolPlugin"
+        "WebToolPlugin",
+        "get_solver"
     ]
 
 import os
 import sys
+import imp
 
 from nebulacore import *
 
@@ -236,14 +238,19 @@ class SolverPlugin(object):
             self._needed_duration = dur
         return self._needed_duration
 
-    def main(self):
+    def main(self, debug=False):
         message = "Solver returned no items. Keeping placeholder."
         try:
             for new_item in self.solve():
                 self.new_items.append(new_item)
+                if debug:
+                    logging.debug("Appending {}".format(new_item.asset))
         except Exception:
             message = log_traceback()
             self.new_items = []
+
+        if debug:
+            return NebulaResponse(202)
 
         if not self.new_items:
             return NebulaResponse(501, message)
@@ -274,6 +281,35 @@ class SolverPlugin(object):
         replaces the original placeholder.
         """
         return []
+
+
+def get_solver(solver_name):
+    plugin_path = os.path.join(
+            storages[int(config.get("plugin_storage", 1))].local_path,
+            config.get("plugin_root", ".nx/scripts/v5")
+        )
+    if not os.path.exists(plugin_path):
+        return
+
+    f = FileObject(plugin_path, "solver", solver_name + ".py")
+    if f.exists:
+        try:
+            py_mod = imp.load_source(solver_name, f.path)
+        except:
+            log_traceback("Unable to load plugin {}".format(solver_name))
+            return
+    else:
+        logging.error("{} does not exist".format(f))
+        return
+
+    if not "Plugin" in dir(py_mod):
+        logging.error("No plugin class found in {}".format(f))
+        return
+    return py_mod.Plugin
+
+
+
+
 
 
 class WebToolPlugin(object):

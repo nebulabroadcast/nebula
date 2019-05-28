@@ -68,12 +68,14 @@
                 <div class="progress-bar" style="width : {{ 100*((host.mem_total - host.mem_free) / host.mem_total) }}%"></div>
             </div>
         </p>
+        {% if host.swp_total %}
         <p class="list-group-item-text">
             <small>SWP ({{ host.swp_free | filesizeformat }} of {{ host.swp_total | filesizeformat }} free)</small>
             <div class="progress">
                 <div class="progress-bar" style="width : {{ 100*((host.swp_total - host.swp_free) / host.swp_total) }}%"></div>
             </div>
         </p>
+        {% endif %}
     </div>
 </div>
 {% endfor %}

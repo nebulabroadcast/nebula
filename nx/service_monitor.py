@@ -91,6 +91,8 @@ class ServiceMonitor(BaseAgent):
             str(id_service),
             "\"{}\"".format(title)
             ]
+        if config.get("daemon_mode"):
+            proc_cmd.append("--daemon")
 
         logging.info("Starting service {} - {}".format(id_service, title))
 

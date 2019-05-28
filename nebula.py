@@ -16,8 +16,6 @@
 #    along with Nebula. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from __future__ import print_function
-
 if __name__ == "__main__":
     print ()
 

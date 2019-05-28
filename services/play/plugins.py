@@ -19,7 +19,7 @@ class PlayoutPlugins(object):
             logging.warning("Playout plugins directory does not exist")
             return
 
-        for plugin_name in self.service.channel_config["plugins"]:
+        for plugin_name in self.service.channel_config.get("plugins", []):
             plugin_file = plugin_name + ".py"
             plugin_path = os.path.join(bpath, plugin_file)
 

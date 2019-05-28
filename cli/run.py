@@ -7,8 +7,6 @@ def run(*args):
         import hub
         try:
             hub_instance = hub.CherryAdmin(**hub.hub_config)
-        except KeyboardInterrupt:
-            return
         except Exception:
             log_traceback()
             critical_error("Unhandled exception in Hub")
