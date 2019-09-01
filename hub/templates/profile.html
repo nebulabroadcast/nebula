@@ -4,8 +4,7 @@
 <div class="row">
 <div class="col">
 
-    <h2>Basics</h2>
-
+{% call macro.card('User profile', 'fas fa-user') %}
     <form action="/profile" method="POST" autocomplete="off">
 
         <div class="form-group row">
@@ -60,8 +59,6 @@
                 <button type="submit" class="btn btn-primary">Save</button>
             </div>
         </div>
-
-
     </form>
 
     {% if not user.is_admin %}
@@ -72,12 +69,13 @@
     {% endfor %}
     </ul>
     {% endif %}
+{% endcall %}
+</div> {# col #}
 
-</div>
+
 <div class="col">
 
-    <h2>Rights</h2>
-
+{% call macro.card('Access rights', 'fas fa-lock') %}
     {% if user.is_admin %}
         <p>You are an administrator of {{ site.site_name }}. You can do everything you want.</p>
     {% else %}
@@ -108,8 +106,9 @@
         </table>
 
     {% endif%}
+{% endcall %}
 
-</div>
-</div>
+</div> {# col#}
+</div> {# row #}
 {% endblock %}
 

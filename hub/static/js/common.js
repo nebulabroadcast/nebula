@@ -1,3 +1,5 @@
+$.fn.selectpicker.Constructor.BootstrapVersion = '4';
+
 (function (window, document, undefined) {
     "use strict";
     if (window.seismicNotify) {
@@ -26,18 +28,24 @@
 })(window, document);
 
 
+function show_loader(){
+    $("#loader").fadeOut("fast");
+}
+
+function hide_loader(){
+    $("#loader").fadeOut("fast");
+}
 
 $(document).ready(function(){
-    setTimeout(function() {
-        $(".alert-info").alert('close');
-        }, 2000);
-    setTimeout(function() {
-        $(".alert-warning").alert('close');
-    }, 5000);
-    setTimeout(function() {
-        $(".alert-danger").alert('close');
-    }, 10000);
+    $("a").click(function(event){
+        show_loader();
+    });
 
     $(".input-timecode").inputmask({"mask": "99:99:99:99", "insertMode" : false});
+});
 
+
+
+$(window).on("load", function() {
+    hide_loader();
 });

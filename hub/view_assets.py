@@ -1,11 +1,10 @@
 import math
+import copy
 
 from nebula import *
 from cherryadmin import CherryAdminView
 
-
 RECORDS_PER_PAGE = 100
-
 
 class ViewAssets(CherryAdminView):
     def build(self, *args, **kwargs):
@@ -13,6 +12,10 @@ class ViewAssets(CherryAdminView):
         # Query params
 
         query = kwargs.get("q", "")
+        order_key = kwargs.get("o", "id")
+        order_trend = kwargs.get("ot", "desc")
+        if order_trend != "asc":
+            order_trend = "desc"
 
         try:
             id_view = int(kwargs["v"])
@@ -26,25 +29,40 @@ class ViewAssets(CherryAdminView):
         except (KeyError, ValueError, TypeError):
             current_page = 1
 
-        if kwargs.get("lv", False) != kwargs.get("v", False) or kwargs.get("lq", False) != kwargs.get("q", False):
-            current_page = 1
-
         # Build view
 
         assets = api_get(
                 user = self["user"],
                 id_view = id_view,
                 fulltext=query or False,
-                count=True,
-                order="ctime DESC",
-                limit=RECORDS_PER_PAGE,
+                count=False,
+                order="{} {}".format(order_key, order_trend),
+                limit=RECORDS_PER_PAGE + 1,
                 offset=(current_page - 1) * RECORDS_PER_PAGE
             )
 
-        page_count = int(math.ceil(assets["count"] / RECORDS_PER_PAGE)) + 1
+
+        if len(assets["data"]) > RECORDS_PER_PAGE:
+            page_count = current_page + 1
+        elif len(assets["data"]) == 0:
+            page_count = max(1, current_page -1)
+        else:
+            page_count = current_page
+
 
         if current_page > page_count:
-            current_page = 1
+            current_page = page_count
+
+
+        def get_params(**override):
+            data = copy.copy(kwargs)
+            for key in override:
+                if not override[key] and key in data:
+                    del(data[key])
+                else:
+                    data[key] = override[key]
+            return "&".join(["{}={}".format(k, data[k]) for k in data])
+
 
         self["name"]         = "assets"
         self["title"]        = config["views"][id_view]["title"]
@@ -55,3 +73,6 @@ class ViewAssets(CherryAdminView):
         self["page_count"]   = page_count
         self["columns"]      = view["columns"]
         self["assets"]       = [Asset(meta=meta) for meta in assets["data"]]
+        self["order_key"]    = order_key
+        self["order_trend"]  = order_trend
+        self["get_params"]   = get_params

@@ -69,6 +69,7 @@ class Service(BaseService):
             }
         thread.start_new_thread(self.server.serve_forever,())
 
+        self.plugins.load()
         #self.channel_recover()
 
     @property

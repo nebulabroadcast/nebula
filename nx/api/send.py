@@ -4,7 +4,7 @@ from nx.jobs import send_to
 __all__ = ["api_send"]
 
 def api_send(**kwargs):
-    ids = kwargs.get("ids", [])
+    objects = kwargs.get("objects") or kwargs.get("ids", []) #TODO: ids is deprecated. use objects instead
     id_action = kwargs.get("id_action", False)
     settings = kwargs.get("settings", {})
     db = kwargs.get("db", DB())
@@ -19,15 +19,15 @@ def api_send(**kwargs):
     if not id_action:
         return NebulaResponse(ERROR_BAD_REQUEST, "No valid action selected")
 
-    if not ids:
+    if not objects:
         return NebulaResponse(ERROR_BAD_REQUEST,  "No asset selected")
 
     if not user.has_right("job_control", id_action):
         return NebulaResponse(ERROR_ACCESS_DENIED, "You are not allowed to start this action")
 
-    logging.info("{} is starting action {} for following assets: {}".format(user, id_action, ", ".join([str (i) for i in  ids]) ))
+    logging.info("{} is starting action {} for following assets: {}".format(user, id_action, ", ".join([str (i) for i in  objects]) ))
 
-    for id_object in ids:
+    for id_object in objects:
         send_to(
                 id_object,
                 id_action,
@@ -38,5 +38,5 @@ def api_send(**kwargs):
                 db=db
             )
 
-    return NebulaResponse(SUCCESS_ACCEPTED, "Starting {} jobs".format(len(ids)))
+    return NebulaResponse(SUCCESS_ACCEPTED, "Starting {} jobs".format(len(objects)))
 

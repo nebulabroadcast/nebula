@@ -4,18 +4,17 @@ import os
 import imp
 
 from nebula import *
+from nx.plugins.playout import *
 
 class PlayoutPlugins(object):
     def __init__(self, service):
-        global plugin_path
         self.service = service
         self.plugins = []
 
-        if not plugin_path:
-            return
-
-        bpath = os.path.join(plugin_path, "playout")
-        if not os.path.exists(bpath):
+    def load(self):
+        self.plugins = []
+        bpath = get_plugin_path("playout")
+        if not bpath:
             logging.warning("Playout plugins directory does not exist")
             return
 

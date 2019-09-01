@@ -1,4 +1,5 @@
 {% if key == "title" %}
+
     {% if asset["status"] == 0 %} {# OFFLINE #}
         <span class='label text-danger'><i class="fas fa-times-circle"></i></span>&nbsp;
     {% elif asset["status"] == 4 %} {# ARCHIVED #}
@@ -8,11 +9,14 @@
     {% elif asset["status"] in [2, 5, 11] %} {# creating, reset, retrieving #}
         <span class='label text-warning'><i class="fas fa-retweet"></i></span>&nbsp;
     {% endif %}
-    <a href="/detail/{{ asset.id }}-{{ asset["title"] | slugify }}">{{ asset.show(key) }}</a>
+
+    <a href="/detail/{{ asset.id }}-{{ asset["title"] | slugify }}">
+        {{ asset.show(key) }}
+    </a>
 
 {% elif key == "id_folder" %}
 
-    <span class="badge" style="color: #eee; padding: 5px; background-color: #{{ "%06x" % site.folders[asset[key]].color }};">
+    <span class="badge" style="background-color: #{{ "%06x" % site.folders[asset[key]].color }};">
         {{ site.folders[asset[key]].title }}
     </span>
 
@@ -53,4 +57,3 @@
 {% else %}
     {{ asset.show(key) }}
 {% endif %}
-

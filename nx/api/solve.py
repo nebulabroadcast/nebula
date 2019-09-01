@@ -1,4 +1,6 @@
 from nx import *
+from nx.plugins.solver import get_solver
+
 
 __all__ = ["api_solve"]
 

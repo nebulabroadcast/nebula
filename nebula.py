@@ -78,8 +78,9 @@ if __name__ == "__main__":
             cron_target = "/etc/cron.d/nebula"
             delcron = True
             # Update crontab
+            plugin_path = get_plugin_path("cron")
             if plugin_path:
-                cron_source = os.path.join(plugin_path, "cron", config["host"])
+                cron_source = os.path.join(plugin_path, config["host"])
                 if os.path.exists(cron_source):
                     delcron = False
                     if not os.path.isdir("/etc/cron.d"):

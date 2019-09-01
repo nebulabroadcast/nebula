@@ -1,6 +1,7 @@
 import imp
 
-from nebula import *
+from nx import *
+from nx.plugins import get_plugin_path
 
 class WebTools():
     def __init__(self):
@@ -9,11 +10,8 @@ class WebTools():
     def load(self):
         logging.info("Reloading webtools")
         self.tools = {}
-        global plugin_path
-        if not plugin_path:
-            return
-        tooldir = os.path.join(str(plugin_path), "webtools")
-        if not os.path.isdir(tooldir):
+        tooldir = get_plugin_path("webtools")
+        if not tooldir:
             return
         for plugin_entry in os.listdir(tooldir):
             entry_path = os.path.join(tooldir, plugin_entry)

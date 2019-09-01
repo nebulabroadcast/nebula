@@ -86,7 +86,10 @@ class ViewDetail(CherryAdminView):
     def build(self, *args, **kwargs):
         self["name"] = "detail"
         self["title"] = "Asset detail"
-        self["js"] = ["/static/js/detail.js"]
+        self["js"] = [
+                "https://static.nebulabroadcast.com/nebula/js/vendor/resumable.js",
+                "/static/js/detail.js"
+                ]
 
         try:
             id_asset = int(args[-1].split("-")[0])
@@ -102,7 +105,7 @@ class ViewDetail(CherryAdminView):
                 self["new_asset"] = True
             else:
                 self["asset"] = False
-                return
+                raise cherrypy.HTTPError(status=404, message="Asset not found")
         else:
             asset = Asset(id_asset, db=db)
 

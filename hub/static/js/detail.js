@@ -40,6 +40,51 @@ $(document).ready(function(){
         $("#form-sendto").submit();
     });
 
+
+
+
+
+	var r = new Resumable({
+	  target : '/upload',
+      query : {id_asset : id_asset}
+	});
+
+	r.assignBrowse(document.getElementById('button-upload'));
+
+    r.on('fileAdded', function(file, event){
+        console.log('fileAdded', event);
+        r.upload();
+    });
+
+    r.on('uploadStart', function(){
+        $("#upload-status").show();
+        $("#upload-status").removeClass().addClass("alert alert-info");
+        $("#upload-status-text").html("Upload started");
+        $("#upload-progress .progress-bar").css("width", "0");
+        $("#upload-progress").show();
+    });
+
+    r.on('fileProgress', function(file){
+        $("#upload-status-text").html("Uploading...");
+        $("#upload-progress .progress-bar").css("width", (r.progress()*100) + "%");
+    });
+
+    r.on('fileSuccess', function(file){
+        console.log('fileSuccess',file);
+        $("#upload-status").removeClass().addClass("alert alert-success");
+        $("#upload-status-text").html("Upload completed");
+        $("#upload-progress").hide();
+
+    });
+
+    r.on('fileError', function(file, message){
+        console.log(message);
+        var data = JSON.parse(message);
+        $("#upload-status").removeClass().addClass("alert alert-danger");
+        $("#upload-status-text").html("Upload failed: " + data["message"]);
+        $("#upload-progress").hide();
+    });
+
 });
 
 

@@ -12,6 +12,7 @@ def api_schedule(**kwargs):
     delete = kwargs.get("delete", []) # Event ids to delete
     db = kwargs.get("db", DB())
     user = kwargs.get("user", anonymous)
+    initiator = kwargs.get("initiator", None)
 
     if not id_channel or id_channel not in config["playout_channels"]:
         return NebulaResponse(ERROR_BAD_REQUEST, "Unknown playout channel ID {}".format(id_channel))
@@ -104,21 +105,26 @@ def api_schedule(**kwargs):
             if key == "_items":
                 for item_data in event_data["_items"]:
                     if not pbin.items:
-                        pos = 0
+                        start_pos = 0
                     else:
-                        pos = pbin.items[-1]["position"]
+                        start_pos = pbin.items[-1]["position"]
+                    try:
+                        pos = int(item_data["position"])
+                    except KeyError:
+                        pos = 0
                     item = Item(meta=item_data, db=db)
-                    item["position"] = pos
+                    item["position"] = start_pos + pos
                     item["id_bin"] = pbin.id
                     item.save()
                 continue
             event[key] = event_data[key]
 
         changed_event_ids.append(event.id)
-        event.save()
+        event.save(notify=False)
 
     if changed_event_ids:
-        messaging.send("objects_changed", objects=changed_event_ids, object_type="event")
+        messaging.send("objects_changed", objects=changed_event_ids, object_type="event", initiator=initiator)
+
 
     #
     # Return existing events

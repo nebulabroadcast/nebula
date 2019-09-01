@@ -2,7 +2,7 @@
 
 SYSDIR = /etc/systemd/system
 NEBULADIR = /opt/nebula
-SYMLINKS = /usr/bin/nxa /usr/bin/nxt /usr/bin/nxs /usr/bin/nxl /usr/bin/nxadduser
+SYMLINKS = /usr/bin/nxa /usr/bin/nxt /usr/bin/nxs /usr/bin/nxl /usr/bin/nxadduser /usr/bin/nxpasswd
 UNITS = $(SYSDIR)/nebula.service $(SYSDIR)/nebula-hub.service
 UNITSSRC = $(NEBULADIR)/support/nebula.service $(NEBULADIR)/support/nebula-hub.service
 

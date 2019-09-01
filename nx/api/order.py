@@ -13,6 +13,7 @@ def api_order(**kwargs):
     order  = kwargs.get("order", [])
     db     = kwargs.get("db", DB())
     user   = kwargs.get("user", anonymous)
+    initiator = kwargs.get("initiator", None)
 
     if not user:
         return NebulaResponse(ERROR_UNAUTHORISED)
@@ -89,6 +90,6 @@ def api_order(**kwargs):
 
     # Update bin duration
     for id_bin in affected_bins:
-        bin_refresh(affected_bins, db=db)
+        bin_refresh(affected_bins, db=db, initiator=initiator)
 
     return NebulaResponse(200)

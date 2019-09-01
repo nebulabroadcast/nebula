@@ -26,10 +26,12 @@ def update_host_info():
                 "free" : usage.free,
             })
 
+    root_fs = psutil.disk_usage("/")
     status = {
             "cpu" : psutil.cpu_percent(),
             "mem" : [mem.total, mem.available],
             "swp" : [swp.total, swp.free],
+            "rfs" : [root_fs.total, root_fs.free],
             "stor" : stor
         }
 

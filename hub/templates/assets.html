@@ -1,22 +1,27 @@
 {% extends "_base.html" %}
 
-{% block header %}
-<nav class="navbar navbar-expand-sm module-navbar">
 
-    <ul class="navbar-nav">
+{% block header %}
+<nav id="page-nav" class="navbar navbar-dark navbar-expand fixed-top">
+    <ul class="navbar-nav mr-auto">
         <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" title="View">
+            <a
+                class="nav-link dropdown-toggle"
+                href="#"
+                role="button"
+                data-toggle="dropdown"
+                title="View"
+                >
                 {{ site.views[page.id_view]["title"] }}
             </a>
             <div class="dropdown-menu">
                 {% for id_view in site.views %}
-                    {% if site.views[id_view]["title"] == "-" %}
+                    {% if site.views[id_view]["separator"]  %}
                         <div class="dropdown-divider"></div>
-                    {% else%}
-                        <a class="dropdown-item select-view-link" href="#" data-href="{{ id_view }}">
-                            {{ site.views[id_view]["title"] }}
-                        </a>
                     {% endif %}
+                    <a class="dropdown-item select-view-link" href="#" data-href="{{ id_view }}">
+                        {{ site.views[id_view]["title"] }}
+                    </a>
                 {% endfor %}
             </div>
         </li>
@@ -30,22 +35,11 @@
     <ul class="navbar-nav ml-auto">
         <form class="form-inline" id="form-search" action="/assets" method="get">
             <input id="select-view" type="hidden" name="v" value="{{ page.id_view }}">
-            <input type="hidden" name="lv" value="{{ page.id_view }}">
-            <input type="hidden" name="lq" value="{{ page.query }}">
             <li class="nav-item">
                 <input id="input-query" name="q" type="text" class="form-control"
                 placeholder="Search query..."
                 {% if page.query %} value="{{ page.query }}"{% endif %}>
             </li>
-            {% if page.page_count > 1 %}
-                <li class="nav-item">
-                    <select class="custom-select" id="select-page" name="p" title="Result page">
-                        {% for p in range(1, page.page_count ) %}
-                            <option {% if p == page.current_page %}selected{% endif %} value="{{ p }}">{{ p }}</option>
-                        {% endfor %}
-                    </select>
-                </li>
-            {% endif %}
             <li class="nav-item">
                 <a href="#" id="btn-clear" class="btn" title="Clear search query">
                     <i class="fas fa-times"></i>
@@ -67,15 +61,30 @@
     <thead>
         <tr>
         {% for column in page.columns %}
-            <th>{{ site.meta_types[column].header() }}</th>
+            <th{% if site.meta_types[column]["class"] > 1 %} class="min"{% endif %}>
+                <a href=?{{ page.get_params(o=column, ot="asc" if page.order_trend == "desc" else False ) }}>
+
+                    {{ site.meta_types[column].header(lang=site["language"]) }}
+
+                    {% if page.order_key == column %}
+                    &nbsp;
+                        {% if page.order_trend == "asc" %}
+                            <i class="fas fa-sort-up"></i></a>
+                        {% else %}
+                            <i class="fas fa-sort-down"></i></a>
+                        {% endif %}
+                    {% endif %}
+                </a>
+            </th>
         {% endfor %}
         </tr>
     </thead>
+
     <tbody id="browser-body">
     {% for asset in page.assets %}
         <tr class="browser-row" data-href="{{ asset.id }}">
         {% for key in page.columns %}
-            <td>
+            <td{% if site.meta_types[column]["class"] < 2 %} nowrap{% endif %}>
             {% include "includes/cellformat.html" %}
             </td>
         {% endfor %}
@@ -83,4 +92,11 @@
     {% endfor %}
     </tbody>
 </table>
+
+
+{% if page.page_count > 1 or page.current_page > 1 %}
+    {% include "includes/pagination.html" %}
+{% endif %}
+
+
 {% endblock %}

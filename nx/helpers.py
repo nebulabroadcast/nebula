@@ -182,18 +182,22 @@ def bin_refresh(bins, **kwargs):
         event = Event(meta=meta, db=db)
         if event.id not in changed_events:
             changed_events.append(event.id)
+    logging.debug("Bins changed {}. Initiator {}".format(bins, kwargs.get("initiator", logging.user)))
     messaging.send(
             "objects_changed",
             sender=sender,
             objects=bins,
-            object_type="bin"
+            object_type="bin",
+            initiator=kwargs.get("initiator", None)
         )
     if changed_events:
+        logging.debug("Events changed {}. Initiator {}".format(bins, kwargs.get("initiator", logging.user)))
         messaging.send(
                 "objects_changed",
                 sender=sender,
                 objects=changed_events,
-                object_type="event"
+                object_type="event",
+                initiator=kwargs.get("initiator", None)
             )
     return True
 

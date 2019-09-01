@@ -3,6 +3,7 @@ vendor/
 test.py
 _old/
 test-*
+tool*
 _import.py
 _scripts
 _res/

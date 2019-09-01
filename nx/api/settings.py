@@ -22,7 +22,8 @@ def api_settings(**kwargs):
             "seismic_addr",
             "seismic_port",
             "site_name",
-            "views"
+            "views",
+            "language"
             ]:
         if key in config:
             data[key] = config[key]

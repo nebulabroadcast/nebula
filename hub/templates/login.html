@@ -4,12 +4,13 @@
 {% endblock %}
 
 {% block content %}
-    <div class="well smallform" id="login-window">
+    <div  id="login-window">
         <div class="text-center">
             <img src="/static/img/logo-wide.svg">
             <h1>{{ site.name }}</h1>
         </div>
-        <form method="post" action="/login">
+        <form autocomplete="off" method="post" action="/login">
+            <input autocomplete="false" name="hidden" type="text" style="display:none;">
             <div class="form-group label-floating">
                 <label for="input-login" class="control-label">Login</label>
                 <input name="login" type="text" class="form-control" id="input-login">
@@ -19,6 +20,11 @@
                 <label for="input-password" class="control-label">Password</label>
                 <input name="password" type="password" class="form-control" id="input-password">
             </div>
+            {% if page.error %}
+            <p>
+            <span class="text-danger">{{ page.error }}</span>
+            </p>
+            {% endif %}
 
             <div class="form-group text-center">
                 <input type="submit" value="Login" class="btn btn-raised btn-primary"></input>

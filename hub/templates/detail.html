@@ -1,53 +1,62 @@
 {% extends "_base.html" %}
 
 {% block header %}
-<h2>{{ page.title }}</h2>
-
-
-<nav class="navbar navbar-expand-sm module-navbar">
-
-    {# navbar left (folder select) #}
-    <ul class="navbar-nav pull-sm-left">
-        <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown">
-                {{ site.folders[page.id_folder]["title"] }}
+<nav id="page-nav" class="navbar navbar-dark navbar-expand fixed-top">
+    <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" title="Asset folder">
+                <i class="fas fa-square" style="color: #{{ "%06x" % site.folders[page.id_folder].color }};"></i>&nbsp;{{ site.folders[page.id_folder]["title"] }}
             </a>
+            {% if user.has_right("asset_edit", page.asset["id_folder"]) %}
             <div class="dropdown-menu">
                 {% for id_folder in site.folders %}
-                {% if page.new_asset %}
-                    <a class="dropdown-item" href="/detail?new_asset=1&folder_change={{ id_folder }}">
-                {% else %}
-                    <a class="dropdown-item" href="/detail/{{ page.asset.id }}?folder_change={{ id_folder }}">
-                {% endif%}
-                    {{ site.folders[id_folder]["title"] }}
-                </a>
+                    {% if page.new_asset %}
+                        <a class="dropdown-item" href="/detail?new_asset=1&folder_change={{ id_folder }}">
+                    {% else %}
+                        <a class="dropdown-item" href="/detail/{{ page.asset.id }}?folder_change={{ id_folder }}">
+                    {% endif%}
+                <i class="fas fa-square" style="color: #{{ "%06x" % site.folders[id_folder].color }};"></i>&nbsp;
+                        {{ site.folders[id_folder]["title"] }}
+                    </a>
                 {% endfor %}
             </div>
+            {% endif %}
+        </li>
+        <li class="nav-item" style="margin-left: 15px;">
+            <span class="navbar-text mx-auto">{{ page.title }}</span>
         </li>
     </ul>
 
-    {# navbar center (duration, qc) #}
-    <ul class="navbar-nav mx-auto">
-        <li class="nav-item">
-            <input type="text" class="form-control input-timecode" name="duration" id="input-duration" value="{{ page.asset.duration | s2tc(page.asset.fps) }}" {% if page.asset.status != 0 and not page.new_asset %} disabled {% endif %} >
-        </li>
-        <li class="nav-item">&nbsp;</li> {# add some space between duration and qc buttons #}
+    <ul class="navbar-nav ml-auto">
 
         <li class="nav-item">
-            <div class="btn-group" role="group" aria-label="Basic example">
-                <button type="button" class="btn btn-qcstate" data-href="4"><i class="{% if page.asset["qc/state"] == 4 %}fas{% else %}far{% endif %} fa-flag text-success"></i></button>
-                <button type="button" class="btn btn-qcstate" data-href="0"><i class="{% if page.asset["qc/state"] not in [3, 4] %}fas{% else %}far{% endif %} fa-flag text-secondary"></i></button>
-                <button type="button" class="btn btn-qcstate" data-href="3"><i class="{% if page.asset["qc/state"] == 3 %}fas{% else %}far{% endif %} fa-flag text-danger"></i></button>
-            </div>
+            <input
+                type="text"
+                class="form-control input-timecode"
+                name="duration"
+                title="Duration"
+                id="input-duration"
+                value="{{ page.asset.duration | s2tc(page.asset.fps) }}"
+                {% if (page.asset.status != 0 and not page.new_asset) or (not user.has_right("asset_edit", page.asset["id_folder"])) %} disabled {% endif %}
+                >
         </li>
-    </ul>
+
+        <li class="nav-item">&nbsp;</li> {# add some space between duration and  buttons #}
+
+        {# UPLOAD #}
+        {% if site.upload_target and page.asset["media_type"] == 1 and user.has_right("asset_edit", page.asset["id_folder"] )%}
+        <li class="nav-item">
+            <a href="#" class="btn" title="Upload asset" id="button-upload">
+                <i class="fas fa-upload"></i>
+            </a>
+        </li>
+        {% endif %}
 
 
-    {# navbar right (buttons) #}
-    <ul class="navbar-nav pull-sm-right">
+        {# ACTIONS #}
         <li class="nav-item">
             <div class="btn-group" role="group">
-                <a href="#" class="btn dropdown-toggle" data-toggle="dropdown">
+                <a href="#" class="btn dropdown-toggle" data-toggle="dropdown" title="Actions">
                     <i class="fas fa-cogs"></i>
                 </a>
                 <div class="dropdown-menu dropdown-menu-right">
@@ -71,6 +80,22 @@
             </form>
         </li>
 
+
+        {% if user.has_right("asset_edit", page.asset["id_folder"] )%}
+        <li class="nav-item">
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-qcstate" data-href="4" title="Approve"><i class="{% if page.asset["qc/state"] == 4 %}fas{% else %}far{% endif %} fa-flag text-success"></i></button>
+                <button type="button" class="btn btn-qcstate" data-href="0" title="Reset"><i class="{% if page.asset["qc/state"] not in [3, 4] %}fas{% else %}far{% endif %} fa-flag text-secondary"></i></button>
+                <button type="button" class="btn btn-qcstate" data-href="3" title="Reject"><i class="{% if page.asset["qc/state"] == 3 %}fas{% else %}far{% endif %} fa-flag text-danger"></i></button>
+            </div>
+        </li>
+
+        <li class="nav-item">
+            <a href="#" class="btn" title="Clone asset" id="button-clone">
+                <i class="fas fa-clone"></i>
+            </a>
+        </li>
+
         <li class="nav-item">
             <a href="/detail/{{ page.asset.id }}" class="btn" title="Revert changes">
                 <i class="fas fa-undo"></i>
@@ -82,18 +107,34 @@
                 <i class="far fa-save"></i>
             </a>
         </li>
+        {% endif %}
     </ul>
-
 </nav>
+
 {% endblock %}
 
 
+
+
+
+
 {% block content %}
-{% if page.asset or page.new_asset %}
 
 <script>
-    var id_asset = {{ page.asset.id }};
+    var id_asset = {{ page.asset.id or 0 }};
 </script>
+
+<div class="container">
+<div id="upload-status" class="alert alert-info" role="alert" style="display:none;">
+    <p>
+        <span id="upload-status-text"></span>
+    </p>
+    <div id="upload-progress" class="progress">
+        <div class="progress-bar" role="progressbar"></div>
+    </div>
+</div>
+</div>
+
 
 <ul class="nav nav-tabs" id=tab-nav-detail" role="tablist">
     <li class="nav-item">
@@ -105,124 +146,44 @@
     <li class="nav-item">
         <a class="nav-link" id="tab-technical" data-toggle="tab" href="#tab-panel-technical" role="tab">Technical</a>
     </li>
-    <li class="nav-item">
-        <a class="nav-link" id="tab-preview" data-toggle="tab" href="#tab-panel-preview" role="tab">Preview</a>
-    </li>
 </ul>
 
-<div class="tab-content" id="tab-panels-detail">
-    <div class="tab-pane fade show active" id="tab-panel-main">
-    {% if page.new_asset %}
-        <form method="post" action="/detail?new_asset=1" id="form-edit">
-    {% else %}
-        <form method="post" action="/detail/{{ page.asset.id }}" id="form-edit">
-    {% endif %}
+<div class="row">
+    <div class="col-lg-6 col-md-12">
+        <div class="tab-content" id="tab-panels-detail">
+            <div class="tab-pane fade show active" id="tab-panel-main">
+                {% include "includes/editor.html" %}
+            </div> <!-- tab-main -->
 
+            <div class="tab-pane fade" id="tab-panel-extended">
+                <table class="table">
+                {% for key in page["extended_keys"] %}
+                <tr>
+                    <td>{{ site.meta_types[key].alias() | replace(" ", "&nbsp;") }}</td>
+                    <td>{{ page.asset.show(key) }}</td>
+                </tr>
+                {% endfor%}
+                </table>
+            </div> {# tab-extended #}
 
-    <input type="hidden" name="id_folder" value="{{ page.id_folder }}">
-    <input type="hidden" id="input-form-qc-state" name="qc/state" value="{{ page.asset["qc/state"] }}">
-    {% if page.asset.status == 0 %}
-        <input id="input-form-duration" type="hidden" name="duration" value="{{ page.asset["duration"] | s2tc(page.asset.fps) }}">
-    {% endif %}
+            <div class="tab-pane fade" id="tab-panel-technical">
+                <table class="table">
+                {% for key in page["technical_keys"] %}
+                <tr>
+                    <td>{{ site.meta_types[key].alias() | replace(" ", "&nbsp;") }}</td>
+                    <td>{{ page.asset.show(key) }}</td>
+                </tr>
+                {% endfor%}
+                </table>
+            </div> {# tab-technical #}
+        </div> {# tabs #}
+    </div> {# meta column #}
 
-
-
-    {% for key, key_config in page.main_keys %}
-        <div class="form-group row">
-
-            <label for="input-key-{{ loop.index }}" class="col-sm-2 col-form-label">
-                {{ site.meta_types[key].alias() | replace(" ", "&nbsp;")}}
-            </label>
-
-            <div class="col-sm-10">
-                {% set key_class = site.meta_types[key]["class"] %}
-                {% if key_class == 0 %} {# string #}
-                    <input name="{{ key }}" class="form-control" type="text" value="{{ page.asset[key] }}" id="input-key-{{ loop.index }}">
-
-                {% elif key_class == 1 %} {# text#}
-                    <textarea name="{{ key }}" class="form-control" id="input_key-{{ loop.index }}" rows="3">{{ page.asset[key]  }}</textarea>
-
-                {% elif key_class == 2 %} {# integer #}
-                    <input name="{{ key }}" class="form-control" type="number" value="{{ page.asset[key] }}" id="input-key-{{ loop.index }}">
-
-                {% elif key_class == 3 %} {# numeric #}
-                    <input name="{{ key }}" class="form-control" type="number" value="{{ page.asset[key] }}" id="input-key-{{ loop.index }}">
-
-                {% elif key_class == 4 %} {# boolean #}
-                    <div>
-                        <label class='switch'>
-                            <input type="hidden" name="{{ key }}" value="{{ page.asset[key] | int }}"><input type='checkbox' onclick="this.previousSibling.value=1-this.previousSibling.value" {% if page.asset[key]  %} checked{% endif %}>
-                            <span class='slider'></span>
-                        </label>
-                    </div>
-
-                {% elif key_class == 5 %} {# datetime #}
-                    {% if site.meta_types[key]["mode"] == "date" %}
-                        <input name="{{ key }}" type="text" class="datepicker" value="{{ page.asset.show(key, format="%Y-%m-%d", never_placeholder="") }}" id="input-key-{{ loop.index }}">
-                    {% else %}
-                        {{ site.meta_types[key]["mode"] }} is not supported yet
-                    {% endif %}
-
-                {% elif key_class == 6 %} {# timecode #}
-                    {{ page.asset.show(key) }}
-
-                {% elif key_class == 7 %} {# regions #}
-                    {{ page.asset.show(key) }}
-
-                {% elif key_class == 8 %} {# fraction #}
-                    {{ page.asset.show(key) }}
-
-                {% elif key_class == 9 %} {# select #}
-                    <select name="{{ key }}" class="form-control" id="input-key-{{ loop.index }}">
-                    {% for r in page.asset.show(key, full=True) %}
-                        <option value="{{ r.value }}"{% if r.selected %} selected{% endif %}>{{ r.alias }}</option>
-                    {% endfor %}
-                    </select>
-
-                {% elif key_class == 10 %} {# list #}
-                    {{ page.asset.show(key) }}
-
-                {% elif key_class == 11 %} {# color #}
-                    {{ page.asset.show(key) }}
-
-                {%endif%}
-                </div>
-            </div>
-        {% endfor %}
-    </form>
-    </div> <!-- tab-main -->
-
-    <div class="tab-pane fade" id="tab-panel-extended">
-        <table class="table">
-        {% for key in page["extended_keys"] %}
-        <tr>
-            <td>{{ site.meta_types[key].alias() | replace(" ", "&nbsp;") }}</td>
-            <td>{{ page.asset.show(key) }}</td>
-        </tr>
-        {% endfor%}
-        </table>
-    </div> <!-- tab-extended -->
-
-    <div class="tab-pane fade" id="tab-panel-technical">
-        <table class="table">
-        {% for key in page["technical_keys"] %}
-        <tr>
-            <td>{{ site.meta_types[key].alias() | replace(" ", "&nbsp;") }}</td>
-            <td>{{ page.asset.show(key) }}</td>
-        </tr>
-        {% endfor%}
-        </table>
-    </div> <!-- tab-technical -->
-
-    <div class="tab-pane fade" id="tab-panel-preview">
+    <div class="col-lg-6 col-md-12">
         <div id="preview-container">
-            <video src="{{ page.asset.proxy_url }}" id="video-player" controls></video>
+            <video src="{{ page.asset.proxy_url }}" id="preview" controls></video>
         </div>
-    </div> <!-- tab-preview -->
+    </div>
 </div>
-
-{% else %}
-    <h2>No such asset</h2>
-{% endif %}
 
 {% endblock %}

@@ -10,6 +10,7 @@ logging.user = "hub"
 from cherryadmin import CherryAdmin
 
 from .webtools import webtools
+from .apimethods import api_methods
 from .view_dashboard import ViewDashboard
 from .view_assets import ViewAssets
 from .view_detail import ViewDetail
@@ -22,29 +23,18 @@ from .view_profile import ViewProfile
 
 
 SITE_CSS = [
-        "https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css",
-
-        "https://cdnjs.cloudflare.com/ajax/libs/gijgo/1.9.13/combined/css/gijgo.min.css",
-        "https://use.fontawesome.com/releases/v5.8.1/css/solid.css",
-        "https://use.fontawesome.com/releases/v5.8.1/css/regular.css",
-        "https://use.fontawesome.com/releases/v5.8.1/css/fontawesome.css",
-        "https://fonts.googleapis.com/css?family=Roboto:400,500,700&amp;subset=latin-ext",
-
-        "/static/css/switch.css",
-        "/static/css/style.css",
+        "https://static.nebulabroadcast.com/nebula/css/nebula.css",
     ]
 
 SITE_JS = [
-        "https://code.jquery.com/jquery-3.3.1.min.js",
-        "https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js",
-        "https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js",
-        "https://cdnjs.cloudflare.com/ajax/libs/gijgo/1.9.13/combined/js/gijgo.min.js",
-
-        "/static/js/jquery.inputmask.js",
-        "/static/js/common.js",
+        "https://static.nebulabroadcast.com/nebula/js/vendor/jquery.min.js",
+        "https://static.nebulabroadcast.com/nebula/js/vendor/popper.min.js",
+        "https://static.nebulabroadcast.com/nebula/js/vendor/bootstrap.min.js",
+        "https://static.nebulabroadcast.com/nebula/js/vendor/bootstrap-select.min.js",
+        "https://static.nebulabroadcast.com/nebula/js/vendor/gijgo.min.js",
+        "https://static.nebulabroadcast.com/nebula/js/vendor/inputmask.min.js",
+        "/static/js/common.js"
     ]
-
-
 
 def login_helper(login, password):
     user = get_user(login, password)
@@ -52,21 +42,20 @@ def login_helper(login, password):
         return False
     return user.meta
 
-
 class SiteContext(object):
     context = {
         "name" : config["site_name"],
         "meta_types" : meta_types,
+        "language" : config.get("language", "en"),
         "webtools" : webtools,
-        "css" : SITE_CSS,
-        "js" : SITE_JS
+        "css" : config.get("hub_css", SITE_CSS),
+        "js" : config.get("hub_js", SITE_JS)
     }
 
     def __getitem__(self, key):
         if key in self.context:
             return self.context[key]
         return config[key]
-
 
 def site_context_helper():
     return SiteContext()
@@ -76,6 +65,7 @@ def page_context_helper():
 
 def user_context_helper(meta):
     return User(meta=meta or {})
+
 
 
 static_dir = config.get(
@@ -112,19 +102,5 @@ hub_config = {
                 "profile"   : ViewProfile,
             },
 
-        "api_methods" : {
-                "get"      : api_get,
-                "set"      : api_set,
-                "delete"   : api_delete,
-                "settings" : api_settings,
-                "rundown"  : api_rundown,
-                "order"    : api_order,
-                "schedule" : api_schedule,
-                "jobs"     : api_jobs,
-                "playout"  : api_playout,
-                "actions"  : api_actions,
-                "send"     : api_send,
-                "solve"    : api_solve,
-                "system"   : api_system,
-            }
+        "api_methods" : api_methods
     }

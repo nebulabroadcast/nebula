@@ -5,6 +5,7 @@ from nxtools.media import *
 
 from .common import Probe
 
+
 class AudioTrack():
     def __init__(self, **kwargs):
         self.data = kwargs
@@ -21,6 +22,34 @@ class AudioTrack():
     @property
     def id(self):
         return self["index"]
+
+
+def parse_audio_track(**kwargs):
+    result = {}
+    for key in [
+                "channels",
+                "channel_layout",
+                "bit_rate",
+                "bits_per_sample",
+                "duration",
+                "index",
+                "sample_fmt",
+                "sample_rate",
+                "start_pts",
+                "start_time",
+                "time_base"
+            ]:
+        if kwargs.get(key):
+            result[key] = kwargs[key]
+
+    if kwargs.get("codec_name"):
+        result["codec"] = kwargs["codec_name"]
+    result["language"] = kwargs.get("tags", {}).get("language", "eng")
+    for r in kwargs.get("disposition", []):
+        if kwargs["disposition"][r]:
+            result["disposition"] = r
+            break
+    return result
 
 
 def guess_aspect (w, h):
@@ -95,7 +124,7 @@ class FFProbe(Probe):
                 meta["video/color_space"] = stream.get("color_space", "")
 
             elif stream["codec_type"] == "audio":
-                meta["audio_tracks"].append(AudioTrack(**stream).data)
+                meta["audio_tracks"].append(parse_audio_track(**stream))
                 try:
                     source_adur = max(source_adur, float(stream["duration"]))
                 except Exception:

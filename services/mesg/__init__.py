@@ -129,9 +129,10 @@ class Service(BaseService):
             try:
                 message = SeismicMessage(json.loads(decode_if_py3(data)))
             except Exception:
-                log_traceback(handlers=False)
                 logging.warning("Malformed seismic message detected", handlers=False)
-                print (message)
+                print("\n")
+                print(data)
+                print("\n")
                 continue
 
             if message.site_name != config["site_name"]:
@@ -173,5 +174,6 @@ class Service(BaseService):
             except:
                 logging.error("Unable to send message to relay", relay)
                 continue
-            if result.status_code != 200:
+            if result.status_code >= 400:
                 logging.warning("Error {}: Unable to relay message to {}".format(result.status_code, relay))
+                continue

@@ -4,7 +4,9 @@ import imp
 from .common import *
 
 def t(*args):
-    tools_dir = os.path.join(plugin_path, "tools")
+    tools_dir = get_plugin_path("tools")
+    if not tools_dir:
+        return
     plugin_name = args[0]
 
     try:

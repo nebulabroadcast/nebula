@@ -91,15 +91,25 @@ def do_import(parent, import_file, asset):
         themis.add_output(asset.file_path, **parent.profile)
 
         if themis.start():
-            backup_path = os.path.join(
+            backup_dir = os.path.join(
                     storages[parent.import_storage].local_path,
                     parent.backup_dir,
-                    os.path.basename(asset.file_path)
                 )
-            logging.debug("Creating backup of {} to {}".format(asset, backup_path))
-            if os.path.exists(backup_path):
-                os.remove(backup_path)
-            os.rename(import_file.path, backup_path)
+            try:
+                if not os.path.isdir(backup_dir):
+                    os.makedirs(backup_dir)
+            except:
+                logging.error("Unable to create backup directory")
+                os.remove(import_file.path)
+            else:
+                backup_path = os.path.join(
+                        backup_dir,
+                        os.path.basename(asset.file_path)
+                    )
+                logging.debug("Creating backup of {} to {}".format(asset, backup_path))
+                if os.path.exists(backup_path):
+                    os.remove(backup_path)
+                os.rename(import_file.path, backup_path)
             logging.goodnews("{} imported".format(asset))
         else:
             logging.error("{} import failed".format(asset))
@@ -133,7 +143,11 @@ class Service(BaseService):
             logging.error("Storage, import and backup directories must be specified. Shutting down")
             self.shutdown(True)
 
-        self.identifier = "id/main"
+        try:
+            self.identifier = self.settings.find("identifier").text
+        except Exception:
+            self.identifier = "id/main"
+
         self.exts = [f for f in file_types.keys() if file_types[f] == VIDEO]
         self.versioning = True
 
@@ -192,7 +206,7 @@ class Service(BaseService):
                 asset = Asset(meta=meta, db=db)
 
                 if not (asset["id_storage"] and asset["path"]):
-                    self.mk_error(import_file, "This file has no target path specified.")
+                    mk_error(import_file, "This file has no target path specified.")
                     continue
 
                 if self.versioning and os.path.exists(asset.file_path):

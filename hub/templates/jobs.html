@@ -1,6 +1,19 @@
 {% extends "_base.html" %}
 
 {% block header %}
+<nav id="page-nav" class="navbar navbar-dark navbar-expand fixed-top">
+    <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+            <a href="/jobs/active" class="nav-link{% if page.mode == "active" %} active{% endif %}">Active</a>
+        </li>
+        <li class="nav-item">
+            <a href="/jobs/finished" class="nav-link{% if page.mode == "finished" %} active{% endif %}">Finished</a>
+        </li>
+        <li class="nav-item">
+            <a href="/jobs/failed" class="nav-link{% if page.mode == "failed" %} active{% endif %}">Failed</a>
+        </li>
+    </ul>
+</nav>
 {% endblock %}
 
 {% block content %}
@@ -9,18 +22,6 @@
     var mode = "{{ page.mode }}";
     var id_asset = {{ page.id_asset }};
 </script>
-
-<ul class="nav nav-tabs">
-    <li class="nav-item">
-        <a href="/jobs/active" class="nav-link{% if page.mode == "active" %} active{% endif %}">Active</a>
-    </li>
-    <li class="nav-item">
-        <a href="/jobs/finished" class="nav-link{% if page.mode == "finished" %} active{% endif %}">Finished</a>
-    </li>
-    <li class="nav-item">
-        <a href="/jobs/failed" class="nav-link{% if page.mode == "failed" %} active{% endif %}">Failed</a>
-    </li>
-</ul>
 
 <table id="job-table" class="table table-hover">
     <thead>

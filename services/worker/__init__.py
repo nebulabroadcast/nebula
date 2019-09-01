@@ -23,11 +23,12 @@ class Service(BaseService):
     def load_from_script(self, fname):
         if not fname.lower().endswith(".py"):
             fname += ".py"
-        if not plugin_path:
+        workerdir = get_plugin_path("worker")
+        if not workerdir:
             logging.error("Plugin path is not set. Storage unmouted?")
             time.sleep(5)
             sys.exit(0)
-        script_path = os.path.join(plugin_path, "worker", fname)
+        script_path = os.path.join(workerdir, fname)
         mod_name, file_ext = os.path.splitext(fname)
 
         if not os.path.exists(script_path):

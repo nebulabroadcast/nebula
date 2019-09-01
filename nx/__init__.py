@@ -6,6 +6,7 @@ from .helpers import *
 from .mediaprobe import *
 from .api import *
 from .base_service import *
+from .plugins import *
 
 
 def load_settings(force=False):
@@ -85,8 +86,7 @@ def load_settings(force=False):
 
     messaging.configure()
     cache.configure()
+    load_common_scripts()
     return True
 
 load_settings()
-
-from .plugins import *
