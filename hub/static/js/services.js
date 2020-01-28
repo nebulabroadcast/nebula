@@ -10,11 +10,11 @@ function seismic_handler(data){
                 autostart = "&nbsp;"
 
                 if (params["state"] == 0){
-                    label="<span class='label text-primary'>Stopped</span>";
-                    buttons="<button type='button' class='service-toggle-button btn btn-sm' data-href='"+ params["id"] + "' data-action='start'>Start</button>";
+                    label="<span class='badge bg-primary'>Stopped</span>";
+                    buttons="<button type='button' class='service-toggle-button btn btn-sm btn-success' data-href='"+ params["id"] + "' data-action='start'>Start</button>";
                 } else if (params["state"] == 1) {
-                    label="<span class='label text-success'>Running</span>";
-                    buttons="<button type='button' class='service-toggle-button btn btn-sm' data-href='"+ params["id"] + "' data-action='stop'>Stop</button>";
+                    label="<span class='badge bg-success'>Running</span>";
+                    buttons="<button type='button' class='service-toggle-button btn btn-sm btn-danger' data-href='"+ params["id"] + "' data-action='stop'>Stop</button>";
 
                     ts = Date.now() / 1000;
                     lsbef = ts - params["last_seen"];
@@ -23,14 +23,14 @@ function seismic_handler(data){
                     }
 
                 } else if (params["state"] == 2) {
-                    label="<span class='label text-warning'>Starting</span>";
-                    buttons="<button type='button' class='service-toggle-button btn btn-sm' data-href='"+ params["id"] + "' disabled>...</button>";
+                    label="<span class='badge bg-warning'>Starting</span>";
+                    buttons="<button type='button' class='service-toggle-button btn btn-sm btn-warning' data-href='"+ params["id"] + "' disabled>...</button>";
                 } else if (params["state"] == 3) {
-                    label="<span class='label text-warning'>Stopping</span>";
-                    buttons="<button type='button' class='service-toggle-button btn btn-sm' data-href='"+ params["id"] + "' data-action='kill'>Kill</button>";
+                    label="<span class='badge bg-warning'>Stopping</span>";
+                    buttons="<button type='button' class='service-toggle-button btn btn-sm btn-danger' data-href='"+ params["id"] + "' data-action='kill'>Kill</button>";
                 } else if (params["state"] == 4) {
-                    label="<span class='label text-danger'>Killing</span>";
-                    buttons="<button type='button' class='service-toggle-button btn btn-sm' data-href='"+ params["id"] + "' disabled>...</button>";
+                    label="<span class='badge bg-danger'>Killing</span>";
+                    buttons="<button type='button' class='service-toggle-button btn btn-sm btn-warning' data-href='"+ params["id"] + "' disabled>...</button>";
                 }
 
 

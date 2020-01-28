@@ -11,6 +11,9 @@ def format_state(state):
 
 def show_services(db):
     db.query("SELECT id, service_type, host, title, autostart, state, last_seen FROM services ORDER BY id")
+    print()
+    print("ID  Type        Title               Host           Auto  State")
+    print()
     for id, stype, host, title, auto, state, last_seen in db.fetchall():
         last_seen_age = time.time() - last_seen
         data = {
@@ -22,7 +25,7 @@ def show_services(db):
                 "state" : format_state(state),
                 "warning": "NOT RESPONDING FOR {}".format(s2words(last_seen_age)) if last_seen_age > 60 else ""
             }
-        print ("{id:<4}{type:<12}{title:<20}{auto:<6}{state} {warning}".format(**data))
+        print ("{id:<4}{type:<12}{title:<20}{host:<15}{auto:<6}{state} {warning}".format(**data))
 
 
 def s(*args):

@@ -7,7 +7,13 @@ from cherryadmin import CherryAdminView
 class ViewProfile(CherryAdminView):
     def build(self, *args, **kwargs):
         db = DB()
-        user = self["user"]
+        id_user = int(kwargs.get("id_user", 0))
+        if id_user and self["user"]["is_admin"]:
+            user = User(id_user, db=db)
+        else:
+            user = self["user"]
+
+        self["user"] = user
 
         password = kwargs.get("password", False)
         full_name = kwargs.get("full_name", False)
@@ -21,7 +27,7 @@ class ViewProfile(CherryAdminView):
 
             if password:
                 if len(password) < 8:
-                    self.context.message("Your password is too weak. It must be at least 8 characters long.", "error")
+                    self.context.message("The password is too weak. It must be at least 8 characters long.", "error")
                     return
                 user.set_password(kwargs["password"])
                 user_changed = True
@@ -32,8 +38,9 @@ class ViewProfile(CherryAdminView):
 
             if user_changed:
                 user.save()
-                self.context["user"] = user.meta
-                cherrypy.session["user_data"] = user.meta
+                if self["user"].id == user.id:
+                    self.context["user"] = user.meta
+                    cherrypy.session["user_data"] = user.meta
                 self.context.message("User profile saved")
 
 

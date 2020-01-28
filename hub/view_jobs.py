@@ -24,6 +24,8 @@ class ViewJobs(CherryAdminView):
         except ValueError:
             id_action = 0
 
+        query = kwargs.get("q", "")
+
         if cherrypy.request.method == "POST":
             if id_asset and id_action:
                 #TODO: how to select restert_existing/running?
@@ -48,3 +50,4 @@ class ViewJobs(CherryAdminView):
         self["mode"] = mode
         self["id_asset"] = id_asset
         self["id_action"] = id_asset
+        self["query"] = query

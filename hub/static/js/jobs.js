@@ -7,6 +7,7 @@ function load_jobs(){
         data: JSON.stringify({
             "view" : mode,
             "id_asset" : id_asset,
+            "fulltext" : fulltext,
             "formatted" : 1
         }),
         processData: false,
@@ -104,6 +105,17 @@ $(document).ready(function() {
     if (window.history.replaceState) {
         window.history.replaceState( null, null, window.location.href );
     }
+
+    $("#btn-clear").click(function(event){
+        event.preventDefault();
+        $("#input-query").val("");
+        $("#form-search").submit();
+    });
+
+    $("#btn-search").click(function(event){
+        event.preventDefault();
+        $("#form-search").submit
+    });
 
     load_jobs();
 

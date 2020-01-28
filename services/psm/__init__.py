@@ -10,7 +10,10 @@ DEFAULT_STATUS = {
         "size" : 0,
         "mtime" : 0,
         "duration" : 0
-        }
+    }
+
+
+STORAGE_STATUS = {}
 
 
 def get_scheduled_assets(id_channel, **kwargs):
@@ -76,8 +79,11 @@ class PlayoutStorageTool(object):
         db = self.db
         storage = storages[self.playout_config["playout_storage"]]
         if not storage:
-            logging.debug("storage {} is not available".format(storage))
+            if STORAGE_STATUS.get(storage.id, True):
+                logging.error("{} is not available".format(storage))
+                STORAGE_STATUS[storage.id] = False
             return
+        STORAGE_STATUS[storage.id] = True
         storage_path = storage.local_path
 
         for asset, scheduled in get_scheduled_assets(self.id_channel, db=db):

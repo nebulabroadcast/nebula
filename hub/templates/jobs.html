@@ -13,6 +13,27 @@
             <a href="/jobs/failed" class="nav-link{% if page.mode == "failed" %} active{% endif %}">Failed</a>
         </li>
     </ul>
+
+    <ul class="navbar-nav ml-auto">
+        <form class="form-inline" id="form-search" action="/jobs" method="get">
+            <li class="nav-item">
+                <input id="input-query" name="q" type="text" class="form-control"
+                placeholder="Search query..."
+                {% if page.query %} value="{{ page.query }}"{% endif %}>
+            </li>
+            <li class="nav-item">
+                <a href="#" id="btn-clear" class="btn" title="Clear search query">
+                    <i class="fas fa-times"></i>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" id="btn-search" class="btn" title="Search assets">
+                    <i class="fas fa-search"></i>
+                </a>
+            </li>
+        </form>
+    </ul>
+
 </nav>
 {% endblock %}
 
@@ -21,6 +42,7 @@
 <script>
     var mode = "{{ page.mode }}";
     var id_asset = {{ page.id_asset }};
+    var fulltext = "{{ page.query }}";
 </script>
 
 <table id="job-table" class="table table-hover">

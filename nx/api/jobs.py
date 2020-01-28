@@ -71,6 +71,18 @@ def api_jobs(**kwargs):
     if id_asset:
         cond = "AND j.id_asset = {}".format(id_asset)
 
+    elif kwargs.get("fulltext"):
+        fulltext = kwargs["fulltext"]
+        if ":" in fulltext:
+            key, value = fulltext.split(":")
+            key = key.strip()
+            value = value.strip().lower().replace("'", "")
+            cond += " AND a.meta->>'{}' ILIKE '{}'".format(key, value)
+        else:
+            ft = slugify(fulltext, make_set=True)
+            for word in ft:
+                cond += "AND a.id IN (SELECT id FROM ft WHERE object_type=0 AND value LIKE '{}%')".format( word)
+
     elif view == "active":
         # Pending, in_progress, restart
         cond = "AND (j.status IN (0, 1, 5) OR j.end_time > {})".format(time.time() - 30)

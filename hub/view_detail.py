@@ -68,7 +68,7 @@ def validate_data(context, asset, meta):
             new_val = value
 
         if asset[key] != new_val:
-            context.message("{} {} -> {}".format(key, json.dumps(asset[key]), json.dumps(new_val)))
+            #context.message("{} {} -> {}".format(key, json.dumps(asset[key]), json.dumps(new_val)))
             changed = True
             try:
                 asset[key] = new_val
@@ -108,6 +108,9 @@ class ViewDetail(CherryAdminView):
                 raise cherrypy.HTTPError(status=404, message="Asset not found")
         else:
             asset = Asset(id_asset, db=db)
+            logging.debug(asset)
+            if not asset.id:
+                raise cherrypy.HTTPError(status=404, message="Asset not found")
 
 
         id_folder = int(kwargs.get("folder_change", asset["id_folder"]))

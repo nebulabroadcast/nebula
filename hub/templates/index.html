@@ -8,7 +8,7 @@
 <div class="row">
 
 
-<div class="col">
+<div class="col-md-6 col-sm-12">
 {% call macro.card('Objects', 'fas fa-cubes') %}
     {% for object_type in page.object_counts  %}
     <div class="row-content">
@@ -19,7 +19,7 @@
 {% endcall %}
 </div>
 
-<div class="col">
+<div class="col-md-6 col-sm-12">
 {% call macro.card('Storage utilization', 'fas fa-database') %}
 {% for storage in page.storages %}
     <p>

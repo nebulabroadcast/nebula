@@ -17,6 +17,7 @@ from .view_detail import ViewDetail
 from .view_jobs import ViewJobs
 from .view_tool import ViewTool
 from .view_services import ViewServices
+from .view_settings import ViewSettings
 from .view_passreset import ViewPassReset
 from .view_profile import ViewProfile
 
@@ -98,6 +99,7 @@ hub_config = {
                 "jobs"     : ViewJobs,
                 "tool"     : ViewTool,
                 "services" : ViewServices,
+                "settings" : ViewSettings,
                 "passreset" : ViewPassReset,
                 "profile"   : ViewProfile,
             },

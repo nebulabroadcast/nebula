@@ -9,9 +9,10 @@
         <tr>
             <th style="width:35px;">#</th>
             <th>Title</th>
+            <th style="width:200px;">Service type</th>
             <th style="width:200px;">Host</th>
-            <th style="width:150px;">State</th>
             <th style="width:100px;">Autostart</th>
+            <th style="width:150px;">State</th>
             <th style="width:100px;">Action</th>
         </tr>
     </thead>
@@ -20,11 +21,12 @@
         <tr data-href="{{ service["id"] }}">
             <td>{{ service["id"] }}</td>
             <td>{{ service["title"] }}</td>
+            <td>{{ service["service_type"] }}</td>
             <td>{{ service["host"] }}</td>
+            <td class="service-autostart">
             <td class="service-state-label">
                 Please wait...
             </td>
-            <td class="service-autostart">
             </td>
             <td {% if user.has_right("service_control", service["id"]) %} class="service-actions"{% endif%}>
                 <button type="button" class="btn btn-sm" disabled>...</button>
@@ -34,11 +36,6 @@
     </tbody>
 </table>
 
-{% if user.is_admin %}
-<div class="text-center">
-    <a href="/services/reload_settings">Reload system settings</a>
-</div>
-{% endif %}
 
 {% endblock %}
 
