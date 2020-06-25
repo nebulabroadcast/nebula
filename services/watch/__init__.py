@@ -79,15 +79,16 @@ class Service(BaseService):
 
                 asset.load_sidecar_metadata()
 
-                #TODO
-                #or post_script in mirror.findall("post"):
-                #    try:
-                #        exec(post_script.text)
-                #    except:
-                #        log_traceback("Error executing post-script on {}".format(asset))
-                #        failed = True
+                failed=False
+                for post_script in wf_settings.findall("post"):
+                    try:
+                        exec(post_script.text)
+                    except:
+                        log_traceback("Error executing post-script on {}".format(asset))
+                        failed = True
 
-                asset.save(set_mtime=False)
+                if not failed:
+                    asset.save(set_mtime=False)
 
         duration = time.time() - start_time
         if duration > 60 or config.get("debug_mode", False):

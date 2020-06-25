@@ -55,7 +55,26 @@ def parse_audio_track(**kwargs):
 def guess_aspect (w, h):
     if 0 in [w, h]:
         return 0
-    valid_aspects = [(16, 9), (4, 3), (2.35, 1)]
+    valid_aspects = [
+            (6, 5),     #A.K.A. 1.2:1, Fox movietone
+            (5, 4),
+            (4, 3),
+            (11, 8),    # Academy standard film ratio
+            (1.43, 1),  # IMAX
+            (3, 2),
+            (14, 9),
+            (16, 10),
+            (5, 3),
+            (16, 9),
+            (1.85, 1),
+            (2.35, 1),
+            (2.39, 1),
+            (2.4, 1),
+            (21, 9),
+            (2.76, 1),
+        ]
+    valid_aspects.extend([(h,w) for w,h in valid_aspects ])
+    valid_aspects.append((1,1))
     ratio = float(w) / float(h)
     return "{}/{}".format(*min(valid_aspects, key=lambda x:abs((float(x[0])/x[1])-ratio)))
 
@@ -94,6 +113,10 @@ class FFProbe(Probe):
 
         for stream in probe_result["streams"]:
             if stream["codec_type"] == "video":
+                if "video/index" in meta and source_vdur:
+                    # We already have a video track with a duration
+                    continue
+
                 # Frame rate detection
                 fps_n, fps_d = [float(e) for e in stream["r_frame_rate"].split("/")]
                 meta["video/fps_f"] = fps_n / fps_d
@@ -131,7 +154,7 @@ class FFProbe(Probe):
                     pass
 
 
-        meta["duration"] = float(format_info["duration"]) or source_vdur or source_adur
+        meta["duration"] = float(format_info.get("duration", 0)) or source_vdur or source_adur
         try:
             meta["num_frames"] = meta["duration"] * meta["video/fps_f"]
         except:

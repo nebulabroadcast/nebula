@@ -53,7 +53,7 @@ class ServiceMonitor(BaseAgent):
                 )
             if state == STARTING: # Start service
                 if not id in self.services.keys():
-                    self.start_service(id, title, db = db)
+                    self.start_service(id, title, db=db)
 
             elif state == KILL: # Kill service
                 if id in self.services.keys():
@@ -113,4 +113,3 @@ class ServiceMonitor(BaseAgent):
             return
         logging.info("Attempting to kill PID {}".format(pid))
         os.system(os.path.join(config["nebula_root"], "support", "kill_tree.sh {}".format(pid)))
-

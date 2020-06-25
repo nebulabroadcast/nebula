@@ -1,7 +1,6 @@
-import time
-
 from nebulacore import *
 
+from .connection import *
 from .agents import BaseAgent
 
 __all__ = ["StorageMonitor"]
@@ -13,10 +12,14 @@ storage_status = {k : [True, 2, 0] for k in storages}
 class StorageMonitor(BaseAgent):
     def main(self):
         storages_conf = config.get("storages", "all")
-        for id_storage in storages:
+
+        db = DB()
+        db.query("SELECT id, settings FROM storages")
+        for id_storage, storage_settings in db.fetchall():
             if type(storages_conf) == list and id_storage not in storages_conf:
                 continue
-            storage = storages[id_storage]
+
+            storage = Storage(id_storage, **storage_settings)
 
             if storage:
                 storage_string = "{}:{}".format(config["site_name"], storage.id)
@@ -35,7 +38,8 @@ class StorageMonitor(BaseAgent):
                             logging.info ("{} is mounted and root is writable".format(storage))
                 continue
 
-            s,i,l = storage_status[id_storage]
+            s,i,l = storage_status.get(id_storage, [True, 2, 0])
+
             if not s and time.time() - l < i:
                 continue
 

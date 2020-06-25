@@ -49,7 +49,7 @@ def asset_by_full_path(path, db=False):
 def meta_exists(key, value, db=False):
     if not db:
         db = DB()
-    db.query("SELECT id, meta FROM assets WHERE meta->>'%s' = '%s'", [key, value])
+    db.query("SELECT id, meta FROM assets WHERE meta->>%s = %s", [str(key), str(value)])
     for id, meta in db.fetchall():
         return Asset(meta=meta, db=db)
     return False
@@ -220,7 +220,7 @@ def send_mail(to, subject, body, **kwargs):
     s.sendmail(reply_address, [to], msg.as_string())
 
 
-def cg_download(target_path, method, **kwargs):
+def cg_download(target_path, method, timeout=10, **kwargs):
     start_time = time.time()
     target_dir = os.path.dirname(os.path.abspath(target_path))
     cg_server = config.get("cg_server", "https://cg.immstudios.org")
@@ -237,7 +237,7 @@ def cg_download(target_path, method, **kwargs):
             method
         )
     try:
-        response = requests.get(url, params=kwargs)
+        response = requests.get(url, params=kwargs, timeout=timeout)
     except Exception:
         log_traceback("Unable to download CG item")
         return False

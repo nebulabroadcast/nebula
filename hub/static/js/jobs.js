@@ -25,6 +25,7 @@ function load_jobs(){
             rctime = row["ctime"];
             rstime = row["stime"];
             retime = row["etime"];
+            rstitle = row["service_title"];
             rtitle = "<a href='/detail/"+ row["id_asset"] +"'>" + row["asset_title"] + "</a>";
             raction = row["action_title"];
 
@@ -60,6 +61,8 @@ function load_jobs(){
                     + rstime +
                 '</td><td>'
                     + retime +
+                '</td><td>'
+                    + rstitle +
                 '</td><td>'
                     + progress +
                 '</td><td class="job-message">'

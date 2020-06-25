@@ -159,7 +159,7 @@
                 <table class="table">
                 {% for key in page["extended_keys"] %}
                 <tr>
-                    <td>{{ site.meta_types[key].alias() | replace(" ", "&nbsp;") }}</td>
+                    <td>{{ page.asset.meta_types[key].alias() | replace(" ", "&nbsp;") }}</td>
                     <td>{{ page.asset.show(key) }}</td>
                 </tr>
                 {% endfor%}
@@ -170,7 +170,7 @@
                 <table class="table">
                 {% for key in page["technical_keys"] %}
                 <tr>
-                    <td>{{ site.meta_types[key].alias() | replace(" ", "&nbsp;") }}</td>
+                    <td>{{ page.asset.meta_types[key].alias() | replace(" ", "&nbsp;") }}</td>
                     <td>{{ page.asset.show(key) }}</td>
                 </tr>
                 {% endfor%}

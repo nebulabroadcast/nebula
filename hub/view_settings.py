@@ -4,12 +4,10 @@ import collections
 from nebula import *
 from cherryadmin import CherryAdminView
 
-from nebulacore.meta_format import FMH_DATA, CSH_DATA, CSA_DATA
 from .webtools import webtools
 
 
-def get_settings_ctx(ctx, **kwargs):
-    db = DB()
+def get_settings_ctx(ctx, db, **kwargs):
     db.query("SELECT key, value FROM settings")
     result = {}
     for key, value in db.fetchall():
@@ -18,8 +16,7 @@ def get_settings_ctx(ctx, **kwargs):
     ctx["title"] = "Settings"
 
 
-def get_folders_ctx(ctx, **kwargs):
-    db = DB()
+def get_folders_ctx(ctx, db, **kwargs):
     db.query("SELECT id, settings FROM folders")
     result = {}
     for key, settings in db.fetchall():
@@ -28,8 +25,7 @@ def get_folders_ctx(ctx, **kwargs):
     ctx["title"] = "Folders"
 
 
-def get_views_ctx(ctx, **kwargs):
-    db = DB()
+def get_views_ctx(ctx, db, **kwargs):
     db.query("SELECT id, settings FROM views")
     result = {}
     for key, settings in db.fetchall():
@@ -38,8 +34,7 @@ def get_views_ctx(ctx, **kwargs):
     ctx["title"] = "Views"
 
 
-def get_meta_types_ctx(ctx, **kwargs):
-    db = DB()
+def get_meta_types_ctx(ctx, db, **kwargs):
     db.query("SELECT key, settings FROM meta_types")
     result = {}
     for key, settings in db.fetchall():
@@ -48,8 +43,7 @@ def get_meta_types_ctx(ctx, **kwargs):
     ctx["title"] = "Metadata keys"
 
 
-def get_cs_ctx(ctx, **kwargs):
-    db = DB()
+def get_cs_ctx(ctx, db, **kwargs):
     cs = kwargs.get("cs")
     if not cs:
         db.query("SELECT DISTINCT(cs) FROM cs ORDER BY cs")
@@ -62,8 +56,7 @@ def get_cs_ctx(ctx, **kwargs):
     ctx["title"] = "Classification schemes"
 
 
-def get_storages_ctx(ctx, **kwargs):
-    db = DB()
+def get_storages_ctx(ctx, db, **kwargs):
     db.query("SELECT id, settings FROM storages")
     result = {}
     for key, settings in db.fetchall():
@@ -72,8 +65,7 @@ def get_storages_ctx(ctx, **kwargs):
     ctx["title"] = "Storages"
 
 
-def get_actions_ctx(ctx, **kwargs):
-    db = DB()
+def get_actions_ctx(ctx, db, **kwargs):
     db.query("SELECT id, service_type, title FROM actions")
     result = {}
     for id, service_type, title in db.fetchall():
@@ -85,8 +77,7 @@ def get_actions_ctx(ctx, **kwargs):
     ctx["title"] = "Actions"
 
 
-def get_services_ctx(ctx, **kwargs):
-    db = DB()
+def get_services_ctx(ctx, db, **kwargs):
     result = {}
     db.query("SELECT id, service_type, host, title, autostart, loop_delay FROM services")
     for id, service_type, host, title, autostart, loop_delay in db.fetchall():
@@ -101,8 +92,7 @@ def get_services_ctx(ctx, **kwargs):
     ctx["title"] = "Services"
 
 
-def get_channels_ctx(ctx, **kwargs):
-    db = DB()
+def get_channels_ctx(ctx, db, **kwargs):
     result = {}
     db.query("SELECT id, channel_type, settings FROM channels")
     for id, channel_type, settings in db.fetchall():
@@ -112,14 +102,36 @@ def get_channels_ctx(ctx, **kwargs):
     ctx["title"] = "Channels"
 
 
-def get_users_ctx(ctx, **kwargs):
-    db = DB()
+def get_users_ctx(ctx, db, **kwargs):
     db.query("SELECT meta FROM users ORDER BY login ASC")
     result = []
     for meta, in db.fetchall():
         result.append(User(meta=meta))
     ctx["data"] = result
     ctx["title"] = "Users"
+
+
+def get_sessions_ctx(ctx, db, **kwargs):
+    if kwargs.get("delsession"):
+        spath = os.path.join(
+                    ctx["settings"]["sessions_dir"],
+                    kwargs["delsession"]
+                )
+        if len(kwargs["delsession"]) == 64:
+            if os.path.exists(spath):
+                os.remove(spath)
+
+    data = {}
+    for sfile in get_files(ctx["settings"]["sessions_dir"]):
+        d = json.load(sfile.open())
+        data[sfile.base_name] = {
+                "login" : d["user_data"].get("login"),
+                "valid_until" : d["ctime"] + (ctx["settings"]["sessions_timeout"]*60),
+                "ip" : d.get("ip"),
+                "user_agent" : d.get("user_agent")
+            }
+    ctx["data"] = data
+
 
 
 
@@ -134,19 +146,16 @@ modules = collections.OrderedDict([
     ["services",   {"title": "Services", "context" : get_services_ctx}],
     ["channels",   {"title": "Channels", "context" : get_channels_ctx}],
     ["users",      {"title": "Users", "context" : get_users_ctx}],
-    ])
+    ["sessions",   {"title": "Sessions", "context" : get_sessions_ctx}],
+])
 
 
 
 class ViewSettings(CherryAdminView):
     def build(self, *args, **kwargs):
-
         if args[-1] == "reload_settings":
             load_settings()
             webtools.load()
-            FMH_DATA = {}
-            CSH_DATA = {}
-            CSA_DATA = {}
             raise cherrypy.HTTPRedirect("/settings")
 
 
@@ -154,8 +163,8 @@ class ViewSettings(CherryAdminView):
         if len(args) > 1:
             if args[1] in modules:
                 module = args[1]
-
-        modules[module]["context"](self, **kwargs)
+        db = DB()
+        modules[module]["context"](self, db, **kwargs)
 
         self["name"] = "settings"
         self["title"] = "Settings"

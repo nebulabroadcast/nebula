@@ -1,4 +1,5 @@
 from nebulacore import *
+from nebulacore.metadata import clear_cs_cache
 
 from .connection import *
 from .objects import *
@@ -9,7 +10,7 @@ from .base_service import *
 from .plugins import *
 
 
-def load_settings(force=False):
+def load_settings(*args, **kwargs):
     global config
     # This is the first time we are connecting DB
     # so error handling should be here
@@ -26,7 +27,6 @@ def load_settings(force=False):
         config[key] = value
 
     db.query("SELECT id, settings FROM storages")
-
     config["storages"] = {}
     for id, settings in db.fetchall():
         if id in config.get("storages_blacklist", []):
@@ -58,6 +58,7 @@ def load_settings(force=False):
         if not cst in config["cs"]:
             config["cs"][cst] = []
         config["cs"][cst].append([value, settings])
+    clear_cs_cache()
 
     config["views"] = {}
     db.query("SELECT id, settings FROM views")
@@ -88,6 +89,12 @@ def load_settings(force=False):
     messaging.configure()
     cache.configure()
     load_common_scripts()
+
+    if logging.user == "hub":
+        messaging.send("config_changed")
     return True
+
+
+
 
 load_settings()

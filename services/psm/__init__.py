@@ -19,32 +19,27 @@ STORAGE_STATUS = {}
 def get_scheduled_assets(id_channel, **kwargs):
     db = kwargs.get("db", DB())
     playout_config = config["playout_channels"][id_channel]
-    id_action = playout_config.get("send_action", False)
-    if not id_action:
-        return []
-    #TODO: Why DISTINCT does not DISTINCT?
     db.query("""
             SELECT
-                DISTINCT (i.id_asset),
-                ABS(e.start - extract(epoch from now())) AS dist,
-                a.meta
-            FROM
-                events as e, items as i, assets as a
-            WHERE
+                a.meta, dist
+            FROM (
+                SELECT
+                    i.id_asset,
+                    MIN(ABS(e.start - extract(epoch from now()))) AS dist
+                FROM
+                    events as e, items as i
+                WHERE
                     e.start > extract(epoch from now()) - 86400*7
-                AND e.id_channel = %s
-                AND a.id = i.id_asset
-                AND i.id_bin = e.id_magic
-                AND i.id_asset > 0
+                    AND e.id_channel = %s
+                    AND i.id_bin = e.id_magic
+                    AND i.id_asset > 0
+                GROUP BY i.id_asset) i
+                LEFT JOIN assets a ON a.id = i.id_asset
             ORDER BY
                 dist ASC
             """, [id_channel]
         )
-    ids = []
-    for id, dist, meta in db.fetchall():
-        if id in ids:
-            continue
-        ids.append(id)
+    for meta, dist in db.fetchall():
         yield Asset(meta=meta, db=db), dist < 86400
 
 

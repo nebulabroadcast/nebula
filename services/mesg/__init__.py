@@ -11,6 +11,19 @@ from nebula import *
 
 logging.handlers = []
 
+
+def log_clean_up(log_dir, ttl=30):
+    ttl_sec = ttl * 3600 * 24
+    for f in get_files(log_dir, exts=["txt"]):
+        if f.mtime < time.time() - ttl_sec:
+            try:
+                os.remove(f.path)
+            except Exception:
+                log_traceback("Unable to remove old log file")
+            else:
+                logging.debug("Removed old log file {}".format(f.base_name))
+
+
 def format_log_message(message):
     try:
         log = "{}\t{}\t{}@{}\t{}\n".format(
@@ -53,28 +66,6 @@ class Service(BaseService):
         self.queue = []
         self.last_message = 0
 
-        self.sock = socket.socket(
-                socket.AF_INET,
-                socket.SOCK_DGRAM,
-                socket.IPPROTO_UDP
-            )
-        self.sock.setsockopt(
-                socket.SOL_SOCKET,
-                socket.SO_REUSEADDR,
-                1
-            )
-        self.sock.bind(("0.0.0.0", int(config["seismic_port"])))
-        self.sock.setsockopt(
-                socket.IPPROTO_IP,
-                socket.IP_MULTICAST_TTL,
-                255
-            )
-        self.sock.setsockopt(
-                socket.IPPROTO_IP,
-                socket.IP_ADD_MEMBERSHIP,
-                socket.inet_aton(config["seismic_addr"]) + socket.inet_aton("0.0.0.0")
-            )
-        self.sock.settimeout(1)
 
         #
         # Message relays
@@ -108,18 +99,73 @@ class Service(BaseService):
                 logging.error("{} is not a directory. Logs will not be saved".format(log_dir))
                 self.log_dir = None
 
+        log_ttl = self.settings.find("log_ttl")
+        if log_ttl is None or not log_ttl.text:
+            self.log_ttl = None
+        else:
+            try:
+                self.log_ttl = int(log_ttl.text)
+            except ValueError:
+                log_traceback()
+                self.log_ttl = None
+
+        self.session = requests.Session()
 
         thread.start_new_thread(self.listen, ())
         thread.start_new_thread(self.process, ())
 
+
+    def shutdown(self, *args, **kwargs):
+        self.session.close()
+        super().shutdown(*args, **kwargs)
 
     def on_main(self):
         if len(self.queue) > 100:
             logging.warning("Truncating message queue")
             self.queue = self.queue[80:]
 
+        if self.log_dir and self.log_ttl:
+           log_clean_up(self.log_dir, self.log_ttl)
+
 
     def listen(self):
+        self.sock = socket.socket(
+                socket.AF_INET,
+                socket.SOCK_DGRAM,
+                socket.IPPROTO_UDP
+            )
+        self.sock.setsockopt(
+                socket.SOL_SOCKET,
+                socket.SO_REUSEADDR,
+                1
+            )
+
+        try:
+            firstoctet = int(config["seismic_addr"].split(".")[0])
+            is_multicast = firstoctet >= 224
+        except ValueError:
+            is_multicast = False
+
+
+        if is_multicast:
+            logging.info("Starting multicast listener {}:{}".format(config["seismic_addr"], config["seismic_port"]))
+            self.sock.bind(("0.0.0.0", int(config["seismic_port"])))
+            self.sock.setsockopt(
+                    socket.IPPROTO_IP,
+                    socket.IP_MULTICAST_TTL,
+                    255
+                )
+            self.sock.setsockopt(
+                    socket.IPPROTO_IP,
+                    socket.IP_ADD_MEMBERSHIP,
+                    socket.inet_aton(config["seismic_addr"]) + socket.inet_aton("0.0.0.0")
+                )
+        else:
+            logging.info("Starting unicast listener {}:{}".format(config["seismic_addr"], config["seismic_port"]))
+            self.sock.bind((config["seismic_addr"], int(config["seismic_port"])))
+
+        self.sock.settimeout(1)
+
         while True:
             try:
                 data, addr = self.sock.recvfrom(4092)
@@ -170,7 +216,7 @@ class Service(BaseService):
         message = message.replace("\n", "") + "\n" # one message per line
         for relay in self.relays:
             try:
-                result = requests.post(relay, message.encode("ascii"), timeout=.5)
+                result = self.session.post(relay, message.encode("ascii"), timeout=.5)
             except:
                 logging.error("Unable to send message to relay", relay)
                 continue

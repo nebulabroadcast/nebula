@@ -4,8 +4,8 @@ def passwd(*args):
     print ()
     try:
         login = input("Login: ").strip()
-        password = input("Password: ").strip()
-        is_admin = input("Is it admin (yes/no): ").strip()
+        password = input("Password (will be echoed): ").strip()
+        is_admin = input("Admin (yes/no): ").strip()
     except KeyboardInterrupt:
         print ()
         logging.warning("Interrupted by user")
@@ -18,7 +18,8 @@ def passwd(*args):
         critical_error("Unable to set password: no such user")
 
     u = User(res[0][0], db=db)
-    u["login"] = u["full_name"] = login
+    if login:
+        u["login"] = u["full_name"] = login
     u["is_admin"] = 1 if is_admin == "yes" else 0
     u.set_password(password)
     u.save()

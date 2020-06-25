@@ -97,8 +97,11 @@ class Service(BaseService):
                 logging.debug("{}: File mtime has been changed. Updating.".format(asset))
                 asset["file/mtime"] = fmtime
                 asset.save(set_mtime=False, notify=False)
-            else:
-                logging.info("{}: File size changed. Updating.".format(asset))
+            elif fsize != asset["file/size"] or asset["status"] in [RESET, RETRIEVING]:
+                if asset["status"] in [RESET, RETRIEVING]:
+                    logging.info("{}: Metadata reset requested. Updating.".format(asset))
+                else:
+                    logging.info("{}: File has been changed. Updating.".format(asset))
 
                 keys = list(asset.meta.keys())
                 for key in keys:
@@ -108,6 +111,7 @@ class Service(BaseService):
                 asset["file/size"]  = fsize
                 asset["file/mtime"] = fmtime
                 asset["file/ctime"] = int(asset_file.ctime)
+                asset.save()
 
                 for probe in probes:
                     if probe.accepts(asset):
@@ -117,7 +121,6 @@ class Service(BaseService):
                             asset = result
                         elif asset["status"] != CREATING:
                             asset["status"] = CREATING
-                            asset.save()
                             return
                         else:
                             return

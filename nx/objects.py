@@ -134,7 +134,7 @@ class Bin(BinMixIn, ServerObject):
             if not self.id:
                 self._items = []
             else:
-                self.db.query("SELECT meta FROM items WHERE id_bin=%s ORDER BY position ASC", [self.id])
+                self.db.query("SELECT meta FROM items WHERE id_bin=%s ORDER BY position ASC, id ASC", [self.id])
                 self._items = [Item(meta=meta, db=self.db) for meta, in self.db.fetchall()]
         return self._items
 

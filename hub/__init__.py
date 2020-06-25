@@ -6,6 +6,7 @@ __all__ = [
 from nebula import *
 
 logging.user = "hub"
+config["mc_thread_safe"] = True
 
 from cherryadmin import CherryAdmin
 
@@ -15,6 +16,7 @@ from .view_dashboard import ViewDashboard
 from .view_assets import ViewAssets
 from .view_detail import ViewDetail
 from .view_jobs import ViewJobs
+from .view_metrics import ViewMetrics
 from .view_tool import ViewTool
 from .view_services import ViewServices
 from .view_settings import ViewSettings
@@ -41,7 +43,10 @@ def login_helper(login, password):
     user = get_user(login, password)
     if not user:
         return False
-    return user.meta
+    meta = user.meta
+    if "password" in meta:
+        del(meta["password"])
+    return meta
 
 class SiteContext(object):
     context = {
@@ -89,6 +94,7 @@ hub_config = {
         "user_context_helper" : user_context_helper,
         "sessions_dir" : os.path.join("/tmp", config["site_name"] + "-sessions"),
         "sessions_timeout" : 60*24*120,
+        "hash_salt" : config.get("hash_salt", "nebulaissalty"),
         "blocking" : True,
         "minify_html" : True,
         "log_screen" : False,
@@ -97,6 +103,7 @@ hub_config = {
                 "assets"   : ViewAssets,
                 "detail"   : ViewDetail,
                 "jobs"     : ViewJobs,
+                "metrics"  : ViewMetrics,
                 "tool"     : ViewTool,
                 "services" : ViewServices,
                 "settings" : ViewSettings,

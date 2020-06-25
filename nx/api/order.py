@@ -89,7 +89,6 @@ def api_order(**kwargs):
 
 
     # Update bin duration
-    for id_bin in affected_bins:
-        bin_refresh(affected_bins, db=db, initiator=initiator)
+    bin_refresh(affected_bins, db=db, initiator=initiator)
 
     return NebulaResponse(200)

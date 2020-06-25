@@ -76,3 +76,4 @@ class ViewAssets(CherryAdminView):
         self["order_key"]    = order_key
         self["order_trend"]  = order_trend
         self["get_params"]   = get_params
+        self["view_list"]    = sorted(list(config["views"].keys()), key=lambda x: config["views"][x]["position"])

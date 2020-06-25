@@ -16,9 +16,10 @@ __all__ = ["get_rundown", "api_rundown"]
 
 def get_rundown(id_channel, start_time=False, end_time=False, db=False):
     db = db or DB()
+    channel_config = config["playout_channels"][id_channel]
     if not start_time:
         # default today
-        sh, sm = config["playout_channels"][id_channel].get("day_start", [6, 0])
+        sh, sm = channel_config.get("day_start", [6, 0])
         rundown_date = time.strftime("%Y-%m-%d", time.localtime(time.time()))
         rundown_start_time = datestr2ts(rundown_date, hh=sh, mm=sm)
         rundown_date = time.strftime("%Y-%m-%d", time.localtime(time.time()))
@@ -27,6 +28,12 @@ def get_rundown(id_channel, start_time=False, end_time=False, db=False):
     end_time = end_time or start_time + (3600 * 24)
 
     item_runs = get_item_runs(id_channel, start_time, end_time, db=db)
+
+    if channel_config.get("send_action", False):
+        db.query("SELECT id_asset FROM jobs WHERE id_action=%s AND status in (0, 5)", [channel_config["send_action"]])
+        pending_assets = [r[0] for r in db.fetchall()]
+    else:
+        pending_assets = []
 
     db.query("""
             SELECT
@@ -52,7 +59,8 @@ def get_rundown(id_channel, start_time=False, end_time=False, db=False):
 
             ORDER BY
                 e.start ASC,
-                i.position ASC
+                i.position ASC,
+                i.id ASC
             """, (id_channel, start_time, end_time))
 
     current_event_id = None
@@ -122,6 +130,8 @@ def get_rundown(id_channel, start_time=False, end_time=False, db=False):
                 istatus = UNKNOWN
 
             item.meta["status"] = istatus
+            if asset and asset.id in pending_assets:
+                item.meta["transfer_progress"] = -1
 
             if item["run_mode"] != RUN_SKIP:
                 ts_scheduled += item.duration

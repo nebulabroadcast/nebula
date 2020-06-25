@@ -15,7 +15,7 @@
                 {{ site.views[page.id_view]["title"] }}
             </a>
             <div class="dropdown-menu">
-                {% for id_view in site.views %}
+                {% for id_view in page.view_list %}
                     {% if site.views[id_view]["separator"]  %}
                         <div class="dropdown-divider"></div>
                     {% endif %}
@@ -61,9 +61,8 @@
     <thead>
         <tr>
         {% for column in page.columns %}
-            <th{% if site.meta_types[column]["class"] > 1 %} class="min"{% endif %}>
+            <th{% if site.meta_types[column]["class"] > 1 or site.meta_types[column]["ns"] != "m" %} class="min"{% endif %}>
                 <a href=?{{ page.get_params(o=column, ot="asc" if page.order_trend == "desc" else False ) }}>
-
                     {{ site.meta_types[column].header(lang=site["language"]) }}
 
                     {% if page.order_key == column %}

@@ -30,8 +30,28 @@ def j(*args):
     print
     db = DB()
     db.query("""
-        SELECT j.id, j.id_action, j.settings, j.priority, j.retries, j.status, j.progress, j.message, j.creation_time, j.start_time, j.end_time, a.meta
-        FROM jobs AS j, assets AS a WHERE a.id = j.id_asset AND j.status in (0,1,5) ORDER BY id DESC LIMIT 50
+        SELECT
+            j.id,
+            j.id_action,
+            j.settings,
+            j.priority,
+            j.retries,
+            j.status,
+            j.progress,
+            j.message,
+            j.creation_time,
+            j.start_time,
+            j.end_time,
+            a.meta
+        FROM
+            jobs AS j,
+            assets AS a
+        WHERE
+            a.id = j.id_asset
+        AND j.status in (0,1,5)
+
+        ORDER BY
+            id DESC LIMIT 50
             """)
 
     for id, id_action, settings, priority, retries, status, progress, message, creation_time, start_time, end_time, meta in db.fetchall():
@@ -45,4 +65,3 @@ def j(*args):
             sys.stdout.flush()
         except IOError:
             pass
-

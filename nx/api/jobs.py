@@ -139,7 +139,7 @@ def api_jobs(**kwargs):
             row["asset_title"] = asset["title"]
             row["action_title"] = config["actions"][id_action]["title"]
             if id_service:
-                service = config["services"][id_service]
+                service = config["services"].get(id_service, {"title" : "Unknown", "host" : "Unknown"})
                 row["service_title"] = "{}@{}".format(service["title"], service["host"])
             else:
                 row["service_title"] = ""

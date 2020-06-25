@@ -4,10 +4,10 @@ def adduser(*args):
     print ()
     try:
         login = input("Login: ").strip()
-        password = input("Password: ").strip()
+        password = input("Password (will be echoed): ").strip()
+        is_admin = input("Admin (yes/no): ").strip()
         full_name = input("Full name (default: {}): ".format(login)).strip() or login
         email = input("Email: ").strip()
-        is_admin = input("Admin (yes/no): ").strip()
     except KeyboardInterrupt:
         print ()
         logging.warning("Interrupted by user")

@@ -3,6 +3,7 @@ from nebula import *
 import subprocess
 import os
 import signal
+import shlex
 
 from .common import *
 
@@ -77,7 +78,7 @@ class NebulaFFMPEG(BaseEncoder):
 
 
     def start(self):
-        logging.debug("Executing {}".format(" ".join(self.ffparams)))
+        logging.debug("Executing {}".format(" ".join(shlex.quote(x) for x in self.ffparams)))
         self.proc = subprocess.Popen(
                 self.ffparams,
                 stderr=subprocess.PIPE,

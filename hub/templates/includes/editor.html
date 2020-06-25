@@ -19,12 +19,12 @@
 {% for key, key_config in page.main_keys %}
 <div class="form-group row">
 
-    <label for="input-key-{{ loop.index }}" class="col-md-3 col-form-label" title="{{ site.meta_types[key].description(lang=site["language"]) }}">
-        {{ site.meta_types[key].alias(lang=site["language"]) | replace(" ", "&nbsp;")}}
+    <label for="input-key-{{ loop.index }}" class="col-md-3 col-form-label" title="{{ page.asset.meta_types[key].description(lang=site["language"]) }}">
+        {{ page.asset.meta_types[key].alias(lang=site["language"]) | replace(" ", "&nbsp;")}}
     </label>
 
     <div class="col-md-9">
-        {% set key_class = site.meta_types[key]["class"] %}
+        {% set key_class = page.asset.meta_types[key]["class"] %}
         {% if key_class == 0 %} {# string #}
 
             <input
@@ -70,14 +70,14 @@
             </div>
 
         {% elif key_class == 5 %} {# datetime #}
-            {% if site.meta_types[key]["mode"] == "date" %}
+            {% if page.asset.meta_types[key]["mode"] == "date" %}
                 <input
                     name="{{ key }}"
                     type="text"
                     class="form-control datepicker"
                     value="{{ page.asset.show(key, format="%Y-%m-%d", never_placeholder="") }}" id="input-key-{{ loop.index }}">
             {% else %}
-                {{ site.meta_types[key]["mode"] }} is not supported yet
+                {{ page.asset.meta_types[key]["mode"] }} is not supported yet
             {% endif %}
 
         {% elif key_class == 6 %} {# timecode #}

@@ -20,6 +20,8 @@ __all__ = ["DB", "cache", "Cache", "IntegrityError", "DataError"]
 # Database
 #
 
+MAX_RETRIES = 5
+
 class DB(object):
     def __init__(self, **kwargs):
         self.pmap = {
@@ -102,7 +104,7 @@ class Cache():
             return self.threaded_save(key, value)
 
         key = self.site + "-" + key
-        for i in range(2):
+        for i in range(MAX_RETRIES):
             try:
                 self.conn.set(str(key), str(value))
                 break
@@ -119,7 +121,7 @@ class Cache():
         if config.get("mc_thread_safe", False):
             return self.threaded_delete(key)
         key = self.site + "-" + key
-        for i in range(10):
+        for i in range(MAX_RETRIES):
             try:
                 self.conn.delete(key)
                 break
@@ -151,7 +153,7 @@ class Cache():
             self.pool = pylibmc.ThreadMappedPool(self.conn)
         key = self.site + "-" + key
         with self.pool.reserve() as mc:
-            for i in range(10):
+            for i in range(MAX_RETRIES):
                 try:
                     mc.set(str(key), str(value))
                     break
@@ -170,7 +172,7 @@ class Cache():
             self.pool = pylibmc.ThreadMappedPool(self.conn)
         key = self.site + "-" + key
         with self.pool.reserve() as mc:
-            for i in range(10):
+            for i in range(MAX_RETRIES):
                 try:
                     mc.delete(key)
                     break

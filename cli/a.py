@@ -22,6 +22,7 @@ formats = {
 
 
 def a(*args):
+    args = list(args)
     print ()
     cols = ["id", "status", "title", "mtime"]
 
@@ -29,11 +30,13 @@ def a(*args):
         id_view = int(args[0])
         if id_view in config["views"]:
             cols = config["views"][id_view]["columns"]
+        args.pop(0)
     else:
         id_view = False
 
-    if len(args) > 1:
-        ft = " ".join(args[1:])
+
+    if args:
+        ft = " ".join(args)
     else:
         ft = False
 

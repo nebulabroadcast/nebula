@@ -206,7 +206,7 @@ class Service(BaseService):
         action = kwargs.get("action_name", False)
         data = json.loads(kwargs.get("data", "{}"))
         id_plugin = int(kwargs["id_plugin"])
-        print (">>", action, id_plugin, data)
+        logging.debug("Executing playout plugin:", action, id_plugin, data)
         if not action:
             return NebulaResponse(400, "No plugin action requested")
         try:

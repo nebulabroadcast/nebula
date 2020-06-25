@@ -1,3 +1,5 @@
+import string
+
 from nx import *
 
 __all__ = ["api_get", "get_objects"]
@@ -90,14 +92,19 @@ def get_objects(ObjectType, **kwargs):
     if fulltext:
         do_count = True
         if ":" in fulltext:
-            key, value = fulltext.split(":")
+            key, value = fulltext.split(":",1)
             key = key.strip()
             value = value.strip().lower()
+            value = value.replace("%", "%%").replace("*", "%").replace("?", "_")
             conds.append("meta->>'{}' ILIKE '{}'".format(key, value))
         else:
-            ft = slugify(fulltext, make_set=True)
-            for word in ft:
-                conds.append("id IN (SELECT id FROM ft WHERE object_type={} AND value LIKE '{}%')".format(ObjectType.object_type_id, word))
+            ft = slugify(fulltext, make_set=True, slug_whitelist=string.ascii_letters+string.digits+"%*_", split_chars=" ")
+            logging.debug(ft)
+            for value in ft:
+                value = value.replace("%", "%%").replace("*", "%").replace("?", "_")
+                if not value.endswith("%"):
+                    value += "%"
+                conds.append("id IN (SELECT id FROM ft WHERE object_type={} AND value LIKE '{}')".format(ObjectType.object_type_id, value))
     else:
         try:
             view_count = int(cache.load("view-count-{}".format(id_view)))

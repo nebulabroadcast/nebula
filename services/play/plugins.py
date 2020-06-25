@@ -39,6 +39,7 @@ class PlayoutPlugins(object):
             logging.info("Initializing plugin {}".format(plugin_name))
             self.plugins.append(py_mod.Plugin(self.service))
             self.plugins[-1].title = self.plugins[-1].title or plugin_name.capitalize()
+        logging.info("All plugins initialized")
 
     def __getitem__(self, key):
         return self.plugins[key]

@@ -8,7 +8,7 @@ def validate_data(context, asset, meta):
     changed = False
     for key in meta:
         value = meta[key]
-        meta_type = meta_types[key]
+        meta_type = asset.meta_types[key]
         new_val = None
 
         if meta_type["class"] in [STRING, TEXT]:
@@ -151,6 +151,6 @@ class ViewDetail(CherryAdminView):
         self["title"] = asset["title"] if asset.id else "New asset"
         self["id_folder"] = id_folder
         self["main_keys"] = fconfig["meta_set"]
-        self["extended_keys"] = sorted([k for k in asset.meta if k in meta_types and meta_types[k]["ns"] not in ["f","q"] and k not in [l[0] for l in fconfig["meta_set"]]], key=lambda k: meta_types[k]["ns"])
-        self["technical_keys"] = sorted([k for k in asset.meta if meta_types[k]["ns"] in ["f","q"] ])
+        self["extended_keys"] = sorted([k for k in asset.meta if k in asset.meta_types and asset.meta_types[k]["ns"] not in ["f","q"] and k not in [l[0] for l in fconfig["meta_set"]]], key=lambda k: asset.meta_types[k]["ns"])
+        self["technical_keys"] = sorted([k for k in asset.meta if asset.meta_types[k]["ns"] in ["f","q"] ])
         self["actions"] = actions.data if actions.is_success else []
