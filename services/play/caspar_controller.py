@@ -92,6 +92,7 @@ class CasparController(object):
         while True:
             try:
                 self.main()
+                time.sleep(.01)
             except Exception:
                 log_traceback()
             time.sleep(.3)
@@ -127,13 +128,15 @@ class CasparController(object):
 #        self.recovery_time = time.time()
 
         if cued_fname and (not self.paused) and (info["pos"] == self.fpos) and (not self.stopped) and not self.parent.current_live and self.cued_item and (not self.cued_item["run_mode"]):
-            if self.stalled > time.time() - 4:
+            if self.stalled and self.stalled < time.time() - 5:
+                logging.warning("Stalled for a long time")
                 logging.warning("Taking stalled clip (pos: {})".format(self.fpos))
                 self.take()
             elif not self.stalled:
                 logging.debug("Playback is stalled")
                 self.stalled = time.time()
-        else:
+        elif self.stalled:
+            logging.debug("No longer stalled")
             self.stalled = False
 
         self.fpos = info["pos"]

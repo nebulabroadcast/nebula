@@ -8,6 +8,15 @@ probes = [
 class Service(BaseService):
     def on_init(self):
         self.conds = []
+        rou = self.settings.attrib.get("restart_on_update", "all")
+        if rou.lower() == "all":
+            self.restart_on_update = "all"
+        elif all([k.strip().isdigit() for k in rou.split(",")]):
+            self.restart_on_update = [int(k.strip()) for k in rou.split(",")]
+        else:
+            self.restart_on_update = None
+        logging.debug("Following actions will be restarted on source update: {}".format(self.restart_on_update))
+
         for cond in self.settings.findall("cond"):
             if cond is None:
                 continue
@@ -142,26 +151,32 @@ class Service(BaseService):
             asset["qc/state"] = 0
             asset.save()
 
-            db = DB()
-            db.query("""
-                UPDATE jobs SET
-                    status=5,
-                    retries=0,
-                    progress=0,
-                    creation_time=%s,
-                    start_time=NULL,
-                    end_time=NULL,
-                    id_service=NULL,
-                    message='Restarting after source update'
-                WHERE
-                    id_asset=%s
-                    AND status IN (1,2,3,4,6)
-                RETURNING id
-                """,
-                    [time.time(), asset.id]
+            if self.restart_on_update:
+                if type(self.restart_on_update) == list:
+                    action_cond = "AND id_action in ({})".format(",".join(self.restart_on_update))
+                else:
+                    action_cond = ""
+                db = DB()
+                db.query("""
+                    UPDATE jobs SET
+                        status=5,
+                        retries=0,
+                        progress=0,
+                        creation_time=%s,
+                        start_time=NULL,
+                        end_time=NULL,
+                        id_service=NULL,
+                        message='Restarting after source update'
+                    WHERE
+                        id_asset=%s
+                        AND status IN (1,2,3,4,6)
+                        {}
+                    RETURNING id
+                    """.format(action_cond),
+                        [time.time(), asset.id]
 
-                )
-            res = db.fetchall()
-            if res:
-                logging.info("{}: Changed. Restarting jobs {}".format(asset, ", ".join([str(l[0]) for l in res])))
-            db.commit()
+                    )
+                res = db.fetchall()
+                if res:
+                    logging.info("{}: Changed. Restarting jobs {}".format(asset, ", ".join([str(l[0]) for l in res])))
+                db.commit()
