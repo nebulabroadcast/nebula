@@ -71,7 +71,8 @@ class StorageMonitor(BaseAgent):
 
 
     def mount(self, storage):
-        if storage["protocol"] == "samba":
+        protocol = storage["protocol"]
+        if protocol == "samba":
             smbopts = {}
             if storage.get("login"):
                 smbopts["user"] = storage["login"]
@@ -93,7 +94,7 @@ class StorageMonitor(BaseAgent):
             cmd = "mount.cifs {} {}{}".format(storage["path"], storage.local_path, opts)
 
 
-        elif protocol == NFS:
+        elif protocol == 'nfs':
             executable = "mount.nfs"
             cmd = "mount.nfs {} {}".format(storage["path"], storage.local_path)
 
