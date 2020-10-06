@@ -93,7 +93,7 @@ class StorageMonitor(BaseAgent):
             cmd = "mount.cifs {} {}{}".format(storage["path"], storage.local_path, opts)
 
 
-        elif protocol == NFS:
+        elif protocol == "nfs":
             executable = "mount.nfs"
             cmd = "mount.nfs {} {}".format(storage["path"], storage.local_path)
 
