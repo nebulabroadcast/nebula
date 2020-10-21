@@ -14,6 +14,21 @@ def api_schedule(**kwargs):
     user = kwargs.get("user", anonymous)
     initiator = kwargs.get("initiator", None)
 
+    try:
+        id_channel = int(id_channel)
+    except ValueError:
+        return NebulaResponse(ERROR_BAD_REQUEST, "id_channel must be an integer")
+
+    try:
+        start_time = int(start_time)
+    except ValueError:
+        return NebulaResponse(ERROR_BAD_REQUEST, "start_time must be an integer")
+
+    try:
+        end_time = int(end_time)
+    except ValueError:
+        return NebulaResponse(ERROR_BAD_REQUEST, "end_time must be an integer")
+
     if not id_channel or id_channel not in config["playout_channels"]:
         return NebulaResponse(ERROR_BAD_REQUEST, "Unknown playout channel ID {}".format(id_channel))
 

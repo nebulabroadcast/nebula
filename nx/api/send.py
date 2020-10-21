@@ -38,5 +38,5 @@ def api_send(**kwargs):
                 db=db
             )
 
-    return NebulaResponse(SUCCESS_ACCEPTED, "Starting {} jobs".format(len(objects)))
+    return NebulaResponse(SUCCESS_ACCEPTED, "Starting {} job{}".format(len(objects), "s" if len(objects) > 1 else ""))
 

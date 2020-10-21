@@ -161,7 +161,8 @@ def get_next_item(item, **kwargs):
 
 
 def bin_refresh(bins, **kwargs):
-    if not [b for b in bins if b]:
+    bins = [b for b in bins if b]
+    if not bins:
         return True
     db = kwargs.get("db", DB())
     sender = kwargs.get("sender", False)
@@ -206,15 +207,20 @@ def bin_refresh(bins, **kwargs):
 def send_mail(to, subject, body, **kwargs):
     if type(to) in string_types:
         to = [to]
-    reply_address = kwargs.get("from", "Nebula <{}@nebulabroadcast.com>".format(config["site_name"]))
+    default_reply_address = config.get("mail_from", "Nebula <{}@nebulabroadcast.com>".format(config["site_name"]))
+    reply_address = kwargs.get("from", default_reply_address)
     smtp_host = config.get("smtp_host", "localhost")
+    smtp_port = config.get("smtp_port", 0)
     smtp_user = config.get("smtp_user", False)
     smtp_pass = config.get("smtp_pass", False)
     msg = MIMEText(body)
     msg['Subject'] = subject
     msg['From'] = reply_address
     msg['To'] = ",".join(to)
-    s = smtplib.SMTP(smtp_host)
+    if config.get("smtp_ssl", False):
+        s = smtplib.SMTP_SSL(smtp_host, port=smtp_port)
+    else:
+        s = smtplib.SMTP(smtp_host, port=smtp_port)
     if smtp_user and smtp_pass:
         s.login(smtp_user, smtp_pass)
     s.sendmail(reply_address, [to], msg.as_string())

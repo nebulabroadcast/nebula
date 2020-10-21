@@ -153,6 +153,9 @@ class Bin(BinMixIn, ServerObject):
             self.db.query("SELECT meta FROM events WHERE id_magic=%s", [self.id]) #TODO: playout only
             try:
                 self._event = Event(meta=self.db.fetchall()[0][0])
+            except IndexError:
+                logging.error("Unable to get {} event".format(self))
+                self._event = False
             except Exception:
                 log_traceback()
                 self._event = False

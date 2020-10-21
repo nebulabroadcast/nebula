@@ -16,6 +16,7 @@ class WebToolPlugin(object):
         self.name = name
         self["name"] = self.title
 
+
     def render(self, template):
         import jinja2
         tpl_dir = os.path.join(get_plugin_path("webtools"), self.name)
@@ -27,6 +28,11 @@ class WebToolPlugin(object):
         jinja.filters["slugify"] = slugify
         template = jinja.get_template("{}.html".format(template))
         return template.render(**self.context)
+
+    def set_template(self, name):
+        tpl_dir = os.path.join(get_plugin_path("webtools"), self.name)
+        self.view.template_path = os.path.join(tpl_dir, "{}.html".format(name))
+
 
     def __getitem__(self, key):
         return self.view[key]

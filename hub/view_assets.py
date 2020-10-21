@@ -64,6 +64,7 @@ class ViewAssets(CherryAdminView):
             return "&".join(["{}={}".format(k, data[k]) for k in data])
 
 
+        self["show_jobs"]    = config.get("hub_browser_jobs_column", True)
         self["name"]         = "assets"
         self["title"]        = config["views"][id_view]["title"]
         self["js"]           = ["/static/js/assets.js"]

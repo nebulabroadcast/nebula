@@ -13,8 +13,8 @@ To change your password, please go to:
 
 {hub_url}/passreset?token={token}
 
-Thanks again for using Nebula, and if you have any questions,
-please contact support@nebulabroadcast.com or your system administrator.
+Thank you for using Nebula, and if you have any questions,
+please contact your system administrator.
 
 Sincerely,
 
@@ -82,8 +82,7 @@ class ViewPassReset(CherryAdminView):
 
             user.save()
 
-            self.context.message("Password reset link has been sent to your email")
-            self["mode"] = False
+            self["mode"] = "mail-sent"
             return
 
         #

@@ -87,7 +87,7 @@ class ViewDetail(CherryAdminView):
         self["name"] = "detail"
         self["title"] = "Asset detail"
         self["js"] = [
-                "https://static.nebulabroadcast.com/nebula/js/vendor/resumable.js",
+                "/static/js/vendor/resumable.js",
                 "/static/js/detail.js"
                 ]
 

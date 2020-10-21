@@ -20,6 +20,11 @@ class CasparController(object):
     def __init__(self, parent):
         self.parent = parent
 
+        self.caspar_host         = parent.channel_config.get("caspar_host", "localhost")
+        self.caspar_port         = int(parent.channel_config.get("caspar_port", 5250))
+        self.caspar_channel      = int(parent.channel_config.get("caspar_channel", 1))
+        self.caspar_feed_layer   = int(parent.channel_config.get("caspar_feed_layer", 10))
+
         self.current_item = False
         self.current_fname = False
         self.cued_item = False
@@ -43,7 +48,7 @@ class CasparController(object):
             return
 
         Parser = get_info_parser(self.infc)
-        self.parser = Parser(self.infc, self.parent.caspar_channel)
+        self.parser = Parser(self.infc, self.caspar_channel)
 
         thread.start_new_thread(self.work, ())
 
@@ -53,11 +58,11 @@ class CasparController(object):
 
     @property
     def host(self):
-        return self.parent.caspar_host
+        return self.caspar_host
 
     @property
     def port(self):
-        return self.parent.caspar_port
+        return self.caspar_port
 
     def connect(self):
         if not hasattr(self, "cmdc"):
@@ -98,7 +103,7 @@ class CasparController(object):
             time.sleep(.3)
 
     def main(self):
-        info = self.parser.get_info(self.parent.caspar_feed_layer)
+        info = self.parser.get_info(self.caspar_feed_layer)
         if not info:
             logging.warning("Channel {} update stat failed".format(self.id_channel))
             self.bad_requests += 1
@@ -218,7 +223,7 @@ class CasparController(object):
 
     def cue(self, fname, item, **kwargs):
         auto       = kwargs.get("auto", True)
-        layer      = kwargs.get("layer", self.parent.caspar_feed_layer)
+        layer      = kwargs.get("layer", self.caspar_feed_layer)
         play       = kwargs.get("play", False)
         loop       = kwargs.get("loop", False)
         mark_in    = item.mark_in()
@@ -234,20 +239,21 @@ class CasparController(object):
 
         if play:
             q = "PLAY {}-{} {}{}".format(
-                    self.parent.caspar_channel,
+                    self.caspar_channel,
                     layer,
                     fname,
                     marks
                 )
         else:
             q = "LOADBG {}-{} {} {} {}".format(
-                    self.parent.caspar_channel,
+                    self.caspar_channel,
                     layer,
                     fname,
                     ["","AUTO"][auto],
                     marks
                 )
 
+        self.cueing = fname
         result = self.query(q)
 
         if result.is_error:
@@ -260,24 +266,23 @@ class CasparController(object):
             self.cued_fname = fname
             self.cued_in    = mark_in*self.fps
             self.cued_out   = mark_out*self.fps
-            self.cueing     = fname
             message = "Cued item {} ({})".format(self.cued_item, fname)
 
         return NebulaResponse(result.response, message)
 
 
     def clear(self, **kwargs):
-        layer = layer or self.parent.caspar_feed_layer
+        layer = layer or self.caspar_feed_layer
         result = self.query("CLEAR {}-{}".format(self.channel, layer))
         return NebulaResponse(result.response, result.data)
 
 
     def take(self, **kwargs):
-        layer = kwargs.get("layer", self.parent.caspar_feed_layer)
+        layer = kwargs.get("layer", self.caspar_feed_layer)
         if not self.cued_item or self.cueing:
             return NebulaResponse(400, "Unable to take. No item is cued.")
         self.paused = False
-        result = self.query("PLAY {}-{}".format(self.parent.caspar_channel, layer))
+        result = self.query("PLAY {}-{}".format(self.caspar_channel, layer))
         if result.is_success:
             if self.parent.current_live:
                 self.parent.on_live_leave()
@@ -291,13 +296,13 @@ class CasparController(object):
 
 
     def retake(self, **kwargs):
-        layer = kwargs.get("layer", self.parent.caspar_feed_layer)
+        layer = kwargs.get("layer", self.caspar_feed_layer)
         if self.parent.current_live:
             return NebulaResponse(409, "Unable to retake live item")
         seekparam = str(int(self.current_item.mark_in() * self.fps))
         if self.current_item.mark_out():
             seekparam += " LENGTH {}".format(int((self.current_item.mark_out() - self.current_item.mark_in()) * self.parser.seek_fps))
-        q = "PLAY {}-{} {} SEEK {}".format(self.parent.caspar_channel, layer, self.current_fname, seekparam)
+        q = "PLAY {}-{} {} SEEK {}".format(self.caspar_channel, layer, self.current_fname, seekparam)
         self.paused = False
         result = self.query(q)
         if result.is_success:
@@ -312,22 +317,22 @@ class CasparController(object):
 
 
     def freeze(self, **kwargs):
-        layer = kwargs.get("layer", self.parent.caspar_feed_layer)
+        layer = kwargs.get("layer", self.caspar_feed_layer)
         if self.parent.current_live:
             return NebulaResponse(409, "Unable to freeze live item")
         if not self.paused:
-            q = "PAUSE {}-{}".format(self.parent.caspar_channel, layer)
+            q = "PAUSE {}-{}".format(self.caspar_channel, layer)
             message = "Playback paused"
             new_val = True
         else:
             if self.parser.protocol >= 2.07:
-                q = "RESUME {}-{}".format(self.parent.caspar_channel, layer)
+                q = "RESUME {}-{}".format(self.caspar_channel, layer)
             else:
                 length = "LENGTH {}".format(int(
                     (self.current_out or self.fdur) - self.fpos
                     ))
                 q = "PLAY {}-{} {} SEEK {} {}".format(
-                        self.parent.caspar_channel,
+                        self.caspar_channel,
                         layer,
                         self.current_fname,
                         self.fpos,
@@ -347,10 +352,10 @@ class CasparController(object):
 
 
     def abort(self, **kwargs):
-        layer = kwargs.get("layer", self.parent.caspar_feed_layer)
+        layer = kwargs.get("layer", self.caspar_feed_layer)
         if not self.cued_item:
             return NebulaResponse(400, "Unable to abort. No item is cued.")
-        q = "LOAD {}-{} {}".format(self.parent.caspar_channel, layer, self.cued_fname)
+        q = "LOAD {}-{} {}".format(self.caspar_channel, layer, self.cued_fname)
         if self.cued_item.mark_in():
             q += " SEEK {}".format(int(self.cued_item.mark_in() * self.parser.seek_fps))
         if self.cued_item.mark_out():

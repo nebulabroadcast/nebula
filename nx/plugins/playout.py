@@ -21,11 +21,11 @@ class PlayoutPluginSlot(object):
 class PlayoutPlugin(object):
     def __init__(self, service):
         self.service = service
-        self.id_layer = self.service.caspar_feed_layer + 1
         self.playout_dir = os.path.join(
                 storages[self.channel_config["playout_storage"]].local_path,
                 self.channel_config["playout_dir"]
             )
+        self.id_layer = 0
         self.slots = []
         self.tasks = []
         self.on_init()
@@ -89,7 +89,7 @@ class PlayoutPlugin(object):
     def layer(self, id_layer=False):
         if not id_layer:
             id_layer = self.id_layer
-        return "{}-{}".format(self.service.caspar_channel, id_layer)
+        return "{}-{}".format(self.service.controller.caspar_channel, id_layer)
 
     def query(self, query):
         return self.service.controller.query(query)

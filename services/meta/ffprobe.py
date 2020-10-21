@@ -117,6 +117,10 @@ class FFProbe(Probe):
                     # We already have a video track with a duration
                     continue
 
+                if stream["disposition"].get("attached_pic", 0) == 1:
+                    meta["thumbnail_track"] = stream["index"]
+                    continue
+
                 # Frame rate detection
                 fps_n, fps_d = [float(e) for e in stream["r_frame_rate"].split("/")]
                 meta["video/fps_f"] = fps_n / fps_d

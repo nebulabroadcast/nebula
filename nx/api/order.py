@@ -55,7 +55,8 @@ def api_order(**kwargs):
                     continue
 
             if not item["id_bin"] in affected_bins:
-                affected_bins.append(item["id_bin"])
+                if item["id_bin"]:
+                    affected_bins.append(item["id_bin"])
 
         elif object_type == "asset":
             asset = Asset(id_object, db=db)

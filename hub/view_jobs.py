@@ -43,11 +43,24 @@ class ViewJobs(CherryAdminView):
             id_asset = id_action = 0 # do not use filter: show all active jobs to see queue
 
 
+        if id_asset:
+            db = DB()
+            asset = Asset(id_asset, db=db)
+            actions = api_actions(
+                        user=self["user"],
+                        db=db,
+                        ids=[id_asset]
+                    )
+        else:
+            actions = NebulaResponse(404)
+            asset = False
 
         self["name"] = "jobs"
         self["js"] = ["/static/js/jobs.js"]
         self["title"] = mode.capitalize() +  " jobs"
         self["mode"] = mode
         self["id_asset"] = id_asset
+        self["asset"] = asset
+        self["actions"] = actions.data if actions.is_success else []
         self["id_action"] = id_asset
         self["query"] = query

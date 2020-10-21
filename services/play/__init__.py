@@ -14,6 +14,18 @@ DEFAULT_STATUS = {
         }
 
 class Service(BaseService):
+    def create_controller(self):
+        engine = self.channel_config.get("engine")
+        if engine == "vlc":
+            # Delay import since libvlc might not be available.
+            from .vlc_controller import VlcController
+            return VlcController(self)
+        elif engine == "conti":
+            from .conti_controller import ContiController
+            return ContiController(self)
+        else:
+            return CasparController(self)
+
     def on_init(self):
         if not config["playout_channels"]:
             logging.error("No playout channel configured")
@@ -28,11 +40,7 @@ class Service(BaseService):
 
         self.channel_config = config["playout_channels"][self.id_channel]
 
-        self.caspar_host         = self.channel_config.get("caspar_host", "localhost")
-        self.caspar_port         = int(self.channel_config.get("caspar_port", 5250))
-        self.caspar_channel      = int(self.channel_config.get("caspar_channel", 1))
-        self.caspar_feed_layer   = int(self.channel_config.get("caspar_feed_layer", 10))
-        self.fps                 = float(self.channel_config.get("fps", 25.0))
+        self.fps = float(self.channel_config.get("fps", 25.0))
 
         self.current_asset = Asset()
         self.current_event = Event()
@@ -44,7 +52,7 @@ class Service(BaseService):
         self.status_key = "playout_status/{}".format(self.id_channel)
 
         self.plugins = PlayoutPlugins(self)
-        self.controller = CasparController(self)
+        self.controller = self.create_controller()
         self.last_info = 0
 
         try:
@@ -107,7 +115,13 @@ class Service(BaseService):
         asset = item.asset
         playout_status = asset.get(self.status_key, DEFAULT_STATUS)["status"]
 
-        if playout_status not in [ONLINE, CREATING, UNKNOWN]:
+        kwargs['fname'] = None
+        if playout_status in [ONLINE, CREATING, UNKNOWN]:
+            kwargs['fname'] = asset.get_playout_name(self.id_channel)
+            kwargs['full_path'] = asset.get_playout_full_path(self.id_channel)
+        elif self.channel_config.get('allow_remote') and asset['status'] in (ONLINE,):
+            kwargs['fname'] = kwargs['full_path'] = asset.file_path
+        else:
             return NebulaResponse(404, "Unable to cue {} playout file ".format(get_object_state_name(playout_status)))
 
         kwargs["mark_in"] = item["mark_in"]
@@ -121,7 +135,7 @@ class Service(BaseService):
         kwargs["loop"] = bool(item["loop"])
 
         self.cued_live = False
-        return self.controller.cue(asset.get_playout_name(self.id_channel), item,  **kwargs)
+        return self.controller.cue(item=item,  **kwargs)
 
 
     def cue_forward(self, **kwargs):
@@ -222,26 +236,22 @@ class Service(BaseService):
 
     @property
     def playout_status(self):
-
-        #TODO: Rewrite to be nice
-        data = {}
-        data["id_channel"]    = self.id_channel
-        data["current_item"]  = self.controller.current_item.id if self.controller.current_item else False
-        data["cued_item"]     = self.controller.cued_item.id if self.controller.cued_item else False
-        data["position"]      = self.controller.position
-        data["duration"]      = self.controller.duration
-        data["current_title"] = self.controller.current_item["title"] if self.controller.current_item else "(no clip)"
-        data["cued_title"]    = self.controller.cued_item["title"]    if self.controller.cued_item    else "(no clip)"
-        data["request_time"]  = self.controller.request_time
-        data["paused"]        = self.controller.paused
-        data["cueing"]        = self.controller.cueing
-        data["id_event"]      = self.current_event.id if self.current_event else False
-        data["fps"]           = self.fps
-        data["stopped"]       = False #TODO: deprecated. remove
-
-        data["current_fname"] = self.controller.current_fname
-        data["cued_fname"]    = self.controller.cued_fname
-        return data
+        return {
+            "id_channel"    : self.id_channel,
+            "current_item"  : self.controller.current_item.id if self.controller.current_item else False,
+            "cued_item"     : self.controller.cued_item.id if self.controller.cued_item else False,
+            "position"      : self.controller.position,
+            "duration"      : self.controller.duration,
+            "current_title" : self.controller.current_item["title"] if self.controller.current_item else "(no clip)",
+            "cued_title"    : self.controller.cued_item["title"]    if self.controller.cued_item    else "(no clip)",
+            "request_time"  : self.controller.request_time,
+            "paused"        : self.controller.paused,
+            "cueing"        : self.controller.cueing,
+            "id_event"      : self.current_event.id if self.current_event else False,
+            "fps"           : self.fps,
+            "current_fname" : self.controller.current_fname,
+            "cued_fname"    : self.controller.cued_fname,
+        }
 
 
     def on_progress(self):

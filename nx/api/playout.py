@@ -25,7 +25,9 @@ def api_playout(**kwargs):
     channel_config = config["playout_channels"][id_channel]
     engine = channel_config.get("engine", "dummy")
 
-    if engine == "casparcg":
+    if engine == "dummy":
+        return NebulaResponse(200)
+    else:
         if not action in [
                 "cue",
                 "take",
@@ -62,6 +64,4 @@ def api_playout(**kwargs):
         rdata = json.loads(response.text)
         return rdata
 
-    elif engine == "dummy":
-        return NebulaResponse(200)
 

@@ -5,5 +5,6 @@
     "https://github.com/immstudios/themis2" : {"python-path" : true},
     "https://github.com/immstudios/python-osc" : {"python-path" : true},
     "https://github.com/nebulabroadcast/nebula-core" : {"python-path" : true},
+    "https://github.com/nebulabroadcast/nebula-hub" : {"python-path" :false},
     "https://github.com/martastain/casparcg-infoparser" : {"python-path" : true}
 }
