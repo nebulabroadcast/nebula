@@ -2,7 +2,7 @@ NEBULA
 ======
 
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/nebulabroadcast/nebula?style=for-the-badge)
-![Maintenance](https://img.shields.io/maintenance/yes/2020?style=for-the-badge)
+![Maintenance](https://img.shields.io/maintenance/yes/2021?style=for-the-badge)
 ![Last commit](https://img.shields.io/github/last-commit/immstudios/nebula?style=for-the-badge)
 ![Python version](https://img.shields.io/badge/python-3.7-blue?style=for-the-badge)
 
