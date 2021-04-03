@@ -44,12 +44,12 @@ def api_schedule(**kwargs):
             return NebulaResponse(ERROR_ACCESS_DENIED, "You are not allowed to edit this channel")
         event = Event(id_event, db=db)
         if not event:
-            logging.warning("Unable to delete non existent event ID {}".format(id_event))
+            logging.warning(f"Unable to delete non existent event ID {id_event}")
             continue
         try:
             event.bin.delete()
         except psycopg2.IntegrityError:
-            return NebulaResponse(ERROR_LOCKED, "Unable to delete {}. Already aired.".format(event))
+            return NebulaResponse(ERROR_LOCKED, f"Unable to delete {event}. Already aired.")
         else:
             event.delete()
         changed_event_ids.append(event.id)
@@ -71,10 +71,10 @@ def api_schedule(**kwargs):
             event_at_pos = False
 
         if id_event:
-            logging.debug("Updating event ID {}".format(id_event))
+            logging.debug(f"Updating event ID {id_event}")
             event = Event(id_event, db=db)
             if not event:
-                logging.warning("No such event id {}".format(id_event))
+                logging.warning(f"No such event ID {id_event}")
                 continue
             pbin = event.bin
         elif event_at_pos:
@@ -93,7 +93,7 @@ def api_schedule(**kwargs):
         if id_asset and id_asset != event["id_asset"]:
             asset = Asset(id_asset, db=db)
             if asset:
-                logging.info("Replacing event primary asset with {}".format(asset))
+                logging.info(f"Replacing event primary asset with {asset}")
                 pbin.delete_children()
                 pbin.items = []
 
@@ -149,11 +149,7 @@ def api_schedule(**kwargs):
 
     result = []
     if start_time and end_time:
-        logging.debug("Requested events of channel {} from {} to {}".format(
-            id_channel,
-            format_time(start_time),
-            format_time(end_time)
-            ))
+        logging.debug(f"Requested events of channel {id_channel} from {format_time(start_time)} to {format_time(end_time)}")
 
         db.query("""
                 SELECT e.meta, o.meta FROM events AS e, bins AS o

@@ -1,7 +1,9 @@
 from nebulacore import *
 from nebulacore.base_objects import BaseObject
 
-from .connection import *
+from .db import DB
+from .cache import cache
+from .messaging import messaging
 
 __all__ = ["ServerObject"]
 
@@ -17,7 +19,7 @@ def create_ft_index(meta):
                     else:
                         ft[word] = max(ft[word], weight)
             except Exception:
-                logging.error("Unable to slugify key {} , value {}".format(key, meta[key]))
+                logging.error(f"Unable to slugify key {key} with value {meta[key]}")
     for key in meta:
         if not key in meta_types:
             continue
@@ -31,7 +33,7 @@ def create_ft_index(meta):
                 else:
                     ft[word] = max(ft[word], weight)
         except Exception:
-            logging.error("Unable to slugify key {} , value {}".format(key, meta[key]))
+            logging.error(f"Unable to slugify key {key} with value {meta[key]}")
     return ft
 
 
@@ -44,7 +46,7 @@ class ServerObject(BaseObject):
     @property
     def db(self):
         if not hasattr(self, "_db"):
-            logging.debug("{} is opening DB connection".format(self))
+            logging.debug(f"{self} is opening DB connection")
             self._db = DB()
         return self._db
 
@@ -57,12 +59,12 @@ class ServerObject(BaseObject):
                 return True
         except Exception:
             pass
-        logging.debug("Loading {} ID:{} from DB".format(self.__class__.__name__, id))
-        self.db.query("SELECT meta FROM {} WHERE id = {}".format(self.table_name, id))
+        logging.debug(f"Loading {self.__class__.__name__} ID:{id} from DB")
+        self.db.query(f"SELECT meta FROM {self.table_name} WHERE id = {id}")
         try:
             self.meta = self.db.fetchall()[0][0]
         except IndexError:
-            logging.error("Unable to load {} ID:{}. Object does not exist".format(self.__class__.__name__, id))
+            logging.error(f"Unable to load {self.__class__.__name__} ID:{id}. Object does not exist")
             return False
         self.cache()
 
@@ -106,13 +108,13 @@ class ServerObject(BaseObject):
                         ", ".join(["%s"]*len(cols))
                     )
         else:
-            query = "INSERT INTO {} DEFAULT VALUES RETURNING id".format(self.table_name)
+            query = f"INSERT INTO {self.table_name} DEFAULT VALUES RETURNING id"
         self.db.query(query, vals)
 
         if not self.id:
             self["id"] = self.db.fetchone()[0]
             self.db.query(
-                    "UPDATE {} SET meta=%s WHERE id=%s".format(self.table_name),
+                    f"UPDATE {self.table_name} SET meta=%s WHERE id=%s",
                     [json.dumps(self.meta), self.id]
                 )
 
@@ -128,7 +130,7 @@ class ServerObject(BaseObject):
 
         query = "UPDATE {} SET {} WHERE id=%s".format(
                 self.table_name,
-                ", ".join(["{}=%s".format(key) for key in cols])
+                ", ".join([key+"=%s" for key in cols])
             )
         self.db.query(query, vals+[self.id])
 
@@ -141,7 +143,7 @@ class ServerObject(BaseObject):
             return
         args = [(self.id, self.object_type_id, ft[word], word) for word in ft]
         tpls = ','.join(['%s'] * len(args))
-        self.db.query("INSERT INTO ft (id, object_type, weight, value) VALUES {}".format(tpls), args)
+        self.db.query(f"INSERT INTO ft (id, object_type, weight, value) VALUES {tpls}", args)
 
 
     @property
@@ -168,7 +170,7 @@ class ServerObject(BaseObject):
     def delete(self):
         if not self.id:
             return
-        logging.info("Deleting {}".format(self))
+        logging.info(f"Deleting {self}")
         cache.delete(self.cache_key)
         self.delete_children()
         self.db.query("DELETE FROM {} WHERE id=%s".format(self.table_name), [self.id])

@@ -4,7 +4,9 @@ import requests
 from email.mime.text import MIMEText
 
 from nebulacore import *
-from .connection import *
+
+from .db import DB
+from .messaging import messaging
 from .objects import *
 
 
@@ -103,10 +105,10 @@ def get_next_item(item, **kwargs):
     elif isinstance(item, Item):
         current_item = item
     else:
-        logging.error("Unexpected get_next_item argument {}".format(item))
+        logging.error(f"Unexpected get_next_item argument {item}")
         return False
 
-    logging.debug("Looking for item following {}".format(current_item))
+    logging.debug(f"Looking for an item following {current_item}")
     current_bin = Bin(current_item["id_bin"], db=db)
 
     items = current_bin.items
@@ -136,7 +138,7 @@ def get_next_item(item, **kwargs):
             direction = "<"
             order = "DESC"
         db.query(
-                "SELECT meta FROM events WHERE id_channel = %s and start {} %s ORDER BY start {} LIMIT 1".format(direction, order),
+                f"SELECT meta FROM events WHERE id_channel = %s and start {direction} %s ORDER BY start {order} LIMIT 1",
                 [current_event["id_channel"], current_event["start"]]
             )
         try:
@@ -183,7 +185,7 @@ def bin_refresh(bins, **kwargs):
         event = Event(meta=meta, db=db)
         if event.id not in changed_events:
             changed_events.append(event.id)
-    logging.debug("Bins changed {}. Initiator {}".format(bins, kwargs.get("initiator", logging.user)))
+    logging.debug(f"Bins changed {bins}. Initiator {kwargs.get('initiator', logging.user)}")
     messaging.send(
             "objects_changed",
             sender=sender,
@@ -192,7 +194,7 @@ def bin_refresh(bins, **kwargs):
             initiator=kwargs.get("initiator", None)
         )
     if changed_events:
-        logging.debug("Events changed {}. Initiator {}".format(bins, kwargs.get("initiator", logging.user)))
+        logging.debug(f"Events changed {bins}. Initiator {kwargs.get('initiator', logging.user)}")
         messaging.send(
                 "objects_changed",
                 sender=sender,
@@ -207,10 +209,9 @@ def bin_refresh(bins, **kwargs):
 def send_mail(to, subject, body, **kwargs):
     if type(to) in string_types:
         to = [to]
-    default_reply_address = config.get("mail_from", "Nebula <{}@nebulabroadcast.com>".format(config["site_name"]))
+    default_reply_address = config.get("mail_from", f"Nebula <{config['site_name']}@nebulabroadcast.com>")
     reply_address = kwargs.get("from", default_reply_address)
     smtp_host = config.get("smtp_host", "localhost")
-    smtp_port = config.get("smtp_port", 0)
     smtp_user = config.get("smtp_user", False)
     smtp_pass = config.get("smtp_pass", False)
     msg = MIMEText(body)
@@ -218,8 +219,10 @@ def send_mail(to, subject, body, **kwargs):
     msg['From'] = reply_address
     msg['To'] = ",".join(to)
     if config.get("smtp_ssl", False):
+        smtp_port = config.get("smtp_port", 25)
         s = smtplib.SMTP_SSL(smtp_host, port=smtp_port)
     else:
+        smtp_port = config.get("smtp_port", 465)
         s = smtplib.SMTP(smtp_host, port=smtp_port)
     if smtp_user and smtp_pass:
         s.login(smtp_user, smtp_pass)
@@ -230,25 +233,21 @@ def cg_download(target_path, method, timeout=10, **kwargs):
     start_time = time.time()
     target_dir = os.path.dirname(os.path.abspath(target_path))
     cg_server = config.get("cg_server", "https://cg.immstudios.org")
-    cg_site = config.get("cg_site", False) or config["site_name"]
+    cg_site = config.get("cg_site", config["site_name"])
     if not os.path.isdir(target_dir):
         try:
             os.makedirs(target_dir)
         except Exception:
-            logging.error("Unable to create output directory {}".format(target_dir))
+            logging.error(f"Unable to create output directory {target_dir}")
             return False
-    url = "{}/render/{}/{}".format(
-            cg_server,
-            cg_site,
-            method
-        )
+    url = f"{cg_server}/render/{cg_site}/{method}"
     try:
         response = requests.get(url, params=kwargs, timeout=timeout)
     except Exception:
         log_traceback("Unable to download CG item")
         return False
     if response.status_code != 200:
-        logging.error("CG Download failed with code {}".format(response.status_code))
+        logging.error(f"CG Download failed with code {response.status_code}")
         return False
     try:
         temp_path = target_path + ".creating"
@@ -256,9 +255,8 @@ def cg_download(target_path, method, timeout=10, **kwargs):
             f.write(response.content)
         os.rename(temp_path, target_path)
     except Exception:
-        log_traceback("Unable to write CG item to {}".format(target_path))
+        log_traceback(f"Unable to write CG item to {target_path}")
         return False
     logging.info("CG {} downloaded in {:.02f}s".format(method, time.time() - start_time))
     return True
-
 

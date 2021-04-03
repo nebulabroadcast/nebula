@@ -30,5 +30,5 @@ def api_settings(**kwargs):
 
     data["storages"] = {}
     for k in config["storages"]:
-        data["storages"][k] = {"title" : config["storages"][k]["title"]}
+        data["storages"][k] = {"title" : storages[k].title}
     return NebulaResponse(200, data=data)

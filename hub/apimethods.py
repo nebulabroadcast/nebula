@@ -12,6 +12,7 @@ class APIMethods(dict):
         self.update({
                 "get"      : api_get,
                 "set"      : api_set,
+                "browse"   : api_browse,
                 "delete"   : api_delete,
                 "settings" : api_settings,
                 "rundown"  : api_rundown,

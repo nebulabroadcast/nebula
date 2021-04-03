@@ -14,6 +14,8 @@ from nebula import *
 
 
 class VlcMedia(object):
+    time_unit = "f"
+
     def __init__(self, instance, full_path, item, **kwargs):
         self.auto       = kwargs.get("auto", True)
         loop       = kwargs.get("loop", False)

@@ -28,7 +28,7 @@ def api_set(**kwargs):
             }.get(object_type, None)
 
     if object_type_class is None:
-        return NebulaResponse(400, "Unsupported object type {}".format(object_type))
+        return NebulaResponse(400, f"Unsupported object type {object_type}")
 
     changed_objects = []
     affected_bins = []
@@ -45,23 +45,23 @@ def api_set(**kwargs):
         if object_type == "asset":
             id_folder = data.get("id_folder", False) or obj["id_folder"]
             if not user.has_right("asset_edit", id_folder):
-                return NebulaResponse(ERROR_ACCESS_DENIED,
-                        "{} is not allowed to edit {} folder".format(
-                            user,
-                            config["folders"][id_folder]["title"]
-                        )
-                    )
+                return NebulaResponse(
+                    ERROR_ACCESS_DENIED,
+                    f"{user} is not allowed to edit {config['folders'][id_folder]['title']} folder"
+                )
         elif object_type == "user":
             if obj.id:
                 if not user.has_right("user_edit"):
-                    return NebulaResponse(ERROR_ACCESS_DENIED,
-                            "{} is not allowed to edit users data".format(user)
-                        )
+                    return NebulaResponse(
+                        ERROR_ACCESS_DENIED,
+                        f"{user} is not allowed to edit users data"
+                    )
             else:
                 if not user.has_right("user_create"):
-                    return NebulaResponse(ERROR_ACCESS_DENIED,
-                            "{} is not allowed to add new users".format(user)
-                        )
+                    return NebulaResponse(
+                        ERROR_ACCESS_DENIED,
+                        f"{user} is not allowed to add new users"
+                    )
 
         changed = False
         for key in data:
@@ -83,7 +83,7 @@ def api_set(**kwargs):
 
             if not isinstance(obj, BaseObject):
                 # TODO: use 409-conflict?
-                return NebulaResponse(ERROR_BAD_REQUEST, "Unable to save {}:\n\n{}".format(tt, obj))
+                return NebulaResponse(ERROR_BAD_REQUEST, f"Unable to save {tt}:\n\n{obj}")
 
         if changed:
             obj.save(notify=False)

@@ -46,21 +46,35 @@ class ViewDashboard(CherryAdminView):
         db = DB()
         hosts = {}
         db.query("SELECT hostname, last_seen, status FROM hosts ORDER BY hostname ASC")
-        for hostname, last_seen, status in db.fetchall():
-            host_info = {
-                    "last_seen" : last_seen,
-                    "cpu" : status["cpu"],
-                    "mem_total" : status["mem"][0],
-                    "mem_free" : status["mem"][1],
-                    "swp_total" : status["swp"][0],
-                    "swp_free" : status["swp"][1],
-                    "root_total" : status["rfs"][0],
-                    "root_free" : status["rfs"][1],
-                }
 
+        tagmap = {
+                "cpu_usage" : "cpu",
+                "memory_bytes_total" : "mem_total" ,
+                "memory_bytes_free" : "mem_free" ,
+                "swap_bytes_total" : "swp_total" ,
+                "swap_bytes_free" : "swp_free"
+            }
+
+        sinfo = {id : {"title" : storages[id].title} for id in storages}
+
+        for hostname, last_seen, status in db.fetchall():
+            host_info = {}
+            for name, tags, value in status.get("metrics",[]):
+                if name == "storage_bytes_total" and tags.get("mountpoint") == "/":
+                    host_info["root_total"] = value
+                elif name == "storage_bytes_free" and tags.get("mountpoint") == "/":
+                    host_info["root_free"] = value
+
+                elif name == "shared_storage_bytes_total":
+                    sinfo[int(tags.get("id"))]["total"] = value
+
+                elif name == "shared_storage_bytes_free":
+                    sinfo[int(tags.get("id"))]["free"] = value
+
+                elif name in tagmap:
+                    host_info[tagmap[name]] = value
             hosts[hostname] = host_info
-            if not storage_info:
-                storage_info = status["stor"]
+        storage_info = [{"id" : id, **d} for id, d in sinfo.items() if d.get("total") and d.get("free")]
 
         #
         # MAM statistics

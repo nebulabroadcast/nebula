@@ -1,7 +1,12 @@
+import psycopg2
+
 from nebulacore import *
 from nebulacore.metadata import clear_cs_cache
 
-from .connection import *
+from .db import DB
+from .cache import cache, Cache
+from .messaging import messaging
+
 from .objects import *
 from .helpers import *
 from .mediaprobe import *
@@ -16,8 +21,7 @@ def load_settings(*args, **kwargs):
     # so error handling should be here
     try:
         db = DB()
-    except Exception:
-        message = log_traceback("Database connection error", handlers=False)
+    except psycopg2.OperationalError:
         critical_error("Unable to connect nebula database")
 
     # Load from db
@@ -87,14 +91,18 @@ def load_settings(*args, **kwargs):
     #
 
     messaging.configure()
+
+    def seismic_log(**kwargs):
+        messaging.send("log", **kwargs)
+    logging.add_handler(seismic_log)
+
     cache.configure()
     load_common_scripts()
+
 
     if logging.user == "hub":
         messaging.send("config_changed")
     return True
-
-
 
 
 load_settings()

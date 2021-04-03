@@ -1,13 +1,10 @@
 __all__ = ["PlayoutRequestHandler", "HTTPServer"]
 
 import sys
-import cgi
 import json
+import urllib.parse
 
-try:
-    from http.server import BaseHTTPRequestHandler, HTTPServer
-except ImportError:
-    from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, HTTPServer
 
 from nebula import *
 
@@ -16,7 +13,7 @@ class PlayoutRequestHandler(BaseHTTPRequestHandler):
     def log_request(self, code='-', size='-'):
         pass
 
-    def _do_headers(self,mime="application/json",response=200,headers=[]):
+    def _do_headers(self,mime="application/json", response=200, headers=[]):
         self.send_response(response)
         self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
@@ -44,18 +41,14 @@ class PlayoutRequestHandler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         service = self.server.service
-        ctype, pdict = cgi.parse_header(self.headers.get('content-type'))
 
-        if ctype == 'multipart/form-data':
-            postvars = cgi.parse_multipart(self.rfile, pdict)
-        elif ctype == 'application/x-www-form-urlencoded':
-            length = int(self.headers.get('content-length'))
-            postvars = cgi.parse_qs(self.rfile.read(length), keep_blank_values=1)
-        else:
-            logging.debug("No post data")
-            self.error(400)
+        ctype = self.headers.get("content-type")
+        if ctype != "application/x-www-form-urlencoded":
+            self.error(400, "Play service received a bad request. Expected x-www-form-urlencoded data.")
             return
 
+        length = int(self.headers.get('content-length'))
+        postvars = urllib.parse.parse_qs(self.rfile.read(length), keep_blank_values=1)
 
         method = self.path.lstrip("/").split("/")[0]
         params = {}

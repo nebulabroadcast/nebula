@@ -19,7 +19,7 @@ def api_order(**kwargs):
         return NebulaResponse(ERROR_UNAUTHORISED)
 
     if not id_channel in config["playout_channels"]:
-        return NebulaResponse(ERROR_BAD_REQUEST, "No such channel ID {}".format(id_channel))
+        return NebulaResponse(ERROR_BAD_REQUEST, f"No such channel ID {id_channel}")
 
     playout_config = config["playout_channels"][id_channel]
     append_cond = playout_config.get("rundown_accepts", "True")
@@ -28,9 +28,9 @@ def api_order(**kwargs):
         return NebulaResponse(ERROR_ACCESS_DENIED, "You are not allowed to edit this rundown")
 
     if not (id_bin and order):
-        return NebulaResponse(ERROR_BAD_REQUEST, "Bad \"order\" request<br>id_bin: {}<br>order: {}".format(id_bin, order))
+        return NebulaResponse(ERROR_BAD_REQUEST, f"Bad \"order\" request<br>id_bin: {id_bin}<br>order: {order}")
 
-    logging.info("{} executes bin_order method".format(user))
+    logging.info(f"{user} executes bin_order method")
     affected_bins = [id_bin]
     pos = 1
     rlen = float(len(order))
@@ -47,11 +47,11 @@ def api_order(**kwargs):
             else:
                 item = Item(id_object, db=db)
                 if not item["id_bin"]:
-                    logging.error("Inserting asset data {} {} {} to item. This should never happen".format(object_type, id_object, meta))
+                    logging.error(f"Attempted asset data insertion ({object_type} ID {id_object} {meta}) to item. This should never happen")
                     continue
 
                 if not item:
-                    logging.debug("Skipping {}".format(item))
+                    logging.debug(f"Skipping {item}")
                     continue
 
             if not item["id_bin"] in affected_bins:
@@ -61,15 +61,15 @@ def api_order(**kwargs):
         elif object_type == "asset":
             asset = Asset(id_object, db=db)
             if not asset:
-                logging.error("Unable to append {} {} {}. Asset does not exist".format(object_type, id_object, meta))
+                logging.error(f"Unable to append {object_type} ID {id_object}. Asset does not exist")
                 continue
             try:
                 can_append = eval(append_cond)
             except Exception:
-                log_traceback("Unable to evaluate rundown accept condition: {}".format(append_cond))
+                log_traceback("Unable to evaluate rundown accept condition: {append_cond}")
                 continue
             if not can_append:
-                logging.error("Unable to append {} {} {}. Condition failed".format(object_type, id_object, meta))
+                logging.error(f"Unable to append {asset}. Does not match conditions.")
                 continue
             item = Item(db=db)
             for key in meta:
@@ -79,7 +79,7 @@ def api_order(**kwargs):
             item["id_asset"] = asset.id
             item.meta.update(meta)
         else:
-            logging.error("Unable to append {} {} {}. Unexpected object".format(object_type, id_object, meta))
+            logging.error(f"Unable to append {object_type} ID {id_object} {meta}. Unexpected object")
             continue
 
         if not item or item["position"] != pos or item["id_bin"] != id_bin:

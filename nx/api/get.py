@@ -2,7 +2,7 @@ import string
 
 from nx import *
 
-__all__ = ["api_get", "get_objects"]
+__all__ = ["api_get", "api_browse", "get_objects"]
 
 def get_objects(ObjectType, **kwargs):
     """objects lookup function. To be used inside services"""
@@ -37,7 +37,7 @@ def get_objects(ObjectType, **kwargs):
 
 
         if order_key in ObjectType.db_cols + ["id"]:
-            order = "{} {}".format(order_key, order_trend)
+            order = f"{order_key} {order_trend}"
         else:
             cast = None
             if order_key in meta_types:
@@ -48,9 +48,9 @@ def get_objects(ObjectType, **kwargs):
                     cast = "INTEGER"
 
             if cast:
-                order = "CAST(meta->>'{}' AS {}) {}".format(order_key, cast, order_trend)
+                order = f"CAST(meta->>'{order_key}' AS {cast}) {order_trend}"
             else:
-                order = "meta->>'{}' {}".format(order_key, order_trend)
+                order = f"meta->>'{order_key}' {order_trend}"
 
 
 
@@ -72,7 +72,7 @@ def get_objects(ObjectType, **kwargs):
                 ]:
             if key in view_config and view_config[key]:
                 if len(view_config[key]) == 1:
-                    raw_conds.append("{}={}".format(col, view_config[key][0]))
+                    raw_conds.append(f"{col}={view_config[key][0]}")
                 else:
                     raw_conds.append("{} IN ({})".format(col, ",".join([str(v) for v in view_config[key]])))
         for cond in view_config.get("conds", []):
@@ -134,6 +134,35 @@ def get_objects(ObjectType, **kwargs):
     if count:
         cache.save("view-count-{}".format(id_view), count)
 
+
+def api_browse(**kwargs):
+    db = kwargs.get("db", DB())
+    user = kwargs.get("user", anonymous)
+
+    params = {
+            "id_view" : int(kwargs.get("v", min(config["views"].keys()))),
+            "limit" : int(kwargs.get("l", 50)),
+            "offset" : (max(0,int(kwargs.get("p", 1)) - 1))*50,
+            "fulltext" : kwargs.get("q", "")
+        }
+
+    result = {
+        "response" : 200,
+        "message" : "OK",
+        "data" : [],
+        "id_view" : params["id_view"],
+        "count" : 0
+    }
+
+    columns = config["views"][params["id_view"]]["columns"]
+
+    for response, obj in get_objects(Asset, **params):
+        result["count"] |= response["count"]
+        row = {"_id" : obj.id}
+        for col in columns:
+            row[col] = obj.show(col)
+        result["data"].append(row)
+    return result
 
 
 
@@ -200,6 +229,22 @@ def api_get(**kwargs):
                 else:
                     form = form or {}
                     row.append(obj.show(key, **form))
+            result["data"].append(row)
+
+    elif result_type == "form":
+        for response, obj in get_objects(ObjectType, **kwargs):
+            result["count"] |= response["count"]
+            row = {
+                "id" : obj.id,
+                "id_folder" : obj["id_folder"],
+                "duration" : obj["duration"],
+                "mark_in" : obj["mark_in"],
+                "mark_out" : obj["mark_out"],
+                "form" : {}
+            }
+            for key, s in config["folders"][obj["id_folder"]]["meta_set"]:
+                row["form"][key] = obj.show(key, result="full")
+
             result["data"].append(row)
 
 

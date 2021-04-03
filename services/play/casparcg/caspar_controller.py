@@ -17,6 +17,8 @@ from ccginfo import *
 
 
 class CasparController(object):
+    time_unit = "f"
+
     def __init__(self, parent):
         self.parent = parent
 
@@ -33,7 +35,7 @@ class CasparController(object):
         self.force_cue = False
 
         self.paused   = False
-        self.stopped  = False
+        self.loop     = False
         self.stalled  = False
 
         self.fpos = self.fdur = 0
@@ -132,7 +134,7 @@ class CasparController(object):
 #            return
 #        self.recovery_time = time.time()
 
-        if cued_fname and (not self.paused) and (info["pos"] == self.fpos) and (not self.stopped) and not self.parent.current_live and self.cued_item and (not self.cued_item["run_mode"]):
+        if cued_fname and (not self.paused) and (info["pos"] == self.fpos) and  not self.parent.current_live and self.cued_item and (not self.cued_item["run_mode"]):
             if self.stalled and self.stalled < time.time() - 5:
                 logging.warning("Stalled for a long time")
                 logging.warning("Taking stalled clip (pos: {})".format(self.fpos))
@@ -289,7 +291,6 @@ class CasparController(object):
             message = "Take OK"
             self.stalled = False
             self.paused = False
-            self.stopped = False
         else:
             message = "Take command failed: " + result.data
         return NebulaResponse(result.response, message)
@@ -309,7 +310,6 @@ class CasparController(object):
             message = "Retake OK"
             self.stalled = False
             self.paused = False
-            self.stopped = False
             self.parent.cue_next()
         else:
             message = "Take command failed: " + result.data
@@ -364,3 +364,15 @@ class CasparController(object):
         if result.is_success:
             self.paused = True
         return NebulaResponse(result.response, result.data)
+
+    def set(self, key, value):
+        if key == "loop":
+            do_loop = int(str(value) in ["1", "True", "true"])
+            result = self.query(f"CALL {self.caspar_channel}-{self.caspar_feed_layer} LOOP {do_loop}")
+            if self.current_item and bool(self.current_item["loop"] != bool(do_loop)):
+                self.current_item["loop"] = bool(do_loop)
+                self.current_item.save(notify=False)
+                bin_refresh([self.current_item["id_bin"]], db=self.current_item.db)
+            return NebulaResponse(result.response, f"SET LOOP: {result.data}")
+        else:
+            return NebulaResponse(400)
