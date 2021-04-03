@@ -4,6 +4,9 @@ import imp
 from nebula import *
 
 class Service(BaseService):
+    """
+    I am an docstring of the worker service
+    """
     def on_init(self):
         self.exec_init = False
         self.exec_main = False

@@ -35,7 +35,7 @@ def api_system(**kwargs):
             return NebulaResponse(ERROR_ACCESS_DENIED, "You are not allowed to control this service")
         db.query("UPDATE services SET state=3 WHERE id=%s AND state = 1", [id_service])
         db.commit()
-        logging.info("{} requested service {} ({}) stop".format(user, config["services"][id_service]["title"], id_service))
+        logging.info(f"{user} requested service ID {id_service} ({config['services'][id_service]['title']}) stop")
 
     if "start" in kwargs:
         id_service = kwargs["start"]
@@ -45,7 +45,7 @@ def api_system(**kwargs):
             return NebulaResponse(ERROR_ACCESS_DENIED, "You are not allowed to control this service")
         db.query("UPDATE services SET state=2 WHERE id=%s AND state = 0", [id_service])
         db.commit()
-        logging.info("{} requested service {} ({}) start".format(user, config["services"][id_service]["title"], id_service))
+        logging.info(f"{user} requested service ID {id_service} ({config['services'][id_service]['title']}) start")
 
     if "kill" in kwargs:
         id_service = kwargs["kill"]
@@ -55,7 +55,7 @@ def api_system(**kwargs):
             return NebulaResponse(ERROR_ACCESS_DENIED, "You are not allowed to control this service")
         db.query("UPDATE services SET state=4 WHERE id=%s AND state = 3", [id_service])
         db.commit()
-        logging.info("{} requested service {} ({}) kill".format(user, config["services"][id_service]["title"], id_service))
+        logging.info(f"{user} requested service ID {id_service} ({config['services'][id_service]['title']}) kill")
 
     if "autostart" in kwargs:
         id_service = kwargs["autostart"]
@@ -64,6 +64,7 @@ def api_system(**kwargs):
         if not user.has_right("service_control", id_service):
             return NebulaResponse(ERROR_ACCESS_DENIED, "You are not allowed to control this service")
         db.query("UPDATE services SET autostart=NOT autostart WHERE id=%s", [id_service])
+        logging.info(f"{user} requested service ID {id_service} ({config['services'][id_service]['title']}) autostart")
         db.commit()
 
     result = {}

@@ -1,5 +1,7 @@
 from nebulacore import *
-from .connection import *
+
+from .db import DB
+from .messaging import messaging
 from .objects import *
 
 MAX_RETRIES = 3
@@ -47,7 +49,7 @@ class Action(object):
 
     @property
     def created_key(self):
-        return "job_created/{}".format(self.id)
+        return f"job_created/{self.id}"
 
     def should_create(self, asset):
         if self.create_if:
@@ -129,7 +131,7 @@ class Job():
         return self._action
 
     def __repr__(self):
-        return "job ID:{} [{}@{}]".format(self.id, self.action.title, self.asset)
+        return f"job ID:{self.id} [{self.action.title}@{self.asset}]"
 
     def load(self):
         self.db.query("""
@@ -148,7 +150,7 @@ class Job():
             self._asset = Asset(id_asset, db=self.db)
             self._action = actions[id_action]
             return
-        logging.error("No such {}".format(self))
+        logging.error(f"No such {self}")
 
     def take(self, id_service):
         self.db.query("""UPDATE jobs SET
@@ -185,13 +187,13 @@ class Job():
         return self.db.fetchall()[0][0]
 
     def abort(self, message="Aborted"):
-        logging.warning("{} aborted".format(self))
+        logging.warning(f"{self} aborted")
         self.db.query("UPDATE jobs SET end_time=%s, status=4, message=%s WHERE id=%s", [time.time(), message, self.id])
         self.db.commit()
         messaging.send("job_progress", id=self.id, id_asset=self.id_asset, id_action=self.id_action, status=4, progress=0, message=message)
 
     def restart(self, message="Restarted"):
-        logging.warning("{} restarted".format(self))
+        logging.warning(f"{self} restarted")
         self.db.query("UPDATE jobs SET id_service=NULL, start_time=NULL, end_time=NULL, status=5, retries=0, progress=0, message=%s WHERE id=%s", [message, self.id])
         self.db.commit()
         messaging.send("job_progress", id=self.id, id_asset=self.id_asset, id_action=self.id_action, status=5, progress=0, message=message)
@@ -213,7 +215,7 @@ class Job():
             [retries, max(0, self.priority-1), message, self.id]
             )
         self.db.commit()
-        logging.error("{}: {}".format(self, message))
+        logging.error(f"{self}: {message}")
         messaging.send("job_progress", id=self.id, id_asset=self.id_asset, id_action=self.id_action, status=3, progress=0, message=message)
 
     def done(self, message="Completed"):
@@ -227,7 +229,7 @@ class Job():
             [time.time(), message, self.id]
             )
         self.db.commit()
-        logging.goodnews("{}: {}".format(self, message))
+        logging.goodnews(f"{self}: {message}")
         messaging.send("job_progress", id=self.id, id_asset=self.asset.id, id_action=self.action.id, status=2, progress=100, message=message)
 
 
@@ -282,11 +284,11 @@ def get_job(id_service, action_ids, db=False):
                     log_traceback()
                     continue
         if not action:
-            logging.warning("Unable to get job. No such action ID {}".format(id_action))
+            logging.warning(f"Unable to get job. No such action ID {id_action}")
             continue
 
         if status != 5 and action.should_skip(asset):
-            logging.info("Skipping {}".format(job))
+            logging.info(f"Skipping {job}")
             now = time.time()
             db.query("""
                 UPDATE jobs SET
@@ -304,7 +306,7 @@ def get_job(id_service, action_ids, db=False):
             if job.take(id_service):
                 return job
             else:
-                logging.warning("Unable to take {}".format(job))
+                logging.warning(f"Unable to take {job}")
                 continue
         else:
             db.query("UPDATE jobs SET message='Waiting' WHERE id=%s", [id_job])

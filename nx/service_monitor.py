@@ -1,6 +1,7 @@
 from nebulacore import *
 
-from .connection import *
+from .db import DB
+from .messaging import messaging
 from .agents import BaseAgent
 
 import subprocess
@@ -69,7 +70,7 @@ class ServiceMonitor(BaseAgent):
             if proc.poll() == None:
                 continue
             del self.services[id_service]
-            logging.warning("Service {} ({}) terminated".format(title,id_service))
+            logging.warning(f"Service ID {id_service} ({title}) terminated")
             db.query("UPDATE services SET state=0 WHERE id = %s", [id_service])
             db.commit()
 
@@ -80,7 +81,7 @@ class ServiceMonitor(BaseAgent):
         db.query("SELECT id, title, state, autostart FROM services WHERE host=%s AND state=0 AND autostart=true", [config["host"]])
         for id, title, state, autostart in db.fetchall():
             if not id in self.services.keys():
-                logging.debug("AutoStarting service {} ({})".format(title, id))
+                logging.debug(f"AutoStarting service ID {id} ({title})")
                 self.start_service(id, title)
 
 
@@ -94,7 +95,7 @@ class ServiceMonitor(BaseAgent):
         if config.get("daemon_mode"):
             proc_cmd.append("--daemon")
 
-        logging.info("Starting service {} - {}".format(id_service, title))
+        logging.info(f"Starting service ID {id_service} ({title})")
 
         self.services[id_service] = [
                 subprocess.Popen(proc_cmd, cwd=config["nebula_root"]),
@@ -103,7 +104,7 @@ class ServiceMonitor(BaseAgent):
 
 
     def stop_service(self, id_service, title, db=False):
-        logging.info("Stopping service {} ({})".format(id_service, title))
+        logging.info(f"Stopping service ID {id_service} ({title})")
 
 
     def kill_service(self, pid=False, id_service=False):
@@ -111,5 +112,5 @@ class ServiceMonitor(BaseAgent):
             pid = self.services[id_service][0].pid
         if pid == os.getpid() or pid == 0:
             return
-        logging.info("Attempting to kill PID {}".format(pid))
-        os.system(os.path.join(config["nebula_root"], "support", "kill_tree.sh {}".format(pid)))
+        logging.info(f"Attempting to kill PID {pid}")
+        os.system(os.path.join(config["nebula_root"], "support", f"kill_tree.sh {pid}"))

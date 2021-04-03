@@ -1,71 +1,19 @@
+__all__ = ["cache", "Cache"]
+
+import json
 import time
-from nebulacore import *
 
-try:
-    import psycopg2
-    from psycopg2 import IntegrityError, DataError
-except ImportError:
-    log_traceback("Import error")
-    critical_error("Unable to import psycopg2")
-
-try:
-    import pylibmc
-except ImportError:
-    log_traceback("Import error")
-    critical_error("Unable to import pylibmc")
-
-__all__ = ["DB", "cache", "Cache", "IntegrityError", "DataError"]
-
-#
-# Database
-#
+from nebulacore import config
+from nxtools import *
 
 MAX_RETRIES = 5
 
-class DB(object):
-    def __init__(self, **kwargs):
-        self.pmap = {
-                "host" : "db_host",
-                "user" : "db_user",
-                "password" : "db_pass",
-                "database" : "db_name",
-            }
+try:
+    import pylibmc
+    has_pylibmc = True
+except ModuleNotFoundError:
+    has_pylibmc = False
 
-        self.settings = {
-                key : kwargs.get(self.pmap[key], config[self.pmap[key]]) for key in self.pmap
-            }
-
-        self.conn = psycopg2.connect(**self.settings)
-        self.cur = self.conn.cursor()
-
-    def lastid(self):
-        self.query("SELECT LASTVAL()")
-        return self.fetchall()[0][0]
-
-    def query(self, query, *args):
-        self.cur.execute(query, *args)
-
-    def fetchone(self):
-        return self.cur.fetchone()
-
-    def fetchall(self):
-        return self.cur.fetchall()
-
-    def commit(self):
-        self.conn.commit()
-
-    def rollback(self):
-        self.conn.rollback()
-
-    def close(self):
-        self.conn.close()
-
-    def __len__(self):
-        return True
-
-#
-# Cache
-#
 
 class Cache():
     def __init__(self):
@@ -76,13 +24,17 @@ class Cache():
         self.site = config["site_name"]
         self.host = config.get("cache_host", "localhost")
         self.port = config.get("cache_port", 11211)
-        self.cstring = "{}:{}".format(self.host, self.port)
-        self.pool = False
         self.connect()
 
     def connect(self):
-        self.conn = pylibmc.Client([self.cstring])
-        self.pool = False
+        if config.get("cache_mode", "memcached") == "redis":
+            pass
+        else:
+            if not has_pylibmc:
+                critical_error("'pylibmc' module is not installed")
+            self.cstring = f"{self.host}:{self.port}"
+            self.pool = False
+            self.conn = pylibmc.Client([self.cstring])
 
     def load(self, key):
         if config.get("mc_thread_safe", False):
@@ -95,7 +47,6 @@ class Cache():
             self.connect()
             result = False
         except ValueError:
-#            logging.warning("Unable to read key {} from cache".format(key))
             result = False
         return result
 
@@ -109,7 +60,7 @@ class Cache():
                 self.conn.set(str(key), str(value))
                 break
             except Exception:
-                log_traceback("Cache save failed ({})".format(key))
+                log_traceback(f"Cache save failed ({key})")
                 time.sleep(.1)
                 self.connect()
         else:
@@ -126,7 +77,7 @@ class Cache():
                 self.conn.delete(key)
                 break
             except Exception:
-                log_traceback("Cache delete failed ({})".format(key))
+                log_traceback(f"Cache delete failed ({key})")
                 time.sleep(.3)
                 self.connect()
         else:
@@ -158,7 +109,7 @@ class Cache():
                     mc.set(str(key), str(value))
                     break
                 except Exception:
-                    log_traceback("Cache save failed ({})".format(key))
+                    log_traceback(f"Cache save failed ({key})")
                     time.sleep(.3)
                     self.connect()
             else:
@@ -177,7 +128,7 @@ class Cache():
                     mc.delete(key)
                     break
                 except Exception:
-                    log_traceback("Cache delete failed ({})".format(key))
+                    log_traceback(f"Cache delete failed ({key})")
                     time.sleep(.3)
                     self.connect()
             else:

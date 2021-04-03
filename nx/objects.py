@@ -1,8 +1,9 @@
 from nebulacore import *
 from nebulacore.base_objects import *
 
-from .connection import *
-from .server_object import *
+from .db import DB
+from .cache import cache
+from .server_object import ServerObject
 
 __all__ = ["Asset", "Item", "Bin", "Event", "User", "anonymous"]
 
@@ -42,7 +43,7 @@ class Asset(AssetMixIn, ServerObject):
     def delete_children(self):
         if self.id:
             self.db.query("DELETE FROM jobs WHERE id_asset = %s", [self.id])
-            # db.commit is called from delete method
+            # db.commit is called by the delete method
 
     @property
     def has_proxy(self):
@@ -74,10 +75,14 @@ class Asset(AssetMixIn, ServerObject):
         return self._proxy_path
 
     def get_playout_name(self, id_channel):
-        return "{}-{}".format(config["site_name"], self.id)
+        return f"{config['site_name']}-{self.id}"
 
     def get_playout_storage(self, id_channel):
-        return config["playout_channels"][id_channel]["playout_storage"]
+        try:
+            return config["playout_channels"][id_channel]["playout_storage"]
+        except KeyError:
+            return None
+
 
     def get_playout_path(self, id_channel):
         return os.path.join(
@@ -86,8 +91,11 @@ class Asset(AssetMixIn, ServerObject):
             )
 
     def get_playout_full_path(self, id_channel):
+        id_storage = self.get_playout_storage(id_channel)
+        if not id_storage:
+            return None
         return os.path.join(
-                storages[self.get_playout_storage(id_channel)].local_path,
+                storages[id_storage].local_path,
                 self.get_playout_path(id_channel)
             )
 
@@ -154,7 +162,7 @@ class Bin(BinMixIn, ServerObject):
             try:
                 self._event = Event(meta=self.db.fetchall()[0][0])
             except IndexError:
-                logging.error("Unable to get {} event".format(self))
+                logging.error(f"Unable to get {self} event")
                 self._event = False
             except Exception:
                 log_traceback()
@@ -171,7 +179,7 @@ class Bin(BinMixIn, ServerObject):
         for item in self.items:
             duration += item.duration
         if duration != self.duration:
-            logging.debug("New duration of {} is {}".format(self, s2tc(duration)))
+            logging.debug(f"New duration of {self} is {s2tc(duration)}")
             self["duration"] = duration
         super(Bin, self).save(**kwargs)
 

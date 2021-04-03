@@ -25,7 +25,7 @@ def api_send(**kwargs):
     if not user.has_right("job_control", id_action):
         return NebulaResponse(ERROR_ACCESS_DENIED, "You are not allowed to start this action")
 
-    logging.info("{} is starting action {} for following assets: {}".format(user, id_action, ", ".join([str (i) for i in  objects]) ))
+    logging.info("{} is starting action {} for the following assets: {}".format(user, id_action, ", ".join([str (i) for i in  objects]) ))
 
     for id_object in objects:
         send_to(

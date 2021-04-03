@@ -1,3 +1,5 @@
+import threading
+
 from nx import *
 
 
@@ -31,6 +33,9 @@ class PlayoutPlugin(object):
         self.on_init()
         self.busy = False
         self.title = False
+
+    def __str__(self):
+        return f"playout plugin '{self.title}'"
 
     @property
     def slot_manifest(self):
@@ -80,16 +85,23 @@ class PlayoutPlugin(object):
     def main(self):
         if not self.busy:
             self.busy = True
-            try:
-                self.on_main()
-            except Exception:
-                log_traceback()
-            self.busy = False
+            thread = threading.Thread(target=self.main_thread, args=())
+            thread.start()
+        else:
+            return False
+            logging.warning(f"Not starting {self} on_progress (busy)")
+
+    def main_thread(self):
+        try:
+            self.on_main()
+        except Exception:
+            log_traceback()
+        self.busy = False
 
     def layer(self, id_layer=False):
         if not id_layer:
             id_layer = self.id_layer
-        return "{}-{}".format(self.service.controller.caspar_channel, id_layer)
+        return f"{self.service.controller.caspar_channel}-{id_layer}"
 
     def query(self, query):
         return self.service.controller.query(query)

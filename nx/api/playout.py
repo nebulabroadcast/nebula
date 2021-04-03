@@ -17,7 +17,7 @@ def api_playout(**kwargs):
     id_channel = int(kwargs.get("id_channel", False))
 
     if not id_channel in config["playout_channels"]:
-        return NebulaResponse(ERROR_BAD_REQUEST, 'Unknown channel {}'.format(id_channel))
+        return NebulaResponse(ERROR_BAD_REQUEST, f"Unknown channel ID {id_channel}")
 
     if not user.has_right("mcr", id_channel):
         return NebulaResponse(ERROR_ACCESS_DENIED, "You are not permitted to operate this channel")
@@ -34,6 +34,7 @@ def api_playout(**kwargs):
                 "abort",
                 "freeze",
                 "retake",
+                "set",
                 "plugin_list",
                 "plugin_exec",
                 "stat",
@@ -41,7 +42,7 @@ def api_playout(**kwargs):
                 "cue_forward",
                 "cue_backward"
                 ]:
-            return NebulaResponse(ERROR_BAD_REQUEST, "Unsupported action {}".format(action))
+            return NebulaResponse(ERROR_BAD_REQUEST, f"Unsupported playout action {action}")
 
 
         controller_url = "http://{}:{}".format(
@@ -56,12 +57,11 @@ def api_playout(**kwargs):
             response = requests.post(controller_url + "/" + action, timeout=4, data=kwargs)
         except Exception:
             log_traceback()
-            return NebulaResponse(ERROR_BAD_GATEWAY," Unable to connect playout service")
+            return NebulaResponse(ERROR_BAD_GATEWAY, "Unable to connect to the playout service")
 
         if response.status_code >= 400:
             return NebulaResponse(response.status_code, response.text)
 
         rdata = json.loads(response.text)
         return rdata
-
 

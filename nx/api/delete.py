@@ -36,14 +36,14 @@ def api_delete(**kwargs):
             try:
                 obj.delete()
             except psycopg2.IntegrityError:
-                return NebulaResponse(ERROR_LOCKED, "Unable to delete {}. Already aired.".format(obj))
+                return NebulaResponse(ERROR_LOCKED, f"Unable to delete {obj}. Already aired.")
             if obj["id_bin"] not in affected_bins:
                 affected_bins.append(obj["id_bin"])
         else:
-            return NebulaResponse(ERROR_NOT_IMPLEMENTED, "{} deletion is not implemented".format(object_type))
+            return NebulaResponse(ERROR_NOT_IMPLEMENTED, f"{object_type} deletion is not implemented")
 
         num += 1
 
     if affected_bins:
         bin_refresh(affected_bins, db=db, initiator=initiator)
-    return NebulaResponse(200, " {} objects deleted".format(num))
+    return NebulaResponse(200, f"{num} objects deleted")

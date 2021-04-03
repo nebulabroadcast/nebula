@@ -4,12 +4,10 @@ import os
 import time
 import rex
 
-rex.require("https://github.com/immstudios/conti")
-
 from nebula import *
 from conti import *
 
-CONTI_DEBUG["source"] = True
+CONTI_DEBUG["source"] = False
 CONTI_DEBUG["encoder"] = False
 
 
@@ -23,17 +21,21 @@ class NebulaConti(Conti):
         self.parent.parent.cue_next()
 
     def progress_handler(self):
-        self.parent.position = self.current.position * self.parent.fps
-        self.parent.duration = self.current.duration * self.parent.fps
+        self.parent.position = self.current.position
+        self.parent.duration = self.current.duration
         self.parent.request_time = time.time()
         self.parent.parent.on_progress()
-    
+
 
 class ContiController(object):
+    time_unit = "s"
+
     def __init__(self, parent):
         self.parent = parent
         self.cueing = False
+        self.cued = False
         self.request_time = time.time()
+        self.position = self.duration = 0
         settings = {
             "playlist_length" : 2,
             "blocking" : False,
@@ -42,6 +44,7 @@ class ContiController(object):
         settings.update(self.parent.channel_config.get("conti_settings", {}))
         self.conti = NebulaConti(None, **settings)
         self.conti.parent = self
+
 
     @property
     def current_item(self):
@@ -71,12 +74,21 @@ class ContiController(object):
     def paused(self):
         return self.conti.paused
 
+    @property
+    def loop(self):
+        #TODO: Not implemented in conti
+        return False
+
+    def set(self, prop, value):
+        return True
+
     def cue(self, item, full_path, **kwargs):
         kwargs["item"] = item
         kwargs["meta"] = item.asset.meta
         self.cued = NebulaContiSource(self.conti, full_path, **kwargs)
         #TODO: add per-source filters here
         self.cued.open()
+        self.cueing = False
 
         if not self.cued:
             return NebulaResponse(500)
@@ -109,3 +121,6 @@ class ContiController(object):
     def abort(self, **kwargs):
         self.conti.abort()
         return NebulaResponse(200)
+
+    def shutdown(self):
+        self.conti.stop()

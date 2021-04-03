@@ -1,64 +1,67 @@
-try:
-    import _thread as thread
-except ImportError:
-    import thread
+import threading
 
 from nebula import *
 
 from .request_handler import *
-from .caspar_controller import *
 from .plugins import *
 
 DEFAULT_STATUS = {
-        "status" : OFFLINE,
-        }
+    "status" : OFFLINE,
+}
+
+def create_controller(parent):
+    engine = parent.channel_config.get("engine")
+    if engine == "vlc":
+        from .vlc import VlcController
+        return VlcController(parent)
+    elif engine == "conti":
+        from .conti import ContiController
+        return ContiController(parent)
+    elif engine == "casparcg":
+        from .casparcg import CasparController
+        return CasparController(parent)
+    elif engine == "casparcg2":
+        from .casparcg2 import CasparController
+        return CasparController(parent)
+
 
 class Service(BaseService):
-    def create_controller(self):
-        engine = self.channel_config.get("engine")
-        if engine == "vlc":
-            # Delay import since libvlc might not be available.
-            from .vlc_controller import VlcController
-            return VlcController(self)
-        elif engine == "conti":
-            from .conti_controller import ContiController
-            return ContiController(self)
-        else:
-            return CasparController(self)
-
     def on_init(self):
         if not config["playout_channels"]:
             logging.error("No playout channel configured")
             self.shutdown(no_restart=True)
-
-        self.last_run = False
+            return
 
         try:
             self.id_channel = int(self.settings.find("id_channel").text)
+            self.channel_config = config["playout_channels"][self.id_channel]
         except Exception:
-            self.id_channel = int(min(config["playout_channels"].keys()))
-
-        self.channel_config = config["playout_channels"][self.id_channel]
+            logging.error("Invalid channel specified")
+            self.shutdown(no_restart=True)
+            return
 
         self.fps = float(self.channel_config.get("fps", 25.0))
 
         self.current_asset = Asset()
         self.current_event = Event()
 
+        self.last_run = False
+        self.last_info = 0
         self.current_live = False
         self.cued_live = False
         self.auto_event = 0
 
-        self.status_key = "playout_status/{}".format(self.id_channel)
+        self.status_key = f"playout_status/{self.id_channel}"
 
         self.plugins = PlayoutPlugins(self)
-        self.controller = self.create_controller()
-        self.last_info = 0
+        self.controller = create_controller(self)
+        if not self.controller:
+            logging.error("Invalid controller specified")
+            self.shutdown(no_restart=True)
+            return
 
-        try:
-            port = int(self.settings.find("port").text)
-        except:
-            port = 42100
+        port = int(self.channel_config.get("controller_port", 42100))
+        logging.info(f"Using port {port} for the HTTP interface.")
 
         self.server = HTTPServer(('', port), PlayoutRequestHandler)
         self.server.service = self
@@ -68,6 +71,7 @@ class Service(BaseService):
                 "cue_forward" : self.cue_forward,
                 "cue_backward" : self.cue_backward,
                 "freeze" : self.freeze,
+                "set" : self.set,
                 "retake" : self.retake,
                 "abort" : self.abort,
                 "stat" : self.stat,
@@ -75,14 +79,20 @@ class Service(BaseService):
                 "plugin_exec" : self.plugin_exec,
                 "recover" : self.channel_recover
             }
-        thread.start_new_thread(self.server.serve_forever,())
-
+        self.server_thread = threading.Thread(target=self.server.serve_forever, args=(), daemon=True)
+        self.server_thread.start()
         self.plugins.load()
+        self.on_progress()
         #self.channel_recover()
 
-    @property
-    def current_item(self):
-        return self.controller.current_item
+
+    def on_shutdown(self):
+        if self.controller and hasattr(self.controller, "shutdown"):
+            self.controller.shutdown()
+
+    #
+    # API Commands
+    #
 
     def cue(self, **kwargs):
         db = kwargs.get("db", DB())
@@ -99,7 +109,7 @@ class Service(BaseService):
             return NebulaResponse(400, "Unable to cue. No item specified")
 
         if not item:
-            return NebulaResponse(404, "Unable to cue. {} does not exist".format(item))
+            return NebulaResponse(404, "Unable to cue. {item} does not exist")
 
         if item["item_role"] == "live":
             logging.info("Next is item is live")
@@ -115,14 +125,17 @@ class Service(BaseService):
         asset = item.asset
         playout_status = asset.get(self.status_key, DEFAULT_STATUS)["status"]
 
-        kwargs['fname'] = None
+        kwargs["fname"] = kwargs["full_path"] = None
         if playout_status in [ONLINE, CREATING, UNKNOWN]:
             kwargs['fname'] = asset.get_playout_name(self.id_channel)
             kwargs['full_path'] = asset.get_playout_full_path(self.id_channel)
-        elif self.channel_config.get('allow_remote') and asset['status'] in (ONLINE,):
-            kwargs['fname'] = kwargs['full_path'] = asset.file_path
-        else:
-            return NebulaResponse(404, "Unable to cue {} playout file ".format(get_object_state_name(playout_status)))
+
+        if not kwargs["full_path"] and self.channel_config.get("allow_remote") and asset["status"] in (ONLINE, CREATING):
+            kwargs["fname"] = kwargs["full_path"] = asset.file_path
+            kwargs["remote"] = True
+
+        if not kwargs["full_path"]:
+            return NebulaResponse(404, "Unable to cue {get_object_state_name(playout_status)} playout file")
 
         kwargs["mark_in"] = item["mark_in"]
         kwargs["mark_out"] = item["mark_out"]
@@ -146,6 +159,7 @@ class Service(BaseService):
         nc = get_next_item(cc.id, db=db, force="next")
         return self.cue(item=nc, db=db)
 
+
     def cue_backward(self, **kwargs):
         cc = self.controller.cued_item
         if not cc:
@@ -157,6 +171,8 @@ class Service(BaseService):
 
 
     def cue_next(self, **kwargs):
+        logging.info("CUE NEXT")
+        self.controller.cueing = True #TODO: deprecate. controller should handle this
         item = kwargs.get("item", self.controller.current_item)
         level = kwargs.get("level", 0)
         db = kwargs.get("db", DB())
@@ -167,7 +183,6 @@ class Service(BaseService):
             logging.warning("Unable to cue next item. No current clip")
             return
 
-        self.controller.cueing = True
         item_next = get_next_item(item.id, db=db, cache=lcache, force_next_event=bool(self.auto_event))
 
         if item_next["run_mode"] == 1:
@@ -182,7 +197,7 @@ class Service(BaseService):
             if level > 5:
                 logging.error("Cue it yourself....")
                 return False
-            logging.warning("Unable to cue {} ({}). Trying next one.".format(item_next, result.message))
+            logging.warning(f"Unable to cue {item_next} ({result.message}). Trying next one.")
             item_next = self.cue_next(item=item_next, db=db, level=level+1, play=play)
         return item_next
 
@@ -199,20 +214,37 @@ class Service(BaseService):
     def abort(self, **kwargs):
         return self.controller.abort(**kwargs)
 
+    def set(self, **kwargs):
+        """ Set a controller property.
+        This is controller specific.
+        Args:
+            key (str): Name of the property
+            value: Value to be set
+        """
+        key = kwargs.get("key", None)
+        value = kwargs.get("value", None)
+        if key == None or value == None:
+            return NebulaResponse(400)
+        if hasattr(self.controller, "set"):
+            return self.controller.set(key, value)
+        return NebulaResponse(200)
+
+
     def stat(self, **kwargs):
+        """Returns current status of the playback"""
         return NebulaResponse(200, data=self.playout_status)
+
 
     def plugin_list(self, **kwargs):
         result = []
         for id_plugin, plugin in enumerate(self.plugins):
             if not plugin.slots:
                 continue
-            p = {
-                    "id" : id_plugin,
-                    "title" : plugin.title,
-                    "slots": plugin.slot_manifest,
-                }
-            result.append(p)
+            result.append({
+                "id" : id_plugin,
+                "title" : plugin.title,
+                "slots": plugin.slot_manifest,
+            })
         return NebulaResponse(200, data=result)
 
 
@@ -234,10 +266,22 @@ class Service(BaseService):
             return NebulaResponse(500, "Playout plugin failed")
 
 
+    #
+    # Props
+    #
+
+    #TODO: Find out whether this is actually needed
+    @property
+    def current_item(self):
+        return self.controller.current_item
+
+
     @property
     def playout_status(self):
         return {
             "id_channel"    : self.id_channel,
+            "fps"           : float(self.fps),
+            "time_unit"     : self.controller.time_unit, #This is a transitional option. In future versions, frames will be deprecated
             "current_item"  : self.controller.current_item.id if self.controller.current_item else False,
             "cued_item"     : self.controller.cued_item.id if self.controller.cued_item else False,
             "position"      : self.controller.position,
@@ -246,12 +290,16 @@ class Service(BaseService):
             "cued_title"    : self.controller.cued_item["title"]    if self.controller.cued_item    else "(no clip)",
             "request_time"  : self.controller.request_time,
             "paused"        : self.controller.paused,
-            "cueing"        : self.controller.cueing,
+            "loop"          : self.controller.loop if hasattr(self.controller, "loop") else False,
+            "cueing"        : self.controller.cueing if hasattr(self.controller, "cueing") else False,
             "id_event"      : self.current_event.id if self.current_event else False,
-            "fps"           : self.fps,
             "current_fname" : self.controller.current_fname,
             "cued_fname"    : self.controller.cued_fname,
         }
+
+    #
+    # Events
+    #
 
 
     def on_progress(self):
@@ -296,38 +344,6 @@ class Service(BaseService):
                 log_traceback("Plugin on-change failed")
 
 
-
-    def channel_recover(self):
-        logging.warning("Performing recovery")
-
-        db = DB()
-        db.query("SELECT id_item, start FROM asrun WHERE id_channel = %s ORDER BY id DESC LIMIT 1", [self.id_channel])
-        try:
-            last_id_item, last_start = db.fetchall()[0]
-        except IndexError:
-            logging.error("Unable to perform recovery. Last item information is not available")
-        last_item = Item(last_id_item, db=db)
-        last_item.asset
-
-        self.controller.current_item = last_item
-        self.controller.cued_item = False
-        self.controller.cued_fname = False
-
-        if last_start + last_item.duration <= time.time():
-            logging.info("Last {} has been broadcasted. starting next item".format(last_item))
-            new_item = self.cue_next(item=last_item, db=db, play=True)
-        else:
-            logging.info("Last {} has not been fully broadcasted. Loading next one".format(last_item))
-        #    self.controller.force_cue = True
-            new_item = self.cue_next(item=last_item, db=db)
-
-        if not new_item:
-            logging.error("Recovery failed. Unable to cue")
-            return
-
-        self.on_change()
-
-
     def on_live_enter(self):
         logging.goodnews("LIVE ENTER")
         self.current_live = True
@@ -337,6 +353,7 @@ class Service(BaseService):
     def on_live_leave(self):
         logging.goodnews("LIVE LEAVE")
         self.current_live = False
+
 
     def on_main(self):
         """
@@ -366,7 +383,6 @@ class Service(BaseService):
                 ORDER BY e.start ASC LIMIT 1""",
                 [self.id_channel, current_event["start"], time.time()]
             )
-
 
         try:
             next_event = Event(meta=db.fetchall()[0][1], db=db)
@@ -431,3 +447,36 @@ class Service(BaseService):
                 )
             self.auto_event = next_event.id
             return
+
+
+
+    def channel_recover(self):
+        logging.warning("Performing recovery")
+
+        db = DB()
+        db.query("SELECT id_item, start FROM asrun WHERE id_channel = %s ORDER BY id DESC LIMIT 1", [self.id_channel])
+        try:
+            last_id_item, last_start = db.fetchall()[0]
+        except IndexError:
+            logging.error("Unable to perform recovery. Last item information is not available")
+        last_item = Item(last_id_item, db=db)
+        last_item.asset
+
+        self.controller.current_item = last_item
+        self.controller.cued_item = False
+        self.controller.cued_fname = False
+
+        if last_start + last_item.duration <= time.time():
+            logging.info("Last {} has been broadcasted. starting next item".format(last_item))
+            new_item = self.cue_next(item=last_item, db=db, play=True)
+        else:
+            logging.info("Last {} has not been fully broadcasted. Loading next one".format(last_item))
+            new_item = self.cue_next(item=last_item, db=db)
+
+        if not new_item:
+            logging.error("Recovery failed. Unable to cue")
+            return
+
+        self.on_change()
+
+
