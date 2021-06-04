@@ -364,15 +364,3 @@ class CasparController(object):
         if result.is_success:
             self.paused = True
         return NebulaResponse(result.response, result.data)
-
-    def set(self, key, value):
-        if key == "loop":
-            do_loop = int(str(value) in ["1", "True", "true"])
-            result = self.query(f"CALL {self.caspar_channel}-{self.caspar_feed_layer} LOOP {do_loop}")
-            if self.current_item and bool(self.current_item["loop"] != bool(do_loop)):
-                self.current_item["loop"] = bool(do_loop)
-                self.current_item.save(notify=False)
-                bin_refresh([self.current_item["id_bin"]], db=self.current_item.db)
-            return NebulaResponse(result.response, f"SET LOOP: {result.data}")
-        else:
-            return NebulaResponse(400)

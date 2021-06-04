@@ -53,11 +53,11 @@ Each clip in the rundown is picked by its editorial format, genre, tempo, atmosp
 
 ### Playout control
 
-For linear broadcasting, it is possible to use servers like
-[CasparCG](https://casparcg.com), [Liquidsoap](https://liquidsoap.info) or [Conti](https://github.com/immstudios/conti).
+For linear broadcasting, Nebula can control 
+[CasparCG](https://casparcg.com), [VLC](https://videolan.org) or [Conti](https://github.com/immstudios/conti).
 Broadcasting can run autonomously with and option of starting blocks at a specified time.
 
-Users - master control room operators - can interfere with the rundown using Firefly client,
+Users - master control room operators - can interfere with the rundown using [Firefly client](https://github.com/nebulabroadcast/firefly),
 executing graphics or change run order until the last moment.
 
 Playout control module offers a plug-in interface for secondary events execution such as CG, router or studio control,
@@ -125,6 +125,24 @@ Command line tools
  - `nxj` jobs monitor
  - `nxs {[command:start|stop|auto|noauto] id_service:int}` services monitor and control panel
  - `nxt [tool_name:string]` plug-in runner
+
+  
+Legal
+-----
+
+*Nebula* is developed and maintained by [imm studios, z.s.](https://imm.cz)
+
+### License
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
 Need help?
 ----------

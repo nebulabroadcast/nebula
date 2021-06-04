@@ -109,9 +109,9 @@ class Service(BaseService):
         super().shutdown(*args, **kwargs)
 
     def on_main(self):
-        if len(self.queue) > 100:
-            logging.warning("Truncating message queue")
-            self.queue = self.queue[80:]
+        if len(self.queue) > 50:
+            logging.warning(f"Truncating message queue ({len(self.queue)} messages)", handlers=[])
+            self.queue = []
 
         if self.log_dir and self.log_ttl:
            log_clean_up(self.log_dir, self.log_ttl)
@@ -161,7 +161,7 @@ class Service(BaseService):
 
                 channel.start_consuming()
             except pika.exceptions.AMQPConnectionError:
-                logging.error("RabbitMQ connection error")
+                logging.error("RabbitMQ connection error", handlers=[])
             except Exception:
                 log_traceback()
             time.sleep(2)
@@ -209,32 +209,35 @@ class Service(BaseService):
 
     def process(self):
         while True:
-            if not self.queue:
-                time.sleep(.01)
-                if time.time() - self.last_message > 3:
-                    logging.debug("Heartbeat")
-                    messaging.send("heartbeat")
-                    self.last_message = time.time()
-                continue
+            try:
+                if not self.queue:
+                    time.sleep(.01)
+                    if time.time() - self.last_message > 3:
+                        logging.debug("Heartbeat")
+                        messaging.send("heartbeat")
+                        self.last_message = time.time()
+                    continue
 
-            message = self.queue.pop(0)
-            self.last_message = time.time()
+                message = self.queue.pop(0)
+                self.last_message = time.time()
 
-            if message.method != "log":
-                self.relay_message(message)
+                if message.method != "log":
+                    self.relay_message(message)
 
-            else:
-                if self.log_dir:
-                    log = format_log_message(message)
-                    if not log:
-                        continue
+                else:
+                    if self.log_dir:
+                        log = format_log_message(message)
+                        if not log:
+                            continue
 
-                    log_path = os.path.join(self.log_dir, time.strftime("%Y-%m-%d.txt"))
-                    with open(log_path, "a") as f:
-                        f.write(log)
+                        log_path = os.path.join(self.log_dir, time.strftime("%Y-%m-%d.txt"))
+                        with open(log_path, "a") as f:
+                            f.write(log)
 
-                if self.loki:
-                    self.loki(message)
+                    if self.loki:
+                        self.loki(message)
+            except Exception:
+                log_traceback("Unhandled exception occured during message processing")
 
 
 
@@ -242,10 +245,10 @@ class Service(BaseService):
         mjson = message.json.replace("\n", "") + "\n" # one message per line
         for relay in self.relays:
             try:
-                result = self.session.post(relay, mjson.encode("ascii"), timeout=.5)
+                result = self.session.post(relay, mjson.encode("ascii"), timeout=.3)
             except:
-                logging.error(f"Exception: Unable to relay message to {relay}")
+                logging.error(f"Exception: Unable to relay message to {relay}", handlers=[])
                 continue
             if result.status_code >= 400:
-                logging.warning(f"Error {result.status_code}: Unable to relay message to {relay}")
+                logging.warning(f"Error {result.status_code}: Unable to relay message to {relay}", handlers=[])
                 continue

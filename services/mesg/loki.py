@@ -28,10 +28,13 @@ class LokiLogger():
                 "values" : [[f"{tstamp}", message.data["message"]]]
             }]
         }
-        response = self.session.post(
-            self.url,
-            data=json.dumps(data),
-            headers={"Content-Type" : "application/json"},
-            timeout=.5
-        )
+        try:
+            response = self.session.post(
+                self.url,
+                data=json.dumps(data),
+                headers={"Content-Type" : "application/json"},
+                timeout=.2
+            )
+        except Exception:
+            logging.error("Unable to send log message to Loki")
 

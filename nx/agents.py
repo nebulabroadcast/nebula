@@ -9,18 +9,18 @@ class BaseAgent():
     def __init__(self, once=False):
         self.first_run = True
         self.thread = None
+        self.is_running = False
+        self.should_run = True
         try:
             self.on_init()
         except:
             log_traceback()
             critical_error(f"Unable to start {self.__class__.__name__}")
-        self.is_running = self.should_run = False
         if once:
             self.main()
         else:
             self.thread = threading.Thread(target=self.run, daemon=True)
             self.thread.start()
-            self.is_running = self.should_run = True
 
     def on_init(self):
         pass
@@ -32,6 +32,7 @@ class BaseAgent():
         self.should_run = False
 
     def run(self):
+        self.is_running = True
         logging.info(f"Starting {self.__class__.__name__}")
         while self.should_run:
             try:

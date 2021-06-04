@@ -9,18 +9,22 @@ def api_jobs(**kwargs):
     id_asset = kwargs.get("id_asset", False)
     view = kwargs.get("view", "active")
     db = kwargs.get("db", DB())
+    now = time.time()
+
+    id_user = user.id or None
 
     if not user:
-        return NebulaResponse(ERROR_UNAUTHORISED)
+        return NebulaResponse(401, "You are not logged-in")
 
     for k in ["restart", "abort"]:
         if k in kwargs and not user.has_right("job_control", anyval=True):
-            return NebulaResponse(ERROR_ACCESS_DENIED)
+            return NebulaResponse(403, "You are not authorized to control this job")
 
     if "restart" in kwargs:
         jobs = [int(i) for i in kwargs["restart"]]
         db.query("""
             UPDATE jobs SET
+                id_user=%s,
                 status=5,
                 retries=0,
                 creation_time=%s,
@@ -32,13 +36,23 @@ def api_jobs(**kwargs):
                 id IN %s
             RETURNING id
             """,
-            [time.time(), tuple(jobs)]
+            [id_user, now, tuple(jobs)]
             )
         result = [r[0] for r in db.fetchall()]
         db.commit()
         logging.info("Restarted jobs {}".format(result))
-        #TODO: smarter message
-        return NebulaResponse(200, "Jobs restarted", data=result)
+        for job_id in result:
+            messaging.send(
+                "job_progress",
+                id=job_id,
+                status=5,
+                progress=0,
+                ctime=now,
+                stime=None,
+                etime=None,
+                message="Restart requested"
+            )
+        return NebulaResponse(200, "Job restarted", data=result)
 
     if "abort" in kwargs:
         jobs = [int(i) for i in kwargs["abort"]]
@@ -51,13 +65,22 @@ def api_jobs(**kwargs):
                 id IN %s
             RETURNING id
             """,
-            [time.time(), tuple(jobs)]
+            [now, tuple(jobs)]
             )
         result = [r[0] for r in db.fetchall()]
         logging.info("Aborted jobs {}".format(result))
         db.commit()
+        for job_id in result:
+            messaging.send(
+                "job_progress",
+                id=job_id,
+                status=4,
+                progress=0,
+                etime=now,
+                message="Aborted"
+            )
         #TODO: smarter message
-        return NebulaResponse(200, "Jobs aborted", data=result)
+        return NebulaResponse(200, "Job aborted", data=result)
 
 
     #TODO: fulltext
@@ -130,19 +153,19 @@ def api_jobs(**kwargs):
                 "status" : status,
                 "progress" : progress,
                 "message" : message,
-                "ctime" : format_time(ctime, never_placeholder="(not yet)") if formatted else ctime,
-                "stime" : format_time(stime, never_placeholder="(not yet)") if formatted else stime,
-                "etime" : format_time(etime, never_placeholder="(not yet)") if formatted else etime
+                "ctime" : format_time(ctime, never_placeholder="") if formatted else ctime,
+                "stime" : format_time(stime, never_placeholder="") if formatted else stime,
+                "etime" : format_time(etime, never_placeholder="") if formatted else etime
             }
-        if formatted:
-            asset = Asset(meta=meta)
-            row["asset_title"] = asset["title"]
-            row["action_title"] = config["actions"][id_action]["title"]
-            if id_service:
-                service = config["services"].get(id_service, {"title" : "Unknown", "host" : "Unknown"})
-                row["service_title"] = "{}@{}".format(service["title"], service["host"])
-            else:
-                row["service_title"] = ""
+
+        asset = Asset(meta=meta)
+        row["asset_title"] = asset["title"]
+        row["action_title"] = config["actions"][id_action]["title"]
+        if id_service:
+            service = config["services"].get(id_service, {"title" : "Unknown", "host" : "Unknown"})
+            row["service_title"] = "{}@{}".format(service["title"], service["host"])
+        else:
+            row["service_title"] = ""
 
         data.append(row)
 

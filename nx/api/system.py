@@ -17,8 +17,9 @@ def api_system(**kwargs):
     """
 
     user = kwargs.get("user", anonymous)
+    message = ""
     if not user:
-        return NebulaRespone(ERROR_UNAUTHORISED)
+        return NebulaResponse(ERROR_UNAUTHORISED)
 
     db = DB()
 
@@ -36,6 +37,7 @@ def api_system(**kwargs):
         db.query("UPDATE services SET state=3 WHERE id=%s AND state = 1", [id_service])
         db.commit()
         logging.info(f"{user} requested service ID {id_service} ({config['services'][id_service]['title']}) stop")
+        message = "Service is stopping"
 
     if "start" in kwargs:
         id_service = kwargs["start"]
@@ -46,6 +48,7 @@ def api_system(**kwargs):
         db.query("UPDATE services SET state=2 WHERE id=%s AND state = 0", [id_service])
         db.commit()
         logging.info(f"{user} requested service ID {id_service} ({config['services'][id_service]['title']}) start")
+        message = "Service is starting"
 
     if "kill" in kwargs:
         id_service = kwargs["kill"]
@@ -56,6 +59,7 @@ def api_system(**kwargs):
         db.query("UPDATE services SET state=4 WHERE id=%s AND state = 3", [id_service])
         db.commit()
         logging.info(f"{user} requested service ID {id_service} ({config['services'][id_service]['title']}) kill")
+        message = "Attempting to kill the service"
 
     if "autostart" in kwargs:
         id_service = kwargs["autostart"]
@@ -66,6 +70,7 @@ def api_system(**kwargs):
         db.query("UPDATE services SET autostart=NOT autostart WHERE id=%s", [id_service])
         logging.info(f"{user} requested service ID {id_service} ({config['services'][id_service]['title']}) autostart")
         db.commit()
+        message = "Service auto-start updated"
 
     result = {}
     if "services" in request:
@@ -79,7 +84,8 @@ def api_system(**kwargs):
                     "title" : title,
                     "autostart" : autostart,
                     "state" : state,
-                    "last_seen" : last_seen
+                    "last_seen" : last_seen,
+                    "last_seen_before" : time.time() - last_seen
                 }
             services.append(service)
         result["services"] = services
@@ -94,4 +100,4 @@ def api_system(**kwargs):
             hosts.append(host)
         result["hosts"] = hosts
 
-    return NebulaResponse(200, data=result)
+    return NebulaResponse(200, data=result, message=message)

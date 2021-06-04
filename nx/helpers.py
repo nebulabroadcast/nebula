@@ -2,6 +2,7 @@ import smtplib
 import requests
 
 from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 from nebulacore import *
 
@@ -205,6 +206,42 @@ def bin_refresh(bins, **kwargs):
     return True
 
 
+def html2email(html):
+    msg = MIMEMultipart("alternative")
+    text = "no plaitext version available"
+    part1 = MIMEText(text, "plain")
+    part2 = MIMEText(html, "html")
+
+    msg.attach(part1)
+    msg.attach(part2)
+
+    return msg
+
+
+def markdown2email(text):
+    import mistune
+
+    msg = MIMEMultipart("alternative")
+    html = mistune.html(text)
+    part1 = MIMEText(text, "plain")
+    part2 = MIMEText(html, "html")
+
+    msg.attach(part1)
+    msg.attach(part2)
+
+    return msg
+
+    if attachments:
+        full_msg = MIMEMultipart("mixed")
+        full_msg.attach(msg)
+
+        for attachment in attachments:
+            part = MIMEBase(*attachment["contentType"].split("/", 1), Name=attachment["name"])
+            part.set_payload(attachment["content"])
+            part["Content-Transfer-Encoding"] = "base64"
+            part['Content-Disposition'] = 'attachment; filename="{}"'.format(attachment["name"])
+            full_msg.attach(part)
+
 
 def send_mail(to, subject, body, **kwargs):
     if type(to) in string_types:
@@ -214,7 +251,12 @@ def send_mail(to, subject, body, **kwargs):
     smtp_host = config.get("smtp_host", "localhost")
     smtp_user = config.get("smtp_user", False)
     smtp_pass = config.get("smtp_pass", False)
-    msg = MIMEText(body)
+
+    if isinstance(body, MIMEMultipart):
+        msg = body
+    else:
+        msg = MIMEText(body)
+
     msg['Subject'] = subject
     msg['From'] = reply_address
     msg['To'] = ",".join(to)
@@ -229,7 +271,7 @@ def send_mail(to, subject, body, **kwargs):
     s.sendmail(reply_address, [to], msg.as_string())
 
 
-def cg_download(target_path, method, timeout=10, **kwargs):
+def cg_download(target_path, method, timeout=10, verbose=True, **kwargs):
     start_time = time.time()
     target_dir = os.path.dirname(os.path.abspath(target_path))
     cg_server = config.get("cg_server", "https://cg.immstudios.org")
@@ -257,6 +299,7 @@ def cg_download(target_path, method, timeout=10, **kwargs):
     except Exception:
         log_traceback(f"Unable to write CG item to {target_path}")
         return False
-    logging.info("CG {} downloaded in {:.02f}s".format(method, time.time() - start_time))
+    if verbose:
+        logging.info("CG {} downloaded in {:.02f}s".format(method, time.time() - start_time))
     return True
 

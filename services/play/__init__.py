@@ -109,7 +109,7 @@ class Service(BaseService):
             return NebulaResponse(400, "Unable to cue. No item specified")
 
         if not item:
-            return NebulaResponse(404, "Unable to cue. {item} does not exist")
+            return NebulaResponse(404, f"Unable to cue. {item} does not exist")
 
         if item["item_role"] == "live":
             logging.info("Next is item is live")
@@ -120,7 +120,7 @@ class Service(BaseService):
             return response
 
         if not item["id_asset"]:
-            return NebulaResponse(400, "Unable to cue virtual {}".format(item))
+            return NebulaResponse(400, f"Unable to cue virtual {item}")
 
         asset = item.asset
         playout_status = asset.get(self.status_key, DEFAULT_STATUS)["status"]
@@ -135,7 +135,7 @@ class Service(BaseService):
             kwargs["remote"] = True
 
         if not kwargs["full_path"]:
-            return NebulaResponse(404, "Unable to cue {get_object_state_name(playout_status)} playout file")
+            return NebulaResponse(404, f"Unable to cue {get_object_state_name(playout_status)} playout file")
 
         kwargs["mark_in"] = item["mark_in"]
         kwargs["mark_out"] = item["mark_out"]
@@ -171,7 +171,7 @@ class Service(BaseService):
 
 
     def cue_next(self, **kwargs):
-        logging.info("CUE NEXT")
+        logging.info("Cueing the next item")
         self.controller.cueing = True #TODO: deprecate. controller should handle this
         item = kwargs.get("item", self.controller.current_item)
         level = kwargs.get("level", 0)
@@ -227,6 +227,7 @@ class Service(BaseService):
             return NebulaResponse(400)
         if hasattr(self.controller, "set"):
             return self.controller.set(key, value)
+        return NebulaResponse(501)
         return NebulaResponse(200)
 
 
@@ -303,6 +304,8 @@ class Service(BaseService):
 
 
     def on_progress(self):
+        if not self.controller:
+            return # fix the race condition, when on_progress is created, but not yet added to the service
         if time.time() - self.last_info > .3:
             messaging.send("playout_status", **self.playout_status)
             self.last_info = time.time()
@@ -321,7 +324,7 @@ class Service(BaseService):
         self.current_asset = item.asset or Asset()
         self.current_event = item.event or Event()
 
-        logging.info ("Advanced to {}".format(item))
+        logging.info (f"Advanced to {item}")
 
         if self.last_run:
             db.query("UPDATE asrun SET stop = %s WHERE id = %s",  [int(time.time()) , self.last_run])
@@ -345,13 +348,13 @@ class Service(BaseService):
 
 
     def on_live_enter(self):
-        logging.goodnews("LIVE ENTER")
+        logging.goodnews("Entering a live event")
         self.current_live = True
         self.cued_live = False
 
 
     def on_live_leave(self):
-        logging.goodnews("LIVE LEAVE")
+        logging.goodnews("Leaving a live event")
         self.current_live = False
 
 
@@ -371,7 +374,7 @@ class Service(BaseService):
         current_event = get_item_event(current_item.id, db=db)
 
         if not current_event:
-            logging.warning("Unable to fetch current event")
+            logging.warning("Unable to fetch the current event")
             return
 
         db.query(
@@ -467,10 +470,10 @@ class Service(BaseService):
         self.controller.cued_fname = False
 
         if last_start + last_item.duration <= time.time():
-            logging.info("Last {} has been broadcasted. starting next item".format(last_item))
+            logging.info(f"Last {last_item} has been broadcasted. starting next item")
             new_item = self.cue_next(item=last_item, db=db, play=True)
         else:
-            logging.info("Last {} has not been fully broadcasted. Loading next one".format(last_item))
+            logging.info(f"Last {last_item} has not been fully broadcasted. Loading next one")
             new_item = self.cue_next(item=last_item, db=db)
 
         if not new_item:

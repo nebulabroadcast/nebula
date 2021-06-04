@@ -171,6 +171,7 @@ class CasparController(object):
                     self.cued_item = self.cueing_item
                     self.cueing_item = False
                     self.cueing = False
+
             else:
                 logging.debug(f"Waiting for cue {self.cueing}")
 
@@ -217,6 +218,12 @@ class CasparController(object):
             self.cueing      = False
             self.cueing_item = False
             return NebulaResponse(result.response, message)
+
+        if play:
+            self.cueing = False
+            self.cueing_item = False
+            self.current_item = item
+            self.current_fname = fname
 
         return NebulaResponse(200)
 

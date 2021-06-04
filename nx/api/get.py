@@ -158,7 +158,12 @@ def api_browse(**kwargs):
 
     for response, obj in get_objects(Asset, **params):
         result["count"] |= response["count"]
-        row = {"_id" : obj.id}
+        row = {
+            "_id" : obj.id,
+            "_id_folder" : obj["id_folder"],
+            "_status" : obj["status"],
+            "_content_type" : obj["content_type"],
+        }
         for col in columns:
             row[col] = obj.show(col)
         result["data"].append(row)
@@ -237,6 +242,9 @@ def api_get(**kwargs):
             row = {
                 "id" : obj.id,
                 "id_folder" : obj["id_folder"],
+                "qc/state" : obj["qc/state"],
+                "proxy_url" : obj.proxy_url,
+                "title" : obj["title"],
                 "duration" : obj["duration"],
                 "mark_in" : obj["mark_in"],
                 "mark_out" : obj["mark_out"],

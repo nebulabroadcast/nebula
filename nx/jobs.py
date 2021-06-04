@@ -94,6 +94,7 @@ class Job():
         self.id_user = 0
         self.priority = 3
         self.retries = 0
+        self.status = PENDING
         self._asset = None
         self._settings = None
         self._action = None
@@ -153,6 +154,7 @@ class Job():
         logging.error(f"No such {self}")
 
     def take(self, id_service):
+        now = time.time()
         self.db.query("""UPDATE jobs SET
                     id_service=%s,
                     start_time=%s,
@@ -160,43 +162,85 @@ class Job():
                     status=1,
                     progress=0
                 WHERE id=%s AND id_service IS NULL""",
-                [id_service, time.time(), self.id])
+                [id_service, now, self.id])
         self.db.commit()
         self.db.query(
                 "SELECT id FROM jobs WHERE id=%s AND id_service=%s",
                 [self.id, id_service]
             )
         if self.db.fetchall():
+            messaging.send(
+                "job_progress",
+                id=self.id,
+                id_asset=self.id_asset,
+                id_action=self.id_action,
+                stime=now,
+                status=1,
+                progress=0,
+                message="Starting..."
+            )
             return True
         return False
 
     def set_progress(self, progress, message="In progress"):
         db = DB()
-        progress=round(progress,2)
+        progress=round(progress, 2)
         db.query(
             """UPDATE jobs SET
+                    status=1,
                     progress=%s,
                     message=%s
                 WHERE id=%s""",
             [progress, message, self.id])
         db.commit()
-        messaging.send("job_progress", id=self.id, id_asset=self.id_asset, id_action=self.id_action, status=1, progress=progress, message=message)
+        messaging.send(
+            "job_progress",
+            id=self.id,
+            id_asset=self.id_asset,
+            id_action=self.id_action,
+            status=IN_PROGRESS,
+            progress=progress,
+            message=message
+        )
 
     def get_status(self):
         self.db.query("SELECT status FROM jobs WHERE id=%s", [self.id])
-        return self.db.fetchall()[0][0]
+        self.status = self.db.fetchall()[0][0]
+        return self.status
 
     def abort(self, message="Aborted"):
+        now = time.time()
         logging.warning(f"{self} aborted")
-        self.db.query("UPDATE jobs SET end_time=%s, status=4, message=%s WHERE id=%s", [time.time(), message, self.id])
+        self.db.query("UPDATE jobs SET end_time=%s, status=4, message=%s WHERE id=%s", [now, message, self.id])
         self.db.commit()
-        messaging.send("job_progress", id=self.id, id_asset=self.id_asset, id_action=self.id_action, status=4, progress=0, message=message)
+        self.status = ABORTED
+        messaging.send(
+            "job_progress",
+            id=self.id,
+            id_asset=self.id_asset,
+            id_action=self.id_action,
+            etime=now,
+            status=ABORTED,
+            progress=0,
+            message=message
+        )
 
     def restart(self, message="Restarted"):
         logging.warning(f"{self} restarted")
         self.db.query("UPDATE jobs SET id_service=NULL, start_time=NULL, end_time=NULL, status=5, retries=0, progress=0, message=%s WHERE id=%s", [message, self.id])
         self.db.commit()
-        messaging.send("job_progress", id=self.id, id_asset=self.id_asset, id_action=self.id_action, status=5, progress=0, message=message)
+        self.status = RESTART
+        messaging.send(
+            "job_progress",
+            id=self.id,
+            id_asset=self.id_asset,
+            id_action=self.id_action,
+            stime=None,
+            etime=None,
+            status=5,
+            progress=0,
+            message=message
+        )
 
     def fail(self, message="Failed", critical=False):
         if critical:
@@ -215,10 +259,20 @@ class Job():
             [retries, max(0, self.priority-1), message, self.id]
             )
         self.db.commit()
+        self.status = FAILED
         logging.error(f"{self}: {message}")
-        messaging.send("job_progress", id=self.id, id_asset=self.id_asset, id_action=self.id_action, status=3, progress=0, message=message)
+        messaging.send(
+            "job_progress",
+            id=self.id,
+            id_asset=self.id_asset,
+            id_action=self.id_action,
+            status=FAILED,
+            progress=0,
+            message=message
+        )
 
     def done(self, message="Completed"):
+        now = time.time()
         self.db.query(
             """UPDATE jobs SET
                     status=2,
@@ -226,11 +280,21 @@ class Job():
                     end_time=%s,
                     message=%s
                 WHERE id=%s""",
-            [time.time(), message, self.id]
+            [now, message, self.id]
             )
         self.db.commit()
+        self.status = COMPLETED
         logging.goodnews(f"{self}: {message}")
-        messaging.send("job_progress", id=self.id, id_asset=self.asset.id, id_action=self.action.id, status=2, progress=100, message=message)
+        messaging.send(
+            "job_progress",
+            id=self.id,
+            id_asset=self.asset.id,
+            id_action=self.action.id,
+            status=COMPLETED,
+            etime=now,
+            progress=100,
+            message=message
+        )
 
 
 
@@ -239,6 +303,7 @@ def get_job(id_service, action_ids, db=False):
     if not action_ids:
         return False
     db = db or DB()
+    now = time.time()
 
     running_jobs_count = {}
     db.query("select id_action, count(id) from jobs where status=1 group by id_action")
@@ -289,7 +354,6 @@ def get_job(id_service, action_ids, db=False):
 
         if status != 5 and action.should_skip(asset):
             logging.info(f"Skipping {job}")
-            now = time.time()
             db.query("""
                 UPDATE jobs SET
                     status=6,
@@ -310,7 +374,15 @@ def get_job(id_service, action_ids, db=False):
                 continue
         else:
             db.query("UPDATE jobs SET message='Waiting' WHERE id=%s", [id_job])
-            #messaging.send("job_progress", id=id_job, id_asset=id_asset, id_action=id_action, status=status, progress=0, message="Waiting")
+            messaging.send(
+                "job_progress",
+                id=id_job,
+                id_asset=id_asset,
+                id_action=id_action,
+                status=status,
+                progress=0,
+                message="Waiting"
+            )
             db.commit()
     return False
 
@@ -334,6 +406,7 @@ def send_to(id_asset, id_action, settings={}, id_user=None, priority=3, restart_
 
             db.query("""
                 UPDATE jobs SET
+                    id_user=%s,
                     id_service=NULL,
                     message='Restart requested',
                     status=5,
@@ -345,7 +418,7 @@ def send_to(id_asset, id_action, settings={}, id_user=None, priority=3, restart_
                     AND status NOT IN({})
                 RETURNING id
                     """.format(conds),
-                    [time.time(), res[0][0]])
+                    [id_user, time.time(), res[0][0]])
             db.commit()
             if db.fetchall():
                 messaging.send("job_progress", id=res[0][0], id_asset=id_asset, id_action=id_action, progress=0)

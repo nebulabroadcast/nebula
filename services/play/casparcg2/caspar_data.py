@@ -81,7 +81,7 @@ class CasparOSCServer():
         self.osc_port = osc_port
         self.channels = {}
         self.last_osc = time.time()
-        self.osc_server = OSCServer("localhost", self.osc_port, self.handle_osc)
+        self.osc_server = OSCServer("", self.osc_port, self.handle_osc)
         self.osc_thread = threading.Thread(target=self.osc_server.serve_forever, args=())
         self.osc_thread.name = 'OSC Server'
         self.osc_thread.start()

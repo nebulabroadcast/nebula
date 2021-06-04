@@ -103,8 +103,8 @@ class PlayoutPlugin(object):
             id_layer = self.id_layer
         return f"{self.service.controller.caspar_channel}-{id_layer}"
 
-    def query(self, query):
-        return self.service.controller.query(query)
+    def query(self, query, **kwargs):
+        return self.service.controller.query(query, **kwargs)
 
     def on_init(self):
         pass

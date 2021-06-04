@@ -17,7 +17,7 @@ class Service(BaseService):
         db.query("SELECT id, title, service_type, settings FROM actions ORDER BY id")
         for id_action, title, service_type, settings in db.fetchall():
             if service_type == self.service_type:
-                logging.debug("Registering action {}".format(title))
+                logging.debug(f"Registering action {title}")
                 self.actions.append(Action(id_action, title, xml(settings)))
         self.reset_jobs()
 
@@ -39,30 +39,42 @@ class Service(BaseService):
                 [self.id_service]
             )
         for id_job, in db.fetchall():
-            logging.info("Restarting job ID {} (converter restarted)".format(id_job))
+            logging.info(f"Restarting job ID {id_job} (converter restarted)")
         db.commit()
 
 
-    def job_fail(self, job, message="Transcoding failed", critical=False):
-        job.fail(message=message)
+    def progress_handler(self, position):
+        position = float(position)
+        stat = self.job.get_status()
+        if stat == RESTART:
+            self.encoder.stop()
+            self.job.restart()
+            return
+        elif stat == ABORTED:
+            self.encoder.stop()
+            self.job.abort()
+            return
+
+        progress = (position / self.job.asset["duration"]) * 100
+        self.job.set_progress(progress, f"Encoding: {progress:.02f}%")
 
 
     def on_main(self):
         db = DB()
-        job = get_job(
+        self.job = get_job(
                 self.id_service,
                 [action.id for action in self.actions],
                 db=db
             )
-        if not job:
+        if not self.job:
             return
-        logging.info("Got {}".format(job))
+        logging.info("Got {}".format(self.job))
 
-        asset = job.asset
-        action = job.action
+        asset = self.job.asset
+        action = self.job.action
 
         try:
-            job_params = job.settings
+            job_params = self.job.settings
         except Exception:
             log_traceback()
             job_params = {}
@@ -78,62 +90,43 @@ class Service(BaseService):
                 if not using in available_encoders:
                     continue
             except KeyError:
-                self.job_fail(job, "Wrong encoder type specified for task {}".format(id_task), critical=True)
+                self.job.fail(f"Wrong encoder type specified for task {id_task}", critical=True)
                 return
 
-            logging.debug("Configuring task {} of {}".format(id_task+1, len(tasks)) )
-            encoder = available_encoders[using](asset, task, job_params)
-            result = encoder.configure()
+            logging.debug(f"Configuring task {id_task+1} of {len(tasks)}")
+
+            self.encoder = available_encoders[using](asset, task, job_params)
+            result = self.encoder.configure()
 
             if not result:
-                self.job_fail(job, result.message, critical=True)
+                self.job.fail(result.message, critical=True)
                 return
 
-            logging.info("Starting task {} of {}".format(id_task+1, len(tasks)) )
-            encoder.start()
+            logging.info(f"Starting task {id_task+1} of {len(tasks)}")
 
-            old_progress = 0
-            while encoder.is_running:
-                encoder.work()
-                now = time.time()
+            self.encoder.start()
+            self.encoder.wait(self.progress_handler)
 
-                if int(now) % 2 == 0:
-                    if encoder.progress != old_progress:
-                        job.set_progress(encoder.progress, encoder.message)
-                        old_progress = encoder.progress
+            if self.job.status != IN_PROGRESS:
+                return
 
-                    stat = job.get_status()
-                    if stat == RESTART:
-                        encoder.stop()
-                        job.restart()
-                        return
-                    elif stat == ABORTED:
-                        encoder.stop()
-                        job.abort()
-                        return
+            logging.debug(f"Finalizing task {id_task+1} of {len(tasks)}")
+            result = self.encoder.finalize()
 
-                if now - last_info_time > FORCE_INFO_EVERY:
-                    last_info_time = now
-                    logging.debug(
-                            "{}: {}, {:.2f}% completed".format(
-                            job, encoder.message, encoder.progress
-                            ))
-                time.sleep(.0001)
-
-            logging.debug("Finalizing task {} of {}".format(id_task+1, len(tasks)))
-            result = encoder.finalize()
             if not result:
-                job.fail(result.message)
+                self.job.fail(result.message)
                 return
-            job_params = encoder.params
+            job_params = self.encoder.params
+
+        job = self.job
 
         for success_script in action.settings.findall("success"):
-            if success_script:
-                success_script = success_script.text
-                exec(success_script)
+            logging.info("Executing success script")
+            success_script = success_script.text
+            exec(success_script)
 
         elapsed_time = time.time() - job_start_time
         duration = asset["duration"] or 1
         speed = duration / elapsed_time
 
-        job.done("Finished in {} ({:.02f}x realtime)".format(s2words(elapsed_time), speed))
+        self.job.done(f"Finished in {s2words(elapsed_time)} ({speed:.02f}x realtime)")
