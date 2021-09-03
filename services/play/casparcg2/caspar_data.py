@@ -82,12 +82,19 @@ class CasparOSCServer():
         self.channels = {}
         self.last_osc = time.time()
         self.osc_server = OSCServer("", self.osc_port, self.handle_osc)
-        self.osc_thread = threading.Thread(target=self.osc_server.serve_forever, args=())
+        self.osc_thread = threading.Thread(target=self.serve_forever, args=())
         self.osc_thread.name = 'OSC Server'
         self.osc_thread.start()
 
     def __getitem__(self, key):
         return self.channels.get(key, None)
+
+    def serve_forever(self):
+        self.osc_server.serve_forever()
+        logging.info("OSC server stopped")
+
+    def shutdown(self):
+        self.osc_server.shutdown()
 
     def handle_osc(self, address, *args):
         if type(address) == str:

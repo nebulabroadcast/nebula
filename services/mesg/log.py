@@ -10,9 +10,9 @@ def log_clean_up(log_dir, ttl=30):
             try:
                 os.remove(f.path)
             except Exception:
-                log_traceback("Unable to remove old log file")
+                log_traceback(f"Unable to remove old log file {f.base_name}")
             else:
-                logging.debug("Removed old log file {}".format(f.base_name))
+                logging.debug(f"Removed old log file {f.base_name}")
 
 
 

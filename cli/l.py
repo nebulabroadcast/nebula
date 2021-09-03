@@ -47,15 +47,18 @@ def listen():
                 1
             )
 
+        addr = config.get("seismic_addr", "224.168.1.1")
+        port = int(config.get("seismic_port", 42005))
+
         try:
-            firstoctet = int(config["seismic_addr"].split(".")[0])
+            firstoctet = int(addr.split(".")[0])
             is_multicast = firstoctet >= 224
         except ValueError:
             is_multicast = False
 
         if is_multicast:
-            logging.info("Starting multicast listener {}:{}".format(config["seismic_addr"], config["seismic_port"]))
-            sock.bind(("0.0.0.0", int(config["seismic_port"])))
+            logging.info(f"Starting multicast listener {addr}:{port}")
+            sock.bind(("0.0.0.0", port))
             sock.setsockopt(
                     socket.IPPROTO_IP,
                     socket.IP_MULTICAST_TTL,
@@ -64,18 +67,18 @@ def listen():
             sock.setsockopt(
                     socket.IPPROTO_IP,
                     socket.IP_ADD_MEMBERSHIP,
-                    socket.inet_aton(config["seismic_addr"]) + socket.inet_aton("0.0.0.0")
+                    socket.inet_aton(addr) + socket.inet_aton("0.0.0.0")
                 )
         else:
-            logging.info("Starting unicast listener {}:{}".format(config["seismic_addr"], config["seismic_port"]))
-            sock.bind((config["seismic_addr"], int(config["seismic_port"])))
+            logging.info(f"Starting unicast listener {addr}:{port}")
+            sock.bind((addr, port))
 
 
         sock.settimeout(1)
 
         while True:
             try:
-                data, addr = sock.recvfrom(4092)
+                data, _ = sock.recvfrom(4092)
             except (socket.error):
                 continue
             try:

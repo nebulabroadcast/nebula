@@ -79,6 +79,8 @@ class StorageMonitor(BaseAgent):
                 smbopts["user"] = storage["login"]
             if storage.get("password"):
                 smbopts["pass"] = storage["password"]
+            if storage.get("domain"):
+                smbopts["domain"] = storage["domain"]
             smbver = storage.get("samba_version", "3.0")
             if smbver:
                 smbopts["vers"] = smbver

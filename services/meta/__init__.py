@@ -15,14 +15,14 @@ class Service(BaseService):
             self.restart_on_update = [int(k.strip()) for k in rou.split(",")]
         else:
             self.restart_on_update = None
-        logging.debug("Following actions will be restarted on source update: {}".format(self.restart_on_update))
+        logging.debug(f"Following actions will be restarted on source update: {self.restart_on_update}")
 
         for cond in self.settings.findall("cond"):
             if cond is None:
                 continue
             if not cond.text:
                 continue
-            x = eval("lambda asset: {}".format(cond.text))
+            x = eval(f"lambda asset: {cond.text}")
             self.conds.append(x)
 
     def on_main(self):
@@ -42,11 +42,11 @@ class Service(BaseService):
             self.process(asset)
             i += 1
             if i % 100 == 0 and config.get("debug_mode", False):
-                logging.debug("{} files scanned".format(i))
+                logging.debug(f"{i} files scanned")
 
         duration = time.time() - start_time
         if duration > 60 or config.get("debug_mode", False):
-            logging.debug("Metadata scanned in {}".format(s2time(duration)))
+            logging.debug(f"Metadata scanned in {s2time(duration)}")
 
 
     def process(self, asset):
@@ -59,7 +59,7 @@ class Service(BaseService):
         if not id_storage:
             return
         if id_storage not in self.mounted_storages:
-            logging.warning("Skipping unmounted storage {} of {}".format(asset["id_storage"], asset))
+            logging.warning(f"Skipping unmounted storage {asset["id_storage"]} of {asset}")
             return
 
         try:
@@ -69,7 +69,7 @@ class Service(BaseService):
 
         if not file_exists:
             if asset["status"] in [ONLINE, RESET, CREATING]:
-                logging.warning("{}: Turning offline (File does not exist)".format(asset))
+                logging.warning(f"{asset}: Turning offline (File does not exist)")
                 asset["status"] = OFFLINE
                 asset.save()
             return
@@ -79,7 +79,7 @@ class Service(BaseService):
 
         if fsize == 0:
             if asset["status"] not in [OFFLINE, RETRIEVING]:
-                logging.warning("{}: Turning offline (empty file)".format(asset))
+                logging.warning(f"{asset}: Turning offline (empty file)")
                 asset["status"] = OFFLINE
                 asset.save()
             return
@@ -89,7 +89,7 @@ class Service(BaseService):
             try:
                 f = asset_file.open("rb")
             except Exception:
-                logging.debug("{} is not accessible (file creation in progress?)".format(asset))
+                logging.debug(f"{asset} is not readable (transfer in progress?)")
                 return
             else:
                 f.seek(0,2)
@@ -103,14 +103,14 @@ class Service(BaseService):
             # It sucks, but mtime only condition is.... errr doesn't work always
 
             if fsize == asset["file/size"] and asset["status"] not in [RESET, RETRIEVING]:
-                logging.debug("{}: File mtime has been changed. Updating.".format(asset))
+                logging.debug(f"{asset}: File mtime has been changed. Updating metadata.")
                 asset["file/mtime"] = fmtime
                 asset.save(set_mtime=False, notify=False)
             elif fsize != asset["file/size"] or asset["status"] in [RESET, RETRIEVING]:
                 if asset["status"] in [RESET, RETRIEVING]:
-                    logging.info("{}: Metadata reset requested. Updating.".format(asset))
+                    logging.info(f"{asset}: Metadata reset requested. Updating metadata.")
                 else:
-                    logging.info("{}: File has been changed. Updating.".format(asset))
+                    logging.info(f"{asset}: File has been changed. Updating metadata.")
 
                 keys = list(asset.meta.keys())
                 for key in keys:
@@ -124,7 +124,7 @@ class Service(BaseService):
 
                 for probe in probes:
                     if probe.accepts(asset):
-                        logging.debug("{}: probing using {}".format(asset, probe))
+                        logging.debug(f"{asset}: probing using {probe}")
                         result = probe(asset)
                         if result:
                             asset = result
@@ -136,17 +136,17 @@ class Service(BaseService):
 
                 if asset["status"] == RESET:
                     asset["status"] = ONLINE
-                    logging.info("{}: Reset completed".format(asset))
+                    logging.info(f"{asset}: Metadata reset completed")
                 else:
                     asset["status"] = CREATING
                 asset.save()
 
         if asset["status"] == CREATING and asset["mtime"] + 15 > time.time():
-            logging.debug("{}: Waiting for completion assurance.".format(asset))
+            logging.debug(f"{asset}: Waiting for completion assurance")
             asset.save(set_mtime=False, notify=False)
 
         elif asset["status"] in (CREATING, OFFLINE):
-            logging.goodnews("{}: Turning online".format(asset))
+            logging.goodnews(f"{asset}: Turning online")
             asset["status"] = ONLINE
             asset["qc/state"] = 0
             asset.save()

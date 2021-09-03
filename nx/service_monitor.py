@@ -51,7 +51,7 @@ class ServiceMonitor(BaseAgent):
                     state=state,
                     autostart=autostart,
                     last_seen=last_seen,
-                    last_seen_before=time.time() - last_seen
+                    last_seen_before=max(0, int(time.time() - last_seen))
                 )
             if state == STARTING: # Start service
                 if not id in self.services.keys():

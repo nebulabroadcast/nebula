@@ -15,7 +15,7 @@ class Service(BaseService):
             self.existing.append(file_path)
         duration = time.time() - start_time
         if duration > 5 or config.get("debug_mode", False):
-            logging.debug("Online assets loaded in {}".format(s2time(duration)))
+            logging.debug(f"Online assets loaded in {s2time(duration)}")
 
         start_time = time.time()
         for wf_settings in self.settings.findall("folder"):
@@ -63,7 +63,7 @@ class Service(BaseService):
                 base_name = get_base_name(asset_path)
 
                 if quarantine_time and now - file_object.mtime < quarantine_time:
-                    logging.debug("{} is too young. Skipping".format(base_name))
+                    logging.debug(f"{base_name} is too young. Skipping")
                     continue
 
                 asset = Asset(db=db)
@@ -84,7 +84,7 @@ class Service(BaseService):
                     try:
                         exec(post_script.text)
                     except:
-                        log_traceback("Error executing post-script on {}".format(asset))
+                        log_traceback(f"Error executing post-script on {asset}")
                         failed = True
 
                 if not failed:
@@ -92,4 +92,4 @@ class Service(BaseService):
 
         duration = time.time() - start_time
         if duration > 60 or config.get("debug_mode", False):
-            logging.debug("Watchfolders scanned in {}".format(s2time(duration)))
+            logging.debug(f"Watchfolders scanned in {s2time(duration)}")

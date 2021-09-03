@@ -99,7 +99,7 @@ if __name__ == "__main__":
         except Exception:
             log_traceback()
             shutdown(agents)
-            critical_error("Unable to start {}".format(Agent.__name__))
+            critical_error(f"Unable to start {Agent.__name__}")
 
     # Main loop
 

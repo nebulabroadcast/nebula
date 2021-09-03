@@ -24,7 +24,7 @@ class Service(BaseService):
                 continue
 
             if action.should_create(asset):
-                logging.info("{} matches action condition {}".format(asset, action.title))
+                logging.info(f"{asset} matches action condition {action.title}")
                 result = send_to(
                         asset.id,
                         action.id,

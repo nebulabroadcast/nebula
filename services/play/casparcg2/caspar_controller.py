@@ -22,11 +22,14 @@ class CasparController(object):
         self.caspar_channel      = int(parent.channel_config.get("caspar_channel", 1))
         self.caspar_feed_layer   = int(parent.channel_config.get("caspar_feed_layer", 10))
 
+        self.should_run = True
+
         self.current_item = Item()
         self.current_fname = False
         self.cued_item = False
         self.cued_fname = False
         self.cueing = False
+        self.cueing_time = 0
         self.cueing_item = False
         self.stalled  = False
 
@@ -45,6 +48,11 @@ class CasparController(object):
         self.lock = threading.Lock()
         self.work_thread = threading.Thread(target=self.work, args=())
         self.work_thread.start()
+
+    def shutdown(self):
+        logging.info("Controller shutdown requested")
+        self.should_run = False
+        self.caspar_data.shutdown()
 
     @property
     def id_channel(self):
@@ -82,12 +90,13 @@ class CasparController(object):
         return self.cmdc.query(*args, **kwargs)
 
     def work(self):
-        while True:
+        while self.should_run:
             try:
                 self.main()
             except Exception:
                 log_traceback()
             time.sleep(1/self.fps)
+        logging.info("Controller work thread shutdown")
 
     def main(self):
         channel = self.caspar_data[self.caspar_channel]
@@ -173,7 +182,11 @@ class CasparController(object):
                     self.cueing = False
 
             else:
-                logging.debug(f"Waiting for cue {self.cueing}")
+                logging.debug(f"Waiting for cue {self.cueing} (is {cued_fname})")
+                if time.time() - self.cueing_time > 5 and self.current_item:
+                    logging.warning("Cueing again")
+                    self.cueing = False
+                    self.parent.cue_next()
 
         elif not self.cueing and self.cued_item and cued_fname and cued_fname != self.cued_fname and not self.parent.cued_live:
             logging.error(f"Cue mismatch: IS: {cued_fname} SHOULDBE: {self.cued_fname}")
@@ -208,6 +221,7 @@ class CasparController(object):
 
         self.cueing       = fname
         self.cueing_item  = item
+        self.cueing_time  = time.time()
 
         result = self.query(query)
 
@@ -217,11 +231,13 @@ class CasparController(object):
             self.cued_fname  = False
             self.cueing      = False
             self.cueing_item = False
+            self.cueing_time = 0
             return NebulaResponse(result.response, message)
 
         if play:
             self.cueing = False
             self.cueing_item = False
+            self.cueing_time = 0
             self.current_item = item
             self.current_fname = fname
 

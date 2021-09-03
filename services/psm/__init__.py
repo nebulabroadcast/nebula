@@ -75,7 +75,7 @@ class PlayoutStorageTool(object):
         storage = storages[self.playout_config["playout_storage"]]
         if not storage:
             if STORAGE_STATUS.get(storage.id, True):
-                logging.error("{} is not available".format(storage))
+                logging.error(f"{storage} is not available")
                 STORAGE_STATUS[storage.id] = False
             return
         STORAGE_STATUS[storage.id] = True
@@ -131,12 +131,7 @@ class PlayoutStorageTool(object):
 
 
             if ostatus != file_status or omtime != file_mtime or osize != file_size:
-                logging.info(
-                        "Set {} playout status to {}".format(
-                            asset,
-                            get_object_state_name(file_status)
-                        )
-                    )
+                logging.info(f"Set {asset} playout status to {get_object_state_name(file_status)}")
                 asset[self.status_key] = {
                             "status" : file_status,
                             "size" : file_size,
@@ -154,7 +149,7 @@ class PlayoutStorageTool(object):
                         db=db
                     )
                 if result.response == 201:
-                    logging.info("Sending {} to playout {} : {}".format(asset, self.playout_config["title"], result.message))
+                    logging.info(f"Sending {asset} to playout {self.playout_config['title']} : {result.message}")
 
 
 

@@ -4,9 +4,6 @@ import imp
 from nebula import *
 
 class Service(BaseService):
-    """
-    I am an docstring of the worker service
-    """
     def on_init(self):
         self.exec_init = False
         self.exec_main = False
@@ -41,10 +38,10 @@ class Service(BaseService):
         py_mod = imp.load_source(mod_name, script_path)
 
         if not "Plugin" in dir(py_mod):
-            logging.error("No plugin class found in {}".format(fname))
+            logging.error(f"No plugin class found in {fname}")
             return False
 
-        logging.debug("Loading plugin {}".format(mod_name))
+        logging.debug(f"Loading plugin {mod_name}")
         self.plugin = py_mod.Plugin(self)
         self.plugin.on_init()
         return True

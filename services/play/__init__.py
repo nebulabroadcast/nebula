@@ -87,6 +87,8 @@ class Service(BaseService):
 
 
     def on_shutdown(self):
+        if not hasattr(self, "controller"):
+            return
         if self.controller and hasattr(self.controller, "shutdown"):
             self.controller.shutdown()
 
@@ -228,7 +230,6 @@ class Service(BaseService):
         if hasattr(self.controller, "set"):
             return self.controller.set(key, value)
         return NebulaResponse(501)
-        return NebulaResponse(200)
 
 
     def stat(self, **kwargs):
@@ -364,6 +365,9 @@ class Service(BaseService):
         should start automatically at given time.
         It does not handle AUTO playlist advancing
         """
+
+        if not hasattr(self, "controller"):
+            return
 
         current_item = self.controller.current_item # YES. CURRENT
         if not current_item:

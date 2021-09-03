@@ -16,18 +16,18 @@ class BaseEncoder(object):
         pass
 
     def stop(self):
-        logging.warning("Job stopping is not implemented")
+        pass
 
     def work(self):
+        pass
+
+
+    def finalize(self):
         pass
 
     @property
     def is_running(self):
         return False
-
-    def finalize(self):
-        pass
-
 
 def temp_file(id_storage, ext):
     temp_dir = os.path.join(

@@ -59,6 +59,5 @@ class FFProbe(Probe):
 
             asset[key] = value
 
-
         return asset
-
+        
