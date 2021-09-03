@@ -59,7 +59,7 @@ class Service(BaseService):
         if not id_storage:
             return
         if id_storage not in self.mounted_storages:
-            logging.warning(f"Skipping unmounted storage {asset["id_storage"]} of {asset}")
+            logging.warning(f"Skipping unmounted storage {asset['id_storage']} of {asset}")
             return
 
         try:
