@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "nebula"
+version = "5.50"
+description = ""
+authors = ["Martastain <martas@imm.cz>"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+nxtools = "^1.6"
+cherryadmin = "^5.21.1"
+pylibmc = "^1.6.1"
+psutil = "^5.9.0"
+psycopg2-binary = "^2.9.3"
+PyYAML = "^6.0"
+requests = "^2.27.1"
+promexp = "^1.0.2"
+conti = "^1.0"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

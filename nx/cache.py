@@ -1,21 +1,23 @@
 __all__ = ["cache", "Cache"]
 
-import json
 import time
+from nxtools import log_traceback, critical_error
 
-from nebulacore import config
-from nxtools import *
+from nx.core.common import config
+
 
 MAX_RETRIES = 5
 
+
 try:
-    import pylibmc
+    import pylibmc  # noqa
+
     has_pylibmc = True
 except ModuleNotFoundError:
     has_pylibmc = False
 
 
-class Cache():
+class Cache:
     def __init__(self):
         if "cache_host" in config:
             self.configure()
@@ -61,14 +63,13 @@ class Cache():
                 break
             except Exception:
                 log_traceback(f"Cache save failed ({key})")
-                time.sleep(.1)
+                time.sleep(0.1)
                 self.connect()
         else:
-            critical_error("Memcache save failed. This should never happen. Check MC server")
-            sys.exit(-1)
+            critical_error("Memcache save failed. This should never happen.")
         return True
 
-    def delete(self,key):
+    def delete(self, key):
         if config.get("mc_thread_safe", False):
             return self.threaded_delete(key)
         key = self.site + "-" + key
@@ -78,11 +79,10 @@ class Cache():
                 break
             except Exception:
                 log_traceback(f"Cache delete failed ({key})")
-                time.sleep(.3)
+                time.sleep(0.3)
                 self.connect()
         else:
-            critical_error("Memcache delete failed. This should never happen. Check MC server")
-            sys.exit(-1)
+            critical_error("Memcache delete failed. This should never happen.")
         return True
 
     def threaded_load(self, key):
@@ -110,15 +110,14 @@ class Cache():
                     break
                 except Exception:
                     log_traceback(f"Cache save failed ({key})")
-                    time.sleep(.3)
+                    time.sleep(0.3)
                     self.connect()
             else:
-                critical_error("Memcache save failed. This should never happen. Check MC server")
-                sys.exit(-1)
+                critical_error("Memcache save failed. This should never happen.")
         self.pool.relinquish()
         return True
 
-    def threaded_delete(self,key):
+    def threaded_delete(self, key):
         if not self.pool:
             self.pool = pylibmc.ThreadMappedPool(self.conn)
         key = self.site + "-" + key
@@ -129,12 +128,12 @@ class Cache():
                     break
                 except Exception:
                     log_traceback(f"Cache delete failed ({key})")
-                    time.sleep(.3)
+                    time.sleep(0.3)
                     self.connect()
             else:
-                critical_error("Memcache delete failed. This should never happen. Check MC server")
-                sys.exit(-1)
+                critical_error("Memcache delete failed. This should never happen.")
         self.pool.relinquish()
         return True
+
 
 cache = Cache()

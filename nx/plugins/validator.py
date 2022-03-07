@@ -2,8 +2,11 @@ __all__ = ["get_validator"]
 
 import imp
 
-from nx import *
+from nxtools import FileObject, log_traceback, logging
+
+from nx.db import DB
 from nx.plugins.common import get_plugin_path
+
 
 class ValidatorPlugin(object):
     def __init__(self, **kwargs):
@@ -29,15 +32,13 @@ def get_validator(object_type, **kwargs):
     if f.exists:
         try:
             py_mod = imp.load_source(object_type, f.path)
-        except:
-            log_traceback("Unable to load plugin {}".format(plugin_name))
+        except Exception:
+            log_traceback(f"Unable to load plugin {f.base_name}")
             return
     else:
         return
 
-    if not "Plugin" in dir(py_mod):
-        logging.error("No plugin class found in {}".format(f))
+    if "Plugin" not in dir(py_mod):
+        logging.error(f"No plugin class found in {f.base_name}")
         return
     return py_mod.Plugin(**kwargs)
-
-

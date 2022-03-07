@@ -1,10 +1,16 @@
+import os
+import json
 import cherrypy
 import collections
 
-from nebula import *
 from cherryadmin import CherryAdminView
+from nxtools import get_files
 
-from .webtools import webtools
+from nx.db import DB
+from nx.objects import User
+from nx import load_settings
+
+from hub.webtools import webtools
 
 
 def get_settings_ctx(ctx, db, **kwargs):
@@ -70,23 +76,28 @@ def get_actions_ctx(ctx, db, **kwargs):
     result = {}
     for id, service_type, title in db.fetchall():
         result[id] = {
-                "title" : title,
-                "service_type" : service_type,
-            }
+            "title": title,
+            "service_type": service_type,
+        }
     ctx["data"] = result
     ctx["title"] = "Actions"
 
 
 def get_services_ctx(ctx, db, **kwargs):
     result = {}
-    db.query("SELECT id, service_type, host, title, autostart, loop_delay FROM services")
+    db.query(
+        """
+        SELECT id, service_type, host, title, autostart, loop_delay
+        FROM services
+        """
+    )
     for id, service_type, host, title, autostart, loop_delay in db.fetchall():
         result[id] = {
-            "service_type" : service_type,
+            "service_type": service_type,
             "host": host,
-            "title" : title,
-            "autostart" : autostart,
-            "loop_delay" : loop_delay
+            "title": title,
+            "autostart": autostart,
+            "loop_delay": loop_delay,
         }
     ctx["data"] = result
     ctx["title"] = "Services"
@@ -105,7 +116,7 @@ def get_channels_ctx(ctx, db, **kwargs):
 def get_users_ctx(ctx, db, **kwargs):
     db.query("SELECT meta FROM users ORDER BY login ASC")
     result = []
-    for meta, in db.fetchall():
+    for (meta,) in db.fetchall():
         result.append(User(meta=meta))
     ctx["data"] = result
     ctx["title"] = "Users"
@@ -113,10 +124,7 @@ def get_users_ctx(ctx, db, **kwargs):
 
 def get_sessions_ctx(ctx, db, **kwargs):
     if kwargs.get("delsession"):
-        spath = os.path.join(
-                    ctx["settings"]["sessions_dir"],
-                    kwargs["delsession"]
-                )
+        spath = os.path.join(ctx["settings"]["sessions_dir"], kwargs["delsession"])
         if len(kwargs["delsession"]) == 64:
             if os.path.exists(spath):
                 os.remove(spath)
@@ -124,31 +132,31 @@ def get_sessions_ctx(ctx, db, **kwargs):
     data = {}
     for sfile in get_files(ctx["settings"]["sessions_dir"]):
         d = json.load(sfile.open())
+        valid_until = d["ctime"] + (ctx["settings"]["sessions_timeout"] * 60)
         data[sfile.base_name] = {
-                "login" : d["user_data"].get("login"),
-                "valid_until" : d["ctime"] + (ctx["settings"]["sessions_timeout"]*60),
-                "ip" : d.get("ip"),
-                "user_agent" : d.get("user_agent")
-            }
+            "login": d["user_data"].get("login"),
+            "valid_until": valid_until,
+            "ip": d.get("ip"),
+            "user_agent": d.get("user_agent"),
+        }
     ctx["data"] = data
 
 
-
-
-modules = collections.OrderedDict([
-    ["settings",   {"title": "Settings", "context" : get_settings_ctx}],
-    ["meta_types", {"title": "Keys", "context" : get_meta_types_ctx}],
-    ["folders",    {"title": "Folders", "context" : get_folders_ctx}],
-    ["views",      {"title": "Views", "context" : get_views_ctx}],
-    ["cs",         {"title": "Classification", "context" : get_cs_ctx}],
-    ["storages",   {"title": "Storages", "context" : get_storages_ctx}],
-    ["actions",    {"title": "Actions", "context" : get_actions_ctx}],
-    ["services",   {"title": "Services", "context" : get_services_ctx}],
-    ["channels",   {"title": "Channels", "context" : get_channels_ctx}],
-    ["users",      {"title": "Users", "context" : get_users_ctx}],
-    ["sessions",   {"title": "Sessions", "context" : get_sessions_ctx}],
-])
-
+modules = collections.OrderedDict(
+    [
+        ["settings", {"title": "Settings", "context": get_settings_ctx}],
+        ["meta_types", {"title": "Keys", "context": get_meta_types_ctx}],
+        ["folders", {"title": "Folders", "context": get_folders_ctx}],
+        ["views", {"title": "Views", "context": get_views_ctx}],
+        ["cs", {"title": "Classification", "context": get_cs_ctx}],
+        ["storages", {"title": "Storages", "context": get_storages_ctx}],
+        ["actions", {"title": "Actions", "context": get_actions_ctx}],
+        ["services", {"title": "Services", "context": get_services_ctx}],
+        ["channels", {"title": "Channels", "context": get_channels_ctx}],
+        ["users", {"title": "Users", "context": get_users_ctx}],
+        ["sessions", {"title": "Sessions", "context": get_sessions_ctx}],
+    ]
+)
 
 
 class ViewSettings(CherryAdminView):
@@ -157,7 +165,6 @@ class ViewSettings(CherryAdminView):
             load_settings()
             webtools.load()
             raise cherrypy.HTTPRedirect("/settings")
-
 
         module = "settings"
         if len(args) > 1:

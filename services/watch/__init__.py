@@ -1,4 +1,16 @@
-from nebula import *
+import os
+import time
+
+from nxtools import s2time, logging, get_files, get_base_name, log_traceback
+
+from nx.core.common import config, storages
+from nx.core.enum import ObjectStatus, MediaType
+from nx.db import DB
+from nx.objects import Asset
+from nx.base_service import BaseService
+from nx.helpers import asset_by_path
+from nx.filetypes import FileTypes
+
 
 class Service(BaseService):
     def on_init(self):
@@ -9,7 +21,7 @@ class Service(BaseService):
         self.existing = []
         start_time = time.time()
         db.query("SELECT meta FROM assets WHERE media_type=1 AND status=1")
-        for meta, in db.fetchall():
+        for (meta,) in db.fetchall():
             asset = Asset(meta=meta, db=db)
             file_path = asset.file_path
             self.existing.append(file_path)
@@ -33,11 +45,11 @@ class Service(BaseService):
 
             i = 0
             for file_object in get_files(
-                        watchfolder_path,
-                        recursive=wf_settings.attrib.get("recursive", False),
-                        hidden=wf_settings.attrib.get("hidden", False),
-                        case_sensitive_exts=wf_settings.get("case_sensitive_exts", False)
-                    ):
+                watchfolder_path,
+                recursive=wf_settings.attrib.get("recursive", False),
+                hidden=wf_settings.attrib.get("hidden", False),
+                case_sensitive_exts=wf_settings.get("case_sensitive_exts", False),
+            ):
                 i += 1
                 if i % 100 == 0 and config.get("debug_mode", False):
                     logging.debug("{} files scanned".format(i))
@@ -52,7 +64,7 @@ class Service(BaseService):
                 now = time.time()
                 asset_path = full_path.replace(storage_path, "", 1).lstrip("/")
                 ext = os.path.splitext(asset_path)[1].lstrip(".").lower()
-                if not ext in file_types:
+                if ext not in FileTypes.exts():
                     continue
 
                 asset = asset_by_path(id_storage, asset_path, db=db)
@@ -67,23 +79,23 @@ class Service(BaseService):
                     continue
 
                 asset = Asset(db=db)
-                asset["content_type"] = file_types[ext]
-                asset["media_type"]  = FILE
+                asset["content_type"] = FileTypes.by_ext(ext)
+                asset["media_type"] = MediaType.FILE
                 asset["id_storage"] = id_storage
                 asset["path"] = asset_path
                 asset["ctime"] = now
                 asset["mtime"] = now
-                asset["status"] = CREATING
+                asset["status"] = ObjectStatus.CREATING
                 asset["id_folder"] = id_folder
                 asset["title"] = base_name
 
                 asset.load_sidecar_metadata()
 
-                failed=False
+                failed = False
                 for post_script in wf_settings.findall("post"):
                     try:
                         exec(post_script.text)
-                    except:
+                    except Exception:
                         log_traceback(f"Error executing post-script on {asset}")
                         failed = True
 

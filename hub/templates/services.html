@@ -1,0 +1,36 @@
+{% extends "_base.html" %}
+
+{% block content %}
+<table id="service-table">
+    <thead>
+        <tr>
+            <th style="width:35px;">#</th>
+            <th>Title</th>
+            <th style="width:200px;">Service&nbsp;type</th>
+            <th style="width:200px;">Host</th>
+            <th style="width:100px;">Autostart</th>
+            <th style="width:150px;">State</th>
+            <th style="width:100px;">Action</th>
+        </tr>
+    </thead>
+    <tbody id="service-table-body">
+        {% for service in page.data %}
+        <tr data-href="{{ service["id"] }}">
+            <td>{{ service["id"] }}</td>
+            <td>{{ service["title"] }}</td>
+            <td>{{ service["service_type"] }}</td>
+            <td>{{ service["host"] }}</td>
+            <td class="service-autostart">
+            <td class="service-state-label">
+                Please wait...
+            </td>
+            </td>
+            <td {% if user.has_right("service_control", service["id"]) %} class="service-actions"{% endif%}>
+                <button type="button" class="btn btn-sm" disabled>...</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
+

@@ -1,7 +1,11 @@
 __all__ = ["OSCBundle"]
 
 from .message import OSCMessage
-from .osc_types import *
+from .osc_types import (
+    OSCParseError,
+    get_date,
+    get_int,
+)
 
 from typing import Any, Iterator
 
@@ -29,11 +33,12 @@ class OSCBundle(object):
         try:
             self._timestamp, index = get_date(self._dgram, index)
         except OSCParseError as pe:
-            raise ParseError("Could not get the date from the datagram: %s" % pe)
+            raise OSCParseError("Could not get the date from the datagram: %s" % pe)
         # Get the contents as a list of OscBundle and OscMessage.
         self._contents = self._parse_contents(index)
 
-    # Return type is actually List[OscBundle], but that would require import annotations from __future__, which is
+    # Return type is actually List[OscBundle],
+    # but that would require import annotations from __future__, which is
     # python 3.7+ only.
     def _parse_contents(self, index: int) -> Any:
         contents = []
@@ -47,7 +52,7 @@ class OSCBundle(object):
                 # Get the sub content size.
                 content_size, index = get_int(self._dgram, index)
                 # Get the datagram for the sub content.
-                content_dgram = self._dgram[index:index + content_size]
+                content_dgram = self._dgram[index : index + content_size]
                 # Increment our position index up to the next possible content.
                 index += content_size
                 # Parse the content into an OSC message or bundle.
@@ -56,7 +61,7 @@ class OSCBundle(object):
                 elif OSCMessage.dgram_is_message(content_dgram):
                     contents.append(OSCMessage(content_dgram))
         except (OSCParseError, IndexError) as e:
-            raise ParseError("Could not parse a content datagram: %s" % e)
+            raise OSCParseError("Could not parse a content datagram: %s" % e)
 
         return contents
 

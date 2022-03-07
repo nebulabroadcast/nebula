@@ -3,8 +3,10 @@ __all__ = ["PlayoutPlugins"]
 import os
 import imp
 
-from nebula import *
-from nx.plugins.playout import *
+from nxtools import logging, log_traceback
+
+from nx.plugins import get_plugin_path
+
 
 class PlayoutPlugins(object):
     def __init__(self, service):
@@ -23,17 +25,17 @@ class PlayoutPlugins(object):
             plugin_path = os.path.join(bpath, plugin_file)
 
             if not os.path.exists(plugin_path):
-                logging.error("Plugin {} does not exist".format(plugin_name))
+                logging.error(f"Plugin {plugin_name} does not exist")
                 continue
 
             try:
                 py_mod = imp.load_source(plugin_name, plugin_path)
             except Exception:
-                log_traceback("Unable to load plugin {}".format(plugin_name))
+                log_traceback(f"Unable to load plugin {plugin_name}")
                 continue
 
-            if not "Plugin" in dir(py_mod):
-                logging.error("No plugin class found in {}".format(plugin_file))
+            if "Plugin" not in dir(py_mod):
+                logging.error(f"No plugin class found in {plugin_file}")
                 continue
 
             logging.info("Initializing plugin {}".format(plugin_name))
@@ -43,5 +45,3 @@ class PlayoutPlugins(object):
 
     def __getitem__(self, key):
         return self.plugins[key]
-
-

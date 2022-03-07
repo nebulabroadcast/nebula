@@ -3,7 +3,17 @@
 __all__ = ["OSCMessage"]
 
 
-from .osc_types import *
+from .osc_types import (
+    OSCParseError,
+    get_string,
+    get_int,
+    get_float,
+    get_double,
+    get_blob,
+    get_rgba,
+    get_midi,
+    get_timetag,
+)
 
 from typing import List, Iterator, Any
 
@@ -29,7 +39,7 @@ class OSCMessage(object):
 
             # Get the parameters types.
             type_tag, index = get_string(self._dgram, index)
-            if type_tag.startswith(','):
+            if type_tag.startswith(","):
                 type_tag = type_tag[1:]
 
             params = []
@@ -64,19 +74,24 @@ class OSCMessage(object):
                     param_stack.append(array)
                 elif param == "]":  # Array stop.
                     if len(param_stack) < 2:
-                        raise ParseError('Unexpected closing bracket in type tag: {0}'.format(type_tag))
+                        raise OSCParseError(
+                            "Unexpected closing bracket in type tag: {0}".format(
+                                type_tag
+                            )
+                        )
                     param_stack.pop()
                 # TODO: Support more exotic types as described in the specification.
                 else:
-                    logging.warning('Unhandled parameter type: {0}'.format(param))
                     continue
                 if param not in "[]":
                     param_stack[-1].append(val)
             if len(param_stack) != 1:
-                raise ParseError('Missing closing bracket in type tag: {0}'.format(type_tag))
+                raise OSCParseError(
+                    "Missing closing bracket in type tag: {0}".format(type_tag)
+                )
             self._parameters = params
         except OSCParseError as pe:
-            raise ParseError('Found incorrect datagram, ignoring it', pe)
+            raise OSCParseError("Found incorrect datagram, ignoring it", pe)
 
     @property
     def address(self) -> str:
@@ -86,7 +101,7 @@ class OSCMessage(object):
     @staticmethod
     def dgram_is_message(dgram: bytes) -> bool:
         """Returns whether this datagram starts as an OSC message."""
-        return dgram.startswith(b'/')
+        return dgram.startswith(b"/")
 
     @property
     def size(self) -> int:

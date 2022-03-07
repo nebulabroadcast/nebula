@@ -1,0 +1,24 @@
+{% extends "_base.html" %}
+
+{% block pagenav %}
+<ul class="navbar-nav mr-auto">
+    {% for module in page.modules %}
+    <li class="nav-item">
+        <a class="nav-link{% if page.module == module %} active{% endif %}" href="/settings/{{ module }}">{{ page.modules[module].title }}</a>
+    </li>
+    {% endfor %}
+</ul>
+
+<ul class="navbar-nav ml-auto">
+    <li class="nav-item">
+        <a href="/settings/reload_settings" id="btn-clear" class="btn" title="Apply settings">
+            <i class="fas fa-sync-alt"></i>
+        </a>
+    </li>
+</ul>
+{% endblock %}
+
+{% block content %}
+    {% include "settings/" + page.module + ".html" %}
+{% endblock %}
+

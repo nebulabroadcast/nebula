@@ -2,13 +2,12 @@ import time
 import fractions
 import threading
 
-from nxtools import *
-from nxtools.caspar import *
+from nxtools import logging
 
 from .oscserver import OSCServer
 
 
-class CasparClip():
+class CasparClip:
     def __init__(self, channel):
         self.name = ""
         self.mark_in = 0
@@ -43,12 +42,12 @@ class CasparClip():
 
         else:
             return
-            print(address, args)
 
     def __len__(self):
         return self.producer != "empty"
 
-class CasparChannel():
+
+class CasparChannel:
     def __init__(self):
         self.fps = fractions.Fraction(25, 1)
         self.layers = {}
@@ -66,24 +65,26 @@ class CasparChannel():
                 layer = int(address[2])
             except (IndexError, ValueError):
                 return False
-            if not layer in self.layers:
+            if layer not in self.layers:
                 self.layers[layer] = {
-                    "background" :  CasparClip(self),
-                    "foreground" :  CasparClip(self)
+                    "background": CasparClip(self),
+                    "foreground": CasparClip(self),
                 }
             self.layers[layer][address[3]].handle_osc(address[4:], *args)
         else:
             print("CHAN ERR", address, args)
             return False
 
-class CasparOSCServer():
+
+class CasparOSCServer:
     def __init__(self, osc_port=5253):
         self.osc_port = osc_port
         self.channels = {}
         self.last_osc = time.time()
+        logging.info(f"Starting OSC listener on port {self.osc_port}")
         self.osc_server = OSCServer("", self.osc_port, self.handle_osc)
         self.osc_thread = threading.Thread(target=self.serve_forever, args=())
-        self.osc_thread.name = 'OSC Server'
+        self.osc_thread.name = "OSC Server"
         self.osc_thread.start()
 
     def __getitem__(self, key):
@@ -109,7 +110,7 @@ class CasparOSCServer():
         except (KeyError, ValueError):
             return False
 
-        if not channel in self.channels:
+        if channel not in self.channels:
             self.channels[channel] = CasparChannel()
         self.channels[channel].handle_osc(address[3:], *args)
 

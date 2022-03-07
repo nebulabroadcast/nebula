@@ -1,14 +1,9 @@
-#
-# WORK IN PROGRESS
-#
-
-from nx import *
-
 __all__ = ["api_message"]
+
+from nx.core.common import NebulaResponse
+
 
 def api_message(**kwargs):
     if not kwargs.get("user", None):
-        return NebulaResponse(ERROR_UNAUTHORISED)
-
-    return NebulaResponse(ERROR_NOT_IMPLEMENTED)
-
+        return NebulaResponse(401)
+    return NebulaResponse(501)

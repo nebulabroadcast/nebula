@@ -1,0 +1,25 @@
+
+<table>
+    <thead>
+        <tr>
+            <th style="width:1px;">#</th>
+            <th style="width:100px;">Color</th>
+            <th>Title</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for id in page.data | sort %}
+        <tr>
+            <td>{{ id }}</td>
+            <td>
+                {% set color = "#%06x" % page.data[id]["color"] %}
+                <span class="badge" style="background-color: {{ color }};">
+                {{ color }}
+                </span>
+            </td>
+            <td>{{ page.data[id]["title"] }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+
+</table>

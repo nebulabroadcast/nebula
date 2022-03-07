@@ -1,0 +1,27 @@
+<div class="d-flex justify-content-center">
+<div class="btn-group mx-auto">
+    {% if page.current_page > 1 %}
+    <a
+        href="?{{ page.get_params(p=page.current_page-1) }}"
+        class="btn btn-info"
+        >
+        <i class="fas fa-caret-left"></i>
+    </a>
+    {% else %}
+    <a href="#" class="btn btn-info disabled" ><i class="fas fa-caret-left"></i></a>
+    {% endif %}
+
+    <a class="btn btn-info disabled">PAGE {{ page.current_page }}</a>
+
+    {% if page.current_page < page.page_count %}
+    <a
+        href="?{{ page.get_params(p=page.current_page+1) }}"
+        class="btn btn-info"
+        >
+        <i class="fas fa-caret-right"></i>
+    </a>
+    {% else %}
+    <a href="#" class="btn btn-info disabled" > <i class="fas fa-caret-right"></i></a>
+    {% endif %}
+</div>
+</div>

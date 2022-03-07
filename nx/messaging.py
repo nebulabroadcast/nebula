@@ -6,17 +6,19 @@ import socket
 import queue
 import threading
 
+from nxtools import logging, log_traceback, critical_error
+
 try:
     import pika
+
     has_pika = True
 except ModuleNotFoundError:
     has_pika = False
 
-from nxtools import logging, log_traceback, critical_error
-from nebulacore import config
+from nx.core.common import config
 
 
-class RabbitSender():
+class RabbitSender:
     def __init__(self):
         self.connection = None
         self.channel = None
@@ -37,8 +39,7 @@ class RabbitSender():
 
         self.channel = self.connection.channel()
         self.channel.queue_declare(
-            queue=config["site_name"],
-            arguments={'x-message-ttl' : 1000}
+            queue=config["site_name"], arguments={"x-message-ttl": 1000}
         )
         return True
 
@@ -50,27 +51,19 @@ class RabbitSender():
             self.send_message(qm, **qd)
         self.lock.release()
 
-
-
     def send_message(self, method, **data):
         if not (self.connection and self.channel):
             if not self.connect():
                 time.sleep(1)
                 return
 
-        message = json.dumps([
-            time.time(),
-            config["site_name"],
-            config["host"],
-            method,
-            data
-        ])
+        message = json.dumps(
+            [time.time(), config["site_name"], config["host"], method, data]
+        )
 
         try:
             self.channel.basic_publish(
-                exchange='',
-                routing_key=config["site_name"],
-                body=message
+                exchange="", routing_key=config["site_name"], body=message
             )
         except pika.exceptions.ChannelWrongStateError:
             logging.warning("RabbitMQ: nobody's listening", handlers=[])
@@ -78,9 +71,9 @@ class RabbitSender():
         except pika.exceptions.StreamLostError:
             logging.error("RabbitMQ connection lost", handlers=[])
             self.connection = self.channel = None
-        except:
+        except Exception:
             log_traceback("RabbitMQ error", handlers=[])
-            logging.debug("Unable to send message" , message, handlers=[])
+            logging.debug("Unable to send message", message, handlers=[])
             self.connection = self.channel = None
 
     def __del__(self):
@@ -88,7 +81,7 @@ class RabbitSender():
             self.connection.close()
 
 
-class UDPSender():
+class UDPSender:
     def __init__(self):
         self.addr = config.get("seismic_addr", "224.168.1.1")
         self.port = int(config.get("seismic_port", 42005))
@@ -98,23 +91,19 @@ class UDPSender():
     def __call__(self, method, **data):
         self.sock.sendto(
             bytes(
-                json.dumps([
-                    time.time(),
-                    config["site_name"],
-                    config["host"],
-                    method,
-                    data
-                ]),
-                "utf-8"
+                json.dumps(
+                    [time.time(), config["site_name"], config["host"], method, data]
+                ),
+                "utf-8",
             ),
-            (self.addr, self.port)
+            (self.addr, self.port),
         )
 
     def __del__(self):
         self.sock.close()
 
 
-class Messaging():
+class Messaging:
     def __init__(self):
         self.sender = None
 

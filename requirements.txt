@@ -1,0 +1,16 @@
+cherryadmin
+cherrypy
+colorama
+conti
+htmlmin
+markupsafe==2.0.1
+jinja2
+nxtools
+pika
+promexp
+psutil
+psycopg2-binary
+pylibmc
+pyyaml
+redis
+requests

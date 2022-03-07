@@ -1,0 +1,45 @@
+{% extends "_base.html" %}
+
+{% block content %}
+<div id="error-window">
+    <div class="text-center">
+        <h4>ERROR {{ page.response_code }}</h4>
+        <p>
+        {{ page.message }}
+        </p>
+        {% if page.traceback and user.is_admin %}
+        <br>
+        <p>
+        <button class="btn btn-secondary" type="button" data-toggle="modal" data-target="#traceback" >
+            Show traceback
+        </button>
+        </p>
+        {% endif %}
+    </div>
+</div>
+
+
+{# Traceback modal window #}
+{% if page.traceback and user.is_admin %}
+<div class="modal fade" id="traceback" tabindex="-1" role="dialog" aria-labelledby="Traceback window" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="traceback-title">Traceback</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+            <pre>{{ page.traceback }}</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endif %}
+
+{% endblock %}
+
+
+
+

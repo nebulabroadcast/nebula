@@ -1,0 +1,115 @@
+{% extends "_base.html" %}
+
+{% block content %}
+<div class="row">
+<div class="col-md-6 col-sm-12">
+
+{% call macro.card('User profile', 'fas fa-user') %}
+    <form action="/profile" method="POST" autocomplete="off">
+        <input type="hidden" name="id_user" value="{{ page.user.id }}">
+
+        <div class="form-group row">
+            <label for="input-login" class="col-md-4 col-form-label">Login name</label>
+            <div class="col-md-8">
+                <input type="text" readonly class="form-control" id="input-login" value="{{ page.user.login }}">
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label for="input-email" class="col-md-4 col-form-label">E-mail</label>
+            <div class="col-md-8">
+                <input type="text" readonly class="form-control" id="input-email" value="{{ page.user.email }}">
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label for="input-fullname" class="col-md-4 col-form-label">Full name</label>
+            <div class="col-md-8">
+                <input type="text" class="form-control" id="input-fullname" name="full_name" value="{{ page.user.full_name }}">
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label for="input-dashboard" class="col-md-4 col-form-label">Dashboard</label>
+            <div class="col-md-8">
+                <select class="form-control" id="input-dashboard" name="dashboard">
+                    <option value="">System information</option>
+                    {% for tool_name in site.webtools.tools %}
+                    {% set tool_title = site.webtools.tools[tool_name][1] %}
+                    <option value="{{ tool_name }}"{% if tool_name == page.user.dashboard %} selected{% endif %}>
+                        {{ tool_title }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label for="inputPassword" class="col-md-4 col-form-label">Password</label>
+            <div class="col-md-8">
+                <input type="password" class="form-control" id="inputPassword" name="password" placeholder="Change current password" autocomplete="new-password">
+                <small id="passwordHelpBlock" class="form-text text-muted">
+                    Password must be at least 8 characters long, and should contain letters and numbers and special characters (no emoji).
+                    Be aware that weak password may compromise station's security!
+                </small>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <div class="col">
+                <button type="submit" class="btn btn-primary">Save</button>
+            </div>
+        </div>
+    </form>
+
+    {% if not user.is_admin %}
+    <p>For security reasons, users are not allowed to modify their login name or e-mail address. To change these values, please contact one of your system administrators:</p>
+    <ul>
+    {% for admin in page.admins %}
+        <li><a href="mailto:{{ admin.email }}">{{ admin.full_name }}</a></li>
+    {% endfor %}
+    </ul>
+    {% endif %}
+{% endcall %}
+</div> {# col #}
+
+
+<div class="col-md-6 col-sm-12">
+
+{% call macro.card('Access rights', 'fas fa-lock') %}
+    {% if page.user.is_admin %}
+        <p>An administrator of {{ site.site_name }}</p>
+    {% else %}
+
+        <table class="table">
+        {% for right, title, subset in page.rights %}
+        <tr>
+            <td>{{ title }}</td>
+            <td>
+                {% if page.user["can/"+right] == 1 %}
+                    <span class="badge badge-primary">
+                    Full access
+                    </span>
+                {% elif not page.user["can/"+right] %}
+                    <span class="badge badge-danger" style="width: auto;">No access</span>
+                {% else %}
+                    {% for k in site[subset] %}
+                        {% if page.user.has_right(right, k) %}
+                        <span class="badge badge-secondary" style="width:auto; margin-right:5px;">
+                            {{ site[subset][k]["title"] }}
+                        </span>
+                        {% endif %}
+                    {% endfor%}
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+        </table>
+
+    {% endif%}
+{% endcall %}
+
+</div> {# col#}
+</div> {# row #}
+{% endblock %}
+

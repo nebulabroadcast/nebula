@@ -1,23 +1,27 @@
-from .common import *
+import sys
+
+from nxtools import logging
+from nx.objects import User
+
 
 def adduser(*args):
-    print ()
+    print()
     try:
         login = input("Login: ").strip()
         password = input("Password (will be echoed): ").strip()
         is_admin = input("Admin (yes/no): ").strip()
-        full_name = input("Full name (default: {}): ".format(login)).strip() or login
+        full_name = input(f"Full name (default: {login}): ").strip() or login
         email = input("Email: ").strip()
     except KeyboardInterrupt:
-        print ()
+        print()
         logging.warning("Interrupted by user")
         sys.exit(0)
-    u = User()
-    u["login"] = login
-    u["full_name"] = full_name
-    u["email"] = email
-    u["is_admin"] = 1 if is_admin == "yes" else 0
-    u.set_password(password)
-    u.save()
-    print ()
+    user = User()
+    user["login"] = login
+    user["full_name"] = full_name
+    user["email"] = email
+    user["is_admin"] = 1 if is_admin == "yes" else 0
+    user.set_password(password)
+    user.save()
+    print()
     logging.goodnews("User created")

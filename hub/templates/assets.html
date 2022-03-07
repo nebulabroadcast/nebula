@@ -1,0 +1,112 @@
+{% extends "_base.html" %}
+
+{% block pagehead %}
+{% endblock %}
+
+{% block pagenav %}
+<ul class="navbar-nav mr-auto">
+    <li class="nav-item dropdown">
+        <a
+            class="nav-link dropdown-toggle"
+            href="#"
+            role="button"
+            data-toggle="dropdown"
+            title="Current view"
+            >
+            <span class="d-inline d-md-none"><i class="fas fa-filter"></i>&nbsp;</span>
+            {{ site.views[page.id_view]["title"] }}
+        </a>
+        <div class="dropdown-menu">
+            {% for id_view in page.view_list %}
+                {% if site.views[id_view]["separator"]  %}
+                    <div class="dropdown-divider"></div>
+                {% endif %}
+                <a class="dropdown-item select-view-link{% if page.id_view == id_view %} active{% endif %}" href="#" data-href="{{ id_view }}">
+                    {{ site.views[id_view]["title"] }}
+                </a>
+            {% endfor %}
+        </div>
+    </li>
+    <li class="nav-item">
+        <a href="/detail?new_asset=1" id="btn-new-asset" class="nav-link" title="Create new asset">
+            <i class="fas fa-plus"></i>
+            <span class="d-inline d-md-none">&nbsp;New asset</span>
+        </a>
+    </li>
+</ul>
+
+<ul class="navbar-nav ml-auto">
+    <form class="form-inline" id="form-search" action="/assets" method="get">
+        <input id="select-view" type="hidden" name="v" value="{{ page.id_view }}">
+        <li class="nav-item">
+            <input id="input-query" name="q" type="text" class="form-control"
+            placeholder="Search query..."
+            title="Search query"
+            {% if page.query %} value="{{ page.query }}"{% endif %}>
+        </li>
+        <li class="nav-item">
+            <a href="#" id="btn-clear" class="btn" title="Clear search query">
+                <i class="fas fa-times"></i>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="#" id="btn-search" class="btn" title="Search assets">
+                <i class="fas fa-search"></i>
+            </a>
+        </li>
+    </form>
+</ul>
+{% endblock %}
+
+
+{% block content %}
+<table id="browser-table">
+    <thead>
+        <tr>
+        {% for column in page.columns %}
+            <th{% if column not in ["title", "subtitle", "description"] %} class="min"{% endif %}>
+                <a href=?{{ page.get_params(o=column, ot="asc" if page.order_trend == "desc" else False ) }}>
+                    {{ site.meta_types[column].header(lang=site["language"]) }}
+
+                    {% if page.order_key == column %}
+                    &nbsp;
+                        {% if page.order_trend == "asc" %}
+                            <i class="fas fa-sort-up"></i></a>
+                        {% else %}
+                            <i class="fas fa-sort-down"></i></a>
+                        {% endif %}
+                    {% endif %}
+                </a>
+            </th>
+        {% endfor %}
+        {% if page.show_jobs %}
+            <th class="min">&nbsp;</th>
+        {% endif %}
+        </tr>
+    </thead>
+
+    <tbody id="browser-body">
+    {% for asset in page.assets %}
+        <tr class="browser-row" data-href="{{ asset.id }}">
+        {% for key in page.columns %}
+            <td{% if site.meta_types[column]["class"] < 2 %} nowrap{% endif %}>
+            {% include "includes/cellformat.html" %}
+            </td>
+        {% endfor %}
+        {% if page.show_jobs %}
+            <td>
+                <a class="btn" href="/jobs?id_asset={{ asset.id }}" title="Show jobs"><i class="fas fa-cogs"></i></a>
+            </td>
+        {% endif %}
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+
+{% if page.page_count > 1 or page.current_page > 1 %}
+    {% include "includes/pagination.html" %}
+{% endif %}
+
+
+{% endblock %}

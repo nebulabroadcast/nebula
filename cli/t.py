@@ -1,7 +1,8 @@
-import os
 import imp
 
-from .common import *
+from nxtools import logging, log_traceback, critical_error
+from nx.plugins import get_plugin_path
+
 
 def t(*args):
     tools_dir = get_plugin_path("tools")
@@ -16,7 +17,7 @@ def t(*args):
 
     try:
         module = imp.load_module(plugin_name, fp, pathname, description)
-    except Exception :
+    except Exception:
         log_traceback()
         critical_error("Unable ot open tool " + plugin_name)
 

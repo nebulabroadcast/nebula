@@ -1,0 +1,49 @@
+<ul class="navbar-nav mr-auto">
+    <li class="nav-item">
+        <a class="nav-link{% if page.name == "assets" %} active{% endif %}" href="/assets">Assets</a>
+    </li>
+
+    <li class="nav-item">
+        <a class="nav-link{% if page.name == "jobs" %} active{% endif %}" href="/jobs">Jobs</a>
+    </li>
+
+    <li class="nav-item">
+        <a class="nav-link{% if page.name == "services" %} active{% endif %}" href="/services">Services</a>
+    </li>
+
+    {% if user.is_admin %}
+    <li class="nav-item">
+        <a class="nav-link{% if page.name == "settings" %} active{% endif %}" href="/settings">Settings</a>
+    </li>
+    {% endif %}
+
+    {% if site.webtools.links %}
+    <li class="nav-item dropdown">
+        <a href="" class="nav-link dropdown-toggle{% if page.name == "tool" %} active{% endif %}"
+        data-toggle="dropdown" id="navbarToolsDropdown">Tools</a>
+        <div class="dropdown-menu">
+            {% for name, title in site.webtools.links %}
+            <a href="/tool/{{ name }}" class="dropdown-item">{{ title }}</a>
+            {% endfor %}
+        </div>
+    </li>
+    {% endif %}
+</ul>
+
+
+<ul class="navbar-nav ml-auto">
+    <li class="nav-item">
+        <a href="/profile" class="nav-link" title="User settings">
+            <span class="d-inline d-md-none">
+                <i class="fas fa-user"></i>&nbsp;
+            </span>
+            {{ user.login }}
+        </a>
+    </li>
+    <li class="nav-item">
+        <a href="/logout" class="nav-link" title="Log out">
+            <i class="fas fa-sign-out-alt"></i>
+            <span class="d-inline d-md-none">&nbsp;Logout</span>
+        </a>
+    </li>
+</ul>

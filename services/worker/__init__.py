@@ -1,7 +1,13 @@
 import os
 import imp
+import time
+import sys
 
-from nebula import *
+from nxtools import logging
+
+from nx.base_service import BaseService
+from nx.plugins import get_plugin_path
+
 
 class Service(BaseService):
     def on_init(self):
@@ -19,7 +25,6 @@ class Service(BaseService):
             logging.error("Unable to load worker. Shutting down")
             self.shutdown(no_restart=True)
 
-
     def load_from_script(self, fname):
         if not fname.lower().endswith(".py"):
             fname += ".py"
@@ -32,12 +37,12 @@ class Service(BaseService):
         mod_name, file_ext = os.path.splitext(fname)
 
         if not os.path.exists(script_path):
-            logging.error("Plugin {} not found".format(fname))
+            logging.error(f"Plugin {fname} not found")
             return False
 
         py_mod = imp.load_source(mod_name, script_path)
 
-        if not "Plugin" in dir(py_mod):
+        if "Plugin" not in dir(py_mod):
             logging.error(f"No plugin class found in {fname}")
             return False
 
@@ -46,27 +51,21 @@ class Service(BaseService):
         self.plugin.on_init()
         return True
 
-
     def load_from_settings(self):
         try:
             self.exec_init = self.settings.find("init").text
-        except:
+        except Exception:
             pass
         try:
             self.exec_main = self.settings.find("main").text
-        except:
+        except Exception:
             pass
-
         if self.exec_init:
-            exec (self.exec_init)
-
+            exec(self.exec_init)
         return True
-
 
     def on_main(self):
         if self.plugin:
             self.plugin.on_main()
-
         elif self.exec_main:
-            exec (self.exec_main)
-
+            exec(self.exec_main)

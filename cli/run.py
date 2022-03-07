@@ -1,10 +1,18 @@
-from .common import *
+import sys
+import time
+
+from nxtools import xml, critical_error, log_traceback, logging
+
+from nx.db import DB
+from nx.core.common import config
+
 
 def run(*args):
     id_service = args[0]
 
     if id_service == "hub":
         import hub
+
         try:
             hub_instance = hub.CherryAdmin(**hub.hub_config)
         except Exception:
@@ -18,11 +26,17 @@ def run(*args):
         critical_error("Service ID must be integer")
 
     db = DB()
-    db.query("SELECT service_type, title, host, loop_delay, settings FROM services WHERE id=%s", [id_service])
+    db.query(
+        """
+        SELECT service_type, title, host, loop_delay, settings 
+        FROM services WHERE id=%s
+        """,
+        [id_service],
+    )
     try:
         agent, title, host, loop_delay, settings = db.fetchall()[0]
     except IndexError:
-        critical_error("Unable to start service {}. No such service".format(id_service))
+        critical_error(f"Unable to start service {id_service}. No such service")
 
     config["user"] = logging.user = title
 
@@ -57,7 +71,7 @@ def run(*args):
             break
         except (SystemExit):
             break
-        except:
+        except Exception:
             log_traceback()
             time.sleep(2)
             sys.exit(1)
@@ -67,4 +81,3 @@ def run(*args):
                 break
         except IndexError:
             pass
-

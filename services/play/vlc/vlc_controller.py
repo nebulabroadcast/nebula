@@ -1,26 +1,22 @@
 __all__ = ["VlcController"]
 
-import os
 import time
 import vlc
+import _thread as thread
 
-try:
-    import _thread as thread
-except ImportError:
-    import thread
+from nxtools import logging, log_traceback
 
-
-from nebula import *
+from nx.core.common import NebulaResponse
 
 
-class VlcMedia(object):
+class VlcMedia:
     time_unit = "f"
 
     def __init__(self, instance, full_path, item, **kwargs):
-        self.auto       = kwargs.get("auto", True)
-        loop       = kwargs.get("loop", False)
-        self.mark_in    = item.mark_in()
-        self.mark_out   = item.mark_out()
+        self.auto = kwargs.get("auto", True)
+        loop = kwargs.get("loop", False)
+        self.mark_in = item.mark_in()
+        self.mark_out = item.mark_out()
 
         self.item = item
         self.fname = full_path
@@ -29,14 +25,16 @@ class VlcMedia(object):
         self.media = instance.media_new(self.fname)
         if loop:
             self.media.add_option(":repeat")
-        # NB: Times are input as float seconds, but all other VLC functions use milliseconds.
+        # NB: Times are input as float seconds,
+        # but all other VLC functions use milliseconds.
         if self.mark_in:
             self.media.add_option(":start-time=%f" % self.mark_in)
         if self.mark_out:
             self.media.add_option(":stop-time=%f" % self.mark_out)
 
         self.media.event_manager().event_attach(
-            vlc.EventType.MediaParsedChanged, self.parse_callback)
+            vlc.EventType.MediaParsedChanged, self.parse_callback
+        )
 
         ret = self.media.parse_with_options(0, -1)
         if ret != 0:
@@ -49,7 +47,8 @@ class VlcMedia(object):
 
     def parse_callback(self, event):
         self.parsed = True
-        # TODO: Provide a way to block on this and check if media.get_parsed_status() == MediaParsedStatus.done
+        # TODO: Provide a way to block on this and check
+        # if media.get_parsed_status() == MediaParsedStatus.done
         logging.debug("parsed media", self.fname, event.u.new_status)
         # Clean up event handler to prevent memory leak
         self.media.event_manager().event_detach(vlc.EventType.MediaParsedChanged)
@@ -62,6 +61,7 @@ class VlcMedia(object):
     def mark_out_ms(self):
         return self.mark_out * 1000
 
+
 class VlcController(object):
     def __init__(self, parent):
         self.parent = parent
@@ -69,7 +69,7 @@ class VlcController(object):
         # VLC always uses milliseconds for timestamps
         self.parent.fps = 1000
 
-        self.caspar_feed_layer   = int(parent.channel_config.get("caspar_feed_layer", 10))
+        self.caspar_feed_layer = int(parent.channel_config.get("caspar_feed_layer", 10))
 
         self.current = None
         self.cued = None
@@ -81,7 +81,8 @@ class VlcController(object):
         if parent.channel_config.get("vlc_fullscreen", True):
             self.media_player.set_fullscreen(True)
         self.media_player.event_manager().event_attach(
-            vlc.EventType.MediaPlayerEndReached, self.next_item_callback)
+            vlc.EventType.MediaPlayerEndReached, self.next_item_callback
+        )
         # MediaPlayerMediaChanged
 
         thread.start_new_thread(self.work, ())
@@ -165,12 +166,13 @@ class VlcController(object):
                 self.main()
             except Exception:
                 log_traceback()
-            time.sleep(.3)
+            time.sleep(0.3)
 
     def next_item_callback(self, event):
         print(event.u)
         if self.cued and self.cued.auto:
-            # If we try to manipulate the player from within the callback, we'll deadlock.
+            # If we try to manipulate the player
+            # from within the callback, we'll deadlock.
             thread.start_new_thread(self.take, ())
 
     def main(self):
@@ -182,11 +184,9 @@ class VlcController(object):
         except Exception:
             log_traceback("Playout on_main failed")
 
-
     def cue(self, item, full_path, **kwargs):
         self.cued = VlcMedia(self.instance, full_path, item, **kwargs)
-        layer      = kwargs.get("layer", self.caspar_feed_layer)
-        play       = kwargs.get("play", False)
+        play = kwargs.get("play", False)
 
         if play:
             return self.take()
@@ -195,17 +195,13 @@ class VlcController(object):
 
         return NebulaResponse(200, message)
 
-
     def clear(self, **kwargs):
-        layer = layer or self.caspar_feed_layer
         self.media_player.stop()
         self.current = None
         self.cued = None
         return NebulaResponse(200, "all items removed")
 
-
     def take(self, **kwargs):
-        layer = kwargs.get("layer", self.caspar_feed_layer)
         if not self.cued_item:
             return NebulaResponse(400, "Unable to take. No item is cued.")
 
@@ -228,9 +224,7 @@ class VlcController(object):
             message = "Take command failed"
         return NebulaResponse(code, message)
 
-
     def retake(self, **kwargs):
-        layer = kwargs.get("layer", self.caspar_feed_layer)
         if self.parent.current_live:
             return NebulaResponse(409, "Unable to retake live item")
         if not self.current:
@@ -240,9 +234,7 @@ class VlcController(object):
         self.parent.cue_next()
         return NebulaResponse(200, message)
 
-
     def freeze(self, **kwargs):
-        layer = kwargs.get("layer", self.caspar_feed_layer)
         if self.parent.current_live:
             return NebulaResponse(409, "Unable to freeze live item")
         if not self.paused:
@@ -254,9 +246,7 @@ class VlcController(object):
 
         return NebulaResponse(200, message)
 
-
     def abort(self, **kwargs):
-        layer = kwargs.get("layer", self.caspar_feed_layer)
         if not self.cued:
             return NebulaResponse(400, "Unable to abort. No item is cued.")
         self.media_player.next()

@@ -1,0 +1,21 @@
+<table>
+    <thead>
+        <tr>
+            <th style="width:1px;">Key</th>
+            <th>Value</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for key in page.data | sort %}
+        <tr>
+            <td><span class="badge bg-secondary">{{ key }}</span></td>
+            {% if key.find("pass") > -1 %}
+                <td>*******</td>
+            {% else %}
+                <td>{{ page.data[key] }}</td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+    </tbody>
+
+</table>

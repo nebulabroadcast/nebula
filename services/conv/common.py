@@ -1,12 +1,16 @@
-from nebula import *
+import os
+from nxtools import log_traceback, get_temp
 
-class BaseEncoder(object):
+from nx.core.common import storages
+
+
+class BaseEncoder:
     def __init__(self, asset, task, job_params):
         self.asset = asset
         self.task = task
         self.params = vars
         self.proc = None
-        self.progress  = 0
+        self.progress = 0
         self.message = "Started"
 
     def configure(self):
@@ -21,7 +25,6 @@ class BaseEncoder(object):
     def work(self):
         pass
 
-
     def finalize(self):
         pass
 
@@ -29,12 +32,9 @@ class BaseEncoder(object):
     def is_running(self):
         return False
 
+
 def temp_file(id_storage, ext):
-    temp_dir = os.path.join(
-            storages[id_storage].local_path,
-            ".nx",
-            "creating"
-        )
+    temp_dir = os.path.join(storages[id_storage].local_path, ".nx", "creating")
     if not os.path.isdir(temp_dir):
         try:
             os.makedirs(temp_dir)

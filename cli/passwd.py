@@ -1,13 +1,17 @@
-from .common import *
+import sys
+from nxtools import logging, critical_error
+from nx.db import DB
+from nx.objects import User
+
 
 def passwd(*args):
-    print ()
+    print()
     try:
         login = input("Login: ").strip()
         password = input("Password (will be echoed): ").strip()
         is_admin = input("Admin (yes/no): ").strip()
     except KeyboardInterrupt:
-        print ()
+        print()
         logging.warning("Interrupted by user")
         sys.exit(0)
 
@@ -23,6 +27,5 @@ def passwd(*args):
     u["is_admin"] = 1 if is_admin == "yes" else 0
     u.set_password(password)
     u.save()
-    print ()
+    print()
     logging.goodnews("Password changed")
-

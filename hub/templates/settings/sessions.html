@@ -1,0 +1,35 @@
+<table>
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Login</th>
+            <th>Valid until</th>
+            <th>IP</th>
+            <th>User agent</th>
+        </tr>
+    </thead>
+    <tbody>
+        <form action="/settings/sessions" method="post">
+        {% for id in page.data %}
+        <tr>
+            <td>
+                {% if session_id == id %}
+                <button class="btn" title="Current session" disabled>
+                    <i class="fas fa-link"></i>
+                </button>
+                {% else %}
+                <button class="btn" type="submit" title="Delete session" name="delsession" value="{{ id }}">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+
+                {% endif %}
+            </td>
+            <td>{{ page.data[id]["login"] }}</td>
+            <td>{{ page.data[id]["valid_until"] | format_time }}</td>
+            <td>{{ page.data[id]["ip"] }}</td>
+            <td>{{ page.data[id]["user_agent"] }}</td>
+        </tr>
+        {% endfor %}
+        </form>
+    </tbody>
+</table>

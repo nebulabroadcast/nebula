@@ -1,0 +1,20 @@
+{% if messages %}
+<div class="container">
+    {% for message, level in messages %}
+        {% if level == "info" %}
+            {% set color = "info" %}
+        {% elif level == "error" %}
+            {% set color = "danger" %}
+        {% elif level == "warning" %}
+            {% set color = "warning" %}
+        {% endif %}
+        <div class="alert alert-{{ color }} show fade" role="alert">
+            {{ message }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    {% endfor %}
+</div>
+{% endif %}
+

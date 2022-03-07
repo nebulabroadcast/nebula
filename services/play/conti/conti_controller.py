@@ -1,11 +1,11 @@
-__all__ = ["VlcController"]
+__all__ = ["ContiController"]
 
-import os
 import time
-import rex
 
-from nebula import *
-from conti import *
+from nxtools import logging
+from conti import CONTI_DEBUG, Conti, ContiSource
+
+from nx.core.common import NebulaResponse
 
 CONTI_DEBUG["source"] = False
 CONTI_DEBUG["encoder"] = False
@@ -15,6 +15,7 @@ class NebulaContiSource(ContiSource):
     def __init__(self, parent, path, **kwargs):
         super(NebulaContiSource, self).__init__(parent, path, **kwargs)
         self.item = kwargs["item"]
+
 
 class NebulaConti(Conti):
     def append_next_item(self):
@@ -37,14 +38,13 @@ class ContiController(object):
         self.request_time = time.time()
         self.position = self.duration = 0
         settings = {
-            "playlist_length" : 2,
-            "blocking" : False,
-            "outputs" : self.parent.channel_config.get("conti_outputs", [])
+            "playlist_length": 2,
+            "blocking": False,
+            "outputs": self.parent.channel_config.get("conti_outputs", []),
         }
         settings.update(self.parent.channel_config.get("conti_settings", {}))
         self.conti = NebulaConti(None, **settings)
         self.conti.parent = self
-
 
     @property
     def current_item(self):
@@ -76,7 +76,7 @@ class ContiController(object):
 
     @property
     def loop(self):
-        #TODO: Not implemented in conti
+        # TODO: Not implemented in conti
         return False
 
     def set(self, prop, value):
@@ -86,7 +86,7 @@ class ContiController(object):
         kwargs["item"] = item
         kwargs["meta"] = item.asset.meta
         self.cued = NebulaContiSource(self.conti, full_path, **kwargs)
-        #TODO: add per-source filters here
+        # TODO: add per-source filters here
         self.cued.open()
         self.cueing = False
 
@@ -94,7 +94,7 @@ class ContiController(object):
             return NebulaResponse(500)
 
         if len(self.conti.playlist) > 1:
-            del(self.conti.playlist[1:])
+            del self.conti.playlist[1:]
         self.conti.playlist.append(self.cued)
 
         if not self.conti.started:
@@ -105,7 +105,6 @@ class ContiController(object):
             return self.take()
         message = "Cued item {} ({})".format(self.cued_item, full_path)
         return NebulaResponse(200, message)
-
 
     def take(self, **kwargs):
         self.conti.take()

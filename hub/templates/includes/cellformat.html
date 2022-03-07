@@ -1,0 +1,65 @@
+{% if key == "title" %}
+
+    {% if asset["status"] == 0 %} {# OFFLINE #}
+        <span class='label text-danger'><i class="fas fa-times-circle"></i></span>&nbsp;
+    {% elif asset["status"] == 4 %} {# ARCHIVED #}
+        <span class='label text-secondary'><i class="fas fa-database"></i></span>&nbsp;
+    {% elif asset["status"] == 3 %} {# TRASHED #}
+        <span class='label text-secondary'><i class="fas fa-trash-alt"></i></span>&nbsp;
+    {% elif asset["status"] in [2, 5, 11] %} {# creating, reset, retrieving #}
+        <span class='label text-warning'><i class="fas fa-retweet"></i></span>&nbsp;
+    {% endif %}
+
+    <a href="/detail/{{ asset.id }}-{{ asset["title"] | slugify }}">
+        {{ asset.show(key) }}
+    </a>
+
+{% elif key == "id_folder" %}
+
+    <span class="badge" style="background-color: #{{ "%06x" % site.folders[asset[key]].color }};">
+        {{ site.folders[asset[key]].title }}
+    </span>
+
+{% elif key == "content_type " %}
+
+        {% if asset["content_type"] == 1 %} {# AUDIO #}
+            <span class='label'><i class="fas fa-audio"></i></span>
+        {% elif asset["content_type"] == 2 %} {# VIDEO #}
+            <span class='label'><i class="fas fa-video"></i></span>
+        {% elif asset["content_type"] == 3 %} {# IMAGE #}
+            <span class='label'><i class="fas fa-image"></i></span>
+        {% elif asset["content_type"] == 4 %} {# TEXT #}
+            <span class='label'><i class="fas fa-file-alt"></i></span>
+        {% elif asset["content_type"] == 5 %} {# DATABROADCASTING #}
+            <span class='label'><i class="fas fa-broadcast-tower"></i></span>
+        {% elif asset["content_type"] == 6 %} {# INTERSTITIAL #}
+            <span class='label'><i class="fas fa-file-download"></i></span>
+        {% elif asset["content_type"] == 7 %} {# EDUCATION #}
+            <span class='label'><i class="fas fa-chalkboard-teacher"></i></span>
+        {% elif asset["content_type"] == 8 %} {# APPLICATION #}
+            <span class='label'><i class="fas fa-tablet-alt"></i></span>
+        {% elif asset["content_type"] == 9 %} {# GAME #}
+            <span class='label'><i class="fas fa-gamepad"></i></span>
+        {% elif asset["content_type"] == 10 %} {# PACKAGE #}
+            <span class='label'><i class="fas fa-box"></i></span>
+        {% endif %}
+
+{% elif key == "qc/state" %}
+
+    {% if asset["qc/state"] == 0 %}
+        <span class="label text-secondary"><i class="fas fa-flag"></i></span>
+    {% elif asset["qc/state"] == 3 %}
+        <span class="label text-danger"><i class="fas fa-flag"></i></span>
+    {% elif asset["qc/state"] == 4 %}
+        <span class="label text-success"><i class="fas fa-flag"></i></span>
+    {% endif %}
+
+{% elif key == "duration" %}
+    {{ asset.duration | s2time }}
+    {% if asset["mark_in"] or asset["mark_out"]  %}
+    *
+    {% endif %}
+
+{% else %}
+    {{ asset.show(key) }}
+{% endif %}

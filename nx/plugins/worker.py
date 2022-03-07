@@ -11,4 +11,3 @@ class WorkerPlugin(object):
 
     def on_main(self):
         pass
-

@@ -1,0 +1,20 @@
+
+<table>
+    <thead>
+        <tr>
+            <th style="width:1px;">#</th>
+            <th>Title</th>
+            <th>Service type</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for id in page.data %}
+        <tr>
+            <td>{{ id }}</td>
+            <td>{{ page.data[id]["title"] }}</td>
+            <td>{{ page.data[id]["service_type"] }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+
+</table>

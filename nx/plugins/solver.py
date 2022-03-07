@@ -1,6 +1,12 @@
+import sys
 import imp
 
-from nx import *
+from nxtools import logging, format_time, log_traceback, FileObject
+
+from nx.core.common import NebulaResponse
+from nx.db import DB
+from nx.objects import Bin, Item, Event
+from nx.helpers import bin_refresh
 from nx.plugins.common import get_plugin_path
 
 
@@ -23,16 +29,22 @@ class SolverPlugin(object):
     def next_event(self):
         if not self._next_event:
             self.db.query(
-                    "SELECT meta FROM events WHERE id_channel = %s AND start > %s ORDER BY start ASC LIMIT 1",
-                    [self.event["id_channel"], self.event["start"]]
-                )
+                """
+                SELECT meta FROM events
+                WHERE id_channel = %s AND start > %s
+                ORDER BY start ASC LIMIT 1
+                """,
+                [self.event["id_channel"], self.event["start"]],
+            )
             try:
                 self._next_event = Event(meta=self.db.fetchall()[0][0], db=self.db)
-            except:
-                self._next_event = Event(meta={
-                        "id_channel" : self.event["id_channel"],
-                        "start" : self.event["start"] + 3600
-                    })
+            except IndexError:
+                self._next_event = Event(
+                    meta={
+                        "id_channel": self.event["id_channel"],
+                        "start": self.event["start"] + 3600,
+                    }
+                )
         return self._next_event
 
     @property
@@ -53,14 +65,20 @@ class SolverPlugin(object):
             self._needed_duration = dur
         return self._needed_duration
 
-
     def block_split(self, tc):
         if tc <= self.event["start"] or tc >= self.next_event["start"]:
-            logging.error("Timecode of block split must be between the current and next event start times")
+            logging.error(
+                "Timecode of block split must be between "
+                "the current and next event start times"
+            )
             return False
 
-        logging.info("Splitting {} at {}".format(self.event, format_time(tc)))
-        logging.info("Next event is {} at {}".format(self.next_event, self.next_event.show("start")))
+        logging.info(f"Splitting {self.event} at {format_time(tc)}")
+        logging.info(
+            "Next event is {} at {}".format(
+                self.next_event, self.next_event.show("start")
+            )
+        )
         new_bin = Bin(db=self.db)
         new_bin.save(notify=False)
 
@@ -93,7 +111,6 @@ class SolverPlugin(object):
 
         return True
 
-
     def main(self, debug=False, counter=0):
         logging.info("Solving {}".format(self.placeholder))
         message = "Solver returned no items. Keeping placeholder."
@@ -114,11 +131,11 @@ class SolverPlugin(object):
 
         i = 0
         for item in self.bin.items:
-            i +=1
+            i += 1
             if item.id == self.placeholder.id:
                 item.delete()
                 for new_item in self.new_items:
-                    i+=1
+                    i += 1
                     new_item["id_bin"] = self.bin.id
                     new_item["position"] = i
                     new_item.save(notify=False)
@@ -133,10 +150,10 @@ class SolverPlugin(object):
             self.init_solver(self.solve_next)
             return self.main(debug=debug, counter=len(self.new_items) + counter)
 
-
         bin_refresh(self.affected_bins, db=self.db)
-        return NebulaResponse(200, "Created {} new items".format(len(self.new_items) + counter))
-
+        return NebulaResponse(
+            200, "Created {} new items".format(len(self.new_items) + counter)
+        )
 
     def solve(self):
         """
@@ -152,23 +169,23 @@ def get_solver(solver_name):
         return
 
     for f in [
-            FileObject(get_plugin_path("solver"), solver_name + ".py"),
-            FileObject(get_plugin_path("solver"), solver_name, solver_name + ".py")
-            ]:
+        FileObject(get_plugin_path("solver"), solver_name + ".py"),
+        FileObject(get_plugin_path("solver"), solver_name, solver_name + ".py"),
+    ]:
 
         if f.exists:
             sys.path.insert(0, f.dir_name)
             try:
                 py_mod = imp.load_source(solver_name, f.path)
                 break
-            except:
+            except Exception:
                 log_traceback("Unable to load plugin {}".format(solver_name))
                 return
     else:
         logging.error("{} does not exist".format(f))
         return
 
-    if not "Plugin" in dir(py_mod):
+    if "Plugin" not in dir(py_mod):
         logging.error("No plugin class found in {}".format(f))
         return
     return py_mod.Plugin

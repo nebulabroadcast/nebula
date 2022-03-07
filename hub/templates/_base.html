@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="Nebula broadcast automation system administration interface">
+        <meta name="author" content="imm studios, z.s.">
+        <meta name="msapplication-TileColor" content="#2a2e30">
+        <meta name="theme-color" content="#2a2e30">
+
+        <title>{{ page.title }} - {{ site.name }}</title>
+
+        {% for stylesheet in site.css %}
+            <link href="{{ stylesheet }}" rel="stylesheet">
+        {% endfor %}
+
+        {% for stylesheet in page.css %}
+            <link href="{{ stylesheet }}" rel="stylesheet">
+        {% endfor %}
+
+        <link rel="apple-touch-icon" sizes="180x180" href="/static/img/apple-touch-icon.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="/static/img/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/static/img/favicon-16x16.png">
+        <link rel="manifest" href="/static/site.webmanifest">
+        <link rel="mask-icon" href="/static/img/safari-pinned-tab.svg" color="#2a2e30">
+
+        <script>var site_name = "{{ site.name }}";</script>
+    </head>
+    <body id="page-{{ page.name }}">
+
+        {% import "macros.html" as macro %}
+
+        {% if user.id %}
+            <nav>
+                <div id="site-nav">
+                    <a class="navbar-brand" href="/">
+                        <img src="/static/img/logo-wide.svg">
+                    </a>
+                    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#site-nav-collapse">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="site-nav-collapse">
+                        {% include "includes/sitenav.html" %}
+                    </div>
+                </div>
+            {% if self.pagenav() %}
+                <div id="page-nav">
+                    {% block pagehead %}{% endblock %}
+                    <button class="navbar-toggler ml-auto" type="button" data-toggle="collapse" data-target="#page-nav-collapse">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="page-nav-collapse">
+                        {% block pagenav %}{% endblock %}
+                    </div>
+                </div>
+            {% endif %}
+            </nav>
+        {% endif %}
+
+        {% if page.name != "error" %}
+            <div id="loader"></div>
+        {% endif %}
+
+        <main>
+            {% include "includes/messages.html" %}
+            {% block content %}{% endblock %}
+        </main>
+
+        {% for script in site.js %}
+            <script src="{{ script }}"></script>
+        {% endfor %}
+
+        {% for script in page.js %}
+            <script src="{{ script }}"></script>
+        {% endfor %}
+    </body>
+</html>

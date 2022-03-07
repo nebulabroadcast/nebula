@@ -1,0 +1,61 @@
+{% extends "_base.html" %}
+
+{% block content %}
+<div class="row">
+
+<div class="col-md-6 col-sm-12">
+{% call macro.card('Objects', 'fas fa-cubes') %}
+    {% for object_type in page.object_counts  %}
+    <div class="row-content">
+        {{ object_type }}&nbsp;
+        <span class="badge">{{ "{0:,}".format(page.object_counts[object_type]) }}</span>
+    </div>
+    {% endfor %}
+{% endcall %}
+</div>
+
+<div class="col-md-6 col-sm-12">
+{% call macro.card('Storage utilization', 'fas fa-database') %}
+{% for storage in page.storages %}
+    <p>
+        {{ storage.title }} ({{ storage["free"] | filesizeformat }} of {{ storage["total"] | filesizeformat }} free)
+        {{ macro.sysload_bar(storage["total"], storage["free"]) }}
+    </p>
+{% endfor %}
+{% endcall %}
+</div>
+
+
+</div>
+
+
+<div class="row">
+{% for hostname in page.hosts %}{% set host = page.hosts[hostname] %}
+<div class="col-lg-3 col-md-6 col-sm-12">
+{% call macro.card(hostname, 'fas fa-server') %}
+    <p>
+        CPU
+        {{ macro.sysload_bar(host.cpu) }}
+    </p>
+    <p>
+        MEM ({{ host.mem_free | filesizeformat }} of {{ host.mem_total | filesizeformat }} free)
+        {{ macro.sysload_bar(host.mem_total, host.mem_free) }}
+    </p>
+    {% if host.swp_total and host.swp_free < host.swp_total %}
+    <p>
+        SWP ({{ host.swp_free | filesizeformat }} of {{ host.swp_total | filesizeformat }} free)
+        {{ macro.sysload_bar(host.swp_total, host.swp_free) }}
+    </p>
+    {% endif %}
+    <p>
+        Root FS ({{ host.root_free | filesizeformat }} of {{ host.root_total | filesizeformat }} free)
+        {{ macro.sysload_bar(host.root_total, host.root_free) }}
+    </p>
+{% endcall %}
+</div>
+{% endfor %}
+
+</div>
+
+{% endblock %}
+

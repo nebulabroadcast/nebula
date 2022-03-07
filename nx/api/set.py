@@ -1,31 +1,37 @@
 __all__ = ["api_set"]
 
-from nx import *
+from nxtools import logging, log_traceback
+
+from nx.core.common import NebulaResponse, get_hash, config
+from nx.core.base_objects import BaseObject
+from nx.db import DB
+from nx.helpers import bin_refresh
+from nx.messaging import messaging
+from nx.objects import Asset, Item, Bin, Event, User, anonymous
 from nx.plugins.validator import get_validator
-from nebulacore.base_objects import BaseObject
 
 
 def api_set(**kwargs):
     object_type = kwargs.get("object_type", "asset")
-    objects  = kwargs.get("objects", [])
+    objects = kwargs.get("objects", [])
     data = kwargs.get("data", {})
     user = kwargs.get("user", anonymous)
-    db   = kwargs.get("db", DB())
+    db = kwargs.get("db", DB())
     initiator = kwargs.get("initiator", None)
 
     if not user:
-        return NebulaResponse(ERROR_UNAUTHORISED)
+        return NebulaResponse(401)
 
     if not (data and objects):
         return NebulaResponse(200, "No object created or modified")
 
     object_type_class = {
-                "asset" : Asset,
-                "item"  : Item,
-                "bin"   : Bin,
-                "event" : Event,
-                "user" : User,
-            }.get(object_type, None)
+        "asset": Asset,
+        "item": Item,
+        "bin": Bin,
+        "event": Event,
+        "user": User,
+    }.get(object_type, None)
 
     if object_type_class is None:
         return NebulaResponse(400, f"Unsupported object type {object_type}")
@@ -35,7 +41,7 @@ def api_set(**kwargs):
 
     if "_password" in data:
         hpass = get_hash(data["_password"])
-        del(data["_password"])
+        del data["_password"]
         data["password"] = hpass
 
     for id_object in objects:
@@ -45,22 +51,20 @@ def api_set(**kwargs):
         if object_type == "asset":
             id_folder = data.get("id_folder", False) or obj["id_folder"]
             if not user.has_right("asset_edit", id_folder):
+                folder_title = config["folders"][id_folder]["title"]
                 return NebulaResponse(
-                    ERROR_ACCESS_DENIED,
-                    f"{user} is not allowed to edit {config['folders'][id_folder]['title']} folder"
+                    403, f"{user} is not allowed to edit {folder_title} folder"
                 )
         elif object_type == "user":
             if obj.id:
                 if not user.has_right("user_edit"):
                     return NebulaResponse(
-                        ERROR_ACCESS_DENIED,
-                        f"{user} is not allowed to edit users data"
+                        403, f"{user} is not allowed to edit users data"
                     )
             else:
                 if not user.has_right("user_create"):
                     return NebulaResponse(
-                        ERROR_ACCESS_DENIED,
-                        f"{user} is not allowed to add new users"
+                        403, f"{user} is not allowed to add new users"
                     )
 
         changed = False
@@ -79,11 +83,13 @@ def api_set(**kwargs):
             try:
                 obj = validator.validate(obj)
             except Exception:
-                return NebulaResponse(ERROR_INTERNAL, log_traceback("Unable to validate object changes."))
+                return NebulaResponse(
+                    500, log_traceback("Unable to validate object changes.")
+                )
 
             if not isinstance(obj, BaseObject):
                 # TODO: use 409-conflict?
-                return NebulaResponse(ERROR_BAD_REQUEST, f"Unable to save {tt}:\n\n{obj}")
+                return NebulaResponse(400, f"Unable to save {tt}:\n\n{obj}")
 
         if changed:
             obj.save(notify=False)
@@ -93,12 +99,12 @@ def api_set(**kwargs):
 
     if changed_objects:
         messaging.send(
-                "objects_changed",
-                objects=changed_objects,
-                object_type=object_type,
-                user="{}".format(user),
-                initiator=initiator
-            )
+            "objects_changed",
+            objects=changed_objects,
+            object_type=object_type,
+            user="{}".format(user),
+            initiator=initiator,
+        )
 
     if affected_bins:
         bin_refresh(affected_bins, db=db, initiator=initiator)

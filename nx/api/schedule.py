@@ -1,15 +1,29 @@
+__all__ = ["api_schedule"]
+
 import psycopg2
 
-from nx import *
+from nxtools import format_time, logging
 
-__all__ = ["api_schedule"]
+from nx.core.common import NebulaResponse, config
+from nx.core.metadata import meta_types
+from nx.db import DB
+from nx.messaging import messaging
+
+from nx.objects import (
+    Asset,
+    Item,
+    Bin,
+    Event,
+    anonymous,
+)
+
 
 def api_schedule(**kwargs):
     id_channel = kwargs.get("id_channel", 0)
     start_time = kwargs.get("start_time", 0)
     end_time = kwargs.get("end_time", 0)
-    events = kwargs.get("events", []) # Events to add/update
-    delete = kwargs.get("delete", []) # Event ids to delete
+    events = kwargs.get("events", [])  # Events to add/update
+    delete = kwargs.get("delete", [])  # Event ids to delete
     db = kwargs.get("db", DB())
     user = kwargs.get("user", anonymous)
     initiator = kwargs.get("initiator", None)
@@ -17,22 +31,21 @@ def api_schedule(**kwargs):
     try:
         id_channel = int(id_channel)
     except ValueError:
-        return NebulaResponse(ERROR_BAD_REQUEST, "id_channel must be an integer")
+        return NebulaResponse(400, "id_channel must be an integer")
 
     try:
         start_time = int(start_time)
     except ValueError:
-        return NebulaResponse(ERROR_BAD_REQUEST, "start_time must be an integer")
+        return NebulaResponse(400, "start_time must be an integer")
 
     try:
         end_time = int(end_time)
     except ValueError:
-        return NebulaResponse(ERROR_BAD_REQUEST, "end_time must be an integer")
+        return NebulaResponse(400, "end_time must be an integer")
 
     if not id_channel or id_channel not in config["playout_channels"]:
-        return NebulaResponse(ERROR_BAD_REQUEST, "Unknown playout channel ID {}".format(id_channel))
+        return NebulaResponse(400, f"Unknown playout channel ID {id_channel}")
 
-    channel_config = config["playout_channels"][id_channel]
     changed_event_ids = []
 
     #
@@ -41,7 +54,7 @@ def api_schedule(**kwargs):
 
     for id_event in delete:
         if not user.has_right("scheduler_edit", id_channel):
-            return NebulaResponse(ERROR_ACCESS_DENIED, "You are not allowed to edit this channel")
+            return NebulaResponse(403, "You are not allowed to edit this channel")
         event = Event(id_event, db=db)
         if not event:
             logging.warning(f"Unable to delete non existent event ID {id_event}")
@@ -49,7 +62,7 @@ def api_schedule(**kwargs):
         try:
             event.bin.delete()
         except psycopg2.IntegrityError:
-            return NebulaResponse(ERROR_LOCKED, f"Unable to delete {event}. Already aired.")
+            return NebulaResponse(423, f"Unable to delete {event}. Already aired.")
         else:
             event.delete()
         changed_event_ids.append(event.id)
@@ -60,10 +73,13 @@ def api_schedule(**kwargs):
 
     for event_data in events:
         if not user.has_right("scheduler_edit", id_channel):
-            return NebulaResponse(ERROR_ACCESS_DENIED, "You are not allowed to edit this channel")
+            return NebulaResponse(423, "You are not allowed to edit this channel")
         id_event = event_data.get("id", False)
 
-        db.query("SELECT meta FROM events WHERE id_channel=%s and start=%s", [id_channel, event_data["start"]])
+        db.query(
+            "SELECT meta FROM events WHERE id_channel=%s and start=%s",
+            [id_channel, event_data["start"]],
+        )
         try:
             event_at_pos_meta = db.fetchall()[0][0]
             event_at_pos = Event(meta=event_at_pos_meta, db=db)
@@ -138,20 +154,28 @@ def api_schedule(**kwargs):
         event.save(notify=False)
 
     if changed_event_ids:
-        messaging.send("objects_changed", objects=changed_event_ids, object_type="event", initiator=initiator)
-
+        messaging.send(
+            "objects_changed",
+            objects=changed_event_ids,
+            object_type="event",
+            initiator=initiator,
+        )
 
     #
     # Return existing events
     #
 
-    #TODO: ACL scheduler view
+    # TODO: ACL scheduler view
 
     result = []
     if start_time and end_time:
-        logging.debug(f"Requested events of channel {id_channel} from {format_time(start_time)} to {format_time(end_time)}")
+        logging.debug(
+            f"Requested events of channel {id_channel} "
+            f"from {format_time(start_time)} to {format_time(end_time)}"
+        )
 
-        db.query("""
+        db.query(
+            """
                 SELECT e.meta, o.meta FROM events AS e, bins AS o
                 WHERE
                     e.id_channel=%s
@@ -159,18 +183,19 @@ def api_schedule(**kwargs):
                     AND e.start < %s
                     AND e.id_magic = o.id
                 ORDER BY start ASC""",
-                [id_channel, start_time, end_time]
-            )
+            [id_channel, start_time, end_time],
+        )
         res = db.fetchall()
-        db.query("""
+        db.query(
+            """
                 SELECT e.meta, o.meta FROM events AS e, bins AS o
                 WHERE
                     e.id_channel=%s
                     AND start <= %s
                     AND e.id_magic = o.id
                 ORDER BY start DESC LIMIT 1""",
-                [id_channel, start_time]
-            )
+            [id_channel, start_time],
+        )
         res = db.fetchall() + res
 
         for event_meta, alt_meta in res:

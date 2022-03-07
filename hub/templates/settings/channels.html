@@ -1,0 +1,20 @@
+
+<table>
+    <thead>
+        <tr>
+            <th style="width:1px;">#</th>
+            <th>Name</th>
+            <th>Engine</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for id in page.data | sort %}
+        <tr>
+            <td>{{ id }}</td>
+            <td>{{ page.data[id]["title"] }}</td>
+            <td>{{ page.data[id]["engine"] }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+
+</table>

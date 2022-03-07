@@ -1,0 +1,91 @@
+{% extends "_base.html" %}
+
+{% block pagenav %}
+<ul class="navbar-nav mr-auto">
+    {% if page.query %}
+        <span class="navbar-text">Jobs matching "{{ page.query }}"</span>
+    {% elif page.id_asset%}
+
+        {% if page.actions%}
+            <li class="nav-item">
+                <div class="btn-group" role="group">
+                    <a href="#" class="btn dropdown-toggle" data-toggle="dropdown" title="Send to...">
+                        <i class="fas fa-cogs"></i>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-left">
+                        <h6 class="dropdown-header">Send to...</h6>
+                        {% for id_action, action_title  in page.actions %}
+                            <a class="dropdown-item btn-sendto" href="#" data-href="{{ id_action }}">
+                                {{ action_title }}
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                <form action="/jobs" method="POST" id="form-sendto">
+                    <input type="hidden" name="id_asset" id="input-id-asset" value="{{ page.asset.id }}">
+                    <input type="hidden" name="id_action" id="input-id-action" value="">
+                </form>
+            </li>
+        {% endif %}
+        <span class="navbar-text">Jobs of {{ page.asset }}</span>
+
+    {% else %}
+        <li class="nav-item">
+            <a href="/jobs/active" class="nav-link{% if page.mode == "active" %} active{% endif %}">Active</a>
+        </li>
+        <li class="nav-item">
+            <a href="/jobs/finished" class="nav-link{% if page.mode == "finished" %} active{% endif %}">Finished</a>
+        </li>
+        <li class="nav-item">
+            <a href="/jobs/failed" class="nav-link{% if page.mode == "failed" %} active{% endif %}">Failed</a>
+        </li>
+    {% endif %}
+</ul>
+
+<ul class="navbar-nav ml-auto">
+    <form class="form-inline" id="form-search" action="/jobs" method="get">
+        <li class="nav-item">
+            <input id="input-query" name="q" type="text" class="form-control"
+            placeholder="Search query..."
+            {% if page.query %} value="{{ page.query }}"{% endif %}>
+        </li>
+        <li class="nav-item">
+            <a href="#" id="btn-clear" class="btn" title="Clear search query">
+                <i class="fas fa-times"></i>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="#" id="btn-search" class="btn" title="Search assets">
+                <i class="fas fa-search"></i>
+            </a>
+        </li>
+    </form>
+</ul>
+{% endblock %}
+
+{% block content %}
+<script>
+    var mode = "{{ page.mode }}";
+    var id_asset = {{ page.id_asset }};
+    var fulltext = "{{ page.query }}";
+</script>
+
+<table id="job-table">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th style="width:140px;">Action</th>
+            <th style="width:140px;">Created</th>
+            <th style="width:140px;">Started</th>
+            <th style="width:140px;">Finished</th>
+            <th style="width:140px;">Service</th>
+            <th style="width:135px;">Progress</th>
+            <th style="width:280px;">Message</th>
+            <th style="width:80px;">&nbsp;</th>
+        </tr>
+    </thead>
+
+    <tbody id="job-table-body">
+    </tbody>
+</table>
+{% endblock %}

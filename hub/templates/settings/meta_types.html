@@ -1,0 +1,22 @@
+
+<table>
+    <thead>
+        <tr>
+            <th style="width:1px;">Key</th>
+            <th>Alias</th>
+            <th>Column&nbsp;header</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for key in page.data | sort %}
+        <tr>
+            <td><span class="badge bg-secondary">{{ key }}</span></td>
+            <td>{{ page.data[key]["aliases"]["en"][0] }}</td>
+            <td>{{ page.data[key]["aliases"]["en"][1] }}</td>
+            <td>{{ page.data[key]["aliases"]["en"][2] }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+
+</table>

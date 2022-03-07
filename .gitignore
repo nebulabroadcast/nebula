@@ -1,9 +1,3 @@
-*.pyc
-vendor/
-test.py
-_old/
-test-*
+__pycache__
 tool*
-_import.py
-_scripts
-_res/
+poetry.lock

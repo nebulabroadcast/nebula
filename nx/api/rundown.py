@@ -1,27 +1,23 @@
-#
-# Returns a rundown for given day and channel
-#
-# Arguments:
-#
-# id_channel    Playout channel ID
-#               Defaults to first playout channel
-# start_time    Rundown start time (timestamp)
-#               Defaults to today's broadcast day start
-#
-
-from nx import *
-
 __all__ = ["get_rundown", "api_rundown"]
+
+import time
+
+from nxtools import datestr2ts
+
+from nx.core.common import NebulaResponse, config
+from nx.db import DB
+from nx.objects import Asset, Item, Event, anonymous
+from nx.helpers import get_item_runs
+from nx.core.enum import ObjectStatus, RunMode
 
 
 def get_rundown(id_channel, start_time=False, end_time=False, db=False):
+    """Get a rundown."""
     db = db or DB()
     channel_config = config["playout_channels"][id_channel]
     if not start_time:
         # default today
         sh, sm = channel_config.get("day_start", [6, 0])
-        rundown_date = time.strftime("%Y-%m-%d", time.localtime(time.time()))
-        rundown_start_time = datestr2ts(rundown_date, hh=sh, mm=sm)
         rundown_date = time.strftime("%Y-%m-%d", time.localtime(time.time()))
         start_time = datestr2ts(rundown_date, hh=sh, mm=sm)
 
@@ -30,38 +26,46 @@ def get_rundown(id_channel, start_time=False, end_time=False, db=False):
     item_runs = get_item_runs(id_channel, start_time, end_time, db=db)
 
     if channel_config.get("send_action", False):
-        db.query("SELECT id_asset FROM jobs WHERE id_action=%s AND status in (0, 5)", [channel_config["send_action"]])
+        db.query(
+            """SELECT id_asset FROM jobs
+            WHERE id_action=%s AND status in (0, 5)
+            """,
+            [channel_config["send_action"]],
+        )
         pending_assets = [r[0] for r in db.fetchall()]
     else:
         pending_assets = []
 
-    db.query("""
-            SELECT
-                e.id,
-                e.meta,
-                i.meta,
-                a.meta
-            FROM
-                events AS e
+    db.query(
+        """
+        SELECT
+            e.id,
+            e.meta,
+            i.meta,
+            a.meta
+        FROM
+            events AS e
 
-            LEFT JOIN
-                items AS i
-            ON
-                e.id_magic = i.id_bin
+        LEFT JOIN
+            items AS i
+        ON
+            e.id_magic = i.id_bin
 
-            LEFT JOIN
-                assets AS a
-            ON
-                i.id_asset = a.id
+        LEFT JOIN
+            assets AS a
+        ON
+            i.id_asset = a.id
 
-            WHERE
-                e.id_channel = %s AND e.start >= %s AND e.start < %s
+        WHERE
+            e.id_channel = %s AND e.start >= %s AND e.start < %s
 
-            ORDER BY
-                e.start ASC,
-                i.position ASC,
-                i.id ASC
-            """, (id_channel, start_time, end_time))
+        ORDER BY
+            e.start ASC,
+            i.position ASC,
+            i.id ASC
+        """,
+        (id_channel, start_time, end_time),
+    )
 
     current_event_id = None
     event = None
@@ -85,7 +89,9 @@ def get_rundown(id_channel, start_time=False, end_time=False, db=False):
             if event["run_mode"]:
                 ts_broadcast = 0
             event.meta["rundown_scheduled"] = ts_scheduled = event["start"]
-            event.meta["rundown_broadcast"] = ts_broadcast = ts_broadcast or ts_scheduled
+            event.meta["rundown_broadcast"] = ts_broadcast = (
+                ts_broadcast or ts_scheduled
+            )
 
         if imeta:
             item = Item(meta=imeta, db=db)
@@ -100,9 +106,9 @@ def get_rundown(id_channel, start_time=False, end_time=False, db=False):
             if as_start:
                 ts_broadcast = as_start
                 if as_stop:
-                    airstatus = AIRED
+                    airstatus = ObjectStatus.AIRED
                 else:
-                    airstatus = ONAIR
+                    airstatus = ObjectStatus.ONAIR
 
             item.meta["asset_mtime"] = asset["mtime"] if asset else 0
             item.meta["rundown_scheduled"] = ts_scheduled
@@ -113,46 +119,49 @@ def get_rundown(id_channel, start_time=False, end_time=False, db=False):
 
             istatus = 0
             if not asset:
-                istatus = ONLINE
+                istatus = ObjectStatus.ONLINE
             elif airstatus:
                 istatus = airstatus
-            elif asset["status"] == OFFLINE:
-                istatus = OFFLINE
-            elif not pskey in asset.meta:
-                istatus = REMOTE
-            elif asset[pskey]["status"] == OFFLINE:
-                istatus = REMOTE
-            elif asset[pskey]["status"] == ONLINE:
-                istatus = ONLINE
-            elif asset[pskey]["status"] == CORRUPTED:
-                istatus = CORRUPTED
+            elif asset["status"] == ObjectStatus.OFFLINE:
+                istatus = ObjectStatus.OFFLINE
+            elif pskey not in asset.meta:
+                istatus = ObjectStatus.REMOTE
+            elif asset[pskey]["status"] == ObjectStatus.OFFLINE:
+                istatus = ObjectStatus.REMOTE
+            elif asset[pskey]["status"] == ObjectStatus.ONLINE:
+                istatus = ObjectStatus.ONLINE
+            elif asset[pskey]["status"] == ObjectStatus.CORRUPTED:
+                istatus = ObjectStatus.CORRUPTED
             else:
-                istatus = UNKNOWN
+                istatus = ObjectStatus.UNKNOWN
 
             item.meta["status"] = istatus
             if asset and asset.id in pending_assets:
                 item.meta["transfer_progress"] = -1
 
-            if item["run_mode"] != RUN_SKIP:
+            if item["run_mode"] != RunMode.RUN_SKIP:
                 ts_scheduled += item.duration
                 ts_broadcast += item.duration
 
             event.items.append(item)
 
 
-
 def api_rundown(**kwargs):
+    """Rundown API endpoint."""
     user = kwargs.get("user", anonymous)
     id_channel = int(kwargs.get("id_channel", -1))
     start_time = kwargs.get("start_time", 0)
 
-    if not (user.has_right("rundown_view", id_channel) or user.has_right("rundown_edit", id_channel)):
-        return NebulaResponse(ERROR_ACCESS_DENIED)
+    if not (
+        user.has_right("rundown_view", id_channel)
+        or user.has_right("rundown_edit", id_channel)
+    ):
+        return NebulaResponse(401)
 
     process_start_time = time.time()
 
-    if not id_channel in config["playout_channels"]:
-        return NebulaResponse(ERROR_BAD_REQUEST, "Invalid playout channel specified")
+    if id_channel not in config["playout_channels"]:
+        return NebulaResponse(400, "Invalid playout channel specified")
 
     rows = []
     i = 0
@@ -162,12 +171,14 @@ def api_rundown(**kwargs):
         row["is_empty"] = len(event.items) == 0
         row["id_bin"] = event["id_magic"]
         rows.append(row)
-        i+=1
+        i += 1
         for item in event.items:
             row = item.meta
             row["object_type"] = "item"
             rows.append(row)
-            i+=1
+            i += 1
 
     process_time = time.time() - process_start_time
-    return NebulaResponse(200, "Rundown loaded in {:.02f} seconds".format(process_time), data=rows)
+    return NebulaResponse(
+        200, f"Rundown loaded in {process_time:.02f} seconds", data=rows
+    )

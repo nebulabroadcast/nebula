@@ -1,0 +1,26 @@
+
+<table>
+    <thead>
+        <tr>
+            <th style="width:1px;">#</th>
+            <th>Service&nbsp;type</th>
+            <th>Host</th>
+            <th>Title</th>
+            <th>Autostart</th>
+            <th>Loop&nbsp;delay</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for id in page.data %}
+        <tr>
+            <td>{{ id }}</td>
+            <td>{{ page.data[id]["service_type"] }}</td>
+            <td>{{ page.data[id]["host"] }}</td>
+            <td>{{ page.data[id]["title"] }}</td>
+            <td>{{ page.data[id]["autostart"] }}</td>
+            <td>{{ page.data[id]["loop_delay"] }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+
+</table>

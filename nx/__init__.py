@@ -1,18 +1,16 @@
+import os
+import sys
 import psycopg2
 
-from nebulacore import *
-from nebulacore.metadata import clear_cs_cache
+from nxtools import logging, critical_error
+
+from .core.common import config
+from .core.metadata import clear_cs_cache
 
 from .db import DB
-from .cache import cache, Cache
+from .cache import cache
 from .messaging import messaging
-
-from .objects import *
-from .helpers import *
-from .mediaprobe import *
-from .api import *
-from .base_service import *
-from .plugins import *
+from .plugins import load_common_scripts
 
 
 def load_settings(*args, **kwargs):
@@ -59,7 +57,7 @@ def load_settings(*args, **kwargs):
     config["cs"] = {}
     db.query("SELECT cs, value, settings FROM cs")
     for cst, value, settings in db.fetchall():
-        if not cst in config["cs"]:
+        if cst not in config["cs"]:
             config["cs"][cst] = []
         config["cs"][cst].append([value, settings])
     clear_cs_cache()
@@ -73,17 +71,17 @@ def load_settings(*args, **kwargs):
     db.query("SELECT id, service_type, title FROM actions")
     for id, service_type, title in db.fetchall():
         config["actions"][id] = {
-                    "title" : title,
-                    "service_type" : service_type,
-                }
+            "title": title,
+            "service_type": service_type,
+        }
 
     config["services"] = {}
     db.query("SELECT id, service_type, host, title FROM services")
     for id, service_type, host, title in db.fetchall():
         config["services"][id] = {
-            "service_type" : service_type,
+            "service_type": service_type,
             "host": host,
-            "title" : title,
+            "title": title,
         }
 
     #
@@ -94,11 +92,11 @@ def load_settings(*args, **kwargs):
 
     def seismic_log(**kwargs):
         messaging.send("log", **kwargs)
+
     logging.add_handler(seismic_log)
 
     cache.configure()
     load_common_scripts()
-
 
     if logging.user == "hub":
         messaging.send("config_changed")
@@ -106,3 +104,7 @@ def load_settings(*args, **kwargs):
 
 
 load_settings()
+
+config["nebula_root"] = os.path.abspath(os.getcwd())
+if not config["nebula_root"] in sys.path:
+    sys.path.insert(0, config["nebula_root"])

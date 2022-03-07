@@ -1,7 +1,8 @@
 import os
 import time
 
-from nxtools import *
+from nxtools import logging, log_traceback, get_files
+
 
 def log_clean_up(log_dir, ttl=30):
     ttl_sec = ttl * 3600 * 24
@@ -15,24 +16,22 @@ def log_clean_up(log_dir, ttl=30):
                 logging.debug(f"Removed old log file {f.base_name}")
 
 
-
 def format_log_message(message):
     try:
         log = "{}\t{}\t{}@{}\t{}\n".format(
-                time.strftime("%H:%M:%S"),
-                {
-                    0 : "DEBUG    ",
-                    1 : "INFO     ",
-                    2 : "WARNING  ",
-                    3 : "ERROR    ",
-                    4 : "GOOD NEWS"
-                }[message.data["message_type"]],
-                message.data["user"],
-                message.host,
-                message.data["message"]
-            )
+            time.strftime("%H:%M:%S"),
+            {
+                0: "DEBUG    ",
+                1: "INFO     ",
+                2: "WARNING  ",
+                3: "ERROR    ",
+                4: "GOOD NEWS",
+            }[message.data["message_type"]],
+            message.data["user"],
+            message.host,
+            message.data["message"],
+        )
     except Exception:
         log_traceback()
         return None
     return log
-

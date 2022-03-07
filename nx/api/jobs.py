@@ -1,11 +1,19 @@
-from nx import *
-
 __all__ = ["api_jobs"]
 
+import time
+
+from nxtools import format_time, logging, slugify
+
+from nx.core.common import NebulaResponse, config
+from nx.db import DB
+from nx.messaging import messaging
+from nx.objects import Asset, anonymous
+
+
 def api_jobs(**kwargs):
-    formatted = kwargs.get("formatted", False) # load titles etc
+    formatted = kwargs.get("formatted", False)  # load titles etc
     user = kwargs.get("user", anonymous)
-    query = kwargs.get("query", "")
+    # query = kwargs.get("query", "")
     id_asset = kwargs.get("id_asset", False)
     view = kwargs.get("view", "active")
     db = kwargs.get("db", DB())
@@ -22,7 +30,8 @@ def api_jobs(**kwargs):
 
     if "restart" in kwargs:
         jobs = [int(i) for i in kwargs["restart"]]
-        db.query("""
+        db.query(
+            """
             UPDATE jobs SET
                 id_user=%s,
                 status=5,
@@ -36,8 +45,8 @@ def api_jobs(**kwargs):
                 id IN %s
             RETURNING id
             """,
-            [id_user, now, tuple(jobs)]
-            )
+            [id_user, now, tuple(jobs)],
+        )
         result = [r[0] for r in db.fetchall()]
         db.commit()
         logging.info("Restarted jobs {}".format(result))
@@ -50,13 +59,14 @@ def api_jobs(**kwargs):
                 ctime=now,
                 stime=None,
                 etime=None,
-                message="Restart requested"
+                message="Restart requested",
             )
         return NebulaResponse(200, "Job restarted", data=result)
 
     if "abort" in kwargs:
         jobs = [int(i) for i in kwargs["abort"]]
-        db.query("""
+        db.query(
+            """
             UPDATE jobs SET
                 status=4,
                 end_time=%s,
@@ -65,8 +75,8 @@ def api_jobs(**kwargs):
                 id IN %s
             RETURNING id
             """,
-            [now, tuple(jobs)]
-            )
+            [now, tuple(jobs)],
+        )
         result = [r[0] for r in db.fetchall()]
         logging.info("Aborted jobs {}".format(result))
         db.commit()
@@ -77,13 +87,12 @@ def api_jobs(**kwargs):
                 status=4,
                 progress=0,
                 etime=now,
-                message="Aborted"
+                message="Aborted",
             )
-        #TODO: smarter message
+        # TODO: smarter message
         return NebulaResponse(200, "Job aborted", data=result)
 
-
-    #TODO: fulltext
+    # TODO: fulltext
 
     try:
         id_asset = int(id_asset)
@@ -104,7 +113,9 @@ def api_jobs(**kwargs):
         else:
             ft = slugify(fulltext, make_set=True)
             for word in ft:
-                cond += "AND a.id IN (SELECT id FROM ft WHERE object_type=0 AND value LIKE '{}%')".format( word)
+                cond += "AND a.id IN (SELECT id FROM ft WHERE object_type=0 AND value LIKE '{}%')".format(
+                    word
+                )
 
     elif view == "active":
         # Pending, in_progress, restart
@@ -117,7 +128,8 @@ def api_jobs(**kwargs):
         cond = "AND j.status IN (3)"
 
     data = []
-    db.query("""SELECT
+    db.query(
+        """SELECT
                 j.id,
                 j.id_asset,
                 j.id_action,
@@ -140,30 +152,50 @@ def api_jobs(**kwargs):
                 start_time DESC NULLS LAST,
                 creation_time DESC
             LIMIT 100
-            """.format(cond))
-    for id, id_asset, id_action, id_service, id_user, priority, retries, status, progress, message, ctime, stime, etime, meta in db.fetchall():
+            """.format(
+            cond
+        )
+    )
+    for (
+        id,
+        id_asset,
+        id_action,
+        id_service,
+        id_user,
+        priority,
+        retries,
+        status,
+        progress,
+        message,
+        ctime,
+        stime,
+        etime,
+        meta,
+    ) in db.fetchall():
         row = {
-                "id" : id,
-                "id_asset" : id_asset,
-                "id_action" : id_action,
-                "id_service" : id_service,
-                "id_user" : id_user,
-                "priority" : priority,
-                "retries" : retries,
-                "status" : status,
-                "progress" : progress,
-                "message" : message,
-                "ctime" : format_time(ctime, never_placeholder="") if formatted else ctime,
-                "stime" : format_time(stime, never_placeholder="") if formatted else stime,
-                "etime" : format_time(etime, never_placeholder="") if formatted else etime
-            }
+            "id": id,
+            "id_asset": id_asset,
+            "id_action": id_action,
+            "id_service": id_service,
+            "id_user": id_user,
+            "priority": priority,
+            "retries": retries,
+            "status": status,
+            "progress": progress,
+            "message": message,
+            "ctime": format_time(ctime, never_placeholder="") if formatted else ctime,
+            "stime": format_time(stime, never_placeholder="") if formatted else stime,
+            "etime": format_time(etime, never_placeholder="") if formatted else etime,
+        }
 
         asset = Asset(meta=meta)
         row["asset_title"] = asset["title"]
         row["action_title"] = config["actions"][id_action]["title"]
         if id_service:
-            service = config["services"].get(id_service, {"title" : "Unknown", "host" : "Unknown"})
-            row["service_title"] = "{}@{}".format(service["title"], service["host"])
+            service = config["services"].get(
+                id_service, {"title": "Unknown", "host": "Unknown"}
+            )
+            row["service_title"] = f"{service['title']}@{service['host']}"
         else:
             row["service_title"] = ""
 

@@ -1,0 +1,19 @@
+{
+    "name": "Nebula",
+    "short_name": "Nebula",
+    "icons": [
+        {
+            "src": "/static/img/android-chrome-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/static/img/android-chrome-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ],
+    "theme_color": "#2a2e30",
+    "background_color": "#2a2e30",
+    "display": "standalone"
+}

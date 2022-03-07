@@ -1,0 +1,35 @@
+{% macro card(title='', icon='') -%}
+<div class="card">
+    {% if title %}
+    <div class="card-header">
+        {% if icon %}
+        <i class="{{ icon }}"></i>&nbsp;
+        {% endif %}
+        {{ title }}
+    </div>
+    {% endif %}
+    <div class="card-body">
+        {{ caller() }}
+    </div>
+</div>
+{%- endmacro %}
+
+
+{% macro sysload_bar(total, free=-1) -%}
+<div class="progress">
+    {% if free == -1 %}
+        {% set percentage =  total  %}
+    {% else %}
+        {% set percentage =  100*((total-free)/total ) %}
+    {% endif %}
+
+    {% if percentage < 60 %}
+        {% set bg = "bg-success" %}
+    {% elif percentage < 90 %}
+        {% set bg = "bg-warning" %}
+    {% else %}
+        {% set bg = "bg-danger" %}
+    {% endif %}
+    <div class="progress-bar {{ bg }}" style="width:{{ percentage }}%"></div>
+</div>
+{%- endmacro %}

@@ -1,0 +1,84 @@
+{% extends "_base.html" %}
+{% block content %}
+
+<div id="passreset-window">
+    <div class="text-center">
+        <h1>Password reset</h1>
+    </div>
+
+    {% if page.mode == "email-entry" %}
+    <p>
+        Enter the email address associated with your account and click the "Request password reset" button bellow.
+        A message will be sent to that address containing a link to reset your password.
+    </p>
+    <p>
+        For security reasons the link can only be used for one hour. You are also limited to request one link per hour.
+        If you do not receive your email within five minutes check your spam folder.
+    </p>
+
+    <hr>
+
+    <form action="/passreset" method="POST">
+        <div class="form-group label-floating">
+            <label for="input-email" class="control-label">E-mail</label>
+            <input name="email" type="text" class="form-control" id="input-email">
+        </div>
+
+        <div class="form-group text-center">
+            <input type="submit" value="Request password reset" class="btn btn-raised btn-primary"></input>
+        </div>
+    </form>
+
+
+    {% elif page.mode == "pass-entry" %}
+
+    <form action="/passreset" method="POST">
+
+        <input name="token" type="hidden" value="{{ page.token }}">
+
+        <div class="form-group label-floating">
+            <label for="input-pass1" class="control-label">Choose a new password</label>
+            <input name="pass1" type="password" class="form-control" id="input-pass1">
+        </div>
+        <div class="form-group label-floating">
+            <label for="input-pass2" class="control-label">Enter the same password again</label>
+            <input name="pass2" type="password" class="form-control" id="input-pass2">
+            <small id="passwordHelpBlock" class="form-text text-muted">
+                Your password must be at least 8 characters long,
+                and should contain letters and numbers and special characters (no emoji).
+                Be aware that weak password may compromise station's security!
+            </small>
+        </div>
+
+        <div class="form-group text-center">
+            <input type="submit" value="Reset password" class="btn btn-raised btn-primary"></input>
+        </div>
+    </form>
+
+    {% elif page.mode == "mail-sent" %}
+
+    <p>
+        Password reset link has been sent to your e-mail
+    </p>
+
+    {% elif page.mode == "finished" %}
+
+    <p>
+        Your password has been reset. You will be redirected to the login page now.
+    </p>
+
+    <p>
+        If not, <a href="/">click here</a>.
+    </p>
+
+    <script>
+    setTimeout(function () {
+        window.location.href = "/";
+    }, 2000);
+    </script>
+
+    {% endif %}
+
+</div>
+{% endblock %}
+

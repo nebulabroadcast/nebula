@@ -1,15 +1,16 @@
-import os
+__all__ = ["SystemMonitor"]
+
 import time
+import json
 import psycopg2
 
-from nebulacore import *
+from nxtools import log_traceback
 from promexp import Promexp
 
-from .db import DB
-from .messaging import messaging
-from .agents import BaseAgent
-
-__all__ = ["SystemMonitor"]
+from nx.core.common import config, storages
+from nx.db import DB
+from nx.messaging import messaging
+from nx.agents import BaseAgent
 
 
 NEBULA_START_TIME = time.time()
@@ -22,7 +23,7 @@ def update_host_info():
     for id_storage, storage in storages.items():
         mp2id[storage.local_path] = id_storage
 
-    p = Promexp(provider_settings={"casparcg":None})
+    p = Promexp(provider_settings={"casparcg": None})
     p.metrics.add("runtime_seconds", time.time() - NEBULA_START_TIME)
 
     p.collect()
@@ -33,18 +34,21 @@ def update_host_info():
             if id_storage is None:
                 continue
             value = p.metrics.data[metric]
-            del (p.metrics.data[metric])
-            p.metrics.add(f"shared_{mname}", value, **{"id" : id_storage, "title" : storages[id_storage].title})
+            del p.metrics.data[metric]
+            p.metrics.add(
+                f"shared_{mname}",
+                value,
+                id=id_storage,
+                title=storages[id_storage].title,
+            )
 
-    status = {
-        "metrics" : p.metrics.dump()
-    }
+    status = {"metrics": p.metrics.dump()}
 
     db = DB()
     db.query(
-            "UPDATE hosts SET last_seen=%s, status=%s WHERE hostname=%s",
-            [time.time(), json.dumps(status), hostname]
-        )
+        "UPDATE hosts SET last_seen=%s, status=%s WHERE hostname=%s",
+        [time.time(), json.dumps(status), hostname],
+    )
     db.commit()
 
 
@@ -53,7 +57,13 @@ class SystemMonitor(BaseAgent):
         self.last_update = 0
         db = DB()
         try:
-            db.query("INSERT INTO hosts(hostname, last_seen) VALUES (%s, %s) ON CONFLICT DO NOTHING", [config["host"], time.time()])
+            db.query(
+                """
+                INSERT INTO hosts(hostname, last_seen)
+                VALUES (%s, %s) ON CONFLICT DO NOTHING
+                """,
+                [config["host"], time.time()],
+            )
         except psycopg2.IntegrityError:
             pass
         else:

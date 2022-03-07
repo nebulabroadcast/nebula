@@ -1,41 +1,16 @@
 #!/usr/bin/env python3
-#
-#    This file is part of Nebula media asset management.
-#
-#    Nebula is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
-#
-#    Nebula is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
-#
-#    You should have received a copy of the GNU General Public License
-#    along with Nebula. If not, see <http://www.gnu.org/licenses/>.
-#
 
 if __name__ == "__main__":
-    print ()
+    print()
 
 import os
 import sys
-import rex
+import time
 
-#
-# Env setup
-#
+from nxtools import logging, log_traceback, critical_error
 
-if sys.version_info[:2] < (3, 0):
-    reload(sys)
-    sys.setdefaultencoding('utf-8')
-
-from nx import *
-
-config["nebula_root"] = os.path.abspath(os.getcwd())
-if not config["nebula_root"] in sys.path:
-    sys.path.insert(0, config["nebula_root"])
+from nx.core.common import config
+from nx.plugins import get_plugin_path
 
 #
 # Start agents only if this script is executed (not imported)
@@ -90,7 +65,7 @@ if __name__ == "__main__":
         for agent in agents:
             agent.shutdown()
         while are_running(agents):
-            time.sleep(.5)
+            time.sleep(0.5)
 
     agents = []
     for Agent in [StorageMonitor, ServiceMonitor, SystemMonitor]:
@@ -125,3 +100,24 @@ if __name__ == "__main__":
         print()
         logging.warning("Immediate shutdown enforced. This may cause problems")
         sys.exit(1)
+
+
+else:
+    # This is a very dirty hack to keep old plugins working.
+
+    import os  # noqa
+    import sys  # noqa
+    import json  # noqa
+    import time  # noqa
+
+    from nxtools import *  # noqa
+
+    from nx.db import *  # noqa
+    from nx.plugins import *  # noqa
+    from nx.core.common import *  # noqa
+    from nx.helpers import *  # noqa
+    from nx.objects import *  # noqa
+    from nx.cache import *  # noqa
+    from nx.messaging import *  # noqa
+
+    from nx.legacy.constants import *  # noqa

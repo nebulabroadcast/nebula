@@ -1,0 +1,30 @@
+<table>
+    <thead>
+        <tr>
+            <th style="width:1px;">#</th>
+            <th style="width:1px;">Roles</th>
+            <th>Login</th>
+            <th>Full name</th>
+            <th>E-mail</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in page.data %}
+        <tr onclick="location.href = '/profile?id_user={{ user.id }}';">
+            <td>{{ user.id }}</td>
+            <td>
+                {% if user["is_admin"] %}
+                    <i class="fas fa-user-cog" title="Administrator"></i>
+                {% endif %}
+                {% if user["is_disabled"] %}
+                    <i class="fas fa-user-slash" title="Disabled user"></i>
+                {% endif %}
+            </td>
+            <td>{{ user["login"] }}</td>
+            <td>{{ user["full_name"] }}</td>
+            <td>{{ user["email"] }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+
+</table>

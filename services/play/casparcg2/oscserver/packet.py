@@ -6,9 +6,9 @@ It lets you access easily to OscMessage and OscBundle instances in the packet.
 import time
 import collections
 
-from typing import Union, List
+from typing import List
 
-from .osc_types import *
+from .osc_types import OSCParseError, IMMEDIATELY
 from .bundle import OSCBundle
 from .message import OSCMessage
 
@@ -18,8 +18,8 @@ from .message import OSCMessage
 #    in seconds since the epoch.
 # 2) the actual message.
 TimedMessage = collections.namedtuple(
-    typename='TimedMessage',
-    field_names=('time', 'message'))
+    typename="TimedMessage", field_names=("time", "message")
+)
 
 
 def _timed_msg_of_bundle(bundle: OSCBundle, now: float) -> List[TimedMessage]:
@@ -27,14 +27,13 @@ def _timed_msg_of_bundle(bundle: OSCBundle, now: float) -> List[TimedMessage]:
     msgs = []
     for content in bundle:
         if type(content) is OSCMessage:
-            if (bundle.timestamp == IMMEDIATELY or bundle.timestamp < now):
+            if bundle.timestamp == IMMEDIATELY or bundle.timestamp < now:
                 msgs.append(TimedMessage(now, content))
             else:
                 msgs.append(TimedMessage(bundle.timestamp, content))
         else:
             msgs.extend(_timed_msg_of_bundle(content, now))
     return msgs
-
 
 
 class OSCPacket(object):
@@ -57,15 +56,16 @@ class OSCPacket(object):
         try:
             if OSCBundle.dgram_is_bundle(dgram):
                 self._messages = sorted(
-                    _timed_msg_of_bundle(OSCBundle(dgram), now),
-                    key=lambda x: x.time)
+                    _timed_msg_of_bundle(OSCBundle(dgram), now), key=lambda x: x.time
+                )
             elif OSCMessage.dgram_is_message(dgram):
-                self._messages = [TimedMessage(now, OscMessage(dgram))]
+                self._messages = [TimedMessage(now, OSCMessage(dgram))]
             else:
                 raise OSCParseError(
-                    'OSC Packet should at least contain an OscMessage or an OscBundle.')
+                    "OSC Packet should at least contain an OscMessage or an OscBundle."
+                )
         except (OSCParseError) as pe:
-            raise ParseError(f'Could not parse packet {pe}')
+            raise OSCParseError(f"Could not parse packet {pe}")
 
     @property
     def messages(self) -> List[TimedMessage]:

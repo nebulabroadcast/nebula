@@ -1,0 +1,214 @@
+{% extends "_base.html" %}
+
+{% block pagehead %}
+<ul class= "navbar-nav">
+    <li class="nav-item d-block d-md-none">
+        <span class="navbar-text">{{ page.title }}</span>
+    </li>
+</ul>
+{% endblock %}
+
+{% block pagenav %}
+<ul class="navbar-nav mr-auto">
+    <li class="nav-item">
+        <a  class="nav-link dropdown-toggle" 
+            href="#" 
+            id="navbarDropdown" 
+            role="button" 
+            data-toggle="dropdown" 
+            title="Asset folder">
+            <i class="fas fa-square" style="color: #{{ "%06x" % site.folders[page.id_folder].color }};"></i>&nbsp;{{ site.folders[page.id_folder]["title"] }}
+        </a>
+        {% if user.has_right("asset_edit", page.asset["id_folder"]) %}
+        <div class="dropdown-menu">
+            {% for id_folder in site.folders %}
+                {% if page.new_asset %}
+                    <a class="dropdown-item" href="/detail?new_asset=1&folder_change={{ id_folder }}">
+                {% else %}
+                    <a class="dropdown-item" href="/detail/{{ page.asset.id }}?folder_change={{ id_folder }}">
+                {% endif%}
+            <i class="fas fa-square" style="color: #{{ "%06x" % site.folders[id_folder].color }};"></i>&nbsp;
+                    {{ site.folders[id_folder]["title"] }}
+                </a>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </li>
+
+    <li class="nav-item d-none d-md-inline" style="padding-left: 15px;">
+        <span class="navbar-text">{{ page.title }}</span>
+    </li>
+</ul>
+
+<ul class="navbar-nav ml-auto">
+    <li class="nav-item">
+    <input
+        type="text"
+        class="form-control input-timecode"
+        name="duration"
+        title="Duration"
+        id="input-duration"
+        value="{{ page.asset.duration | s2tc(page.asset.fps) }}"
+        {% if (page.asset.status != 0 and not page.new_asset) or (not user.has_right("asset_edit", page.asset["id_folder"])) %} disabled {% endif %}
+        >
+    </li>
+
+    <li class="nav-item d-inline d-md-none" >&nbsp;</li>
+
+    {% if user.has_right("asset_edit", page.asset["id_folder"] )%}
+
+    {# UPLOAD #}
+    {% if site.upload_target and page.asset["media_type"] == 1 %}
+        <li class="nav-item">
+            <a href="#" class="btn" title="Upload media file" id="button-upload">
+                <i class="fas fa-upload"></i>
+                <span class="d-inline d-md-none">&nbsp;Upload media file</span>
+            </a>
+        </li>
+        <script>
+            var allow_upload = true;
+        </script>
+    {% else %}
+        <script>
+            var allow_upload = false;
+        </script>
+    {% endif %}
+
+
+    <li class="nav-item">
+        <div class="btn-group" role="group">
+            <button type="button" class="btn btn-qcstate" data-href="4" title="Approve"><i class="{% if page.asset["qc/state"] == 4 %}fas{% else %}far{% endif %} fa-flag text-success"></i></button>
+            <button type="button" class="btn btn-qcstate" data-href="0" title="Reset"><i class="{% if page.asset["qc/state"] not in [3, 4] %}fas{% else %}far{% endif %} fa-flag text-light"></i></button>
+            <button type="button" class="btn btn-qcstate" data-href="3" title="Reject"><i class="{% if page.asset["qc/state"] == 3 %}fas{% else %}far{% endif %} fa-flag text-danger"></i></button>
+        </div>
+    </li>
+
+    <li class="nav-item">
+        <a href="#" class="btn" title="Clone asset" id="button-clone">
+            <i class="fas fa-clone"></i>
+            <span class="d-inline d-md-none">&nbsp;Clone asset</span>
+        </a>
+    </li>
+    {% endif %}
+
+    {# ACTIONS #}
+    <li class="nav-item">
+        <div class="btn-group" role="group">
+            <a href="#" class="btn dropdown-toggle" data-toggle="dropdown" title="Actions">
+                <i class="fas fa-cogs"></i>
+                <span class="d-inline d-md-none">&nbsp;Jobs</span>
+            </a>
+            <div class="dropdown-menu dropdown-menu-right">
+                <a href="/jobs?id_asset={{ page.asset.id }}" class="dropdown-item" href="#">
+                    Show existing jobs
+                </a>
+                {% if page.actions %}
+                <div class="dropdown-divider"></div>
+                <h6 class="dropdown-header">Send to...</h6>
+                {% for id_action, action_title  in page.actions %}
+                    <a class="dropdown-item btn-sendto" href="#" data-href="{{ id_action }}">
+                        {{ action_title }}
+                    </a>
+                {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+        <form action="/jobs" method="POST" id="form-sendto">
+            <input type="hidden" name="id_asset" id="input-id-asset" value="{{ page.asset.id }}">
+            <input type="hidden" name="id_action" id="input-id-action" value="">
+        </form>
+    </li>
+
+    {# SAVE / REVERT #}
+    {% if user.has_right("asset_edit", page.asset["id_folder"] )%}
+    <li class="nav-item">
+        <a href="/detail/{{ page.asset.id }}" class="btn" title="Revert changes">
+            <i class="fas fa-undo"></i>
+            <span class="d-inline d-md-none">&nbsp;Revert changes</span>
+        </a>
+    </li>
+
+    <li class="nav-item">
+        <a href="#" class="btn" title="Save asset" id="button-save">
+            <i class="far fa-save"></i>
+            <span class="d-inline d-md-none">&nbsp;Save asset</span>
+        </a>
+    </li>
+    {% endif %}
+</ul>
+{% endblock %}
+
+
+
+
+
+
+{% block content %}
+
+<script>
+    var id_asset = {{ page.asset.id or 0 }};
+</script>
+
+<div class="container">
+<div id="upload-status" class="alert alert-info" role="alert" style="display:none;">
+    <p>
+        <span id="upload-status-text"></span>
+    </p>
+    <div id="upload-progress" class="progress">
+        <div class="progress-bar" role="progressbar"></div>
+    </div>
+</div>
+</div>
+
+
+<ul class="nav nav-tabs" id=tab-nav-detail" role="tablist">
+    <li class="nav-item">
+        <a class="nav-link active" id="tab-main" data-toggle="tab" href="#tab-panel-main" role="tab">Main</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="tab-extended" data-toggle="tab" href="#tab-panel-extended" role="tab">Extended</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="tab-technical" data-toggle="tab" href="#tab-panel-technical" role="tab">Technical</a>
+    </li>
+</ul>
+
+<div class="row">
+    <div class="col-lg-6 col-md-12">
+        <div class="tab-content" id="tab-panels-detail">
+            <div class="tab-pane fade show active" id="tab-panel-main">
+                {% include "includes/editor.html" %}
+            </div> <!-- tab-main -->
+
+            <div class="tab-pane fade" id="tab-panel-extended">
+                <table class="table">
+                {% for key in page["extended_keys"] %}
+                <tr>
+                    <td>{{ page.asset.meta_types[key].alias() | replace(" ", "&nbsp;") }}</td>
+                    <td>{{ page.asset.show(key) }}</td>
+                </tr>
+                {% endfor%}
+                </table>
+            </div> {# tab-extended #}
+
+            <div class="tab-pane fade" id="tab-panel-technical">
+                <table class="table">
+                {% for key in page["technical_keys"] %}
+                <tr>
+                    <td>{{ page.asset.meta_types[key].alias() | replace(" ", "&nbsp;") }}</td>
+                    <td>{{ page.asset.show(key) }}</td>
+                </tr>
+                {% endfor%}
+                </table>
+            </div> {# tab-technical #}
+        </div> {# tabs #}
+    </div> {# meta column #}
+
+    <div class="col-lg-6 col-md-12">
+        <div id="preview-container">
+            <video src="{{ page.asset.proxy_url }}" id="preview" controls></video>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
