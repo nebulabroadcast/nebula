@@ -4,7 +4,7 @@ NEBULA
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/nebulabroadcast/nebula?style=for-the-badge)
 ![Maintenance](https://img.shields.io/maintenance/yes/2022?style=for-the-badge)
 ![Last commit](https://img.shields.io/github/last-commit/immstudios/nebula?style=for-the-badge)
-![Python version](https://img.shields.io/badge/python-3.7-blue?style=for-the-badge)
+![Python version](https://img.shields.io/badge/python-3.8-blue?style=for-the-badge)
 
 Nebula is an open source broadcast automation and media asset management system for television, radio and VOD platforms.
 Since 2012 Nebula has proven stable and reliable software in 24/7 broadcast environment and it is now used by TV and production companies worldwide.

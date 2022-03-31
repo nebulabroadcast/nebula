@@ -119,5 +119,3 @@ else:
     from nx.objects import *  # noqa
     from nx.cache import *  # noqa
     from nx.messaging import *  # noqa
-
-    from nx.legacy.constants import *  # noqa
