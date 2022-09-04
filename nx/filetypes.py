@@ -70,7 +70,7 @@ class FileTypes:
 
     @classmethod
     def exts_by_type(cls, content_type: ContentType) -> List[str]:
-        return [ext for ext, ct in cls.data if ct == content_type.items()]
+        return [ext for ext, ct in cls.data.items() if ct == content_type]
 
     @classmethod
     def exts(cls):
