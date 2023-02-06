@@ -10,5 +10,4 @@ _db
 current.sql
 sync.sh
 storage/
-plugins/
 settings/*.py
