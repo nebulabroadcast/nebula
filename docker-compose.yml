@@ -20,7 +20,7 @@ services:
     restart: unless-stopped
 
   backend:
-    image: nebulabroadcast/supernova
+    image: nebulabroadcast/nebula-server:latest
     ports:
       - "4455:80"
     volumes:
@@ -34,14 +34,11 @@ services:
       - postgres
 
   worker:
-    image: nebulabroadcast/supernova-worker
+    image: nebulabroadcast/nebula-worker:latest
     hostname: worker
     volumes:
       - "./storage:/mnt"
       - "./worker:/opt/nebula"
-    cap_add:
-      - SYS_ADMIN
-      - DAC_READ_SEARCH
     privileged: true
 
     depends_on:
