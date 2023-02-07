@@ -67,6 +67,7 @@ async def setup_settings(db):
     settings["redis_port"] = redis_url.port or 6379
     settings["site_name"] = config.site_name
 
+    await db.execute("DELETE FROM settings")
     for key, value in settings.items():
         await db.execute(
             """
@@ -153,6 +154,7 @@ async def setup_settings(db):
 
     # Setup services
 
+    await db.execute("DELETE FROM services")
     for service in TEMPLATE["services"]:
         assert isinstance(service, ServiceSettings)
         await db.execute(
@@ -181,6 +183,7 @@ async def setup_settings(db):
 
     # Setup actions
 
+    await db.execute("DELETE FROM actions")
     for action in TEMPLATE["actions"]:
         assert isinstance(action, ActionSettings)
         await db.execute(
@@ -206,6 +209,7 @@ async def setup_settings(db):
 
     # Setup channels
 
+    await db.execute("DELETE FROM channels")
     for channel in TEMPLATE["channels"]:
         assert isinstance(channel, PlayoutChannelSettings)
         channel_data = channel.dict()
@@ -231,6 +235,7 @@ async def setup_settings(db):
 
     # Setup storages
 
+    await db.execute("DELETE FROM storages")
     for storage in TEMPLATE["storages"]:
         assert isinstance(storage, StorageSettings)
         storage_data = storage.dict()
