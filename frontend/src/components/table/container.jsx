@@ -10,7 +10,7 @@ const TableWrapper = styled.div`
     border-collapse: collapse;
 
     tr {
-      border-left: 2px solid transparent;
+      border-left: 2px solid black;
     }
 
     td, th {
