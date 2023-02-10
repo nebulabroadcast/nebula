@@ -11,3 +11,4 @@ current.sql
 sync.sh
 storage/
 settings/*.py
+plugins

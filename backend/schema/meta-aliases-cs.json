@@ -14,6 +14,7 @@
   ["origination"            , "Původ"                  , null                , ""],
   ["start"                  , "Start"                  , null                , ""],
   ["album"                  , "Album"                  , null                , ""],
+  ["file/ctime"             , "Čas vzniku souboru"     , "Soubor vytvořen"   , "Čas vzniku souboru (média)"],
   ["file/mtime"             , "Čas změny souboru"      , "Soubor změněn"     , "Čas poslední změny souboru (média)"],
   ["duration"               , "Stopáž"                 , null                , ""],
   ["article"                , "Článek"                 , null                , ""],

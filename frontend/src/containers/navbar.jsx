@@ -55,6 +55,7 @@ const logout = () => {
 const NavBar = () => {
   const navigate = useNavigate()
 
+
   const mainMenuOptions = useMemo(() => {
     const result = []
 
@@ -86,7 +87,7 @@ const NavBar = () => {
     <Navbar>
       <div className="left">
         <NavLink to={`/mam/editor`}>Editor</NavLink>
-        <NavLink to={`/mam/preview`}>Preview</NavLink>
+        {nebula.settings.system.ui_asset_preview && <NavLink to={`/mam/preview`}>Preview</NavLink>}
         <NavLink to="/jobs">Jobs</NavLink>
         {!nebula.user.is_limited && (
           <>

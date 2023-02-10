@@ -473,6 +473,10 @@ META_TYPES = {
         "ns": "f",
         "type": T.TIMECODE,
     },
+    "file/ctime": {
+        "ns": "f",
+        "type": T.DATETIME,
+    },
     "file/mtime": {
         "ns": "f",
         "type": T.DATETIME,

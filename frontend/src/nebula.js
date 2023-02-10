@@ -70,7 +70,7 @@ const nebula = {
 
   getScopedEndpoints(scope) {
     const result = []
-    for (const scopedEndpoint of this.scopedEndpoints) {
+    for (const scopedEndpoint of this.scopedEndpoints || {}) {
       if (scopedEndpoint.scopes.includes(scope))
         result.push(scopedEndpoint)
     }

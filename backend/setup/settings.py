@@ -34,6 +34,7 @@ TEMPLATE = {
     "views": VIEWS,
     "meta_types": META_TYPES,
     "storages": [],
+    "settings": {},
 }
 
 
@@ -51,7 +52,14 @@ def load_overrides():
             if not hasattr(mod, key.upper()):
                 continue
             log.info(f"Using settings overrides: {spath}")
-            TEMPLATE[key] = getattr(mod, key.upper())
+            override = getattr(mod, key.upper())
+
+            if type(override) == dict and type(TEMPLATE[key]) == dict:
+                TEMPLATE[key].update(override)
+            elif type(override) == list and type(TEMPLATE[key]) == list:
+                TEMPLATE[key] = override
+            else:
+                log.error(f"Invalid settings override: {spath}")
 
 
 async def setup_settings(db):
@@ -66,7 +74,9 @@ async def setup_settings(db):
     settings["redis_host"] = redis_url.hostname
     settings["redis_port"] = redis_url.port or 6379
     settings["site_name"] = config.site_name
+    settings.update(TEMPLATE["settings"])
 
+    await db.execute("DELETE FROM settings")
     for key, value in settings.items():
         await db.execute(
             """
@@ -153,6 +163,7 @@ async def setup_settings(db):
 
     # Setup services
 
+    await db.execute("DELETE FROM services")
     for service in TEMPLATE["services"]:
         assert isinstance(service, ServiceSettings)
         await db.execute(
@@ -181,6 +192,7 @@ async def setup_settings(db):
 
     # Setup actions
 
+    await db.execute("DELETE FROM actions")
     for action in TEMPLATE["actions"]:
         assert isinstance(action, ActionSettings)
         await db.execute(
@@ -206,6 +218,7 @@ async def setup_settings(db):
 
     # Setup channels
 
+    await db.execute("DELETE FROM channels")
     for channel in TEMPLATE["channels"]:
         assert isinstance(channel, PlayoutChannelSettings)
         channel_data = channel.dict()
@@ -231,6 +244,7 @@ async def setup_settings(db):
 
     # Setup storages
 
+    await db.execute("DELETE FROM storages")
     for storage in TEMPLATE["storages"]:
         assert isinstance(storage, StorageSettings)
         storage_data = storage.dict()

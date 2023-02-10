@@ -48,7 +48,7 @@ class User(BaseObject):
     @property
     def language(self):
         """Return the preferred language of the user."""
-        return "cs"
+        return self["language"] or "en"
 
     @property
     def name(self):
