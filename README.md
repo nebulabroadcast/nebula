@@ -3,12 +3,23 @@ NEBULA
 
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/nebulabroadcast/nebula?style=for-the-badge)
 ![Maintenance](https://img.shields.io/maintenance/yes/2023?style=for-the-badge)
-![Last commit](https://img.shields.io/github/last-commit/immstudios/nebula?style=for-the-badge)
-![Python version](https://img.shields.io/badge/python-3.8-blue?style=for-the-badge)
+![Last commit](https://img.shields.io/github/last-commit/nebulabroadcast/nebula?style=for-the-badge)
+![Python version](https://img.shields.io/badge/python-3.10-blue?style=for-the-badge)
 
 Nebula is an open source broadcast automation and media asset management system for television, radio and VOD platforms.
-Since 2012 Nebula has proven stable and reliable software in 24/7 broadcast environment and it is now used by TV and production companies worldwide.
-We put great emphasis on simplicity, modularity and speed.
+Since 2012 Nebula has proven stable and reliable software in 24/7 broadcast environment 
+and it is now used by TV and production companies worldwide.
+
+This repository contains the source code of Nebula server - the core of the system.
+Nebula server consists of a Python backend and a React frontend. The repository
+also contains a Dockerfile for building a Docker image of the server and an example
+docker-compose.yml file for running Nebula in a Docker stack with a PostgreSQL and Redis.
+
+Apart from this server repository, Nebula consists of the following other repositories:
+
+ - [nebula-worker](https://github.com/nebulabroadcast/nebula-worker) - Nebula worker is a Python application that runs on a worker machine and handles the actual media processing.
+ - [firefly](https://github.com/nebulabroadcast/firefly) - Firefly is a desktop client needed for linear broadcast planning, scheduling and playout.
+
 
 Key features
 ------------
@@ -65,13 +76,6 @@ recorders control and so on. Right at the operator's fingertips.
 
 ![Detail of a rundown panel with playout control interface](https://nebulabroadcast.com/static/img/nebula-playout-control.webp)
 
-### Dynamic Character Generator (CG)
-
-A CG render engine can insert a large variety of graphical elements generated from metadata such as
-tickers, subtitles, banner ads, charts, weather graphics, currency rates, traffic information, clock, etc.
-
-Infographic elements are allowed to be generated both from public data resources or a content management system.
-
 ### Publishing
 
 Nebula can be linked to a company website via the API.
@@ -98,34 +102,6 @@ requests from the production.
 We do not try to have tons of features noone will ever use - we spent many years sitting next to Nebula operators,
 learning from each other, and we believe that Nebula covers all common tasks in a broadcast environment.
 
-Installation
-------------
-
-See [nebula-setup](https://github.com/nebulabroadcast/nebula-setup)
-for installation scripts and instructions.
-If you already have a running instance and you are about to add another node,
-you may use `support/install_prerequisites.sh` script to install required Python libraries and tools.
-
- - After initial setup, use `make install` command to create symlinks for command-line utilities.
- - Create your first user using `nxadduser` command.
- - During the setup, we recommended running `./manage.py run hub` and `./nebula.py`
-   commands in GNU screen to track down possible errors
- - `make install` also creates *nebula* and *nebula-hub* systemd units (disabled by default),
-   which you should use to run the software in production.
- - systemd units assume nebula is installed in `/opt/nebula/`
- - keep in mind that *nebula* service waits 30 seconds before it is started by systemd
-
-Command line tools
-------------------
-
- - `nxl` real-time log viewer
- - `nxadduser` add a new user to the system
- - `nxpasswd` change user password
- - `nxa {id_view:int} {search_query:string}` asset browser
- - `nxj` jobs monitor
- - `nxs {[command:start|stop|auto|noauto] id_service:int}` services monitor and control panel
- - `nxt [tool_name:string]` plug-in runner
-
 
 Legal
 -----
@@ -150,4 +126,4 @@ Need help?
  - Visit our Nebula community group on [Telegram](https://t.me/nebulabroadcast)
  - Professional support for Nebula is provided by [Nebula Broadcast](https://nebulabroadcast.com)
  - User documentation is available on [our website](https://nebulabroadcast.com/doc/nebula)
- - Found a bug? Please [create an issue](https://github.com/immstudios/nebula/issues) in our development repository.
+ - Found a bug? Please [create an issue](https://github.com/nebulabroadcast/nebula/issues) in our development repository.

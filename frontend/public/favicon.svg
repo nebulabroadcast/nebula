@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="150"
+   height="150"
+   viewBox="0 0 39.687498 39.687501"
+   version="1.1"
+   id="svg8"
+   inkscape:export-filename="/home/martas/Share/Work/nebula-broadcast/identity/nebulabroadcast-logo-avatar.png"
+   inkscape:export-xdpi="512"
+   inkscape:export-ydpi="512"
+   inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
+   sodipodi:docname="nebulabroadcast-logo-avatar.svg">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="4.7376154"
+     inkscape:cx="98.831634"
+     inkscape:cy="70.722507"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer2"
+     showgrid="false"
+     units="px"
+     inkscape:showpageshadow="false"
+     borderlayer="true"
+     inkscape:window-width="1920"
+     inkscape:window-height="1155"
+     inkscape:window-x="0"
+     inkscape:window-y="22"
+     inkscape:window-maximized="0" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="Logo"
+     transform="translate(0,-85.460416)">
+    <g
+       inkscape:groupmode="layer"
+       id="layer1"
+       inkscape:label="Layer 1">
+      <rect
+         style="fill:#2c2d3c;fill-opacity:1;stroke-width:0.92301846"
+         id="rect3825"
+         width="39.6875"
+         height="39.6875"
+         x="0"
+         y="85.460419" />
+    </g>
+    <g
+       id="g325"
+       style="fill:#000000"
+       transform="matrix(0.83068055,0,0,0.83068055,11.932574,26.306732)">
+      <path
+         id="path87"
+         d="M -1.9210115,101.48933"
+         stroke-miterlimit="10"
+         style="fill:#f9f9f9;stroke:#000000;stroke-width:0.6296851;stroke-miterlimit:10"
+         inkscape:connector-curvature="0" />
+      <path
+         style="fill:#f9f9f9;stroke-width:0.6296851"
+         id="path89"
+         d="m 20.531394,97.115299 c -0.881593,-1.659944 -2.664844,-2.2727 -2.880539,-2.351744 0,0 1.900504,-0.63236 2.331895,-2.865221 0,0 0.509769,-1.936917 -0.862156,-3.576626 0,0 -0.862155,-1.422808 -3.89945,-1.699782 0,0 -0.901657,-0.09865 -1.450302,-0.118883 -0.548644,-0.02024 -3.174612,-0.0196 -3.174612,-0.0196 V 97.799512 L 2.3571603,86.503675 H 0.84854497 L 10.596857,99.828753 v 1.554977 L -0.37602909,86.493557 H -1.5128201 V 103.6267 h 1.29354652 V 88.806096 L 10.763645,103.71587 h 1.136791 V 87.748791 c 0,0 2.635373,-0.197929 4.88889,0.543196 0,0 1.978882,0.533712 1.900504,2.766573 0,0 0.215696,2.153816 -2.312457,2.845618 0,0 -1.52868,0.395224 -2.782724,0.335783 v 1.245115 c 0,0 2.272955,-0.01012 3.017857,0.217532 0,0 1.861629,0.356019 2.684282,1.857872 0,0 0.901657,1.521457 -0.313511,3.24084 0,0 -0.744903,1.04719 -2.370771,1.40321 0,0 -0.568082,0.27697 -2.997792,0.23713 v 1.24512 c 0,0 2.194577,0.11888 3.566501,-0.33578 1.391362,-0.42495 2.88054,-1.14647 3.507562,-2.90506 -6.27e-4,-6.4e-4 0.72421,-1.670698 -0.157383,-3.330641 z"
+         inkscape:connector-curvature="0" />
+    </g>
+  </g>
+</svg>
