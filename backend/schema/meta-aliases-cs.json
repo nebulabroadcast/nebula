@@ -133,5 +133,6 @@
   ["serie/season"           , "Sezóna"                 , null                , "Sezóna/ročník série. Je možné použít číslování od jedné, nebo rok"],
   ["content_alert/scheme"   , "Přístupnost"            , null                , "Klasifikace přístupnosti vyjadřuje stupeň společenské závadnosti podle toho, zda a v jaké míře dané dílo obsahuje projevy násilí, hrubého jazyka, explicitní zobrazení sexuálních scén apod."],
   ["video/codec"            , "Video kodek"            , null                , "Kodek použitý pro kompresi obrazové stopy příspěvku"],
-  ["audio/gain/peak"        , "Audio peak"             , null                , ""]
+  ["audio/gain/peak"        , "Audio peak"             , null                , ""],
+  ["audio_tracks"           , "Audio tracks"           , null                , ""]
 ]

@@ -141,9 +141,10 @@ class BaseObject:
         conn = kwargs.get("connection", db)
         res = await conn.fetch(f"SELECT meta FROM {cls.object_type}s WHERE id = $1", id)
         if not res:
-            raise NotFoundException
+            raise NotFoundException(
+                f"{cls.object_type.capitalize()} ID {id} not found"
+            )
         return cls(meta=res[0]["meta"], **kwargs)
-        raise NotFoundException
 
     @classmethod
     def from_row(cls, row, **kwargs):

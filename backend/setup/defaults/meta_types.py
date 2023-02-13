@@ -606,4 +606,5 @@ META_TYPES = {
         "ns": "q",
         "type": T.BOOLEAN,
     },
+    "audio_tracks": {"ns": "f", "type": T.OBJECT,},
 }

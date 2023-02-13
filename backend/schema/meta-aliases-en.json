@@ -133,5 +133,6 @@
   ["serie/season"           , "Season"                 , null                , "Season of a TV or video series this asset is a member of"],
   ["content_alert/scheme"   , "Content alert scheme"   , "PG"                , "Information about a particular type of content potentially sensitive"],
   ["video/codec"            , "Video codec"            , null                , ""],
-  ["audio/gain/peak"        , "Audio peak"             , null                , ""]
+  ["audio/gain/peak"        , "Audio peak"             , null                , ""],
+  ["audio_tracks"           , "Audio tracks"           , null                , ""]
 ]
