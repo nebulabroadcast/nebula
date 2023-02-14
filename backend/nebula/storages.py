@@ -92,4 +92,3 @@ class Storages:
 
 
 storages = Storages()
-

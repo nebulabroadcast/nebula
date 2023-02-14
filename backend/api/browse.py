@@ -63,8 +63,8 @@ class BrowseRequestModel(RequestModel):
     columns: list[str] | None = Field(
         None,
         title="Columns",
-        description="Override the view columns." 
-            "Note that several columns are always included.",
+        description="Override the view columns."
+        "Note that several columns are always included.",
         example=["title", "subtitle", "id_folder"],
     )
     ignore_view_conditions: bool = Field(False, title="Ignore view conditions")

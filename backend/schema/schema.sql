@@ -70,7 +70,7 @@ CREATE TABLE IF NOT EXISTS public.views (
 
 CREATE TABLE IF NOT EXISTS public.assets (
   id SERIAL NOT NULL,
-  id_folder INTEGER NOT NULL,
+  id_folder INTEGER NOT NULL REFERENCES public.folders(id),
   content_type INTEGER NOT NULL,
   media_type INTEGER NOT NULL,
   status INTEGER NOT NULL DEFAULT 1,
@@ -101,8 +101,8 @@ CREATE TABLE IF NOT EXISTS public.bins (
 
 CREATE TABLE IF NOT EXISTS public.items (
   id SERIAL NOT NULL,
-  id_asset INTEGER NOT NULL, -- can be zero (default, virtual item)
-  id_bin INTEGER REFERENCES public.bins(id),
+  id_asset INTEGER REFERENCES public.assets(id) ON DELETE CASCADE,
+  id_bin INTEGER REFERENCES public.bins(id) ON DELETE CASCADE,
   position INTEGER NOT NULL,
   meta JSONB,
   CONSTRAINT items_pkey PRIMARY KEY (id)
@@ -161,10 +161,10 @@ CREATE TABLE IF NOT EXISTS public.hosts (
 
 CREATE TABLE IF NOT EXISTS public.jobs (
   id SERIAL NOT NULL,
-  id_action INTEGER NOT NULL,
-  id_asset INTEGER,
+  id_action INTEGER NOT NULL REFERENCES public.actions(id) ON DELETE CASCADE,
+  id_asset INTEGER NOT NULL REFERENCES public.assets(id) ON DELETE CASCADE,
   id_service INTEGER,
-  id_user INTEGER,
+  id_user INTEGER REFERENCES public.users(id) ON DELETE SET NULL,
   settings JSONB,
   priority INTEGER NOT NULL DEFAULT 3,
   retries INTEGER NOT NULL DEFAULT 0,

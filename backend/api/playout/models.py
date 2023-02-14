@@ -23,7 +23,11 @@ class PlayoutAction(str, Enum):
 
 class PlayoutRequestModel(RequestModel):
     id_channel: int = Field(..., title="Channel ID")
-    action: PlayoutAction = Field(..., title="Action", description="Action to be executed on the playout service",)
+    action: PlayoutAction = Field(
+        ...,
+        title="Action",
+        description="Action to be executed on the playout service",
+    )
     payload: dict[str, Any] = Field(
         default_factory=dict,
         title="Payload",

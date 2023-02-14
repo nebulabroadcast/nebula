@@ -5,6 +5,7 @@ import nebula
 from nebula.common import sql_list
 from nebula.enum import ObjectType
 from nebula.helpers.scheduling import bin_refresh
+from nebula.objects.utils import get_object_class_by_name
 from server.dependencies import current_user, request_initiator
 from server.models import RequestModel
 from server.request import APIRequest
@@ -37,6 +38,7 @@ class Request(APIRequest):
 
         match request.object_type:
             case ObjectType.ITEM:
+                # TODO: refactor events
 
                 if not user.can("rundown_edit", anyval=True):
                     raise nebula.ForbiddenException(
@@ -52,10 +54,26 @@ class Request(APIRequest):
                 async for row in nebula.db.iterate(query):
                     affected_bins.add(row["id_bin"])
                 await bin_refresh(list(affected_bins), initiator=initiator)
+                return Response(status_code=204)
+
+            case ObjectType.ASSET | ObjectType.EVENT | ObjectType.USER:
+                pass
+                # TODO: ACL HERE
 
             case _:
+                # do not delete bins directly
                 raise nebula.NotImplementedException(
                     f"Deleting {request.obejct_type} is not implemented"
                 )
+
+        # Delete simple objects
+
+        cls = get_object_class_by_name(request.object_type)
+        for id_object in request.ids:
+            obj = await cls.load(id_object)
+            try:
+                await obj.delete()
+            except Exception:
+                nebula.log.traceback(f"Unable to delete {obj}")
 
         return Response(status_code=204)

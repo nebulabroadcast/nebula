@@ -1,5 +1,3 @@
-import os
-
 from fastapi import Header
 from pydantic import Field
 

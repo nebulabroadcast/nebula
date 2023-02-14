@@ -9,5 +9,3 @@ async def test_supernova():
 
     user = nebula.User.from_meta(res[0]["meta"])
     assert user.name
-
-

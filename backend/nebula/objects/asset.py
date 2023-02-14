@@ -1,7 +1,9 @@
+import os
 from nxtools import get_base_name, slugify
 
 from nebula.enum import ContentType, MediaType, ObjectStatus
 from nebula.objects.base import BaseObject
+from nebula.storages import storages
 
 
 class Asset(BaseObject):
@@ -32,6 +34,19 @@ class Asset(BaseObject):
         if path := self.meta.get("path"):
             return get_base_name(path)
         return None
+
+    @property
+    def local_path(self) -> str | None:
+        """Return a local path to the file asset."""
+        id_storage = self["id_storage"]
+        path = self["path"]
+        if not (id_storage and path):
+            return None
+        storage_path = storages[id_storage].local_path
+        full_path = os.path.join(storage_path, path)
+        if not os.path.exists(full_path):
+            return None
+        return full_path
 
     @property
     def slug(self) -> str | None:
