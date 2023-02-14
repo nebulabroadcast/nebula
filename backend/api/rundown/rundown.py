@@ -160,7 +160,8 @@ async def get_rundown(request: RundownRequestModel) -> RundownResponseModel:
         # Update timestamps
 
         if row.run_mode != RunMode.RUN_SKIP:
-            last_event.broadcast_time = ts_broadcast
+            if not last_event.duration:
+                last_event.broadcast_time = ts_broadcast
             ts_scheduled += duration
             ts_broadcast += duration
             last_event.duration += duration
