@@ -15,3 +15,6 @@ class Event(BaseObject):
         "stop": 0,
         "id_magic": None,
     }
+
+    async def delete_children(self):
+        await self.connection.execute("DELETE FROM bins WHERE id_magic = $1", self.id)

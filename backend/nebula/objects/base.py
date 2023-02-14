@@ -6,7 +6,7 @@ from nxtools import slugify
 
 from nebula.db import DB, db
 from nebula.enum import ObjectTypeId
-from nebula.exceptions import NotFoundException
+from nebula.exceptions import NotFoundException, BadRequestException
 from nebula.log import log
 from nebula.messaging import msg
 from nebula.metadata.format import format_meta
@@ -141,9 +141,7 @@ class BaseObject:
         conn = kwargs.get("connection", db)
         res = await conn.fetch(f"SELECT meta FROM {cls.object_type}s WHERE id = $1", id)
         if not res:
-            raise NotFoundException(
-                f"{cls.object_type.capitalize()} ID {id} not found"
-            )
+            raise NotFoundException(f"{cls.object_type.capitalize()} ID {id} not found")
         return cls(meta=res[0]["meta"], **kwargs)
 
     @classmethod
@@ -179,6 +177,38 @@ class BaseObject:
     #
     # Object saving
     #
+
+    async def delete(self) -> None:
+        if not self.id:
+            raise BadRequestException("Unable to delete unsaved asset")
+        if isinstance(self.connection, DB):
+            pool = await self.connection.pool()
+            async with pool.acquire() as conn:
+                async with conn.transaction():
+                    await self._delete()
+        elif (
+            hasattr(self.connection, "is_in_transaction")
+            and self.connection.is_in_transaction()
+        ):
+            await self._delete()
+        else:
+            async with self.connection.transaction():
+                await self._delete()
+
+    async def _delete(self) -> None:
+        assert self.connection is not None
+        await self.delete_children()
+        await self.connection.execute(
+            f"DELETE FROM {self.object_type}s WHERE id = $1", self.id
+        )
+        await self.connection.execute(
+            "DELETE FROM ft WHERE object_type = $1 AND id = $2",
+            ObjectTypeId[self.object_type.upper()].value,
+            self.id,
+        )
+
+    async def delete_children(self) -> None:
+        pass
 
     async def save(self, notify: bool = True, initiator: str = None) -> None:
         assert self.connection is not None

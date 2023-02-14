@@ -59,6 +59,11 @@ async def send_to(
 
     Returns ID of the job created/restarted or None if no job was created.
     """
+
+    res = await nebula.db.fetch("SELECT id FROM actions WHERE id = $1", id_action)
+    if not res:
+        raise nebula.NotFoundException("No such action")
+
     query = "SELECT id FROM jobs WHERE id_asset=$1 AND id_action=$2 AND settings=$3"
     res = await nebula.db.fetch(query, id_asset, id_action, params)
     if res:

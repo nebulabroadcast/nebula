@@ -180,10 +180,10 @@ class JobsRequest(APIRequest):
             return Response(status_code=204)
 
         if request.asset_ids is not None:
-            ids = ','.join([str(id) for id in request.asset_ids])
+            ids = ",".join([str(id) for id in request.asset_ids])
             conds.append(f"j.id_asset IN ({ids})")
         if request.ids is not None:
-            ids = ','.join([str(id) for id in request.ids])
+            ids = ",".join([str(id) for id in request.ids])
             conds.append(f"j.id IN ({ids})")
 
         query = f"""

@@ -31,10 +31,12 @@ class UserRights(BaseModel):
     scheduler_edit: bool | list[int] = Field(True)
     rundown_view: bool | list[int] = Field(True)
     rundown_edit: bool | list[int] = Field(
-        True, description="Use list of channel IDs for channel-specific rights",
+        True,
+        description="Use list of channel IDs for channel-specific rights",
     )
     job_control: bool | list[int] = Field(
-        True, description="Use list of action IDs to grant access to specific actions",
+        True,
+        description="Use list of action IDs to grant access to specific actions",
     )
 
 
