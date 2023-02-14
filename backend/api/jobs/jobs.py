@@ -20,10 +20,22 @@ When set to none, 204 response is returned instead of list of jobs"""
 
 
 class JobsRequestModel(ResponseModel):
-    view: Literal["active", "finished", "failed"] | None = Field(
+    view: Literal["all", "active", "finished", "failed"] | None = Field(
         None,
         title="View",
         description=VIEW_FIELD_DESCRIPTION,
+    )
+    ids: list[int] | None = Field(
+        None,
+        title="Job IDs",
+        description="Return only the jobs with the given IDs",
+        example=42,
+    )
+    asset_ids: list[int] | None = Field(
+        None,
+        title="Asset IDs",
+        description="Return jobs of asset with the given IDs",
+        example=69,
     )
     search_query: str | None = Field(
         None,
@@ -164,8 +176,15 @@ class JobsRequest(APIRequest):
         elif request.view == "failed":
             # failed
             conds.append("j.status IN (3)")
-        else:
+        elif request.view is None:
             return Response(status_code=204)
+
+        if request.asset_ids is not None:
+            ids = ','.join([str(id) for id in request.asset_ids])
+            conds.append(f"j.id_asset IN ({ids})")
+        if request.ids is not None:
+            ids = ','.join([str(id) for id in request.ids])
+            conds.append(f"j.id IN ({ids})")
 
         query = f"""
             SELECT

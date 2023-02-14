@@ -30,9 +30,10 @@ class SendRequestModel(RequestModel):
         True,
         title="Restart running jobs",
     )
-    settings: dict[str, Any] = Field(
+    params: dict[str, Any] = Field(
         default_factory=dict,
-        title="Additional settings",
+        title="Additional job parameters (action specific)",
+        example={"bitrate": "4000k"},
     )
     priority: int = Field(3, title="Job priority")
 
@@ -48,7 +49,7 @@ class SendResponseModel(ResponseModel):
 async def send_to(
     id_asset: int,
     id_action: int,
-    settings: dict[str, Any],
+    params: dict[str, Any],
     user: nebula.User,
     priority: int = 3,
     restart_existing: bool = True,
@@ -59,7 +60,7 @@ async def send_to(
     Returns ID of the job created/restarted or None if no job was created.
     """
     query = "SELECT id FROM jobs WHERE id_asset=$1 AND id_action=$2 AND settings=$3"
-    res = await nebula.db.fetch(query, id_asset, id_action, settings)
+    res = await nebula.db.fetch(query, id_asset, id_action, params)
     if res:
         # job exists
         if not restart_existing:
@@ -103,7 +104,7 @@ async def send_to(
                 progress=0,
             )
             nebula.log.info(f"{user} restarted job {id_job}")
-            return True
+            return id_job
 
         nebula.log.warning(f"Unable to restart job {id_job}")
         return id_job
@@ -130,7 +131,7 @@ async def send_to(
     """
 
     res = await nebula.db.fetch(
-        query, id_asset, id_action, user.id, settings, priority, time.time()
+        query, id_asset, id_action, user.id, params, priority, time.time()
     )
 
     if res:
@@ -174,7 +175,7 @@ class SendRequest(APIRequest):
             id_job = await send_to(
                 id_asset=id_asset,
                 id_action=request.id_action,
-                settings=request.settings,
+                params=request.params,
                 user=user,
                 priority=request.priority,
                 restart_existing=request.restart_existing,
