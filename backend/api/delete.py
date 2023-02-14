@@ -56,18 +56,19 @@ class Request(APIRequest):
                 await bin_refresh(list(affected_bins), initiator=initiator)
                 return Response(status_code=204)
 
-            case ObjectType.ASSET:
+            case ObjectType.ASSET | ObjectType.EVENT | ObjectType.USER:
                 pass
                 # TODO: ACL HERE
 
             case _:
+                # do not delete bins directly
                 raise nebula.NotImplementedException(
                     f"Deleting {request.obejct_type} is not implemented"
                 )
 
         # Delete simple objects
 
-        cls = get_object_class_by_name(request.ObjectType)
+        cls = get_object_class_by_name(request.object_type)
         for id_object in request.ids:
             obj = await cls.load(id_object)
             try:
