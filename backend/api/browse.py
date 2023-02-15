@@ -101,8 +101,7 @@ class BrowseResponseModel(ResponseModel):
 def sanitize_value(value: Any) -> Any:
     if type(value) is str:
         value = value.replace("'", "''")
-        return f"'{value}'"
-    return value
+    return str(value)
 
 
 def build_conditions(conditions: list[ConditionModel]) -> list[str]:
@@ -112,14 +111,15 @@ def build_conditions(conditions: list[ConditionModel]) -> list[str]:
         condition.value = normalize_meta(condition.key, condition.value)
         if condition.operator in ["IN", "NOT IN"]:
             assert type(condition.value) is list
-            values = [sanitize_value(v) for v in condition.value]
-            cond_list.append(f"{condition.key} {condition.operator} {sql_list(values)}")
+            values = sql_list([sanitize_value(v) for v in condition.value], t="str")
+            cond_list.append(f"meta->>'{condition.key}' {condition.operator} {values}")
         elif condition.operator in ["IS NULL", "IS NOT NULL"]:
             cond_list.append(f"meta->>'{condition.key}' {condition.operator}")
         else:
             value = sanitize_value(condition.value)
             assert value
-            cond_list.append(f"meta->>'{condition.key}' {condition.operator} {value}")
+            # TODO casting to numbers for <, >, <=, >=
+            cond_list.append(f"meta->>'{condition.key}' {condition.operator} '{value}'")
     return cond_list
 
 

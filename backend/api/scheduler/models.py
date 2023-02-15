@@ -47,9 +47,10 @@ class SchedulerRequestModel(RequestModel):
         example=1,
     )
 
-    date: str = Field(
-        ...,
-        description="Date of the week start in YYYY-MM-DD format.",
+    date: str | None = Field(
+        None,
+        description="Date of the week start in YYYY-MM-DD format."
+        "If none. event data won't be returned.",
         regex=r"\d{4}-\d{2}-\d{2}",
         example="2022-07-25",
     )

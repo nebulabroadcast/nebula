@@ -13,7 +13,7 @@ async def set_rundown_order(
     if (channel := nebula.settings.get_playout_channel(request.id_channel)) is None:
         raise NotFoundException(f"Channel ID {request.id_channel} not found")
 
-    id_bin = request.bin
+    id_bin = request.id_bin
     order = request.order
 
     affected_bins: list[int] = [id_bin]
