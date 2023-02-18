@@ -1,4 +1,4 @@
-from fastapi import Depends, Header
+from fastapi import Depends, Header, Query
 
 import nebula
 from server.session import Session
@@ -16,6 +16,15 @@ async def access_token(authorization: str = Header(None)) -> str | None:
 async def request_initiator(x_client_id: str = Header(None)) -> str | None:
     """Return the client ID of the request initiator."""
     return x_client_id
+
+
+async def current_user_query(token: str = Query(None)) -> nebula.User:
+    if token is None:
+        raise nebula.UnauthorizedException("No access token provided")
+    session = await Session.check(token, None)
+    if session is None:
+        raise nebula.UnauthorizedException("Invalid access token")
+    return nebula.User(meta=session.user)
 
 
 async def current_user(
