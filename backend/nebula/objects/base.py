@@ -97,6 +97,8 @@ class BaseObject:
 
     def __getitem__(self, key: str) -> Any:
         value = self.meta.get(key)
+        if key == "id" and not value:
+            return None
         if value is None and key in settings.metatypes:
             default = settings.metatypes[key].default
             return default
@@ -118,7 +120,7 @@ class BaseObject:
             self.meta[key] = value
 
     def get(self, key: str, default: Any = None) -> Any:
-        if (value := self[key]) is None:
+        if (value := self[key]) is None and (key != "id"):
             return default
         return value
 
@@ -273,7 +275,13 @@ class BaseObject:
             INSERT INTO {self.object_type}s ({','.join(self.db_columns)}, meta)
             VALUES ({placeholders}) RETURNING id
             """
-        qargs = [self[col] for col in self.db_columns] + [self.meta]
+        qargs = [
+            self.meta[col] for col in self.db_columns
+        ] + [self.meta]
+
+        print(query)
+        print(qargs)
+
         res = await self.connection.fetch(query, *qargs)
         self.meta["id"] = res[0]["id"]
 
@@ -290,5 +298,10 @@ class BaseObject:
             WHERE id = ${len(self.db_columns) + 2}
             """
 
-        qargs = [self[col] for col in self.db_columns] + [self.meta, self.id]
+        qargs = [
+            self.meta[col] for col in self.db_columns
+        ] + [
+            self.meta,
+            self.id,
+        ]
         await self.connection.execute(query, *qargs)

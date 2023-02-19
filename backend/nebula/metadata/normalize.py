@@ -5,7 +5,7 @@ from nebula.settings import settings
 
 ALWAYS_TO_INT = [
     "id_folder",
-    "id_asset",
+     # "id_asset",
     "id_bin",
     "id_event",
     "id_magic",
@@ -70,7 +70,7 @@ def normalize_meta(key: str, value: Any) -> Any:
             if isinstance(value, str):
                 if value.lower() in ("yes", "true", "1"):
                     return True
-                if value.lower() in ("no", "false", "0", 0, False):
+                if value.lower() in ("no", "false", "0"):
                     return False
             return bool(value)
 
@@ -85,11 +85,11 @@ def normalize_meta(key: str, value: Any) -> Any:
             return value
 
         case MetaClass.FRACTION:
-            assert type(value) is str
+            assert type(value) is str, f"{key} must be a strint. is {type(value)}"
             return value
 
         case MetaClass.SELECT:
-            assert type(value) is str
+            assert type(value) is str, f"{key} must be a string. is {type(value)}"
             return str(value)
 
         case MetaClass.LIST:

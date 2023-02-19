@@ -2,7 +2,7 @@ from pydantic import Field
 
 from server.models import RequestModel, ResponseModel
 
-Serializable = int | str | float | list[str] | bool
+Serializable = int | str | float | list[str] | bool | None
 
 
 class EventData(RequestModel):

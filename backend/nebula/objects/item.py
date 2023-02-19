@@ -11,5 +11,5 @@ class Item(BaseObject):
 
     defaults = {
         "position": 0,
-        "id_asset": 0,  # TODO: In V6, should be None, Make sure to update the DB
+        "id_asset": None,  # TODO: In V6, should be None, Make sure to update the DB
     }
