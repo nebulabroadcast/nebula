@@ -23,6 +23,7 @@ REQUIRED_COLUMNS = [
     "content_type",
     "media_type",
     "ctime",
+    "video/fps_f",
 ]
 
 #

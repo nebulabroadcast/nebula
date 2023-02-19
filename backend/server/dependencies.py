@@ -13,7 +13,7 @@ async def access_token(authorization: str = Header(None)) -> str | None:
     return access_token
 
 
-async def request_initiator(x_client_id: str = Header(None)) -> str | None:
+async def request_initiator(x_client_id: str | None = Header(None)) -> str | None:
     """Return the client ID of the request initiator."""
     return x_client_id
 

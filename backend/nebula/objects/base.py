@@ -279,9 +279,6 @@ class BaseObject:
             self.meta[col] for col in self.db_columns
         ] + [self.meta]
 
-        print(query)
-        print(qargs)
-
         res = await self.connection.fetch(query, *qargs)
         self.meta["id"] = res[0]["id"]
 

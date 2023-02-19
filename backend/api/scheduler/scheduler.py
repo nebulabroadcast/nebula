@@ -96,6 +96,8 @@ async def scheduler(
         if event_at_position and event_at_position.id != event_data.id:
             # Replace event at position
 
+            changed_event_ids.append(event_at_position.id)
+
             if event_data.asset_id:
                 # Replace event with another asset.
                 # This should be supported, but is not yet.
@@ -122,7 +124,8 @@ async def scheduler(
             for field in channel.fields:
                 if event_data.meta and (field.name in event_data.meta):
                     event[field.name] = event_data.meta[field.name]
-            await event.save()
+            changed_event_ids.append(event_data.id)
+            await event.save(notify=False)
 
         else:
             # create new event
