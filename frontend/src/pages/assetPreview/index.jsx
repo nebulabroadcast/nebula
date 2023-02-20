@@ -67,6 +67,13 @@ const AssetDetail = () => {
       })
   }
 
+  let accessToken = ""
+  try {
+    accessToken = JSON.parse(localStorage.getItem('accessToken'))
+  } catch {
+    console.log("Unable to get access token to load the proxy")
+  }
+  
   return (
     <div className="grow column">
       <Navbar>
@@ -77,7 +84,7 @@ const AssetDetail = () => {
         <ControlsWrapper>
           <section style={{ minWidth: 350, flexGrow: 1 }}>
             <Video 
-              src={`/proxy/${assetData.id}?token=${localStorage.getItem('accessToken')}`} 
+              src={`/proxy/${assetData.id}?token=${accessToken}`} 
               style={{ width: '100%' }}
               marks={marks}
               setMarks={setMarks}
