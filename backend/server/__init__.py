@@ -111,9 +111,21 @@ async def proxy(
     the file in media players that support HTTPS pseudo-streaming.
     """
 
-    # TODO: authentication using a path parameter
+    sys_settings = nebula.settings.system
+    proxy_storage_path = nebula.storages[
+        sys_settings.proxy_storage
+    ].local_path
+    proxy_path_template = os.path.join(
+        proxy_storage_path, sys_settings.proxy_path
+    )
 
-    video_path = f"/mnt/nebula_01/.nx/proxy/{int(id_asset/1000):04d}/{id_asset}.mp4"
+    vars = {
+        "id": id_asset,
+        "id1000": id_asset // 1000,
+    }
+
+    video_path = proxy_path_template.format(**vars)
+
     if not os.path.exists(video_path):
         # maybe return content too? with a placeholder image?
         return Response(status_code=404, content="Not found")

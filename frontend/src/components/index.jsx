@@ -11,6 +11,7 @@ import {
   InputNumber,
   InputTimecode,
   InputPassword,
+  InputDatetime,
   TextArea,
 } from './input'
 
@@ -30,6 +31,7 @@ export {
   InputPassword,
   InputText,
   InputTimecode,
+  InputDatetime,
   Loader,
   Navbar,
   Select,

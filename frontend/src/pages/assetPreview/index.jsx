@@ -67,12 +67,7 @@ const AssetDetail = () => {
       })
   }
 
-  let accessToken = ""
-  try {
-    accessToken = JSON.parse(localStorage.getItem('accessToken'))
-  } catch {
-    console.log("Unable to get access token to load the proxy")
-  }
+  const accessToken = nebula.getAccessToken()
   
   return (
     <div className="grow column">

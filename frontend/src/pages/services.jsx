@@ -30,7 +30,7 @@ const formatLastSeen = (rowData, key) => {
 
   if (lastSeen > 1234567890) return <td>Never</td>
 
-  const duration = Duration.fromMillis(lastSeen * 1000)
+  const duration = Duration.fromObject({seconds: lastSeen}).toHuman({stripZeroUnits: "all"})
   return <td>{duration.toHuman()} ago </td>
 }
 

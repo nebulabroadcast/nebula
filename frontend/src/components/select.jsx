@@ -196,6 +196,11 @@ const DialogBasedSelect = styled.div`
       text-overflow: ellipsis;
       white-space: nowrap;
       overflow: hidden;
+      &.placeholder {
+        color: ${(props) => props.theme.colors.textDimmer};
+        font-size: .9rem;
+      
+      }
     }
   }
 
@@ -254,7 +259,7 @@ StyledHTMLSelect.defaultProps = {
 }
 
 
-const Select = ({ options, value, onChange, selectionMode = 'single' }) => {
+const Select = ({ options, value, onChange, placeholder, selectionMode = 'single' }) => {
   const [dialogVisible, setDialogVisible] = useState(false)
 
   const displayValue = useMemo(() => {
@@ -306,7 +311,7 @@ const Select = ({ options, value, onChange, selectionMode = 'single' }) => {
     <DialogBasedSelect>
       {dialog}
       <div className="select-field" onClick={() => setDialogVisible(true)}>
-        <span>{displayValue}</span>
+        {displayValue ? <span>{displayValue}</span> : <span className='placeholder'>{placeholder}</span>}
       </div>
       <Button label="..." onClick={() => setDialogVisible(true)} />
     </DialogBasedSelect>

@@ -16,6 +16,10 @@ const nebula = {
     return axios.post(`/api/${endpoint}`, data)
   },
 
+  getAccessToken() {
+    return axios.defaults.headers.common['Authorization'].replace('Bearer ', '')
+  },
+
   // Metadata helpers
 
   metaType(key) {
