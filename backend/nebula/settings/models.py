@@ -82,6 +82,8 @@ class SystemSettings(BaseSystemSettings):
 
     proxy_storage: int = Field(1, title="Proxy storage", example=1)
     proxy_path: str = Field(".nx/proxy/{id1000:04d}/{id}.mp4")
+    worker_plugin_storage: int = Field(1)
+    worker_plugin_path: str = Field(".nx/plugins")
 
     smtp_host: str | None = Field(None, title="SMTP host", example="smtp.example.com")
     smtp_port: int | None = Field(None, title="SMTP port", example=465)

@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Literal, Any
 
 from pydantic import Field
 
@@ -19,7 +19,7 @@ class RundownRow(ResponseModel):
     id_bin: int = Field(...)
     scheduled_time: float = Field(...)
     broadcast_time: float = Field(...)
-    meta: dict | None = Field(None)
+    meta: dict[str, Any] | None = Field(None)
 
     title: str | None = Field(None)
     subtitle: str | None = Field(None)

@@ -1,13 +1,15 @@
 import os
 
-from fastapi import FastAPI, Header, Request
+from fastapi import FastAPI, Header, Request, Depends
 from fastapi.responses import JSONResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.websockets import WebSocket, WebSocketDisconnect
 
 import nebula
+
 from nebula.exceptions import NebulaException
 from nebula.settings import load_settings
+from server.dependencies import current_user_query
 from server.endpoints import install_endpoints
 from server.video import range_requests_response
 from server.websocket import messaging
@@ -97,7 +99,12 @@ class ProxyResponse(Response):
 
 
 @app.get("/proxy/{id_asset}", response_class=ProxyResponse)
-async def proxy(request: Request, id_asset: int, range: str = Header(None)):
+async def proxy(
+    request: Request,
+    id_asset: int,
+    user: nebula.User = Depends(current_user_query),
+    range: str = Header(None),
+):
     """Serve a low-res (proxy) media for a given asset.
 
     This endpoint supports range requests, so it is possible to use

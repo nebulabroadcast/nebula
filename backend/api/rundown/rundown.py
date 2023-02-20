@@ -79,9 +79,11 @@ async def get_rundown(request: RundownRequestModel) -> RundownResponseModel:
             )
 
             ts_scheduled = row.scheduled_time
+            if last_event is None:
+                ts_broadcast = emeta["start"]
 
             if last_event and (not last_event.duration):
-                ts_broadcast = 0
+                ts_broadcast = emeta["start"]
 
             if emeta.get("run_mode", 0):
                 ts_broadcast = emeta["start"]

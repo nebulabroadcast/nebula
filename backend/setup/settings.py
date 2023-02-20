@@ -114,16 +114,18 @@ async def setup_settings(db):
 
     # Setup folders
 
-    await db.execute("DELETE FROM folders")
+    folder_ids: list[str] = []
     for folder in TEMPLATE["folders"]:
         assert isinstance(folder, FolderSettings)
         fdata = folder.dict(exclude_none=True)
         fid = fdata.pop("id")
+        folder_ids.append(str(fid))
 
         await db.execute(
             """
             INSERT INTO folders (id, settings)
             VALUES ($1, $2)
+            ON CONFLICT (id) DO UPDATE SET settings = $2
             """,
             fid,
             fdata,
@@ -135,6 +137,9 @@ async def setup_settings(db):
         """
     )
     log.trace(f"Saved {len(TEMPLATE['folders'])} folders")
+    # We cannot drop tables first since they are referenced from existing assets
+    # So we just try to delete unused and fail if they are still referenced
+    await db.execute(f"DELETE FROM folders WHERE id NOT IN ({','.join(folder_ids)})")
 
     # Setup metatypes
 
@@ -192,7 +197,7 @@ async def setup_settings(db):
 
     # Setup actions
 
-    await db.execute("DELETE FROM actions")
+    # await db.execute("DELETE FROM actions")
     for action in TEMPLATE["actions"]:
         assert isinstance(action, ActionSettings)
         await db.execute(

@@ -67,8 +67,11 @@ async def scheduler(
     if not (channel := nebula.settings.get_playout_channel(request.id_channel)):
         raise nebula.BadRequestException(f"No such channel {request.id_channel}")
 
-    start_time = parse_rundown_date(request.date, channel)
-    end_time = start_time + (request.days * 86400)
+    if request.date:
+        start_time = parse_rundown_date(request.date, channel)
+        end_time = start_time + (request.days * 86400)
+    else:
+        start_time = end_time = None
 
     changed_event_ids = []
 
@@ -92,6 +95,8 @@ async def scheduler(
 
         if event_at_position and event_at_position.id != event_data.id:
             # Replace event at position
+
+            changed_event_ids.append(event_at_position.id)
 
             if event_data.asset_id:
                 # Replace event with another asset.
@@ -119,7 +124,8 @@ async def scheduler(
             for field in channel.fields:
                 if event_data.meta and (field.name in event_data.meta):
                     event[field.name] = event_data.meta[field.name]
-            await event.save()
+            changed_event_ids.append(event_data.id)
+            await event.save(notify=False)
 
         else:
             # create new event
@@ -127,7 +133,10 @@ async def scheduler(
 
     # Return existing events
 
-    events = await get_events_in_range(channel.id, start_time, end_time)
+    if start_time is not None:
+        events = await get_events_in_range(channel.id, start_time, end_time)
+    else:
+        events = []
     return SchedulerResponseModel(
         events=[e.meta for e in events],
         affected_events=changed_event_ids,

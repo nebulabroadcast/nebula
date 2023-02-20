@@ -19,7 +19,7 @@ class OrderItemModel(RequestModel):
 
 class OrderRequestModel(RequestModel):
     id_channel: int = Field(..., title="Channel ID")
-    bin: int = Field(..., title="Bin ID")
+    id_bin: int = Field(..., title="Bin ID")
     order: list[OrderItemModel] = Field(..., title="Order")
 
 
