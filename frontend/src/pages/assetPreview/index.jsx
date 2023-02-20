@@ -77,7 +77,7 @@ const AssetDetail = () => {
         <ControlsWrapper>
           <section style={{ minWidth: 350, flexGrow: 1 }}>
             <Video 
-              src={`/proxy/${assetData.id}?token=${localStoage.getItem('accessToken')}`} 
+              src={`/proxy/${assetData.id}?token=${localStorage.getItem('accessToken')}`} 
               style={{ width: '100%' }}
               marks={marks}
               setMarks={setMarks}
