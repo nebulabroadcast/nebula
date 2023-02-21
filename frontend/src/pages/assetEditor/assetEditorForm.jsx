@@ -51,7 +51,6 @@ const EditorField = ({ field, value, originalValue, onFieldChanged }) => {
         <InputText
           value={value}
           onChange={onChange}
-          placeholder={metaType.description}
         />
       )
       break
@@ -60,7 +59,6 @@ const EditorField = ({ field, value, originalValue, onFieldChanged }) => {
         <TextArea
           value={value}
           onChange={onChange}
-          placeholder={metaType.description}
         />
       )
       break
@@ -71,7 +69,6 @@ const EditorField = ({ field, value, originalValue, onFieldChanged }) => {
           value={value}
           selectionMode="single"
           onChange={onChange}
-          placeholder={metaType.description}
         />
       )
       break
@@ -82,7 +79,6 @@ const EditorField = ({ field, value, originalValue, onFieldChanged }) => {
           value={value}
           selectionMode="multiple"
           onChange={onChange}
-          placeholder={metaType.description}
         />
       )
       break
@@ -91,7 +87,6 @@ const EditorField = ({ field, value, originalValue, onFieldChanged }) => {
         <InputDatetime
           value={value}
           onChange={onChange}
-          placeholder={metaType.description}
         />
       )
       break

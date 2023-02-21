@@ -85,7 +85,7 @@ const AssetEditor = () => {
   }, [assetData, originalData])
 
 
-
+  // TODO: clean-up this mess
   useEffect(() => {
     if (!focusedAsset) return
     if (isChanged) {
