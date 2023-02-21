@@ -6,7 +6,6 @@ import { sortByKey } from '/src/utils'
 import styled from 'styled-components'
 import defaultTheme from './theme'
 
-
 const ButtonWrapper = styled.div`
   display: flex;
   flex-direction: row;
@@ -23,23 +22,22 @@ ButtonWrapper.defaultProps = {
   theme: defaultTheme,
 }
 
-
 const BaseOption = styled.div`
   padding: 3px;
   cursor: pointer;
   white-space: nowrap;
   background-color: ${(props) => props.theme.colors.surface05};
 
-  &.selected{
+  &.selected {
     background-color: ${(props) => props.theme.colors.violet};
   }
 
-  &.label{
+  &.label {
     font-weight: bold;
     background-color: ${(props) => props.theme.colors.surface03};
   }
 
-  &.header{
+  &.header {
     font-weight: bold;
   }
 `
@@ -47,16 +45,15 @@ BaseOption.defaultProps = {
   theme: defaultTheme,
 }
 
-
 const Option = ({ option, selected, onClick }) => {
   const classes = []
   if (selected) classes.push('selected')
-  if (option.role === "label") classes.push('label')
+  if (option.role === 'label') classes.push('label')
   return (
     <BaseOption
       className={classes.join(' ')}
       style={{ paddingLeft: option.level * 15 }}
-      onClick={option.role === "label" ? undefined : onClick}
+      onClick={option.role === 'label' ? undefined : onClick}
       title={option.description}
     >
       {option.title}
@@ -64,39 +61,40 @@ const Option = ({ option, selected, onClick }) => {
   )
 }
 
-
 function filterHierarchy(array, query, currentSelection) {
-  const queryLower = query.toLowerCase();
-  const result = [];
-  const set = new Set();
+  const queryLower = query.toLowerCase()
+  const result = []
+  const set = new Set()
   for (const item of array) {
     item.level = item.value.split('.').length
-    if (item.title.toLowerCase().includes(queryLower) || item.value in currentSelection) {
-      if (item.role === "hidden") {
+    if (
+      item.title.toLowerCase().includes(queryLower) ||
+      item.value in currentSelection
+    ) {
+      if (item.role === 'hidden') {
         continue
       }
-      result.push(item);
-      set.add(item.value);
-      let value = item.value;
+      result.push(item)
+      set.add(item.value)
+      let value = item.value
       while (value) {
-        const parts = value.split(".");
+        const parts = value.split('.')
         if (parts.length === 1) {
-          value = "";
+          value = ''
         } else {
-          parts.pop();
-          value = parts.join(".");
-          const parent = array.find((i) => i.value === value);
-          if (item.role !== "hidden" && parent && !set.has(parent.value)) {
-            result.push(parent);
-            set.add(parent.value);
+          parts.pop()
+          value = parts.join('.')
+          const parent = array.find((i) => i.value === value)
+          if (item.role !== 'hidden' && parent && !set.has(parent.value)) {
+            result.push(parent)
+            set.add(parent.value)
           }
         }
       }
     }
   }
-  return sortByKey(result, "value");
+  return sortByKey(result, 'value')
 }
-
 
 const SelectDialog = ({ options, onHide, selectionMode, initialValue }) => {
   const [filter, setFilter] = useState('')
@@ -196,6 +194,10 @@ const DialogBasedSelect = styled.div`
       text-overflow: ellipsis;
       white-space: nowrap;
       overflow: hidden;
+      &.placeholder {
+        color: ${(props) => props.theme.colors.textDimmer};
+        font-size: 0.9rem;
+      }
     }
   }
 
@@ -215,13 +217,10 @@ const DialogBasedSelect = styled.div`
       gap: 3px;
     }
   }
-
 `
 DialogBasedSelect.defaultProps = {
   theme: defaultTheme,
 }
-
-
 
 // When there is just a few items in the list, we can use a dropdown.
 
@@ -253,8 +252,13 @@ StyledHTMLSelect.defaultProps = {
   theme: defaultTheme,
 }
 
-
-const Select = ({ options, value, onChange, selectionMode = 'single' }) => {
+const Select = ({
+  options,
+  value,
+  onChange,
+  placeholder,
+  selectionMode = 'single',
+}) => {
   const [dialogVisible, setDialogVisible] = useState(false)
 
   const displayValue = useMemo(() => {
@@ -287,26 +291,30 @@ const Select = ({ options, value, onChange, selectionMode = 'single' }) => {
     )
   }, [dialogVisible])
 
-
   if (selectionMode === 'single' && options.length < 10) {
     return (
-      <StyledHTMLSelect value={value} onChange={(e) => onChange(e.target.value)}>
+      <StyledHTMLSelect
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      >
         {options.map((option) => (
           <option key={option.value} value={option.value}>
             {option.title}
           </option>
         ))}
       </StyledHTMLSelect>
-
     )
   }
-
 
   return (
     <DialogBasedSelect>
       {dialog}
       <div className="select-field" onClick={() => setDialogVisible(true)}>
-        <span>{displayValue}</span>
+        {displayValue ? (
+          <span>{displayValue}</span>
+        ) : (
+          <span className="placeholder">{placeholder}</span>
+        )}
       </div>
       <Button label="..." onClick={() => setDialogVisible(true)} />
     </DialogBasedSelect>

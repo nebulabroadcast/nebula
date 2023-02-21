@@ -2,7 +2,7 @@ import nebula from '/src/nebula'
 
 import { useMemo } from 'react'
 import { Form, FormRow, Select } from '/src/components'
-import { InputText, TextArea } from '/src/components/input'
+import { InputText, TextArea, InputDatetime } from '/src/components/input'
 
 const EditorField = ({ field, value, originalValue, onFieldChanged }) => {
   const metaType = { ...nebula.metaType(field.name), ...field }
@@ -46,10 +46,22 @@ const EditorField = ({ field, value, originalValue, onFieldChanged }) => {
   let editor
   switch (metaType.type) {
     case 'string':
-      editor = <InputText value={value} onChange={onChange} />
+      editor = (
+        <InputText
+          value={value}
+          onChange={onChange}
+          placeholder={metaType.description}
+        />
+      )
       break
     case 'text':
-      editor = <TextArea value={value} onChange={onChange} />
+      editor = (
+        <TextArea
+          value={value}
+          onChange={onChange}
+          placeholder={metaType.description}
+        />
+      )
       break
     case 'select':
       editor = (
@@ -58,6 +70,7 @@ const EditorField = ({ field, value, originalValue, onFieldChanged }) => {
           value={value}
           selectionMode="single"
           onChange={onChange}
+          placeholder={metaType.description}
         />
       )
       break
@@ -68,6 +81,16 @@ const EditorField = ({ field, value, originalValue, onFieldChanged }) => {
           value={value}
           selectionMode="multiple"
           onChange={onChange}
+          placeholder={metaType.description}
+        />
+      )
+      break
+    case 'datetime':
+      editor = (
+        <InputDatetime
+          value={value}
+          onChange={onChange}
+          placeholder={metaType.description}
         />
       )
       break

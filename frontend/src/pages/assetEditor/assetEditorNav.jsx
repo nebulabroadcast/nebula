@@ -19,8 +19,6 @@ import ContextActionResult from './contextAction'
 
 import contentType from 'content-type'
 
-
-
 const AssetEditorNav = ({
   assetData,
   onNewAsset,
@@ -45,35 +43,32 @@ const AssetEditorNav = ({
   }, [{ ...assetData }])
 
   const folderOptions = useMemo(() => {
-    return nebula.getWritableFolders()
-      .map((f) => ({
-        label: f.name,
-        style: { borderLeft: `4px solid ${f.color}` },
-        onClick: () => setMeta('id_folder', f.id),
-      }))
+    return nebula.getWritableFolders().map((f) => ({
+      label: f.name,
+      style: { borderLeft: `4px solid ${f.color}` },
+      onClick: () => setMeta('id_folder', f.id),
+    }))
   }, [])
-
 
   // Actions
 
   const scopedEndpoints = useMemo(() => {
     const result = []
-    for (const scopedEndpoints of nebula.getScopedEndpoints("asset")){
-      result.push(
-        {
-          label: scopedEndpoints.title,
-          onClick: () => {
-            nebula
-              .request(scopedEndpoints.endpoint, {id_asset: assetData.id})
-              .then((response) => {
-                setContextActionResult({
-                  contentType: contentType.parse(response.headers['content-type']).type,
-                  payload: response.data
-                })
+    for (const scopedEndpoints of nebula.getScopedEndpoints('asset')) {
+      result.push({
+        label: scopedEndpoints.title,
+        onClick: () => {
+          nebula
+            .request(scopedEndpoints.endpoint, { id_asset: assetData.id })
+            .then((response) => {
+              setContextActionResult({
+                contentType: contentType.parse(response.headers['content-type'])
+                  .type,
+                payload: response.data,
               })
-          }
-        }
-      )
+            })
+        },
+      })
     }
     return result
   }, [assetData.id])
@@ -88,16 +83,15 @@ const AssetEditorNav = ({
         const query = `${l['target_key']}:${assetData[l['source_key']]}`
         dispatch(setCurrentViewId(l.view))
         dispatch(setSearchQuery(query))
-      }
+      },
     }))
   }, [currentFolder])
-
 
   const assetActions = useMemo(() => {
     const result = [
       {
         label: 'Send to...',
-        onClick: () => setSendToVisible(true)
+        onClick: () => setSendToVisible(true),
       },
       ...scopedEndpoints,
       ...linkOptions,
@@ -105,9 +99,7 @@ const AssetEditorNav = ({
     return result
   }, [scopedEndpoints, linkOptions])
 
-
   // End actions
-
 
   const fps = useMemo(() => {
     if (!assetData) return 25
@@ -140,9 +132,9 @@ const AssetEditorNav = ({
       )}
 
       {contextActionResult && (
-        <ContextActionResult 
-          mime={contextActionResult.contentType} 
-          payload={contextActionResult.payload} 
+        <ContextActionResult
+          mime={contextActionResult.contentType}
+          payload={contextActionResult.payload}
           onHide={() => setContextActionResult(null)}
         />
       )}
@@ -152,7 +144,7 @@ const AssetEditorNav = ({
         buttonStyle={{
           borderLeft: ` 4px solid ${currentFolder?.color}`,
           minWidth: 130,
-          width: 130
+          width: 130,
         }}
         label={currentFolder?.name || 'no folder'}
       />
@@ -174,15 +166,14 @@ const AssetEditorNav = ({
             title="Details"
             onClick={() => setDetailsVisible(true)}
           />
-          <Dropdown 
-            icon="settings" 
-            align="right" 
-            options={assetActions} 
-            disabled={!assetData?.id || isChanged} 
+          <Dropdown
+            icon="settings"
+            align="right"
+            options={assetActions}
+            disabled={!assetData?.id || isChanged}
           />
         </>
       )}
-
 
       <ToolbarSeparator />
 
@@ -239,10 +230,10 @@ const AssetEditorNav = ({
         onClick={onRevert}
         disabled={!canRevert}
       />
-      <Button 
-        icon="check" 
-        title="Save asset" 
-        onClick={onSave} 
+      <Button
+        icon="check"
+        title="Save asset"
+        onClick={onSave}
         disabled={!isChanged}
       />
     </Navbar>

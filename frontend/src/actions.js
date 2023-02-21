@@ -29,7 +29,6 @@ const contextSlice = createSlice({
       return state
     },
 
-
     setSearchQuery: (state, action) => {
       state.searchQuery = action.payload
       return state

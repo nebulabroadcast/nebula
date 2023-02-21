@@ -1,19 +1,18 @@
 import os
 
-from fastapi import FastAPI, Header, Request, Depends
+from fastapi import Depends, FastAPI, Header, Request
 from fastapi.responses import JSONResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.websockets import WebSocket, WebSocketDisconnect
 
 import nebula
-
 from nebula.exceptions import NebulaException
 from nebula.settings import load_settings
 from server.dependencies import current_user_query
 from server.endpoints import install_endpoints
+from server.storage_monitor import storage_monitor
 from server.video import range_requests_response
 from server.websocket import messaging
-from server.storage_monitor import storage_monitor
 
 app = FastAPI(
     docs_url=None,
@@ -111,9 +110,17 @@ async def proxy(
     the file in media players that support HTTPS pseudo-streaming.
     """
 
-    # TODO: authentication using a path parameter
+    sys_settings = nebula.settings.system
+    proxy_storage_path = nebula.storages[sys_settings.proxy_storage].local_path
+    proxy_path_template = os.path.join(proxy_storage_path, sys_settings.proxy_path)
 
-    video_path = f"/mnt/nebula_01/.nx/proxy/{int(id_asset/1000):04d}/{id_asset}.mp4"
+    vars = {
+        "id": id_asset,
+        "id1000": id_asset // 1000,
+    }
+
+    video_path = proxy_path_template.format(**vars)
+
     if not os.path.exists(video_path):
         # maybe return content too? with a placeholder image?
         return Response(status_code=404, content="Not found")

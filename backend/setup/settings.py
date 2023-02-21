@@ -1,12 +1,11 @@
 import os
-import httpx
-
 from urllib.parse import urlparse
 
+import httpx
+
+from nebula.common import import_module
 from nebula.config import config
 from nebula.log import log
-from nebula.common import import_module
-
 from nebula.settings.models import (
     ActionSettings,
     FolderSettings,
@@ -15,16 +14,13 @@ from nebula.settings.models import (
     StorageSettings,
     ViewSettings,
 )
-
 from setup.defaults.actions import ACTIONS
 from setup.defaults.channels import CHANNELS
 from setup.defaults.folders import FOLDERS
+from setup.defaults.meta_types import META_TYPES
 from setup.defaults.services import SERVICES
 from setup.defaults.views import VIEWS
-from setup.defaults.meta_types import META_TYPES
-
 from setup.metatypes import setup_metatypes
-
 
 TEMPLATE = {
     "actions": ACTIONS,

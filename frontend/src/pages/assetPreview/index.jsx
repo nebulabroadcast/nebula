@@ -25,19 +25,17 @@ const AssetDetail = () => {
 
   useEffect(() => {
     if (!context.focusedAsset) {
-      dispatch(setPageTitle({title: 'Preview'}))
+      dispatch(setPageTitle({ title: 'Preview' }))
       return
     }
     nebula
       .request('get', { ids: [context.focusedAsset], objectType: 'asset' })
       .then((response) => {
         setAssetData(response.data.data[0])
-        setMarks(
-          {
-            mark_in: response.data.data[0].mark_in,
-            mark_out: response.data.data[0].mark_out,
-          }
-        )
+        setMarks({
+          mark_in: response.data.data[0].mark_in,
+          mark_out: response.data.data[0].mark_out,
+        })
         navigate({
           pathname: `/mam/preview`,
           search: `?asset=${context.focusedAsset}`,
@@ -47,7 +45,7 @@ const AssetDetail = () => {
 
   useEffect(() => {
     if (!assetData) return
-    dispatch(setPageTitle({title: assetData.title}))
+    dispatch(setPageTitle({ title: assetData.title }))
   }, [assetData])
 
   const onSave = () => {
@@ -67,13 +65,8 @@ const AssetDetail = () => {
       })
   }
 
-  let accessToken = ""
-  try {
-    accessToken = JSON.parse(localStorage.getItem('accessToken'))
-  } catch {
-    console.log("Unable to get access token to load the proxy")
-  }
-  
+  const accessToken = nebula.getAccessToken()
+
   return (
     <div className="grow column">
       <Navbar>
@@ -83,8 +76,8 @@ const AssetDetail = () => {
       {assetData?.id && (
         <ControlsWrapper>
           <section style={{ minWidth: 350, flexGrow: 1 }}>
-            <Video 
-              src={`/proxy/${assetData.id}?token=${accessToken}`} 
+            <Video
+              src={`/proxy/${assetData.id}?token=${accessToken}`}
               style={{ width: '100%' }}
               marks={marks}
               setMarks={setMarks}
@@ -96,7 +89,6 @@ const AssetDetail = () => {
             <Regions assetData={assetData} />
           </section>
           */}
-
         </ControlsWrapper>
       )}
     </div>

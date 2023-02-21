@@ -23,11 +23,11 @@ const Table = ({
       <thead>
         <tr>
           {columns.map((column) => (
-            <HeaderCell 
-              key={column.name} 
+            <HeaderCell
+              key={column.name}
               sortDirection={sortBy === column.name ? sortDirection : null}
               onSort={onSort}
-              {...column} 
+              {...column}
             />
           ))}
         </tr>

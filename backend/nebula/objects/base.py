@@ -6,7 +6,7 @@ from nxtools import slugify
 
 from nebula.db import DB, db
 from nebula.enum import ObjectTypeId
-from nebula.exceptions import NotFoundException, BadRequestException
+from nebula.exceptions import BadRequestException, NotFoundException
 from nebula.log import log
 from nebula.messaging import msg
 from nebula.metadata.format import format_meta
@@ -275,9 +275,7 @@ class BaseObject:
             INSERT INTO {self.object_type}s ({','.join(self.db_columns)}, meta)
             VALUES ({placeholders}) RETURNING id
             """
-        qargs = [
-            self.meta[col] for col in self.db_columns
-        ] + [self.meta]
+        qargs = [self.meta[col] for col in self.db_columns] + [self.meta]
 
         res = await self.connection.fetch(query, *qargs)
         self.meta["id"] = res[0]["id"]
@@ -295,9 +293,7 @@ class BaseObject:
             WHERE id = ${len(self.db_columns) + 2}
             """
 
-        qargs = [
-            self.meta[col] for col in self.db_columns
-        ] + [
+        qargs = [self.meta[col] for col in self.db_columns] + [
             self.meta,
             self.id,
         ]

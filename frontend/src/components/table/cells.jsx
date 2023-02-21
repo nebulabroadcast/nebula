@@ -1,26 +1,19 @@
 const HeaderCell = ({ name, width, title, sortDirection, onSort }) => {
   let sortArrowElement = null
-  if (onSort){
+  if (onSort) {
     if (sortDirection === 'asc') {
-        sortArrowElement = (
-          <span className="icon material-symbols-outlined">
-            arrow_drop_up
-          </span>
-        )
+      sortArrowElement = (
+        <span className="icon material-symbols-outlined">arrow_drop_up</span>
+      )
     } else if (sortDirection === 'desc') {
-        sortArrowElement = (
-          <span className="icon material-symbols-outlined">
-            arrow_drop_down
-          </span>
-        )
+      sortArrowElement = (
+        <span className="icon material-symbols-outlined">arrow_drop_down</span>
+      )
     } else {
-        sortArrowElement = (
-          <span className="icon material-symbols-outlined">
-            more_vert
-          </span>
-        )
+      sortArrowElement = (
+        <span className="icon material-symbols-outlined">more_vert</span>
+      )
     }
-
   }
 
   const onClick = () => {
@@ -33,7 +26,10 @@ const HeaderCell = ({ name, width, title, sortDirection, onSort }) => {
   }
   return (
     <th style={{ width: width }} onClick={onClick}>
-      <div>{title}{sortArrowElement}</div>
+      <div>
+        {title}
+        {sortArrowElement}
+      </div>
     </th>
   )
 }

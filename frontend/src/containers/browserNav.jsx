@@ -8,7 +8,6 @@ import { debounce } from 'lodash'
 import { setCurrentView, setSearchQuery } from '/src/actions'
 
 const BrowserNav = () => {
-
   const dispatch = useDispatch()
 
   const currentView = useSelector((state) => state.context.currentView)
@@ -45,28 +44,30 @@ const BrowserNav = () => {
     justifyContent: 'flex-start',
   }
 
-  const navbar = useMemo(() => (
-    <Navbar>
-      <Dropdown
-        options={viewOptions}
-        label={currentView?.name}
-        buttonStyle={dropdownButtonStyle}
-      />
-      <Spacer />
-      <InputText
-        placeholder="Search"
-        onChange={setSearchText}
-        value={searchText}
-      />
-      <Button
-        icon="close"
-        onClick={() => setSearchText('')}
-        className="tool"
-        tooltip="Clear search query"
-      />
-    </Navbar>
-  ), [currentView?.name, searchText, viewOptions])
-
+  const navbar = useMemo(
+    () => (
+      <Navbar>
+        <Dropdown
+          options={viewOptions}
+          label={currentView?.name}
+          buttonStyle={dropdownButtonStyle}
+        />
+        <Spacer />
+        <InputText
+          placeholder="Search"
+          onChange={setSearchText}
+          value={searchText}
+        />
+        <Button
+          icon="close"
+          onClick={() => setSearchText('')}
+          className="tool"
+          tooltip="Clear search query"
+        />
+      </Navbar>
+    ),
+    [currentView?.name, searchText, viewOptions]
+  )
 
   return navbar
 }

@@ -1,4 +1,5 @@
 import { Timecode } from '@wfoxall/timeframe'
+import { DateTime } from 'luxon'
 
 import { useState, useEffect, useRef } from 'react'
 import styled from 'styled-components'
@@ -73,6 +74,81 @@ const InputNumber = ({ value, onChange, ...props }) => {
       value={value || null}
       onChange={(e) => onChange(e.target.value)}
       {...props}
+    />
+  )
+}
+
+const timeRegex = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/
+const dateRegex = /^(\d{4})-(\d{2})-(\d{2})$/
+const allowedDateCharsRegex = /^[\d-\:\ ]*$/
+
+const InputDatetime = ({ value, onChange, placeholder, className = '' }) => {
+  const [time, setTime] = useState(value)
+  const [isFocused, setIsFocused] = useState(false)
+  const inputRef = useRef(null)
+
+  const handleChange = (event) => {
+    let newValue = event.target.value
+    if (!allowedDateCharsRegex.test(newValue)) return
+    //const lastChar = inputString.charAt(inputString.length - 1)
+    if (
+      [4, 7].includes(newValue.length) &&
+      newValue.charAt(newValue.length - 1) !== '-'
+    )
+      // && !isNaN(parseInt(lastChar)))
+      newValue = newValue + '-'
+    setTime(newValue)
+  }
+
+  const isValidTime = (timeString) => {
+    if (!timeString) return true
+
+    if (timeRegex.test(timeString))
+      if (!isNaN(DateTime.fromFormat(timeString, 'yyyy-MM-dd HH:mm:ss')))
+        return true
+    return false
+  }
+
+  const onSubmit = () => {
+    let value = 0
+
+    if (dateRegex.test(time)) {
+      setTime(time + ' 00:00:00')
+      return
+    }
+
+    if (time && isValidTime(time)) {
+      value = DateTime.fromFormat(time, 'yyyy-MM-dd HH:mm:ss').toSeconds()
+    }
+    onChange(value)
+    inputRef.current.blur()
+    setIsFocused(false)
+  }
+
+  const onKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      onSubmit()
+    }
+  }
+
+  return (
+    <Input
+      type="text"
+      ref={inputRef}
+      value={time || ''}
+      onChange={handleChange}
+      className={`${className} ${!isValidTime(time) ? 'error' : ''}`}
+      placeholder={
+        isFocused
+          ? 'YYYY-MM-DD HH:MM:SS  (Hit enter after the date for midnight)'
+          : placeholder
+      }
+      title="Please enter a valid time in the format yyyy-mm-dd hh:mm:ss"
+      onBlur={onSubmit}
+      onFocus={(e) => {
+        e.target.select(), setIsFocused(true)
+      }}
+      onKeyDown={onKeyDown}
     />
   )
 }
@@ -187,4 +263,11 @@ const InputTimecode = ({
   )
 }
 
-export { TextArea, InputTimecode, InputText, InputNumber, InputPassword }
+export {
+  TextArea,
+  InputTimecode,
+  InputText,
+  InputNumber,
+  InputPassword,
+  InputDatetime,
+}

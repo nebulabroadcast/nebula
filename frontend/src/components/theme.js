@@ -8,6 +8,7 @@ const colors = {
   text: '#d7d4d5',
   textHl: '#fbfbfb',
   textDim: '#ababab',
+  textDimmer: '#6a6a6a',
   cyan: '#0ed3fe',
   blue: '#4600ff',
   magenta: '#b000ff',

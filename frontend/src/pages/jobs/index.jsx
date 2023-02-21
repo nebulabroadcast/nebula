@@ -112,8 +112,10 @@ const JobsPage = () => {
   }
 
   useEffect(() => {
-    const cleanTitle = view ? view[0].toUpperCase() + view.slice(1) + " jobs" : 'Jobs'
-    dispatch(setPageTitle({title: cleanTitle}))
+    const cleanTitle = view
+      ? view[0].toUpperCase() + view.slice(1) + ' jobs'
+      : 'Jobs'
+    dispatch(setPageTitle({ title: cleanTitle }))
     loadJobs()
   }, [view])
 

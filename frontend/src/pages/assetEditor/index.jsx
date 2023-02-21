@@ -12,7 +12,7 @@ import AssetEditorNav from './assetEditorNav'
 import EditorForm from './assetEditorForm'
 
 const AssetEditor = ({ reloadBrowser }) => {
-  const focusedAsset = useSelector(state => state.context.focusedAsset)
+  const focusedAsset = useSelector((state) => state.context.focusedAsset)
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const [assetData, setAssetData] = useState({})
@@ -32,9 +32,7 @@ const AssetEditor = ({ reloadBrowser }) => {
         toast.error(
           <>
             <strong>Unable to load asset</strong>
-            <p>
-            {error.response.data?.detail || "Unknown error"}
-            </p>
+            <p>{error.response.data?.detail || 'Unknown error'}</p>
           </>
         )
       })
@@ -44,8 +42,8 @@ const AssetEditor = ({ reloadBrowser }) => {
   }
 
   const setMeta = (key, value) => {
-    if (key === "id_folder" && isEmpty(assetData) ){
-      setOriginalData({id_folder: value })
+    if (key === 'id_folder' && isEmpty(assetData)) {
+      setOriginalData({ id_folder: value })
     }
     setAssetData((o) => {
       return { ...o, [key]: value }
@@ -66,12 +64,12 @@ const AssetEditor = ({ reloadBrowser }) => {
 
   useEffect(() => {
     if (assetData.id) {
-      dispatch(setPageTitle({title: assetData.title}))
+      dispatch(setPageTitle({ title: assetData.title }))
     } else {
       const folderName = assetData.id_folder
         ? nebula.getFolderName(assetData.id_folder).toLowerCase()
         : 'asset'
-      dispatch(setPageTitle({title: folderName, icon: "fiber_new"}))
+      dispatch(setPageTitle({ title: folderName, icon: 'fiber_new' }))
     }
   }, [assetData?.id, assetData?.id_folder])
 
@@ -85,11 +83,9 @@ const AssetEditor = ({ reloadBrowser }) => {
     }
   }, [assetData, originalData])
 
-
   const isChanged = useMemo(() => {
     return !isEqual(assetData, originalData)
   }, [assetData, originalData])
-  
 
   // Actions
 
@@ -99,7 +95,7 @@ const AssetEditor = ({ reloadBrowser }) => {
   const onCloneAsset = () => {
     let ndata = {}
     for (const field in assetData) {
-      if (nebula.metaType(field).ns === "m" || field === 'duration')
+      if (nebula.metaType(field).ns === 'm' || field === 'duration')
         ndata[field] = assetData[field]
     }
     setAssetData(ndata)
@@ -120,9 +116,7 @@ const AssetEditor = ({ reloadBrowser }) => {
         toast.error(
           <>
             <strong>Unable to save asset</strong>
-            <p>
-            {error.response.data?.detail || "Unknown error"}
-            </p>
+            <p>{error.response.data?.detail || 'Unknown error'}</p>
           </>
         )
       })
@@ -142,7 +136,9 @@ const AssetEditor = ({ reloadBrowser }) => {
         isChanged={isChanged}
       />
       {Object.keys(assetData || {}).length ? (
-        <section className={`grow column ${isChanged ? "section-changed" : ""}`}>
+        <section
+          className={`grow column ${isChanged ? 'section-changed' : ''}`}
+        >
           <div
             className="contained"
             style={{ overflowY: 'scroll', padding: 10 }}

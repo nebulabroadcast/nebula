@@ -102,9 +102,17 @@ const Video = ({ src, style, marks, setMarks }) => {
   return (
     <VideoPlayerContainer style={style}>
       <PlayoutControls>
-        <InputTimecode title="Mark in" value={marks.mark_in} onChange={onMarkIn}/>
+        <InputTimecode
+          title="Mark in"
+          value={marks.mark_in}
+          onChange={onMarkIn}
+        />
         <Spacer />
-        <InputTimecode title="Mark out" value={marks.mark_out} onChange={onMarkOut} />
+        <InputTimecode
+          title="Mark out"
+          value={marks.mark_out}
+          onChange={onMarkOut}
+        />
       </PlayoutControls>
 
       <div style={{ flexDirection: 'row', justifyContent: 'center' }}>
@@ -130,15 +138,15 @@ const Video = ({ src, style, marks, setMarks }) => {
       </PlayoutControls>
 
       <PlayoutControls>
-        <Button 
-          icon="line_start_diamond" 
-          title="Mark in" 
+        <Button
+          icon="line_start_diamond"
+          title="Mark in"
           onClick={() => onMarkIn(videoRef.current.currentTime)}
         />
-        <Button 
+        <Button
           icon="first_page"
-          title="Go to mark in" 
-          onClick={() => videoRef.current.currentTime = marks.mark_in || 0}
+          title="Go to mark in"
+          onClick={() => (videoRef.current.currentTime = marks.mark_in || 0)}
         />
         <Button
           icon="keyboard_double_arrow_left"
@@ -151,14 +159,17 @@ const Video = ({ src, style, marks, setMarks }) => {
           icon="keyboard_double_arrow_right"
           onClick={() => frameStep(5)}
         />
-        <Button 
-          icon="last_page" 
-          title="Go to mark out" 
-          onClick={() => videoRef.current.currentTime = marks.mark_out || videoRef.current.duration}
+        <Button
+          icon="last_page"
+          title="Go to mark out"
+          onClick={() =>
+            (videoRef.current.currentTime =
+              marks.mark_out || videoRef.current.duration)
+          }
         />
-        <Button 
-          icon="line_end_diamond" 
-          title="Mark out" 
+        <Button
+          icon="line_end_diamond"
+          title="Mark out"
           onClick={() => onMarkOut(videoRef.current.currentTime)}
         />
       </PlayoutControls>

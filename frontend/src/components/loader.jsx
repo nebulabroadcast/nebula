@@ -46,7 +46,7 @@ const LoaderContainer = styled.div`
     }
 `
 
-const Loader = ({style}) => {
+const Loader = ({ style }) => {
   return (
     <LoaderContainer style={style}>
       <div></div>

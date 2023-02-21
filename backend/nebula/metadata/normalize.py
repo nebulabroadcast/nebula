@@ -5,7 +5,7 @@ from nebula.settings import settings
 
 ALWAYS_TO_INT = [
     "id_folder",
-     # "id_asset",
+    # "id_asset",
     "id_bin",
     "id_event",
     "id_magic",
