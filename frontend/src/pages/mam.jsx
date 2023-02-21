@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useMemo, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { useParams, useSearchParams } from 'react-router-dom'
 import Splitter, { SplitDirection } from '@devbookhq/splitter'
@@ -34,7 +34,6 @@ const MAMPage = () => {
   const dispatch = useDispatch()
   const { module } = useParams()
   const [searchParams, setSearchParams] = useSearchParams()
-  const [browserReloadTrigger, setBrowserReloadTrigger] = useState(0)
   const [splitterSizes, setSplitterSizes] = useLocalStorage(
     'mamSplitterSizes',
     null
@@ -48,9 +47,7 @@ const MAMPage = () => {
     }
   }, [focusedAsset, searchParams.get('asset')])
 
-  const componentProps = {
-    reloadBrowser: () => setBrowserReloadTrigger((o) => o + 1),
-  }
+  const componentProps = {}
 
   const moduleComponent = useMemo(() => {
     if (module == 'editor') return <AssetEditor {...componentProps} />
@@ -70,7 +67,7 @@ const MAMPage = () => {
         onResizeFinished={onResize}
         initialSizes={splitterSizes}
       >
-        <Browser reloadTrigger={browserReloadTrigger} />
+        <Browser />
         {moduleComponent}
       </Splitter>
     </MAMContainer>

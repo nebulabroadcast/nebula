@@ -83,19 +83,34 @@ const dateRegex = /^(\d{4})-(\d{2})-(\d{2})$/
 const allowedDateCharsRegex = /^[\d-\:\ ]*$/
 
 const InputDatetime = ({ value, onChange, placeholder, className = '' }) => {
-  const [time, setTime] = useState(value)
+  const [time, setTime] = useState()
   const [isFocused, setIsFocused] = useState(false)
   const inputRef = useRef(null)
+
+  useEffect(() => {
+    if (!value) {
+      setTime('')
+      return
+    }
+
+    setTime(DateTime.fromSeconds(value).toFormat('yyyy-MM-dd HH:mm:ss'))
+  }, [value])
 
   const handleChange = (event) => {
     let newValue = event.target.value
     if (!allowedDateCharsRegex.test(newValue)) return
-    //const lastChar = inputString.charAt(inputString.length - 1)
-    if (
+
+    // if the original value ended with a dash and the new value removes this dash,
+    // so it is one byte shorter than the original value, we need to remove the dash
+    // as well as the last character of the new value
+    
+    if (time && time.length - 1 === newValue.length && time.endsWith('-')) {
+      newValue = newValue.slice(0, -1)
+    }
+    else if (
       [4, 7].includes(newValue.length) &&
       newValue.charAt(newValue.length - 1) !== '-'
     )
-      // && !isNaN(parseInt(lastChar)))
       newValue = newValue + '-'
     setTime(newValue)
   }

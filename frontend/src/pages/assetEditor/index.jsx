@@ -6,12 +6,12 @@ import { useSelector, useDispatch } from 'react-redux'
 import { toast } from 'react-toastify'
 import { isEqual, isEmpty } from 'lodash'
 
-import { setPageTitle } from '/src/actions'
+import { setPageTitle, reloadBrowser } from '/src/actions'
 import { Loader } from '/src/components'
 import AssetEditorNav from './assetEditorNav'
 import EditorForm from './assetEditorForm'
 
-const AssetEditor = ({ reloadBrowser }) => {
+const AssetEditor = () => {
   const focusedAsset = useSelector((state) => state.context.focusedAsset)
   const navigate = useNavigate()
   const dispatch = useDispatch()
@@ -110,7 +110,7 @@ const AssetEditor = ({ reloadBrowser }) => {
       .request('set', { id: assetData.id, data: assetData })
       .then((response) => {
         loadAsset(response.data.id)
-        reloadBrowser()
+        dispatch(reloadBrowser())
       })
       .catch((error) => {
         toast.error(
