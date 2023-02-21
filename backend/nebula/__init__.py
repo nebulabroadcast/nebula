@@ -32,6 +32,7 @@ import asyncio
 from .config import config
 from .db import DB, db
 from .exceptions import (
+    NebulaException,
     BadRequestException,
     ConflictException,
     ForbiddenException,

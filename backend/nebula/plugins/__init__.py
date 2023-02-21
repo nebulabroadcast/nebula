@@ -1,6 +1,6 @@
-# from .solver import SolverPlugin
-#
-# assert SolverPlugin
+__all__ = ["SolverPlugin", "CLIPlugin"]
+
+from .solver import SolverPlugin
 
 
 class CLIPlugin:

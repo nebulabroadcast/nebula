@@ -6,9 +6,6 @@ poetry.lock
 frontend/node_modules
 frontend/yarn.lock
 
-_db
-current.sql
-sync.sh
 storage/
 settings/*.py
-plugins
+/plugins/

@@ -55,11 +55,12 @@ class Logger:
     def error(self, *args, **kwargs):
         self(LogLevel.ERROR, *args, **kwargs)
 
-    def traceback(self, *args, **kwargs):
+    def traceback(self, *args, **kwargs) -> str:
         msg = " ".join([str(arg) for arg in args])
         tb = traceback.format_exc()
         msg = f"{msg}\n\n{indent(tb)}"
         self(LogLevel.ERROR, msg, **kwargs)
+        return msg
 
     def critical(self, *args, **kwargs):
         self(LogLevel.CRITICAL, *args, **kwargs)
