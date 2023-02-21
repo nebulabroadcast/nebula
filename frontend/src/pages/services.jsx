@@ -2,7 +2,7 @@ import nebula from '/src/nebula'
 import { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import PubSub from '/src/pubsub'
-import { Table, Button } from '/src/components'
+import { Table, Button, Switch } from '/src/components'
 import { Duration } from 'luxon'
 import { setPageTitle } from '/src/actions'
 
@@ -23,6 +23,7 @@ const formatStatus = (rowData, key) => {
       return <td>Unknown</td>
   }
 }
+
 
 const formatLastSeen = (rowData, key) => {
   const lastSeen = rowData[key]
@@ -56,6 +57,24 @@ const ServicesPage = () => {
     dispatch(setPageTitle({ title: 'Services' }))
     makeRequest()
   }, [])
+
+
+
+
+  const formatAutoStart = (rowData, key) => {
+    const autoStart = rowData[key] || false
+
+    const onChange = () => {
+      makeRequest('auto', rowData.id)
+    }
+
+    return (
+      <td style={{textAlign: 'center'}}>
+        <input type="checkbox" checked={autoStart} onChange={onChange}/>
+      </td>
+    )
+  }
+
 
   const formatAction = (rowData, key) => {
     const status = rowData.status
@@ -101,6 +120,7 @@ const ServicesPage = () => {
       width: 300,
       formatter: formatLastSeen,
     },
+    { name: 'autostart', title: 'Auto start', width: 70, formatter: formatAutoStart },
     { name: 'action', title: 'Action', width: 150, formatter: formatAction },
   ]
 
