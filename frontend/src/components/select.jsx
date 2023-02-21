@@ -1,26 +1,12 @@
 import { useState, useMemo, useEffect } from 'react'
 import Dialog from './dialog'
+import { DialogButtons } from './layout'
 import { InputText } from './input'
 import { Button } from './button'
 import { sortByKey } from '/src/utils'
 import styled from 'styled-components'
 import defaultTheme from './theme'
 
-const ButtonWrapper = styled.div`
-  display: flex;
-  flex-direction: row;
-  gap: 6px;
-  justify-content: flex-start;
-  border-top: 1px solid ${(props) => props.theme.colors.surface04};
-  padding-top: 10px;
-
-  button {
-    min-width: 100px;
-  }
-`
-ButtonWrapper.defaultProps = {
-  theme: defaultTheme,
-}
 
 const BaseOption = styled.div`
   padding: 3px;
@@ -155,11 +141,11 @@ const SelectDialog = ({ options, onHide, selectionMode, initialValue }) => {
           ))}
         </div>
       </div>
-      <ButtonWrapper>
+      <DialogButtons>
         <Button onClick={() => onClose()} label="Cancel" />
         <Button onClick={() => onUnset()} label="Unset" />
         <Button onClick={() => onApply()} label="Apply" />
-      </ButtonWrapper>
+      </DialogButtons>
     </Dialog>
   )
 }

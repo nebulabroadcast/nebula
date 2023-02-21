@@ -11,6 +11,7 @@ import { Loader } from '/src/components'
 import AssetEditorNav from './assetEditorNav'
 import EditorForm from './assetEditorForm'
 
+
 const AssetEditor = () => {
   const focusedAsset = useSelector((state) => state.context.focusedAsset)
   const navigate = useNavigate()
@@ -52,10 +53,6 @@ const AssetEditor = () => {
 
   // Parse and show asset data
 
-  useEffect(() => {
-    if (!focusedAsset) return
-    loadAsset(focusedAsset)
-  }, [focusedAsset])
 
   useEffect(() => {
     if (!assetData?.id_folder)
@@ -86,6 +83,40 @@ const AssetEditor = () => {
   const isChanged = useMemo(() => {
     return !isEqual(assetData, originalData)
   }, [assetData, originalData])
+
+
+
+  useEffect(() => {
+    if (!focusedAsset) return
+    if (isChanged) {
+      const confirm = window.confirm(
+        'There are unsaved changes. Do you want to save them?'
+        )
+
+      if (confirm) {
+        nebula
+          .request('set', { id: assetData.id, data: assetData })
+          .then((response) => {
+            dispatch(reloadBrowser())
+          })
+          .catch((error) => {
+            toast.error(
+              <>
+                <strong>Unable to save asset</strong>
+                <p>{error.response.data?.detail || 'Unknown error'}</p>
+              </>
+            )
+          })
+          .finally(() => {
+            loadAsset(focusedAsset)
+          })
+      } else {
+        loadAsset(focusedAsset)
+      }
+    } else {
+      loadAsset(focusedAsset)
+    }
+  }, [focusedAsset])
 
   // Actions
 

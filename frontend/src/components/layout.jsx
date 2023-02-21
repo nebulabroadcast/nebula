@@ -68,4 +68,12 @@ ToolbarSeparator.defaultProps = {
   theme: defaultTheme,
 }
 
-export { Navbar, Spacer, ToolbarSeparator }
+const DialogButtons = styled.div`
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
+  justify-content: flex-end;
+  margin-top: 10px;
+`
+
+export { Navbar, Spacer, ToolbarSeparator, DialogButtons }

@@ -18,12 +18,13 @@ import {
 import { Button } from './button'
 import { DateTime, Timestamp } from './fields'
 import { Form, FormRow } from './form'
-import { Navbar, Spacer, ToolbarSeparator } from './layout'
+import { Navbar, Spacer, ToolbarSeparator, DialogButtons } from './layout'
 
 export {
   Button,
   DateTime,
   Dialog,
+  DialogButtons,
   Dropdown,
   Form,
   FormRow,
