@@ -4,7 +4,6 @@ import subprocess
 import time
 
 import nebula
-
 from nebula.settings.models import StorageSettings
 from nebula.storages import Storage
 from server.background import BackgroundTask

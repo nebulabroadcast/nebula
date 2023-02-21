@@ -1,11 +1,10 @@
 import time
+from typing import Any
 
 from fastapi import Depends
 from pydantic import Field
-from typing import Any
 
 import nebula
-
 from server.dependencies import current_user
 from server.models import RequestModel, ResponseModel
 from server.request import APIRequest

@@ -30,8 +30,8 @@ const formatLastSeen = (rowData, key) => {
 
   if (lastSeen > 1234567890) return <td>Never</td>
 
-  const duration = Duration.fromObject({seconds: lastSeen}).toHuman({stripZeroUnits: "all"})
-  return <td>{duration.toHuman()} ago </td>
+  const duration = Duration.fromObject({ seconds: lastSeen })
+  return <td>{duration.toHuman({ stripZeroUnits: 'all' })} ago </td>
 }
 
 const ServicesPage = () => {
@@ -53,7 +53,7 @@ const ServicesPage = () => {
   }
 
   useEffect(() => {
-    dispatch(setPageTitle({title: 'Services'}))
+    dispatch(setPageTitle({ title: 'Services' }))
     makeRequest()
   }, [])
 

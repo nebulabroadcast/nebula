@@ -1,19 +1,18 @@
 import os
 
-from fastapi import FastAPI, Header, Request, Depends
+from fastapi import Depends, FastAPI, Header, Request
 from fastapi.responses import JSONResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.websockets import WebSocket, WebSocketDisconnect
 
 import nebula
-
 from nebula.exceptions import NebulaException
 from nebula.settings import load_settings
 from server.dependencies import current_user_query
 from server.endpoints import install_endpoints
+from server.storage_monitor import storage_monitor
 from server.video import range_requests_response
 from server.websocket import messaging
-from server.storage_monitor import storage_monitor
 
 app = FastAPI(
     docs_url=None,
@@ -112,12 +111,8 @@ async def proxy(
     """
 
     sys_settings = nebula.settings.system
-    proxy_storage_path = nebula.storages[
-        sys_settings.proxy_storage
-    ].local_path
-    proxy_path_template = os.path.join(
-        proxy_storage_path, sys_settings.proxy_path
-    )
+    proxy_storage_path = nebula.storages[sys_settings.proxy_storage].local_path
+    proxy_path_template = os.path.join(proxy_storage_path, sys_settings.proxy_path)
 
     vars = {
         "id": id_asset,

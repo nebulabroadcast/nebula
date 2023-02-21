@@ -75,21 +75,22 @@ const nebula = {
   getScopedEndpoints(scope) {
     const result = []
     for (const scopedEndpoint of this.scopedEndpoints || {}) {
-      if (scopedEndpoint.scopes.includes(scope))
-        result.push(scopedEndpoint)
+      if (scopedEndpoint.scopes.includes(scope)) result.push(scopedEndpoint)
     }
     return result
   },
 
   getWritableFolders() {
-    return (this.settings?.folders || [])
-      .filter((folder) => {
-        if (this.user.is_admin) return true
-        if (this.user["can/asset_edit"] === true) return true
-        if (Array.isArray(this.user["can/asset_edit"]) && this.user["can/asset_edit"].includes(folder.id)) return true
-        return false
-      })
+    return (this.settings?.folders || []).filter((folder) => {
+      if (this.user.is_admin) return true
+      if (this.user['can/asset_edit'] === true) return true
+      if (
+        Array.isArray(this.user['can/asset_edit']) &&
+        this.user['can/asset_edit'].includes(folder.id)
+      )
+        return true
+      return false
+    })
   },
-
 }
 export default nebula

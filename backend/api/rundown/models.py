@@ -1,4 +1,4 @@
-from typing import Literal, Any
+from typing import Any, Literal
 
 from pydantic import Field
 

@@ -52,13 +52,13 @@ BaseButton.defaultProps = {
 const Button = ({ icon, iconStyle, label, iconOnRight, ...props }) => {
   return (
     <BaseButton {...props}>
-      {iconOnRight &&  label}
+      {iconOnRight && label}
       {icon && (
         <span className="icon material-symbols-outlined" style={iconStyle}>
           {icon}
         </span>
       )}
-      {!iconOnRight &&  label}
+      {!iconOnRight && label}
     </BaseButton>
   )
 }

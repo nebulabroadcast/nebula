@@ -1,8 +1,8 @@
 import os
 import posixpath
 
-from nebula.log import log
 from nebula.config import config
+from nebula.log import log
 from nebula.settings import settings
 from nebula.settings.models import StorageSettings
 

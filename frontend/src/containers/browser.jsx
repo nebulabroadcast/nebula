@@ -125,9 +125,9 @@ const getFormatter = (key) => {
 } // end getFormatter
 
 const BrowserTable = ({ reloadTrigger, module }) => {
-  const currentView = useSelector(state => state.context.currentView?.id)
-  const searchQuery = useSelector(state => state.context.searchQuery)
-  const selectedAssets = useSelector(state => state.context.selectedAssets)
+  const currentView = useSelector((state) => state.context.currentView?.id)
+  const searchQuery = useSelector((state) => state.context.searchQuery)
+  const selectedAssets = useSelector((state) => state.context.selectedAssets)
 
   const dispatch = useDispatch()
 
@@ -175,7 +175,6 @@ const BrowserTable = ({ reloadTrigger, module }) => {
     dispatch(setFocusedAsset(rowData.id))
   }
 
-
   return (
     <section className="grow">
       <Table
@@ -192,7 +191,7 @@ const BrowserTable = ({ reloadTrigger, module }) => {
         onSort={(sortBy, sortDirection) => {
           setSortBy(sortBy)
           setSortDirection(sortDirection)
-        }} 
+        }}
       />
     </section>
   )

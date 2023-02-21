@@ -25,8 +25,6 @@ black = "^22.1.0"
 flake8 = "^4.0.1"
 mypy = "^0.941"
 isort = "^5.10.1"
-
-[tool.poetry.group.dev.dependencies]
 pytest-asyncio = "^0.20.3"
 
 [tool.isort]
