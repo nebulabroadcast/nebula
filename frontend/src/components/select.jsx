@@ -7,7 +7,6 @@ import { sortByKey } from '/src/utils'
 import styled from 'styled-components'
 import defaultTheme from './theme'
 
-
 const BaseOption = styled.div`
   padding: 3px;
   cursor: pointer;

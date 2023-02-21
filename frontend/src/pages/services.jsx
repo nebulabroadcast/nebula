@@ -24,7 +24,6 @@ const formatStatus = (rowData, key) => {
   }
 }
 
-
 const formatLastSeen = (rowData, key) => {
   const lastSeen = rowData[key]
   if (lastSeen < 2) return <td>Now</td>
@@ -58,9 +57,6 @@ const ServicesPage = () => {
     makeRequest()
   }, [])
 
-
-
-
   const formatAutoStart = (rowData, key) => {
     const autoStart = rowData[key] || false
 
@@ -69,12 +65,11 @@ const ServicesPage = () => {
     }
 
     return (
-      <td style={{textAlign: 'center'}}>
-        <input type="checkbox" checked={autoStart} onChange={onChange}/>
+      <td style={{ textAlign: 'center' }}>
+        <input type="checkbox" checked={autoStart} onChange={onChange} />
       </td>
     )
   }
-
 
   const formatAction = (rowData, key) => {
     const status = rowData.status
@@ -120,7 +115,12 @@ const ServicesPage = () => {
       width: 300,
       formatter: formatLastSeen,
     },
-    { name: 'autostart', title: 'Auto start', width: 70, formatter: formatAutoStart },
+    {
+      name: 'autostart',
+      title: 'Auto start',
+      width: 70,
+      formatter: formatAutoStart,
+    },
     { name: 'action', title: 'Action', width: 150, formatter: formatAction },
   ]
 

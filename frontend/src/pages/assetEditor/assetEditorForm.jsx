@@ -47,20 +47,10 @@ const EditorField = ({ field, value, originalValue, onFieldChanged }) => {
   let editor
   switch (metaType.type) {
     case 'string':
-      editor = (
-        <InputText
-          value={value}
-          onChange={onChange}
-        />
-      )
+      editor = <InputText value={value} onChange={onChange} />
       break
     case 'text':
-      editor = (
-        <TextArea
-          value={value}
-          onChange={onChange}
-        />
-      )
+      editor = <TextArea value={value} onChange={onChange} />
       break
     case 'select':
       editor = (
@@ -83,12 +73,7 @@ const EditorField = ({ field, value, originalValue, onFieldChanged }) => {
       )
       break
     case 'datetime':
-      editor = (
-        <InputDatetime
-          value={value}
-          onChange={onChange}
-        />
-      )
+      editor = <InputDatetime value={value} onChange={onChange} />
       break
     default:
       editor = <InputText value={value} onChange={onChange} disabled={true} />

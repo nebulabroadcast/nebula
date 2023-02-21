@@ -103,11 +103,10 @@ const InputDatetime = ({ value, onChange, placeholder, className = '' }) => {
     // if the original value ended with a dash and the new value removes this dash,
     // so it is one byte shorter than the original value, we need to remove the dash
     // as well as the last character of the new value
-    
+
     if (time && time.length - 1 === newValue.length && time.endsWith('-')) {
       newValue = newValue.slice(0, -1)
-    }
-    else if (
+    } else if (
       [4, 7].includes(newValue.length) &&
       newValue.charAt(newValue.length - 1) !== '-'
     )

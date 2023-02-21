@@ -11,7 +11,6 @@ import { Loader } from '/src/components'
 import AssetEditorNav from './assetEditorNav'
 import EditorForm from './assetEditorForm'
 
-
 const AssetEditor = () => {
   const focusedAsset = useSelector((state) => state.context.focusedAsset)
   const navigate = useNavigate()
@@ -53,7 +52,6 @@ const AssetEditor = () => {
 
   // Parse and show asset data
 
-
   useEffect(() => {
     if (!assetData?.id_folder)
       setMeta('id_folder', nebula.settings.folders[0].id)
@@ -84,14 +82,13 @@ const AssetEditor = () => {
     return !isEqual(assetData, originalData)
   }, [assetData, originalData])
 
-
   // TODO: clean-up this mess
   useEffect(() => {
     if (!focusedAsset) return
     if (isChanged) {
       const confirm = window.confirm(
         'There are unsaved changes. Do you want to save them?'
-        )
+      )
 
       if (confirm) {
         nebula

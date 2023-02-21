@@ -74,7 +74,9 @@ class Request(APIRequest):
                 request.start,
             )
         if request.auto:
-            nebula.log.info(f"Toggling autostart for service {request.auto}", user=user.name)
+            nebula.log.info(
+                f"Toggling autostart for service {request.auto}", user=user.name
+            )
             await nebula.db.execute(
                 "UPDATE services SET autostart = NOT autostart WHERE id = $1",
                 request.auto,
