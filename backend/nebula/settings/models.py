@@ -72,6 +72,13 @@ class BaseSystemSettings(SettingsModel):
         description="Allow previewing low-res proxies of assets in the UI",
     )
 
+    ui_asset_upload: bool = Field(
+        False,
+        title="Upload assets in UI",
+        description="Allow uploading asset media files in the UI "
+        "(when set to false, assets can only be uploaded via API and watch folders)",
+    )
+
 
 class SystemSettings(BaseSystemSettings):
     """System settings.
@@ -84,6 +91,8 @@ class SystemSettings(BaseSystemSettings):
     proxy_path: str = Field(".nx/proxy/{id1000:04d}/{id}.mp4")
     worker_plugin_storage: int = Field(1)
     worker_plugin_path: str = Field(".nx/plugins")
+    upload_storage: int | None = Field(None)
+    upload_dir: str | None = Field(None)
 
     smtp_host: str | None = Field(None, title="SMTP host", example="smtp.example.com")
     smtp_port: int | None = Field(None, title="SMTP port", example=465)

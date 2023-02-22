@@ -1,14 +1,17 @@
 import os
+import aiofiles
 
-from fastapi import Depends, FastAPI, Header, Request
+from fastapi import Depends, FastAPI, Header, Request, UploadFile, File
 from fastapi.responses import JSONResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.websockets import WebSocket, WebSocketDisconnect
 
 import nebula
+
+from nebula.enum import MediaType
 from nebula.exceptions import NebulaException
 from nebula.settings import load_settings
-from server.dependencies import current_user_query
+from server.dependencies import current_user_query, current_user, asset_in_path
 from server.endpoints import install_endpoints
 from server.storage_monitor import storage_monitor
 from server.video import range_requests_response
@@ -29,6 +32,20 @@ app = FastAPI(
         "name": "GNU GPL 3.0",
         "url": "https://www.gnu.org/licenses/gpl-3.0.en.html",
     },
+)
+
+from fastapi.middleware.cors import CORSMiddleware
+
+origins = [
+    "http://localhost:5173",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 #
@@ -63,6 +80,19 @@ async def openpype_exception_handler(
         content={
             "code": exc.status,
             "detail": exc.detail,
+            "path": request.url.path,
+            "method": request.method,
+        },
+    )
+
+
+@app.exception_handler(AssertionError)
+async def assertion_error_handler(request: Request, exc: AssertionError):
+    return JSONResponse(
+        status_code=500,
+        content={
+            "code": 500,
+            "detail": str(exc),
             "path": request.url.path,
             "method": request.method,
         },
@@ -125,6 +155,42 @@ async def proxy(
         # maybe return content too? with a placeholder image?
         return Response(status_code=404, content="Not found")
     return range_requests_response(request, video_path, "video/mp4")
+
+
+@app.post("/upload/{id_asset}", response_class=Response)
+async def upload_media_file(
+    request: Request,
+    asset: nebula.Asset = Depends(asset_in_path),
+    user: nebula.User = Depends(current_user),
+):
+    """Upload a media file for a given asset.
+
+    This endpoint is used by the web frontend to upload media files.
+    """
+
+    assert asset["media_type"] == MediaType.FILE, "Only file assets can be uploaded"
+    assert nebula.settings.system.upload_storage, "Upload storage not configured"
+    assert nebula.settings.system.upload_dir, "Upload path not configured"
+
+    storage = nebula.storages[nebula.settings.system.upload_storage]
+    upload_dir = nebula.settings.system.upload_dir
+
+    extension = request.headers.get("X-nebula-extension")
+    assert extension, "Missing X-nebula-extension header"
+    assert extension in ["mp4", "mov", "mxf"], "Invalid extension"
+
+    nebula.log.debug(f"Uploading media file for {asset}", user=user.name)
+    target_path = os.path.join(
+        storage.local_path, upload_dir, f"{asset.id}.{extension}"
+    )
+
+    i = 0
+    async with aiofiles.open(target_path, "wb") as f:
+        async for chunk in request.stream():
+            i += len(chunk)
+            await f.write(chunk)
+
+    nebula.log.info(f"Uploaded media file for {asset}", user=user.name)
 
 
 #

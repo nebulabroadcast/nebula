@@ -19,6 +19,10 @@ export default defineConfig({
         target: nebula_server,
         changeOrigin: true
       },
+      '/upload': {
+        target: nebula_server,
+        changeOrigin: true
+      },
       '/ws': {
         ws: true,
         target: nebula_server,

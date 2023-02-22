@@ -1,4 +1,4 @@
-from fastapi import Depends, Header, Query
+from fastapi import Depends, Header, Query, Path
 
 import nebula
 from server.session import Session
@@ -49,3 +49,10 @@ async def current_user_optional(
     if session is None:
         return None
     return nebula.User(meta=session.user)
+
+
+async def asset_in_path(
+    id_asset: int = Path(..., ge=0),
+) -> nebula.Asset:
+    """Return the asset with the given ID."""
+    return await nebula.Asset.load(id_asset)
