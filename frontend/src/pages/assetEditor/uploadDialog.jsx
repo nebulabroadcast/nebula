@@ -3,13 +3,14 @@ import styled from 'styled-components'
 
 import { useState, useRef } from 'react'
 import { toast } from 'react-toastify'
-import { Dialog, Button, DialogButtons } from '/src/components'
+import { Dialog, Button, Progress } from '/src/components'
 
 import nebula from '/src/nebula'
 
 
 const FileSelectWidget = ({
   onSelect,
+  disabled,
 }) => {
   const inputRef = useRef(null);
 
@@ -25,13 +26,13 @@ const FileSelectWidget = ({
   return (
     <>
       <Button
+        disabled={disabled}
         label="Select File"
         icon="upload"
         onClick={() => {
           inputRef.current.click();
         }}
       />
-
       <input
         style={{ display: "none" }}
         ref={inputRef}
@@ -46,14 +47,6 @@ const FileSelectWidget = ({
 }
 
 
-const Progress = ({ bytesTransferred, totalBytes }) => {
-  const percent = (bytesTransferred / totalBytes) * 100;
-  return (
-      <div style={{ width: "100%", height: "10px", backgroundColor: "lightgray" }}>
-        <div style={{ width: `${percent}%`, height: "10px", backgroundColor: "blue" }} />
-      </div>
-  )
-}
 
 const FileDetailWrapper = styled.div`
   display: flex;
@@ -62,11 +55,11 @@ const FileDetailWrapper = styled.div`
   justify-content: center;
   height: 100%;
   width: 100%;
-  min-width: 300px;
+  min-width: 400px;
+  min-height: 150px;
 
   h2 {
     display: flex;
-    min-height: 100px;
     align-items: center;
     justify-content: center;
   }
@@ -86,10 +79,12 @@ const FileDetails = ({ file, bytesTransferred }) => {
     return <FileDetailWrapper><h2> No File Selected </h2></FileDetailWrapper>
   }
 
+  const percent = (bytesTransferred / file.size) * 100;
+  
   return (
     <FileDetailWrapper>
       <h2>{file.name} ({formatFileSize(file.size)})</h2>
-      <Progress bytesTransferred={bytesTransferred} totalBytes={file.size} />
+      <Progress value={percent} />
     </FileDetailWrapper>
   )
 }
@@ -106,7 +101,7 @@ const UploadDialog = ({ onHide, assetData} ) => {
   const cancelTokenSource = cancelToken.source()
 
   const handleHide = () => {
-    if (file && 0 < bytesTransferred && bytesTransferred < file.size) {
+    if (uploading) {
       toast.error("Upload in progress")
       return
     }
@@ -135,6 +130,7 @@ const UploadDialog = ({ onHide, assetData} ) => {
       if (axios.isCancel(error)) {
         console.log("Request canceled", error.message);
       } else if (error.response) {
+        toast.error("Upload failed")
         console.log("Error response", error.response);
       }
       setBytesTransferred(0)
@@ -145,21 +141,21 @@ const UploadDialog = ({ onHide, assetData} ) => {
     toast.success("Upload complete")
   } // handleUpload
 
-  return (
-    <Dialog onHide={handleHide} header={`Upload ${assetData?.title}`}>
-
-      <FileDetails file={file} bytesTransferred={bytesTransferred} /> 
-
-      <DialogButtons>
-      <FileSelectWidget onSelect={setFile} />
+  const footer = (
+    <>
+      <FileSelectWidget onSelect={setFile} disabled={uploading}/>
       <Button
         label="Upload"
         icon="upload"
         onClick={handleUpload}
-        disabled={!file?.size}
+        disabled={!file?.size || uploading || file.size === bytesTransferred}
       />
-      </DialogButtons>
+    </>
+  )
 
+  return (
+    <Dialog onHide={handleHide} header={`Upload ${assetData?.title}`} footer={footer}>
+      <FileDetails file={file} bytesTransferred={bytesTransferred} /> 
     </Dialog>
   )
 }

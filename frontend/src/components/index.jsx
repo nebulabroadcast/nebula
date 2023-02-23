@@ -1,17 +1,18 @@
-import Switch from './switch'
-import Select from './select'
-import Loader from './loader'
 import Dialog from './dialog'
-import Table from './table'
 import Dropdown from './dropdown'
+import Loader from './loader'
+import Progress from './progress'
+import Select from './select'
+import Switch from './switch'
+import Table from './table'
 import Video from './video'
 
 import {
-  InputText,
-  InputNumber,
-  InputTimecode,
-  InputPassword,
   InputDatetime,
+  InputNumber,
+  InputPassword,
+  InputText,
+  InputTimecode,
   TextArea,
 } from './input'
 
@@ -28,13 +29,14 @@ export {
   Dropdown,
   Form,
   FormRow,
+  InputDatetime,
   InputNumber,
   InputPassword,
   InputText,
   InputTimecode,
-  InputDatetime,
   Loader,
   Navbar,
+  Progress,
   Select,
   Spacer,
   Switch,
