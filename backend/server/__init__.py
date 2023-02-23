@@ -34,20 +34,6 @@ app = FastAPI(
     },
 )
 
-from fastapi.middleware.cors import CORSMiddleware
-
-origins = [
-    "http://localhost:5173",
-]
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 #
 # Error handlers
 #
@@ -82,6 +68,7 @@ async def openpype_exception_handler(
             "detail": exc.detail,
             "path": request.url.path,
             "method": request.method,
+            **self.kwargs,
         },
     )
 

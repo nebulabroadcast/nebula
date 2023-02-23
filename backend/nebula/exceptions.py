@@ -11,7 +11,10 @@ class NebulaException(Exception):
         self,
         detail: str | None = None,
         log: bool | str = False,
+        **kwargs,
     ) -> None:
+
+        self.kwargs = kwargs
 
         if detail is not None:
             self.detail = detail
