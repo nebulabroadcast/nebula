@@ -15,6 +15,7 @@ import MAMPage from '/src/pages/mam'
 import JobsPage from '/src/pages/jobs'
 import ServicesPage from '/src/pages/services'
 import ToolPage from '/src/pages/tool'
+import ProfilePage from '/src/pages/profile'
 
 const App = () => {
   const [accessToken, setAccessToken] = useLocalStorage('accessToken', null)
@@ -92,6 +93,7 @@ const App = () => {
           <Route path="/jobs/:view" element={<JobsPage />} />
           <Route path="/tool/:tool" element={<ToolPage />} />
           <Route path="/services" element={<ServicesPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
         </Routes>
       </BrowserRouter>
     </Suspense>
