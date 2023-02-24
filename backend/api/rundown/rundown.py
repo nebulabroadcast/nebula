@@ -3,7 +3,6 @@ from nebula.enum import ObjectStatus, RunMode
 from nebula.helpers.scheduling import (
     get_item_runs,
     get_pending_assets,
-    parse_durations,
     parse_rundown_date,
 )
 
@@ -141,7 +140,7 @@ async def get_rundown(request: RundownRequestModel) -> RundownResponseModel:
         else:
             transfer_progress = None
 
-        #duration, mark_in, mark_out = parse_durations(ameta, imeta)
+        # duration, mark_in, mark_out = parse_durations(ameta, imeta)
         duration = item.duration
         mark_in = item.meta.get("mark_in")
         mark_out = item.meta.get("mark_out")

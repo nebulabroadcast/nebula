@@ -1,17 +1,16 @@
 import os
-import aiofiles
 
+import aiofiles
 from fastapi import Depends, FastAPI, Header, Request
 from fastapi.responses import JSONResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.websockets import WebSocket, WebSocketDisconnect
 
 import nebula
-
 from nebula.enum import MediaType
 from nebula.exceptions import NebulaException
 from nebula.settings import load_settings
-from server.dependencies import current_user_query, current_user, asset_in_path
+from server.dependencies import asset_in_path, current_user, current_user_query
 from server.endpoints import install_endpoints
 from server.storage_monitor import storage_monitor
 from server.video import range_requests_response

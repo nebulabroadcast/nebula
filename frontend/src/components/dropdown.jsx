@@ -49,7 +49,7 @@ const DropdownContainer = styled.div`
     }
   }
 
-  &:hover .dropdown-content {
+  &:not(.disabled):hover .dropdown-content {
     display: block;
   }
 `
@@ -67,7 +67,7 @@ const Dropdown = ({
   if (align === 'right') contentStyle['right'] = 0
 
   return (
-    <DropdownContainer>
+    <DropdownContainer className={disabled ? 'disabled' : ''}>
       <Button
         className="dropbtn"
         style={buttonStyle}

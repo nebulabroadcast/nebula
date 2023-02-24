@@ -36,6 +36,9 @@ async def set_rundown_order(
                         item = await nebula.Item.load(
                             obj.id, connection=conn, username=user.name
                         )
+
+                        assert item is not None
+
                         if not item["id_bin"]:
                             nebula.log.error(
                                 f"Attempted data insert TYPE: {obj.type} ID: {obj.id}"

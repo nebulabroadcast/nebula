@@ -17,10 +17,6 @@ ALWAYS_TO_INT = [
     "stop",
 ]
 
-NULLABLES = [
-    "id_bin", "id_asset", "id_magic"
-]
-
 
 def is_serializable(value: Any) -> bool:
     """Check if a value is serializable.
@@ -39,17 +35,15 @@ def normalize_meta(key: str, value: Any) -> Any:
     Raises a ValueError if the value cannot be converted.
     """
 
-    if key in NULLABLES:
-        return value or None
-
     # Some keys we need to enforce really hard
     if key in ALWAYS_TO_INT:
         return int(value or 0)
 
     # If there's no matching metatype, just return the value
     if key not in settings.metatypes.keys():
-        if not is_serializable(value):
-            raise ValueError(f"Value {value} of undefined key {key} is not supported.")
+        assert is_serializable(
+            value
+        ), f"Value {value} set to unknown key {key} is not supported."
         return value
 
     meta_type = settings.metatypes[key]
@@ -85,11 +79,13 @@ def normalize_meta(key: str, value: Any) -> Any:
             return float(value)
 
         case MetaClass.OBJECT:
-            assert is_serializable(value)
+            assert is_serializable(
+                value
+            ), f"Value {value} of key {key} is not supported."
             return value
 
         case MetaClass.FRACTION:
-            assert type(value) is str, f"{key} must be a strint. is {type(value)}"
+            assert type(value) is str, f"{key} must be a string. is {type(value)}"
             return value
 
         case MetaClass.SELECT:
@@ -99,8 +95,7 @@ def normalize_meta(key: str, value: Any) -> Any:
         case MetaClass.LIST:
             if not value:
                 return None
-            if not isinstance(value, list):
-                raise ValueError("List is already a list")
+            assert isinstance(value, list), f"{key} must be a list. is {type(value)}"
             return [str(v) for v in value]
 
         case MetaClass.COLOR:

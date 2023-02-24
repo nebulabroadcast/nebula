@@ -1,7 +1,7 @@
 from nebula.db import db
+from nebula.objects.asset import Asset
 from nebula.objects.base import BaseObject
 from nebula.objects.item import Item
-from nebula.objects.asset import Asset
 
 
 class Bin(BaseObject):

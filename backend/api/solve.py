@@ -1,10 +1,10 @@
 import os
-from fastapi import Response, Depends
+
+from fastapi import Depends, Response
 from pydantic import Field
 
 import nebula
 from nebula.common import classes_from_module, import_module
-
 from server.dependencies import current_user
 from server.models import RequestModel
 from server.request import APIRequest

@@ -89,7 +89,13 @@ const EditorField = ({ field, value, originalValue, onFieldChanged }) => {
   )
 }
 
-const EditorForm = ({ originalData, assetData, setAssetData, fields, onSave }) => {
+const EditorForm = ({
+  originalData,
+  assetData,
+  setAssetData,
+  fields,
+  onSave,
+}) => {
   const onFieldChanged = (key, value) =>
     setAssetData((o) => {
       return { ...o, [key]: value }
@@ -97,7 +103,7 @@ const EditorForm = ({ originalData, assetData, setAssetData, fields, onSave }) =
 
   function handleKeyDown(event) {
     if (event.ctrlKey && event.key === 's') {
-      event.preventDefault(); // prevent default browser behavior (saving the page)
+      event.preventDefault() // prevent default browser behavior (saving the page)
       onSave()
     }
   }

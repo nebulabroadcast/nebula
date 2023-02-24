@@ -6,7 +6,11 @@ from nxtools import slugify
 
 from nebula.db import DB, db
 from nebula.enum import ObjectTypeId
-from nebula.exceptions import BadRequestException, NotFoundException
+from nebula.exceptions import (
+    BadRequestException,
+    NotFoundException,
+    ValidationException,
+)
 from nebula.log import log
 from nebula.messaging import msg
 from nebula.metadata.format import format_meta
@@ -115,8 +119,10 @@ class BaseObject:
             return
         try:
             value = normalize_meta(key, value)
+        except AssertionError as e:
+            raise ValidationException(str(e), key=key)
         except ValueError as e:
-            raise ValidationException(f"Invalid value for {key}: {value}") from e
+            raise ValidationException(str(e), key=key)
         if value is None:
             self.meta.pop(key, None)
         else:

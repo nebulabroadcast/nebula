@@ -20,10 +20,10 @@ const colors = {
 
 const defaultTheme = {
   colors,
-  inputHeight: '30px',
+  inputHeight: '32px',
   inputBorder: 0,
   inputBorderRadius: '4px',
-  inputPadding: '5px',
+  inputPadding: '6px',
   inputBackground: colors.surface04,
   fontSize: '0.9rem',
   gapSize: '6px',

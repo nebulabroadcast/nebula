@@ -1,8 +1,7 @@
-import nebula
-
-from nebula.helpers.scheduling import bin_refresh
-
 from nxtools import format_time
+
+import nebula
+from nebula.helpers.scheduling import bin_refresh
 
 
 class SolverPlugin:
@@ -12,13 +11,13 @@ class SolverPlugin:
     new_events: list[nebula.Event] = []
     new_items: list[nebula.Item] = []
 
-    placeholder: nebula.Item = None
-    event: nebula.Event = None
-    bin: nebula.Bin = None
+    placeholder: nebula.Item
+    event: nebula.Event
+    bin: nebula.Bin
 
-    _solve_next = None
-    _next_event: nebula.Event = None
-    _needed_duration: int = None
+    _solve_next: nebula.Item | None = None
+    _next_event: nebula.Event | None = None
+    _needed_duration: int | None = None
 
     async def __call__(self, id_item: int):
         """Solver entrypoint."""
@@ -43,6 +42,7 @@ class SolverPlugin:
 
         await self.bin.get_items()
 
+        assert self.bin.id  # shoudn't happen, keep mypy happy
         self.affected_bins = [self.bin.id]
         self.new_items = []
         self.new_events = []
@@ -158,7 +158,7 @@ class SolverPlugin:
         await new_placeholder.save(notify=False)
         await new_bin.save(notify=False)
 
-        new_event = nebula.Event(db=self.db)
+        new_event = nebula.Event()
         new_event["id_channel"] = self.event["id_channel"]
         new_event["title"] = "Split block"
         new_event["start"] = tc

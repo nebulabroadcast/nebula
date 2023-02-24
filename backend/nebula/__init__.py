@@ -17,6 +17,7 @@ __all__ = [
     # Exceptions
     "BadRequestException",
     "ForbiddenException",
+    "NebulaException",
     "NotFoundException",
     "UnauthorizedException",
     "LoginFailedException",
@@ -32,11 +33,11 @@ import asyncio
 from .config import config
 from .db import DB, db
 from .exceptions import (
-    NebulaException,
     BadRequestException,
     ConflictException,
     ForbiddenException,
     LoginFailedException,
+    NebulaException,
     NotFoundException,
     NotImplementedException,
     UnauthorizedException,

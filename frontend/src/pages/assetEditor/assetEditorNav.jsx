@@ -237,7 +237,7 @@ const AssetEditorNav = ({
         disabled={!canClone}
       />
       <Button
-        icon="refresh"
+        icon="backspace"
         title="Discard changes"
         onClick={onRevert}
         disabled={!canRevert}

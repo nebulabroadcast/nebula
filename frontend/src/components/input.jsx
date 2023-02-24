@@ -10,10 +10,14 @@ const Input = styled.input`
   border-radius: ${(props) => props.theme.inputBorderRadius};
   background: ${(props) => props.theme.inputBackground};
   color: ${(props) => props.theme.colors.text};
+  font-size: ${(props) => props.theme.fontSize};
   min-height: ${(props) => props.theme.inputHeight};
+  max-height: ${(props) => props.theme.inputHeight};
   font-size: ${(props) => props.theme.fontSize};
   padding-left: ${(props) => props.theme.inputPadding};
   padding-right: ${(props) => props.theme.inputPadding};
+  padding-top: 0;
+  padding-bottom: 0;
   min-width: 200px;
 
   &:-webkit-autofill,
