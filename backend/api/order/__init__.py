@@ -29,7 +29,7 @@ class Request(APIRequest):
         result = await set_rundown_order(request, user)
 
         # Update bin duration
-        await bin_refresh(result.affected_bins, initiator=initiator)
+        await bin_refresh(result.affected_bins, initiator=initiator, user=user)
         nebula.log.info(f"Changed order in bins {result.affected_bins}", user=user.name)
 
         return result

@@ -86,9 +86,10 @@ class SolverPlugin:
             dur = self.next_event["start"] - self.event["start"]
             items = await self.bin.get_items()
             for item in items:
+                await item.get_asset()
                 if item.id == self.placeholder.id:
                     continue
-                dur -= await item.get_duration()
+                dur -= item.duration
             self._needed_duration = dur
         return self._needed_duration
 

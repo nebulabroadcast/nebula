@@ -10,7 +10,7 @@ test:
 		poetry run mypy .
 
 build:
-	docker build -t $(IMAGE_NAME):latest .
+	docker build -t $(IMAGE_NAME) .
 
 dist: build
-	docker push $(IMAGE_NAME):latest
+	docker push $(IMAGE_NAME)

@@ -5,10 +5,7 @@ from nebula.settings import settings
 
 ALWAYS_TO_INT = [
     "id_folder",
-    # "id_asset",
-    "id_bin",
     "id_event",
-    "id_magic",
     "id_channel",
     "content_type",
     "media_type",
@@ -18,6 +15,10 @@ ALWAYS_TO_INT = [
     "position",
     "start",
     "stop",
+]
+
+NULLABLES = [
+    "id_bin", "id_asset", "id_magic"
 ]
 
 
@@ -37,6 +38,9 @@ def normalize_meta(key: str, value: Any) -> Any:
     Returns the correct value for the given key.
     Raises a ValueError if the value cannot be converted.
     """
+
+    if key in NULLABLES:
+        return value or None
 
     # Some keys we need to enforce really hard
     if key in ALWAYS_TO_INT:

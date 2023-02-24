@@ -94,6 +94,7 @@ async def set_rundown_order(
 
                     # save item, but don't send a notification just yet.
                     # we'll send one notification for all items in the bin
+                    item["updated_by"] = user.id
                     await item.save(notify=False)
                 pos += 1
 

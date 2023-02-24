@@ -1,7 +1,7 @@
 import os
 import aiofiles
 
-from fastapi import Depends, FastAPI, Header, Request, UploadFile, File
+from fastapi import Depends, FastAPI, Header, Request
 from fastapi.responses import JSONResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.websockets import WebSocket, WebSocketDisconnect
@@ -68,7 +68,7 @@ async def openpype_exception_handler(
             "detail": exc.detail,
             "path": request.url.path,
             "method": request.method,
-            **self.kwargs,
+            **exc.kwargs,
         },
     )
 

@@ -24,7 +24,8 @@ class Item(BaseObject):
             return super().__getitem__(key)
         if self._asset:
             # we have asset loaded, so return its value
-            return self._asset[key]
+            if key not in ["mark_in", "mark_out"]:
+                return self._asset[key]
         # we don't have asset loaded, so return default value
         # TODO: consider raising an exception here
         return super().__getitem__(key)
@@ -35,12 +36,6 @@ class Item(BaseObject):
         if self._asset is None:
             self._asset = await Asset.load(self["id_asset"])
         return self._asset
-
-    async def get_duration(self) -> float:
-        if not self["id_asset"]:
-            return self["duration"]
-        await self.get_asset()
-        return self._asset.duration
 
     @property
     def asset(self) -> Asset | None:
@@ -54,12 +49,26 @@ class Item(BaseObject):
         assert isinstance(asset, Asset), "Asset must be an instance of Asset"
         if self["id_asset"] is None:
             self["id_asset"] = asset.id
-        assert asset.id == self["id_asset"], "Asset id must match item id_asset"
+        assert (
+            asset.id == self["id_asset"]
+        ), f"Asset id must match item id_asset: {asset.id} != {self['id_asset']}"
         self._asset = asset
+        if not self.meta.get("mark_in") and self._asset["mark_in"]:
+            self["mark_in"] = self._asset["mark_in"]
+        if not self.meta.get("mark_out") and self._asset["mark_out"]:
+            self["mark_out"] = self._asset["mark_out"]
 
     @property
     def duration(self) -> float:
         if not self["id_asset"]:
             return self["duration"]
+
+        if self.meta.get("mark_out"):
+            return (self.meta.get("mark_out") or 0) - (self.meta.get("mark_in") or 0)
+
+        # Item does not have explicit duration so we use raw asset duration instead
+        # do not use marked (asset.duration) duration here.
+        # marks from items must be used
+
         assert self._asset is not None, "Asset not loaded"
-        return self._asset.duration
+        return self._asset["duration"]
