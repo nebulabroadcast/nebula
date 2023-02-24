@@ -177,6 +177,7 @@ const AssetEditor = () => {
               </div>
             )}
             <EditorForm
+              onSave={onSave}
               originalData={originalData}
               assetData={assetData}
               setAssetData={setAssetData}

@@ -89,14 +89,21 @@ const EditorField = ({ field, value, originalValue, onFieldChanged }) => {
   )
 }
 
-const EditorForm = ({ originalData, assetData, setAssetData, fields }) => {
+const EditorForm = ({ originalData, assetData, setAssetData, fields, onSave }) => {
   const onFieldChanged = (key, value) =>
     setAssetData((o) => {
       return { ...o, [key]: value }
     })
 
+  function handleKeyDown(event) {
+    if (event.ctrlKey && event.key === 's') {
+      event.preventDefault(); // prevent default browser behavior (saving the page)
+      onSave()
+    }
+  }
+
   return (
-    <Form>
+    <Form onKeyDown={handleKeyDown}>
       {fields.map((field) => (
         <EditorField
           key={field.name}

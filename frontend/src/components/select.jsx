@@ -279,9 +279,12 @@ const Select = ({
   if (selectionMode === 'single' && options.length < 10) {
     return (
       <StyledHTMLSelect
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
+        value={value || ""}
+        onChange={(e) => {
+          onChange(e.target.value || null)
+        }}
       >
+        <option value={null}></option>
         {options.map((option) => (
           <option key={option.value} value={option.value}>
             {option.title}

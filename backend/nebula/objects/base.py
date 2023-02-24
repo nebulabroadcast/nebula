@@ -110,10 +110,13 @@ class BaseObject:
         Raises ValueError if the provided value is cannot
         be casted to the expected type.
         """
+        if value is None:
+            self.meta.pop(key, None)
+            return
         try:
             value = normalize_meta(key, value)
         except ValueError as e:
-            raise ValueError(f"Invalid value for {key}: {value}") from e
+            raise ValidationException(f"Invalid value for {key}: {value}") from e
         if value is None:
             self.meta.pop(key, None)
         else:

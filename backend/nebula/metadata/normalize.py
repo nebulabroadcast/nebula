@@ -98,7 +98,7 @@ def normalize_meta(key: str, value: Any) -> Any:
 
         case MetaClass.LIST:
             if not value:
-                return []
+                return None
             if not isinstance(value, list):
                 raise ValueError("List is already a list")
             return [str(v) for v in value]
