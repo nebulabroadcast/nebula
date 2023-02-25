@@ -36,7 +36,6 @@ async def set_rundown_order(
                         item = await nebula.Item.load(
                             obj.id, connection=conn, username=user.name
                         )
-
                         assert item is not None
 
                         if not item["id_bin"]:
@@ -51,10 +50,17 @@ async def set_rundown_order(
                             nebula.log.trace(f"Skipping {item}", user=user.name)
                             continue
 
+                    # Shut-up mypy
+                    assert item is not None, "Item should not be None at this point"
+                    assert item["id_bin"] is not None, "Item w/o bin. Shouldn't happen."
+
                     if item["id_bin"] and (not item["id_bin"] in affected_bins):
                         affected_bins.append(item["id_bin"])
 
                 elif obj.type == "asset":
+                    assert (
+                        obj.id is not None
+                    ), "Asset ID must not be None when inserting asset to rundown"
                     asset = await nebula.Asset.load(
                         obj.id,
                         connection=conn,
@@ -84,6 +90,7 @@ async def set_rundown_order(
                         connection=conn,
                         username=user.name,
                     )
+                    assert item is not None, "Item should not be None at this point"
                     item["id_asset"] = asset.id
 
                 else:
@@ -91,7 +98,11 @@ async def set_rundown_order(
                     # since the request is validated by pydantic.
                     continue
 
-                if not item or item["position"] != pos or item["id_bin"] != id_bin:
+                if (
+                    (item is None)
+                    or item["position"] != pos
+                    or item["id_bin"] != id_bin
+                ):
                     item["position"] = pos
                     item["id_bin"] = id_bin
 

@@ -2,7 +2,6 @@ from fastapi import Depends, Response
 from pydantic import Field
 
 import nebula
-from nebula.common import sql_list
 from nebula.enum import ObjectType
 from nebula.helpers.scheduling import bin_refresh
 from nebula.objects.utils import get_object_class_by_name
@@ -45,20 +44,27 @@ class Request(APIRequest):
                         "You are not allowed to edit this rundown"
                     )
 
-                query = f"""
-                    DELETE FROM items
-                    WHERE id IN {sql_list(request.ids)}
-                    RETURNING id, id_bin
-                """
+                query = "DELETE FROM items WHERE id = ANY($1) RETURNING id, id_bin"
                 affected_bins = set()
-                async for row in nebula.db.iterate(query):
+                async for row in nebula.db.iterate(query, request.ids):
                     affected_bins.add(row["id_bin"])
                 await bin_refresh(list(affected_bins), initiator=initiator)
                 return Response(status_code=204)
 
-            case ObjectType.ASSET | ObjectType.EVENT | ObjectType.USER:
-                pass
+            case ObjectType.USER:
+                if not user["is_admin"]:
+                    raise nebula.ForbiddenException(
+                        "You are not allowed to delete users"
+                    )
+
+            case ObjectType.ASSET | ObjectType.EVENT:
                 # TODO: ACL HERE
+                # In general, normal users don't need to
+                # delete assets or events directly
+                if not user["is_admin"]:
+                    raise nebula.ForbiddenException(
+                        "You are not allowed to delete this object"
+                    )
 
             case _:
                 # do not delete bins directly

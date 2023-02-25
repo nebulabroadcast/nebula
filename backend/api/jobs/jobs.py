@@ -131,8 +131,8 @@ class JobsRequest(APIRequest):
             )
 
         if request.restart:
-            if not await can_user_control_job(user, request.abort):
-                raise nebula.ForbiddenException("You cannot abort this job")
+            if not await can_user_control_job(user, request.restart):
+                raise nebula.ForbiddenException("You cannot restart this job")
             nebula.log.info(f"Restarting job {request.restart}", user=user.name)
             message = f"Restarted by {user.name}"
             query = """

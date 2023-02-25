@@ -59,7 +59,7 @@ class SolverPlugin:
 
     async def get_next_event(self) -> nebula.Event:
         """Load event following the current one."""
-        if not self._next_event:
+        if self._next_event is None:
             res = await nebula.db.fetch(
                 """
                 SELECT meta FROM events
@@ -105,7 +105,7 @@ class SolverPlugin:
     @property
     def current_duration(self) -> float:
         """Return the current duration of items replacing the placeholder."""
-        dur = 0
+        dur: float = 0.0
         for item in self.new_items:
             dur += item.duration
         return dur
@@ -134,7 +134,7 @@ class SolverPlugin:
                 "the current and next event start times",
                 user=self.name,
             )
-            return False
+            return
 
         nebula.log.trace(
             f"Splitting {self.event} at {format_time(tc)}",
@@ -170,7 +170,7 @@ class SolverPlugin:
         self._next_event = None
         self._solve_next = new_placeholder
 
-        if new_bin.id not in self.affected_bins:
+        if new_bin.id and (new_bin.id not in self.affected_bins):
             self.affected_bins.append(new_bin.id)
 
     async def main(self):

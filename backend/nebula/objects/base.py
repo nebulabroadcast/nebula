@@ -198,11 +198,13 @@ class BaseObject:
                 async with conn.transaction():
                     await self._delete()
         elif (
-            hasattr(self.connection, "is_in_transaction")
+            self.connection is not None
+            and hasattr(self.connection, "is_in_transaction")
             and self.connection.is_in_transaction()
         ):
             await self._delete()
         else:
+            assert isinstance(self.connection, asyncpg.Connection)
             async with self.connection.transaction():
                 await self._delete()
 

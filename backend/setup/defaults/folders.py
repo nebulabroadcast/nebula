@@ -45,7 +45,7 @@ production_description: FieldList = [
 ]
 
 
-FOLDERS = [
+FOLDERS: list[FolderSettings] = [
     FolderSettings(
         id=1,
         name="Movie",

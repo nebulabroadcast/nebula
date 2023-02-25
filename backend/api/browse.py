@@ -256,11 +256,12 @@ class Request(APIRequest):
         user: nebula.User = Depends(current_user),
     ) -> BrowseResponseModel:
 
-        columns = ["title", "duration"]
+        columns: list[str] = ["title", "duration"]
         if request.view is not None and not request.columns:
             assert type(request.view) is int
             if (view := nebula.settings.get_view(request.view)) is not None:
-                columns = view.columns
+                if view.columns is not None:
+                    columns = view.columns
         elif request.columns:
             columns = request.columns
 

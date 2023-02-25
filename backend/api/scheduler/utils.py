@@ -58,7 +58,7 @@ async def delete_events(ids: list[int]) -> list[int]:
 
 
 async def get_events_in_range(
-    id_channel: int, start_time: int, end_time: int
+    id_channel: int, start_time: float, end_time: float
 ) -> list[nebula.Event]:
     """Return a list of events in the given time range"""
 

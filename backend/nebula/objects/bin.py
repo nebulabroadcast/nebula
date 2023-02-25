@@ -46,7 +46,7 @@ class Bin(BaseObject):
         if "duration" in self.meta:
             return self.meta["duration"]
         assert self._items is not None, "Items not loaded"
-        duration = 0
+        duration: float = 0.0
         for item in self._items:
             duration += item.duration
         self["duration"] = duration

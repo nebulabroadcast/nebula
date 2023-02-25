@@ -64,14 +64,15 @@ async def scheduler(
 ) -> SchedulerResponseModel:
     """Modify and display channel schedule"""
 
+    start_time: float | None = None
+    end_time: float | None = None
+
     if not (channel := nebula.settings.get_playout_channel(request.id_channel)):
         raise nebula.BadRequestException(f"No such channel {request.id_channel}")
 
     if request.date:
         start_time = parse_rundown_date(request.date, channel)
         end_time = start_time + (request.days * 86400)
-    else:
-        start_time = end_time = None
 
     changed_event_ids = []
 
@@ -93,9 +94,12 @@ async def scheduler(
 
         event_at_position = await get_event_at_time(channel.id, event_data.start)
 
-        if event_at_position and event_at_position.id != event_data.id:
+        if (event_at_position is not None) and event_at_position.id != event_data.id:
             # Replace event at position
 
+            assert (
+                event_at_position.id is not None
+            ), "Event at position returned event without ID. This should not happen."
             changed_event_ids.append(event_at_position.id)
 
             if event_data.asset_id:
@@ -133,7 +137,7 @@ async def scheduler(
 
     # Return existing events
 
-    if start_time is not None:
+    if (start_time is not None) and (end_time is not None):
         events = await get_events_in_range(channel.id, start_time, end_time)
     else:
         events = []

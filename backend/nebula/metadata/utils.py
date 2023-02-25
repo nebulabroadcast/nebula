@@ -85,7 +85,7 @@ def make_cs_tree(
     if (scheme := settings.cs.get(urn)) is None:
         return []
     items = [
-        {"value": value, "title": get_cs_titles(urn, [value], lang)[0]}
+        {"value": value, "title": get_cs_titles(urn, (value,), lang)[0]}
         for value, alias in scheme.items()
     ]
     if order == "value":
