@@ -143,7 +143,7 @@ const Video = ({ src, style, showMarks, marks = {}, setMarks = () => {} }) => {
           }}
         />
         <Trackbar value={trackbarPosition} onInput={onSeek} />
-        <InputTimecode value={videoDuration} readOnly={true} title="Duration"/>
+        <InputTimecode value={videoDuration} readOnly={true} title="Duration" />
       </PlayoutControls>
 
       <PlayoutControls>

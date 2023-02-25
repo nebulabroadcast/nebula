@@ -14,7 +14,6 @@ import AssetEditorNav from './assetEditorNav'
 import EditorForm from './assetEditorForm'
 import Preview from './preview'
 
-
 const AssetEditor = () => {
   const focusedAsset = useSelector((state) => state.context.focusedAsset)
   const navigate = useNavigate()
@@ -22,7 +21,10 @@ const AssetEditor = () => {
   const [assetData, setAssetData] = useState({})
   const [originalData, setOriginalData] = useState({})
   const [loading, setLoading] = useState(false)
-  const [previewVisible, setPreviewVisible] = useLocalStorage('previewVisible', false)
+  const [previewVisible, setPreviewVisible] = useLocalStorage(
+    'previewVisible',
+    false
+  )
 
   const loadAsset = (id_asset) => {
     setLoading(true)
@@ -87,8 +89,8 @@ const AssetEditor = () => {
     if (!originalData?.id) return false
     let changed = []
     for (const key in originalData) {
-      if (!isEqual(originalData[key],  assetData[key])){
-        console.log("CHANGE", key, originalData[key], assetData[key])
+      if (!isEqual(originalData[key], assetData[key])) {
+        console.log('CHANGE', key, originalData[key], assetData[key])
         return true
         //changed.push(key)
       }
@@ -207,10 +209,7 @@ const AssetEditor = () => {
           </section>
 
           {previewVisible && (
-            <Preview
-              assetData={assetData}
-              setAssetData={setAssetData}
-            />
+            <Preview assetData={assetData} setAssetData={setAssetData} />
           )}
         </div>
       ) : null}
