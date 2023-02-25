@@ -4,7 +4,6 @@ from fastapi import Depends
 from pydantic import Field
 
 import nebula
-from nebula.common import sql_list
 from nebula.enum import ObjectType
 from server.dependencies import current_user
 from server.models import RequestModel, ResponseModel
@@ -52,16 +51,14 @@ class Request(APIRequest):
         user: nebula.User = Depends(current_user),
     ) -> GetResponseModel:
 
-        query = f"""
-            SELECT meta FROM {request.object_type.value}s
-            WHERE id IN {sql_list(request.ids)}
-        """
-        data = []
+        object_type_name = request.object_type.value
+        query = f"SELECT meta FROM {object_type_name}s WHERE id = ANY($1)"
 
-        async for row in nebula.db.iterate(query):
+        data = []
+        async for row in nebula.db.iterate(query, request.ids):
             if user.is_limited:
+                # Limited users can only see their own objects
                 if row["meta"].get("created_by") != user.id:
-                    print(row["meta"].get("created_by"), user.id)
                     raise nebula.ForbiddenException(
                         "You are not allowed to access this object"
                     )
