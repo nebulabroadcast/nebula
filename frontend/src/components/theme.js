@@ -28,6 +28,7 @@ const defaultTheme = {
   fontSize: '0.9rem',
   gapSize: '6px',
   sectionGap: '8px',
+  navBorderRadius: '6px',
 }
 
 export default defaultTheme

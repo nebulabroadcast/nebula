@@ -28,6 +28,8 @@ const AssetEditorNav = ({
   onSave,
   setMeta,
   isChanged,
+  previewVisible,
+  setPreviewVisible,
 }) => {
   const [detailsVisible, setDetailsVisible] = useState(false)
   const [sendToVisible, setSendToVisible] = useState(false)
@@ -183,6 +185,15 @@ const AssetEditorNav = ({
             disabled={!assetData?.id || isChanged}
           />
         </>
+      )}
+
+      {nebula.settings.system.ui_asset_preview && (
+        <Button
+          icon="visibility"
+          onClick={() => setPreviewVisible(!previewVisible)}
+          active={previewVisible}
+          tooltip="Preview"
+        />
       )}
 
       <ToolbarSeparator />

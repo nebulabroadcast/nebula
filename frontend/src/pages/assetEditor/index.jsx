@@ -6,10 +6,14 @@ import { useSelector, useDispatch } from 'react-redux'
 import { toast } from 'react-toastify'
 import { isEqual, isEmpty } from 'lodash'
 
+import { useLocalStorage } from '/src/hooks'
 import { setPageTitle, reloadBrowser } from '/src/actions'
 import { Loader } from '/src/components'
+
 import AssetEditorNav from './assetEditorNav'
 import EditorForm from './assetEditorForm'
+import Preview from './preview'
+
 
 const AssetEditor = () => {
   const focusedAsset = useSelector((state) => state.context.focusedAsset)
@@ -18,6 +22,7 @@ const AssetEditor = () => {
   const [assetData, setAssetData] = useState({})
   const [originalData, setOriginalData] = useState({})
   const [loading, setLoading] = useState(false)
+  const [previewVisible, setPreviewVisible] = useLocalStorage('previewVisible', false)
 
   const loadAsset = (id_asset) => {
     setLoading(true)
@@ -79,7 +84,16 @@ const AssetEditor = () => {
   }, [assetData, originalData])
 
   const isChanged = useMemo(() => {
-    return !isEqual(assetData, originalData)
+    if (!originalData?.id) return false
+    let changed = []
+    for (const key in originalData) {
+      if (!isEqual(originalData[key],  assetData[key])){
+        console.log("CHANGE", key, originalData[key], assetData[key])
+        return true
+        //changed.push(key)
+      }
+    }
+    return changed.length
   }, [assetData, originalData])
 
   // TODO: clean-up this mess
@@ -93,7 +107,7 @@ const AssetEditor = () => {
       if (confirm) {
         nebula
           .request('set', { id: assetData.id, data: assetData })
-          .then((response) => {
+          .then(() => {
             dispatch(reloadBrowser())
           })
           .catch((error) => {
@@ -134,6 +148,7 @@ const AssetEditor = () => {
   }
 
   const onSave = () => {
+    console.log('save', assetData)
     nebula
       .request('set', { id: assetData.id, data: assetData })
       .then((response) => {
@@ -162,29 +177,42 @@ const AssetEditor = () => {
         onSave={onSave}
         setMeta={setMeta}
         isChanged={isChanged}
+        previewVisible={previewVisible}
+        setPreviewVisible={setPreviewVisible}
       />
+
       {Object.keys(assetData || {}).length ? (
-        <section
-          className={`grow column ${isChanged ? 'section-changed' : ''}`}
-        >
-          <div
-            className="contained"
-            style={{ overflowY: 'scroll', padding: 10 }}
+        <div className="grow row">
+          <section
+            className={`grow column ${isChanged ? 'section-changed' : ''}`}
+            style={{ minWidth: 500 }}
           >
-            {loading && (
-              <div className="contained center">
-                <Loader />
-              </div>
-            )}
-            <EditorForm
-              onSave={onSave}
-              originalData={originalData}
+            <div
+              className="contained"
+              style={{ overflowY: 'scroll', padding: 10 }}
+            >
+              {loading && (
+                <div className="contained center">
+                  <Loader />
+                </div>
+              )}
+              <EditorForm
+                onSave={onSave}
+                originalData={originalData}
+                assetData={assetData}
+                setAssetData={setAssetData}
+                fields={fields}
+              />
+            </div>
+          </section>
+
+          {previewVisible && (
+            <Preview
               assetData={assetData}
               setAssetData={setAssetData}
-              fields={fields}
             />
-          </div>
-        </section>
+          )}
+        </div>
       ) : null}
     </div>
   )

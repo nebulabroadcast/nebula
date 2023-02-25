@@ -8,7 +8,6 @@ const VideoPlayerContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 6px;
-  padding: 4px;
 
   video {
     outline: 1px solid var(--color-surface-05);
@@ -47,7 +46,7 @@ const PlayoutControls = styled.div`
   justify-content: center;
 `
 
-const Video = ({ src, style, marks, setMarks }) => {
+const Video = ({ src, style, showMarks, marks = {}, setMarks = () => {} }) => {
   const videoRef = useRef(null)
 
   const [videoPosition, setVideoPosition] = useState(0)
@@ -101,32 +100,42 @@ const Video = ({ src, style, marks, setMarks }) => {
 
   return (
     <VideoPlayerContainer style={style}>
-      <PlayoutControls>
-        <InputTimecode
-          title="Mark in"
-          value={marks.mark_in}
-          onChange={onMarkIn}
-        />
-        <Spacer />
-        <InputTimecode
-          title="Mark out"
-          value={marks.mark_out}
-          onChange={onMarkOut}
-        />
-      </PlayoutControls>
+      {showMarks && (
+        <PlayoutControls>
+          <InputTimecode
+            title="Selection start"
+            value={marks.mark_in}
+            onChange={onMarkIn}
+          />
+          <Spacer />
+          <InputTimecode
+            title="Selection end"
+            value={marks.mark_out}
+            onChange={onMarkOut}
+          />
+        </PlayoutControls>
+      )}
 
-      <div style={{ flexDirection: 'row', justifyContent: 'center' }}>
+      <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0 }}>
         <video
           src={src}
           ref={videoRef}
           controls={false}
           onDurationChange={() => setVideoDuration(videoRef.current.duration)}
           onTimeUpdate={() => setVideoPosition(videoRef.current.currentTime)}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+          }}
         />
       </div>
 
       <PlayoutControls>
         <InputTimecode
+          title="Current position"
           value={(trackbarPosition * (videoDuration || 0)) / 1000}
           onChange={(value) => {
             console.log('Seeking to', value)
@@ -134,20 +143,26 @@ const Video = ({ src, style, marks, setMarks }) => {
           }}
         />
         <Trackbar value={trackbarPosition} onInput={onSeek} />
-        <InputTimecode value={videoDuration} readOnly={true} />
+        <InputTimecode value={videoDuration} readOnly={true} title="Duration"/>
       </PlayoutControls>
 
       <PlayoutControls>
-        <Button
-          icon="line_start_diamond"
-          title="Mark in"
-          onClick={() => onMarkIn(videoRef.current.currentTime)}
-        />
-        <Button
-          icon="first_page"
-          title="Go to mark in"
-          onClick={() => (videoRef.current.currentTime = marks.mark_in || 0)}
-        />
+        {showMarks && (
+          <>
+            <Button
+              icon="line_start_diamond"
+              title="Mark in"
+              onClick={() => onMarkIn(videoRef.current.currentTime)}
+            />
+            <Button
+              icon="first_page"
+              title="Go to mark in"
+              onClick={() =>
+                (videoRef.current.currentTime = marks.mark_in || 0)
+              }
+            />
+          </>
+        )}
         <Button
           icon="keyboard_double_arrow_left"
           onClick={() => frameStep(-5)}
@@ -159,19 +174,23 @@ const Video = ({ src, style, marks, setMarks }) => {
           icon="keyboard_double_arrow_right"
           onClick={() => frameStep(5)}
         />
-        <Button
-          icon="last_page"
-          title="Go to mark out"
-          onClick={() =>
-            (videoRef.current.currentTime =
-              marks.mark_out || videoRef.current.duration)
-          }
-        />
-        <Button
-          icon="line_end_diamond"
-          title="Mark out"
-          onClick={() => onMarkOut(videoRef.current.currentTime)}
-        />
+        {showMarks && (
+          <>
+            <Button
+              icon="last_page"
+              title="Go to mark out"
+              onClick={() =>
+                (videoRef.current.currentTime =
+                  marks.mark_out || videoRef.current.duration)
+              }
+            />
+            <Button
+              icon="line_end_diamond"
+              title="Mark out"
+              onClick={() => onMarkOut(videoRef.current.currentTime)}
+            />
+          </>
+        )}
       </PlayoutControls>
     </VideoPlayerContainer>
   )

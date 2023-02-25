@@ -78,8 +78,8 @@ const NavBar = () => {
   return (
     <Navbar>
       <div className="left">
-        <NavLink to={`/mam/editor`}>Editor</NavLink>
-        {nebula.settings.system.ui_asset_preview && (
+        <NavLink to={`/mam/editor`}>Assets</NavLink>
+        {false && nebula.settings.system.ui_asset_preview && (
           <NavLink to={`/mam/preview`}>Preview</NavLink>
         )}
         <NavLink to="/jobs">Jobs</NavLink>
