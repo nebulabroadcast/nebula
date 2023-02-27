@@ -37,7 +37,7 @@ class PlayoutRequestModel(RequestModel):
 
 class PlayoutPluginSlotOption(ResponseModel):
     value: str
-    label: str | None = None
+    title: str | None = None
 
 
 class PlayoutPluginSlot(ResponseModel):
