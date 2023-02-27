@@ -29,10 +29,15 @@ async def set_rundown_order(
                     if not obj.id:
                         # Adding a virtual item (such as placeholder)
                         item = nebula.Item.from_meta(
-                            obj.meta, connection=conn, username=user.name
+                            obj.meta,
+                            connection=conn,
+                            username=user.name,
                         )
+                        # Empty event may not have id_bin set,
+                        # but we know, where we are putting it.
+                        item["id_bin"] = id_bin
                     else:
-                        # Moving existing item
+                        # Moving an existing item
                         item = await nebula.Item.load(
                             obj.id, connection=conn, username=user.name
                         )

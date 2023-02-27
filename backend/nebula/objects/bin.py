@@ -43,8 +43,6 @@ class Bin(BaseObject):
 
     @property
     def duration(self) -> float:
-        if "duration" in self.meta:
-            return self.meta["duration"]
         assert self._items is not None, "Items not loaded"
         duration: float = 0.0
         for item in self._items:
