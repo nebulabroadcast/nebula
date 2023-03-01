@@ -5,31 +5,37 @@ META_TYPES = {
         "ns": "o",
         "index": True,
         "type": T.INTEGER,
+        "default": None,
     },
     "id_asset": {
         "ns": "o",
         "index": True,
         "type": T.INTEGER,
+        "default": None,
     },
     "id_item": {
         "ns": "o",
         "index": True,
         "type": T.INTEGER,
+        "default": None,
     },
     "id_bin": {
         "ns": "o",
         "index": True,
         "type": T.INTEGER,
+        "default": None,
     },
     "id_event": {
         "ns": "o",
         "index": True,
         "type": T.INTEGER,
+        "default": None,
     },
     "created_by": {
         "ns": "o",
         "index": False,
         "type": T.INTEGER,
+        "default": None,
     },
     "updated_by": {
         "ns": "o",
@@ -40,6 +46,7 @@ META_TYPES = {
         "ns": "o",
         "index": True,
         "type": T.INTEGER,
+        "default": None,
     },
     "id_folder": {
         "ns": "o",
@@ -115,10 +122,12 @@ META_TYPES = {
     "mark_in": {
         "ns": "ai",
         "type": T.TIMECODE,
+        "default": None,
     },
     "mark_out": {
         "ns": "ai",
         "type": T.TIMECODE,
+        "default": None,
     },
     "logo": {
         "ns": "ai",

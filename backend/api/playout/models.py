@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import Field
 
@@ -35,5 +35,28 @@ class PlayoutRequestModel(RequestModel):
     )
 
 
+class PlayoutPluginSlotOption(ResponseModel):
+    value: str
+    title: str | None = None
+
+
+class PlayoutPluginSlot(ResponseModel):
+    type: Literal["action", "text", "number", "select"] = Field(...)
+    name: str = Field(...)
+    options: list[PlayoutPluginSlotOption] = Field(default_factory=list)
+    value: Any = None
+
+    @property
+    def title(self):
+        return self.opts.get("title", self.name.capitalize())
+
+
+class PlayoutPluginManifest(ResponseModel):
+    name: str
+    title: str
+    slots: list[PlayoutPluginSlot] | None = None
+
+
 class PlayoutResponseModel(ResponseModel):
-    plugins: list[str] | None = Field(default_factory=list)
+    # TODO: use strict model from the worker
+    plugins: list[PlayoutPluginManifest] | None = Field(default_factory=list)

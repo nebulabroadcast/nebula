@@ -12,11 +12,11 @@ and it is now used by TV and production companies worldwide.
 
 This repository contains the source code of Nebula server - the core of the system.
 Nebula server consists of a Python backend and a React frontend. The repository
-also contains a Dockerfile for building a Docker image of the server and an example
-docker-compose.yml file for running Nebula in a Docker stack with a PostgreSQL and Redis.
+also contains a Dockerfile for building a Docker image of the server.
 
 Apart from this server repository, Nebula consists of the following other repositories:
 
+ - [nebula-tutorial](https://github.com/nebulabroadcast/nebula-tutorial) - Example docker-compose.yml, default settings, plugins and other files for getting started with Nebula.
  - [nebula-worker](https://github.com/nebulabroadcast/nebula-worker) - Nebula worker is a Python application that runs on a worker machine and handles the actual media processing.
  - [firefly](https://github.com/nebulabroadcast/firefly) - Firefly is a desktop client needed for linear broadcast planning, scheduling and playout.
 

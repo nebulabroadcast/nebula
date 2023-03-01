@@ -6,7 +6,11 @@ from nxtools import slugify
 
 from nebula.db import DB, db
 from nebula.enum import ObjectTypeId
-from nebula.exceptions import BadRequestException, NotFoundException
+from nebula.exceptions import (
+    BadRequestException,
+    NotFoundException,
+    ValidationException,
+)
 from nebula.log import log
 from nebula.messaging import msg
 from nebula.metadata.format import format_meta
@@ -110,10 +114,15 @@ class BaseObject:
         Raises ValueError if the provided value is cannot
         be casted to the expected type.
         """
+        if value is None:
+            self.meta.pop(key, None)
+            return
         try:
             value = normalize_meta(key, value)
+        except AssertionError as e:
+            raise ValidationException(str(e), key=key)
         except ValueError as e:
-            raise ValueError(f"Invalid value for {key}: {value}") from e
+            raise ValidationException(str(e), key=key)
         if value is None:
             self.meta.pop(key, None)
         else:
@@ -189,11 +198,13 @@ class BaseObject:
                 async with conn.transaction():
                     await self._delete()
         elif (
-            hasattr(self.connection, "is_in_transaction")
+            self.connection is not None
+            and hasattr(self.connection, "is_in_transaction")
             and self.connection.is_in_transaction()
         ):
             await self._delete()
         else:
+            assert isinstance(self.connection, asyncpg.Connection)
             async with self.connection.transaction():
                 await self._delete()
 

@@ -79,6 +79,7 @@ const AssetDetail = () => {
             <Video
               src={`/proxy/${assetData.id}?token=${accessToken}`}
               style={{ width: '100%' }}
+              showMarks={true}
               marks={marks}
               setMarks={setMarks}
             />

@@ -27,9 +27,9 @@ const Form = styled.div`
   }
 `
 
-const FormRow = ({ title, tooltip, children }) => {
+const FormRow = ({ title, tooltip, children, ...props }) => {
   return (
-    <div className="form-row">
+    <div className="form-row" {...props}>
       <div className="form-title">
         <span title={tooltip}>{title}</span>
       </div>

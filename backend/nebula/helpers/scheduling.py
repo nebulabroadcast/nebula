@@ -1,7 +1,7 @@
 import datetime
 from typing import TYPE_CHECKING
 
-from nxtools import datestr2ts
+from nxtools import datestr2ts, s2time
 
 import nebula
 
@@ -11,24 +11,35 @@ if TYPE_CHECKING:
 ItemRuns = dict[int, tuple[float, float]]
 
 
-async def bin_refresh(bins: list[int], initiator: str | None = None) -> None:
+async def bin_refresh(
+    bins: list[int],
+    initiator: str | None = None,
+    user: nebula.User | None = None,
+) -> None:
     if not bins:
         return None
 
     for id_bin in bins:
         # Resave bin to update duration
         b = await nebula.Bin.load(id_bin)
+        await b.get_items()
+        if user:
+            b["updated_by"] = user.id
+        # this log message triggers storing bin duration to its meta
+        nebula.log.debug(
+            f"New duration of {b} is {s2time(b.duration)} ({len(b.items)} items)",
+            user=user.name if user else None,
+        )
         await b.save(notify=False)
 
-    bq = ", ".join([str(b) for b in bins if b])
-    query = f"""
+    query = """
     SELECT DISTINCT(c.id) AS id_event FROM events as e, channels AS c
     WHERE
         c.channel_type = 0 AND
         c.id = e.id_channel AND
-        e.id_magic IN ({bq})
+        e.id_magic = ANY($1)
     """
-    changed_events = [row["id_event"] async for row in nebula.db.iterate(query)]
+    changed_events = [row["id_event"] async for row in nebula.db.iterate(query, bins)]
     nebula.log.debug(f"Bins changed {bins}.")
     await nebula.msg(
         "objects_changed",

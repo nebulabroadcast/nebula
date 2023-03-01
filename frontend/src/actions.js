@@ -2,6 +2,7 @@ import nebula from '/src/nebula'
 import { createSlice } from '@reduxjs/toolkit'
 
 const initialState = {
+  browserRefresh: 0,
   currentView: JSON.parse(localStorage.getItem('currentView') || 'null'),
   searchQuery: '',
   selectedAssets: [],
@@ -29,6 +30,12 @@ const contextSlice = createSlice({
       return state
     },
 
+    // eslint-disable-next-line no-unused-vars
+    reloadBrowser: (state, action) => {
+      state.browserRefresh = state.browserRefresh + 1
+      return state
+    },
+
     setSearchQuery: (state, action) => {
       state.searchQuery = action.payload
       return state
@@ -52,6 +59,7 @@ const contextSlice = createSlice({
 })
 
 export const {
+  reloadBrowser,
   setCurrentView,
   setCurrentViewId,
   setSearchQuery,

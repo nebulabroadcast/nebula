@@ -17,6 +17,7 @@ __all__ = [
     # Exceptions
     "BadRequestException",
     "ForbiddenException",
+    "NebulaException",
     "NotFoundException",
     "UnauthorizedException",
     "LoginFailedException",
@@ -36,6 +37,7 @@ from .exceptions import (
     ConflictException,
     ForbiddenException,
     LoginFailedException,
+    NebulaException,
     NotFoundException,
     NotImplementedException,
     UnauthorizedException,

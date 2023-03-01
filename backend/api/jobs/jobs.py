@@ -97,6 +97,53 @@ async def can_user_control_job(user: User, id_job: int) -> bool:
     return False
 
 
+async def restart_job(id_job: int, user: nebula.User) -> None:
+    if not await can_user_control_job(user, id_job):
+        raise nebula.ForbiddenException("You cannot restart this job")
+    nebula.log.info(f"Restarting job {id_job}", user=user.name)
+    message = f"Restarted by {user.name}"
+    query = """
+        UPDATE jobs SET
+        id_service=NULL,
+        start_time=NULL,
+        end_time=NULL,
+        status=5,
+        retries=0,
+        progress=0,
+        message=$1
+        WHERE id = $2
+    """
+    await nebula.db.execute(query, message, id_job)
+    await nebula.msg(
+        "job_progress",
+        id=id_job,
+        progress=0,
+        status=5,
+        message=message,
+    )
+
+
+async def abort_job(id_job: int, user: nebula.User) -> None:
+    if not await can_user_control_job(user, id_job):
+        raise nebula.ForbiddenException("You cannot abort this job")
+    nebula.log.info(f"Aborting job {id_job}", user=user.name)
+    message = f"Aborted by {user.name}"
+    query = """
+        UPDATE jobs SET
+        status = 4,
+        message = $1
+        WHERE id = $2
+    """
+    await nebula.db.execute(query, message, id_job)
+    await nebula.msg(
+        "job_progress",
+        id=id_job,
+        progress=0,
+        status=4,
+        message=message,
+    )
+
+
 class JobsRequest(APIRequest):
     """List and control jobs"""
 
@@ -111,53 +158,12 @@ class JobsRequest(APIRequest):
     ) -> JobsResponseModel:
 
         if request.abort:
-            if not await can_user_control_job(user, request.abort):
-                raise nebula.ForbiddenException("You cannot abort this job")
-            nebula.log.info(f"Aborting job {request.abort}", user=user.name)
-            message = f"Aborted by {user.name}"
-            query = """
-                UPDATE jobs SET
-                status = 4,
-                message = $1
-                WHERE id = $2
-            """
-            await nebula.db.execute(query, message, request.abort)
-            await nebula.msg(
-                "job_progress",
-                id=request.abort,
-                progress=0,
-                status=4,
-                message=message,
-            )
+            await abort_job(request.abort, user)
 
         if request.restart:
-            if not await can_user_control_job(user, request.abort):
-                raise nebula.ForbiddenException("You cannot abort this job")
-            nebula.log.info(f"Restarting job {request.restart}", user=user.name)
-            message = f"Restarted by {user.name}"
-            query = """
-                UPDATE jobs SET
-                id_service=NULL,
-                start_time=NULL,
-                end_time=NULL,
-                status=5,
-                retries=0,
-                progress=0,
-                message=$1
-                WHERE id = $2
-            """
-            await nebula.db.execute(query, message, request.restart)
-            await nebula.msg(
-                "job_progress",
-                id=request.restart,
-                progress=0,
-                status=5,
-                message=message,
-            )
+            await restart_job(request.restart, user)
 
-        #
-        # Return list of jobs
-        #
+        # Return a list of jobs if requested
 
         conds = []
         if request.search_query:

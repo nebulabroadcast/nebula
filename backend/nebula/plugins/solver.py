@@ -1,78 +1,153 @@
-from nebula.db import db
-from nebula.objects.event import Event
+from nxtools import format_time
+
+import nebula
+from nebula.helpers.scheduling import bin_refresh
 
 
 class SolverPlugin:
-    def __init__(self, placeholder, **kwargs):
-        self.init_solver(placeholder)
-        self.affected_bins = []
+    name: str = "solver"
 
-    def init_solver(self, placeholder):
-        self.placeholder = placeholder
-        self.bin = self.placeholder.bin
-        self.event = self.placeholder.event
+    affected_bins: list[int] = []
+    new_events: list[nebula.Event] = []
+    new_items: list[nebula.Item] = []
+
+    placeholder: nebula.Item
+    event: nebula.Event
+    bin: nebula.Bin
+
+    _solve_next: nebula.Item | None = None
+    _next_event: nebula.Event | None = None
+    _needed_duration: int | None = None
+
+    async def __call__(self, id_item: int):
+        """Solver entrypoint."""
+
+        res = await nebula.db.fetch(
+            """
+            SELECT
+                e.meta as emeta,
+                b.meta as bmeta,
+                i.meta as imeta
+            FROM events e, bins b, items i, assets a
+            WHERE e.id_magic = b.id AND i.id_bin = b.id AND i.id = $1
+            """,
+            id_item,
+        )
+
+        assert res, "Placeholder has no event or bin"
+
+        self.placeholder = nebula.Item.from_meta(res[0]["imeta"])
+        self.event = nebula.Event.from_meta(res[0]["emeta"])
+        self.bin = nebula.Bin.from_meta(res[0]["bmeta"])
+
+        await self.bin.get_items()
+
+        assert self.bin.id  # shoudn't happen, keep mypy happy
+        self.affected_bins = [self.bin.id]
         self.new_items = []
-        self._next_event = None
-        self._needed_duration = 0
-        self.solve_next = None
+        self.new_events = []
 
-    async def get_next_event(self) -> Event:
-        if not self._next_event:
-            self.db.query(
+        self._next_event = await self.get_next_event()
+        self._needed_duration = await self.get_needed_duration()
+        self._solve_next = None
+
+        return await self.main()
+
+    #
+    # Property loaders
+    #
+
+    async def get_next_event(self) -> nebula.Event:
+        """Load event following the current one."""
+        if self._next_event is None:
+            res = await nebula.db.fetch(
                 """
                 SELECT meta FROM events
-                WHERE id_channel = %s AND start > %s
+                WHERE id_channel = $1 AND start > $2
                 ORDER BY start ASC LIMIT 1
                 """,
-                [self.event["id_channel"], self.event["start"]],
+                self.event["id_channel"],
+                self.event["start"],
             )
-            try:
-                self._next_event = Event(meta=self.db.fetchall()[0][0], db=self.db)
-            except IndexError:
-                self._next_event = Event(
-                    meta={
+            if res:
+                self._next_event = nebula.Event.from_meta(res[0]["meta"])
+            else:
+                self._next_event = nebula.Event.from_meta(
+                    {
                         "id_channel": self.event["id_channel"],
                         "start": self.event["start"] + 3600,
                     }
                 )
         return self._next_event
 
-    @property
-    def current_duration(self):
-        dur = 0
-        for item in self.new_items:
-            dur += item.duration
-        return dur
-
-    @property
-    def needed_duration(self):
+    async def get_needed_duration(self):
+        """Load the duration needed to fill the current event."""
         if not self._needed_duration:
             dur = self.next_event["start"] - self.event["start"]
-            for item in self.bin.items:
+            items = await self.bin.get_items()
+            for item in items:
+                await item.get_asset()
                 if item.id == self.placeholder.id:
                     continue
                 dur -= item.duration
             self._needed_duration = dur
         return self._needed_duration
 
-    def block_split(self, tc):
+    #
+    # Properties for quick access
+    #
+
+    @property
+    def next_event(self):
+        assert self._next_event, "Next event not loaded"
+        return self._next_event
+
+    @property
+    def current_duration(self) -> float:
+        """Return the current duration of items replacing the placeholder."""
+        dur: float = 0.0
+        for item in self.new_items:
+            dur += item.duration
+        return dur
+
+    @property
+    def needed_duration(self) -> float:
+        """Return the duration needed to fill the current event."""
+        assert self._needed_duration is not None
+        return self._needed_duration
+
+    #
+    # Scheduling methods
+    #
+
+    async def block_split(self, tc: float) -> None:
+        """Split the current event at the given time.
+
+        This basically just creates a new event and insert
+        a new placeholder to it. The placeholder is then
+        stored in self._solve_next and will be solved
+        after the current event is solved.
+        """
         if tc <= self.event["start"] or tc >= self.next_event["start"]:
-            logging.error(
+            nebula.log.error(
                 "Timecode of block split must be between "
-                "the current and next event start times"
+                "the current and next event start times",
+                user=self.name,
             )
-            return False
+            return
 
-        logging.info(f"Splitting {self.event} at {format_time(tc)}")
-        logging.info(
-            "Next event is {} at {}".format(
-                self.next_event, self.next_event.show("start")
-            )
+        nebula.log.trace(
+            f"Splitting {self.event} at {format_time(tc)}",
+            user=self.name,
         )
-        new_bin = Bin(db=self.db)
-        new_bin.save(notify=False)
+        nebula.log.trace(
+            f"Next event is {self.next_event} at {self.next_event.show('start')}",
+            self.name,
+        )
+        new_bin = nebula.Bin()
+        await new_bin.save(notify=False)
 
-        new_placeholder = Item(db=self.db)
+        new_placeholder = nebula.Item()
         new_placeholder["id_bin"] = new_bin.id
         new_placeholder["position"] = 0
 
@@ -80,72 +155,71 @@ class SolverPlugin:
             if key not in ["id_bin", "position", "id_asset", "id"]:
                 new_placeholder[key] = self.placeholder[key]
 
-        new_placeholder.save(notify=False)
-        new_bin.append(new_placeholder)
-        new_bin.save(notify=False)
+        await new_placeholder.save(notify=False)
+        await new_bin.save(notify=False)
 
-        new_event = Event(db=self.db)
+        new_event = nebula.Event()
         new_event["id_channel"] = self.event["id_channel"]
         new_event["title"] = "Split block"
         new_event["start"] = tc
         new_event["id_magic"] = new_bin.id
 
-        new_event.save(notify=False)
+        await new_event.save(notify=False)
 
         self._needed_duration = None
         self._next_event = None
-        self.solve_next = new_placeholder
+        self._solve_next = new_placeholder
 
-        if new_bin.id not in self.affected_bins:
+        if new_bin.id and (new_bin.id not in self.affected_bins):
             self.affected_bins.append(new_bin.id)
 
-        return True
-
-    def main(self, debug=False, counter=0):
-        logging.info("Solving {}".format(self.placeholder))
-        message = "Solver returned no items. Keeping placeholder."
+    async def main(self):
+        nebula.log.info(f"Solving {self.placeholder}", user=self.name)
         try:
-            for new_item in self.solve():
+            async for new_item in self.solve():
+                await new_item.get_asset()
                 self.new_items.append(new_item)
-                if debug:
-                    logging.debug("Appending {}".format(new_item.asset))
         except Exception:
-            message = log_traceback("Error occured during solving")
-            return NebulaResponse(501, message)
-
-        if debug:
-            return NebulaResponse(202)
+            message = nebula.log.traceback(
+                "Error occured during solving",
+                user=self.name,
+            )
+            raise nebula.NebulaException(message)
 
         if not self.new_items:
-            return NebulaResponse(204, message)
+            return
 
         i = 0
-        for item in self.bin.items:
+        items = await self.bin.get_items()
+        for item in items:
             i += 1
             if item.id == self.placeholder.id:
-                item.delete()
+                await item.delete()
                 for new_item in self.new_items:
                     i += 1
                     new_item["id_bin"] = self.bin.id
                     new_item["position"] = i
-                    new_item.save(notify=False)
+                    await new_item.save(notify=False)
             if item["position"] != i:
                 item["position"] = i
-                item.save(notify=False)
+                await item.save(notify=False)
 
         if self.bin.id not in self.affected_bins:
             self.affected_bins.append(self.bin.id)
 
-        if self.solve_next:
-            self.init_solver(self.solve_next)
-            return self.main(debug=debug, counter=len(self.new_items) + counter)
+        # another paceholder was created, so we need to solve it
+        if self._solve_next:
+            self(self._solve_next)
+            return
 
-        bin_refresh(self.affected_bins, db=self.db)
-        return NebulaResponse(
-            200, "Created {} new items".format(len(self.new_items) + counter)
-        )
+        # recalculate bin durations and notify clients about changes
+        await bin_refresh(self.affected_bins)
 
-    def solve(self):
+    #
+    # Solver implementation
+    #
+
+    async def solve(self):
         """
         This method must return a list or yield items
         (no need to specify order or bin values) which

@@ -1,26 +1,11 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import Dialog from './dialog'
+import { DialogButtons } from './layout'
 import { InputText } from './input'
 import { Button } from './button'
 import { sortByKey } from '/src/utils'
 import styled from 'styled-components'
 import defaultTheme from './theme'
-
-const ButtonWrapper = styled.div`
-  display: flex;
-  flex-direction: row;
-  gap: 6px;
-  justify-content: flex-start;
-  border-top: 1px solid ${(props) => props.theme.colors.surface04};
-  padding-top: 10px;
-
-  button {
-    min-width: 100px;
-  }
-`
-ButtonWrapper.defaultProps = {
-  theme: defaultTheme,
-}
 
 const BaseOption = styled.div`
   padding: 3px;
@@ -100,6 +85,15 @@ const SelectDialog = ({ options, onHide, selectionMode, initialValue }) => {
   const [filter, setFilter] = useState('')
   const [selection, setSelection] = useState({})
 
+  // Cannot be used rn - InputText does not support forwardRef yet
+  //const filterRef = useRef(null)
+  // useEffect(() => {
+  //   if (filterRef.current) {
+  //     console.log('focus')
+  //     filterRef.current.focus()
+  //   }
+  // }, [filterRef.current])
+
   // Create the selection object from the given initial Value.
 
   useEffect(() => {
@@ -155,11 +149,11 @@ const SelectDialog = ({ options, onHide, selectionMode, initialValue }) => {
           ))}
         </div>
       </div>
-      <ButtonWrapper>
-        <Button onClick={() => onClose()} label="Cancel" />
-        <Button onClick={() => onUnset()} label="Unset" />
-        <Button onClick={() => onApply()} label="Apply" />
-      </ButtonWrapper>
+      <DialogButtons>
+        <Button onClick={() => onUnset()} label="Unset" icon="backspace" />
+        <Button onClick={() => onClose()} label="Cancel" icon="close" />
+        <Button onClick={() => onApply()} label="Apply" icon="check" />
+      </DialogButtons>
     </Dialog>
   )
 }
@@ -294,9 +288,12 @@ const Select = ({
   if (selectionMode === 'single' && options.length < 10) {
     return (
       <StyledHTMLSelect
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
+        value={value || ''}
+        onChange={(e) => {
+          onChange(e.target.value || null)
+        }}
       >
+        <option value={null}></option>
         {options.map((option) => (
           <option key={option.value} value={option.value}>
             {option.title}
@@ -309,6 +306,13 @@ const Select = ({
   return (
     <DialogBasedSelect>
       {dialog}
+      <InputText
+        value={displayValue}
+        placeholder={placeholder}
+        readonly
+        style={{ flexGrow: 1 }}
+      />
+      {/*
       <div className="select-field" onClick={() => setDialogVisible(true)}>
         {displayValue ? (
           <span>{displayValue}</span>
@@ -316,6 +320,7 @@ const Select = ({
           <span className="placeholder">{placeholder}</span>
         )}
       </div>
+      */}
       <Button label="..." onClick={() => setDialogVisible(true)} />
     </DialogBasedSelect>
   )

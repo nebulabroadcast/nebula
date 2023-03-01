@@ -5,10 +5,7 @@ from nebula.settings import settings
 
 ALWAYS_TO_INT = [
     "id_folder",
-    # "id_asset",
-    "id_bin",
     "id_event",
-    "id_magic",
     "id_channel",
     "content_type",
     "media_type",
@@ -44,8 +41,9 @@ def normalize_meta(key: str, value: Any) -> Any:
 
     # If there's no matching metatype, just return the value
     if key not in settings.metatypes.keys():
-        if not is_serializable(value):
-            raise ValueError(f"Value {value} of undefined key {key} is not supported.")
+        assert is_serializable(
+            value
+        ), f"Value {value} set to unknown key {key} is not supported."
         return value
 
     meta_type = settings.metatypes[key]
@@ -81,11 +79,13 @@ def normalize_meta(key: str, value: Any) -> Any:
             return float(value)
 
         case MetaClass.OBJECT:
-            assert is_serializable(value)
+            assert is_serializable(
+                value
+            ), f"Value {value} of key {key} is not supported."
             return value
 
         case MetaClass.FRACTION:
-            assert type(value) is str, f"{key} must be a strint. is {type(value)}"
+            assert type(value) is str, f"{key} must be a string. is {type(value)}"
             return value
 
         case MetaClass.SELECT:
@@ -94,9 +94,8 @@ def normalize_meta(key: str, value: Any) -> Any:
 
         case MetaClass.LIST:
             if not value:
-                return []
-            if not isinstance(value, list):
-                raise ValueError("List is already a list")
+                return None
+            assert isinstance(value, list), f"{key} must be a list. is {type(value)}"
             return [str(v) for v in value]
 
         case MetaClass.COLOR:

@@ -3,7 +3,6 @@ from nebula.enum import ObjectStatus, RunMode
 from nebula.helpers.scheduling import (
     get_item_runs,
     get_pending_assets,
-    parse_durations,
     parse_rundown_date,
 )
 
@@ -63,30 +62,38 @@ async def get_rundown(request: RundownRequestModel) -> RundownResponseModel:
         imeta = record["imeta"] or {}
         ameta = record["ameta"] or {}
 
+        event = nebula.Event.from_meta(emeta)
+        item = nebula.Item.from_meta(imeta)
+        if ameta:
+            asset = nebula.Asset.from_meta(ameta)
+            item.asset = asset
+        else:
+            asset = None
+
         if (last_event is None) or (id_event != last_event.id):
             row = RundownRow(
                 id=id_event,
                 type="event",
                 row_number=len(rows),
-                scheduled_time=emeta["start"],
-                broadcast_time=emeta["start"],
-                run_mode=emeta.get("run_mode", RunMode.RUN_AUTO),
-                title=emeta.get("title"),
-                subtitle=emeta.get("subtitle"),
-                id_asset=emeta.get("id_asset"),
+                scheduled_time=event["start"],
+                broadcast_time=event["start"],
+                run_mode=event.get("run_mode", RunMode.RUN_AUTO),
+                title=event.get("title"),
+                subtitle=event.get("subtitle"),
+                id_asset=event.get("id_asset"),
                 id_bin=id_bin,
                 meta=emeta,
             )
 
             ts_scheduled = row.scheduled_time
             if last_event is None:
-                ts_broadcast = emeta["start"]
+                ts_broadcast = event["start"]
 
             if last_event and (not last_event.duration):
-                ts_broadcast = emeta["start"]
+                ts_broadcast = event["start"]
 
             if emeta.get("run_mode", 0):
-                ts_broadcast = emeta["start"]
+                ts_broadcast = event["start"]
 
             last_event = row
             rows.append(row)
@@ -128,12 +135,15 @@ async def get_rundown(request: RundownRequestModel) -> RundownResponseModel:
         else:
             istatus = ObjectStatus.UNKNOWN
 
-        if ameta and ameta["id"] in pending_assets:
+        if asset and asset.id in pending_assets:
             transfer_progress = -1
         else:
             transfer_progress = None
 
-        duration, mark_in, mark_out = parse_durations(ameta, imeta)
+        # duration, mark_in, mark_out = parse_durations(ameta, imeta)
+        duration = item.duration
+        mark_in = item.meta.get("mark_in")
+        mark_out = item.meta.get("mark_out")
 
         # Append item to the result
 
@@ -145,8 +155,8 @@ async def get_rundown(request: RundownRequestModel) -> RundownResponseModel:
             broadcast_time=ts_broadcast,
             run_mode=imeta.get("run_mode"),
             item_role=imeta.get("item_role"),
-            title=imeta.get("title") or ameta.get("title"),
-            subtitle=imeta.get("subtitle") or ameta.get("subtitle"),
+            title=item["title"],
+            subtitle=item["subtitle"],
             id_asset=imeta.get("id_asset"),
             id_bin=id_bin,
             duration=duration,

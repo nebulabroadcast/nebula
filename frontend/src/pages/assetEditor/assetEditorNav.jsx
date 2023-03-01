@@ -16,6 +16,7 @@ import {
 import SendToDialog from '/src/containers/sendTo'
 import MetadataDetail from './detail'
 import ContextActionResult from './contextAction'
+import UploadDialog from './uploadDialog'
 
 import contentType from 'content-type'
 
@@ -27,9 +28,12 @@ const AssetEditorNav = ({
   onSave,
   setMeta,
   isChanged,
+  previewVisible,
+  setPreviewVisible,
 }) => {
   const [detailsVisible, setDetailsVisible] = useState(false)
   const [sendToVisible, setSendToVisible] = useState(false)
+  const [uploadVisible, setUploadVisible] = useState(false)
   const [contextActionResult, setContextActionResult] = useState(null)
 
   const dispatch = useDispatch()
@@ -112,6 +116,7 @@ const AssetEditorNav = ({
   const canClone = assetData?.id && isChanged
   const canRevert = isChanged
   const canFlag = assetData?.id && !limited
+  const canUpload = assetData?.id
 
   return (
     <Navbar>
@@ -128,6 +133,13 @@ const AssetEditorNav = ({
         <SendToDialog
           assets={[assetData.id]}
           onHide={() => setSendToVisible(false)}
+        />
+      )}
+
+      {uploadVisible && (
+        <UploadDialog
+          assetData={assetData}
+          onHide={() => setUploadVisible(false)}
         />
       )}
 
@@ -175,6 +187,15 @@ const AssetEditorNav = ({
         </>
       )}
 
+      {nebula.settings.system.ui_asset_preview && (
+        <Button
+          icon="visibility"
+          onClick={() => setPreviewVisible(!previewVisible)}
+          active={previewVisible}
+          tooltip="Preview"
+        />
+      )}
+
       <ToolbarSeparator />
 
       <Button
@@ -206,12 +227,14 @@ const AssetEditorNav = ({
 
       <ToolbarSeparator />
 
-      <Button
-        icon="upload"
-        onClick={() => {}}
-        title="Upload media file"
-        disabled={true}
-      />
+      {nebula.settings?.system?.ui_asset_upload && (
+        <Button
+          icon="upload"
+          onClick={() => setUploadVisible(true)}
+          title="Upload media file"
+          disabled={!canUpload}
+        />
+      )}
       <Button
         icon="add"
         onClick={onNewAsset}
@@ -225,7 +248,7 @@ const AssetEditorNav = ({
         disabled={!canClone}
       />
       <Button
-        icon="refresh"
+        icon="backspace"
         title="Discard changes"
         onClick={onRevert}
         disabled={!canRevert}

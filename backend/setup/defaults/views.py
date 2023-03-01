@@ -1,6 +1,6 @@
 from nebula.settings.models import ViewSettings
 
-VIEWS = [
+VIEWS: list[ViewSettings] = [
     ViewSettings(
         id=1,
         name="Main",

@@ -10,10 +10,14 @@ const Input = styled.input`
   border-radius: ${(props) => props.theme.inputBorderRadius};
   background: ${(props) => props.theme.inputBackground};
   color: ${(props) => props.theme.colors.text};
+  font-size: ${(props) => props.theme.fontSize};
   min-height: ${(props) => props.theme.inputHeight};
+  max-height: ${(props) => props.theme.inputHeight};
   font-size: ${(props) => props.theme.fontSize};
   padding-left: ${(props) => props.theme.inputPadding};
   padding-right: ${(props) => props.theme.inputPadding};
+  padding-top: 0;
+  padding-bottom: 0;
   min-width: 200px;
 
   &:-webkit-autofill,
@@ -39,9 +43,9 @@ const Input = styled.input`
   }
 
   &.timecode {
-    min-width: 92px;
-    max-width: 92px;
-    padding-right: 10px !important;
+    min-width: 96px;
+    max-width: 96px;
+    padding-right: 14px !important;
     text-align: right;
     font-family: monospace;
   }
@@ -83,19 +87,33 @@ const dateRegex = /^(\d{4})-(\d{2})-(\d{2})$/
 const allowedDateCharsRegex = /^[\d-\:\ ]*$/
 
 const InputDatetime = ({ value, onChange, placeholder, className = '' }) => {
-  const [time, setTime] = useState(value)
+  const [time, setTime] = useState()
   const [isFocused, setIsFocused] = useState(false)
   const inputRef = useRef(null)
+
+  useEffect(() => {
+    if (!value) {
+      setTime('')
+      return
+    }
+
+    setTime(DateTime.fromSeconds(value).toFormat('yyyy-MM-dd HH:mm:ss'))
+  }, [value])
 
   const handleChange = (event) => {
     let newValue = event.target.value
     if (!allowedDateCharsRegex.test(newValue)) return
-    //const lastChar = inputString.charAt(inputString.length - 1)
-    if (
+
+    // if the original value ended with a dash and the new value removes this dash,
+    // so it is one byte shorter than the original value, we need to remove the dash
+    // as well as the last character of the new value
+
+    if (time && time.length - 1 === newValue.length && time.endsWith('-')) {
+      newValue = newValue.slice(0, -1)
+    } else if (
       [4, 7].includes(newValue.length) &&
       newValue.charAt(newValue.length - 1) !== '-'
     )
-      // && !isNaN(parseInt(lastChar)))
       newValue = newValue + '-'
     setTime(newValue)
   }

@@ -7,6 +7,7 @@ const BaseSwitch = styled.div`
   display: flex;
   flex-direction: row;
   align-items: center;
+  outline: 1px solid red;
 
   label {
     --bheight: ${(props) => props.theme.inputHeight * 0.7};

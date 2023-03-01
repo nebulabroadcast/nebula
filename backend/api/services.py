@@ -19,6 +19,7 @@ class ServiceItemModel(RequestModel):
         title="Service status",
         description="Current status of the service",
     )
+    autostart: bool = Field(..., title="Autostart")
     last_seen: float = Field(
         ...,
         title="Last seen",
@@ -59,20 +60,25 @@ class Request(APIRequest):
         """List and control installed services."""
 
         if request.stop:
+            nebula.log.info(f"Stopping service {request.stop}", user=user.name)
             await nebula.db.execute(
                 "UPDATE services SET state = $1  WHERE id = $2",
                 ServiceState.STOPPING,
                 request.stop,
             )
         if request.start:
+            nebula.log.info(f"Starting service {request.start}", user=user.name)
             await nebula.db.execute(
                 "UPDATE services SET state = $1  WHERE id = $2",
                 ServiceState.STARTING,
                 request.start,
             )
         if request.auto:
+            nebula.log.info(
+                f"Toggling autostart for service {request.auto}", user=user.name
+            )
             await nebula.db.execute(
-                "UPDATE services SET autostart = NOT autostart WHERE id = $2",
+                "UPDATE services SET autostart = NOT autostart WHERE id = $1",
                 request.auto,
             )
 
@@ -82,6 +88,7 @@ class Request(APIRequest):
                 title,
                 service_type,
                 state,
+                autostart,
                 last_seen
             FROM services
             ORDER BY id
@@ -95,6 +102,7 @@ class Request(APIRequest):
                     name=row["title"],
                     type=row["service_type"],
                     status=row["state"],
+                    autostart=row["autostart"],
                     last_seen=time.time() - row["last_seen"],
                 )
             )

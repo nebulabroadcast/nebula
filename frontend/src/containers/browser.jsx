@@ -124,10 +124,11 @@ const getFormatter = (key) => {
   } // end switch key
 } // end getFormatter
 
-const BrowserTable = ({ reloadTrigger, module }) => {
+const BrowserTable = () => {
   const currentView = useSelector((state) => state.context.currentView?.id)
   const searchQuery = useSelector((state) => state.context.searchQuery)
   const selectedAssets = useSelector((state) => state.context.selectedAssets)
+  const browserRefresh = useSelector((state) => state.context.browserRefresh)
 
   const dispatch = useDispatch()
 
@@ -168,7 +169,7 @@ const BrowserTable = ({ reloadTrigger, module }) => {
         setColumns(cols)
       })
       .finally(() => setLoading(false))
-  }, [currentView, searchQuery, reloadTrigger, sortBy, sortDirection])
+  }, [currentView, searchQuery, browserRefresh, sortBy, sortDirection])
 
   const onRowClick = (rowData) => {
     dispatch(setSelectedAssets([rowData.id]))
@@ -197,11 +198,11 @@ const BrowserTable = ({ reloadTrigger, module }) => {
   )
 }
 
-const Browser = ({ reloadTrigger }) => {
+const Browser = () => {
   return (
     <>
       <BrowserNav />
-      <BrowserTable reloadTrigger={reloadTrigger} />
+      <BrowserTable />
     </>
   )
 }

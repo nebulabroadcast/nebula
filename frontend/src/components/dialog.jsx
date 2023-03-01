@@ -47,6 +47,7 @@ const DialogHeader = styled(BaseDialogEdge)`
 
 const DialogFooter = styled(BaseDialogEdge)`
   border-top: 1px solid var(--color-surface-04);
+  justify-content: flex-end;
 `
 
 const DialogBody = styled.div`

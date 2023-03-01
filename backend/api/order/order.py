@@ -29,13 +29,20 @@ async def set_rundown_order(
                     if not obj.id:
                         # Adding a virtual item (such as placeholder)
                         item = nebula.Item.from_meta(
-                            obj.meta, connection=conn, username=user.name
+                            obj.meta,
+                            connection=conn,
+                            username=user.name,
                         )
+                        # Empty event may not have id_bin set,
+                        # but we know, where we are putting it.
+                        item["id_bin"] = id_bin
                     else:
-                        # Moving existing item
+                        # Moving an existing item
                         item = await nebula.Item.load(
                             obj.id, connection=conn, username=user.name
                         )
+                        assert item is not None
+
                         if not item["id_bin"]:
                             nebula.log.error(
                                 f"Attempted data insert TYPE: {obj.type} ID: {obj.id}"
@@ -48,10 +55,17 @@ async def set_rundown_order(
                             nebula.log.trace(f"Skipping {item}", user=user.name)
                             continue
 
+                    # Shut-up mypy
+                    assert item is not None, "Item should not be None at this point"
+                    assert item["id_bin"] is not None, "Item w/o bin. Shouldn't happen."
+
                     if item["id_bin"] and (not item["id_bin"] in affected_bins):
                         affected_bins.append(item["id_bin"])
 
                 elif obj.type == "asset":
+                    assert (
+                        obj.id is not None
+                    ), "Asset ID must not be None when inserting asset to rundown"
                     asset = await nebula.Asset.load(
                         obj.id,
                         connection=conn,
@@ -81,6 +95,7 @@ async def set_rundown_order(
                         connection=conn,
                         username=user.name,
                     )
+                    assert item is not None, "Item should not be None at this point"
                     item["id_asset"] = asset.id
 
                 else:
@@ -88,12 +103,17 @@ async def set_rundown_order(
                     # since the request is validated by pydantic.
                     continue
 
-                if not item or item["position"] != pos or item["id_bin"] != id_bin:
+                if (
+                    (item is None)
+                    or item["position"] != pos
+                    or item["id_bin"] != id_bin
+                ):
                     item["position"] = pos
                     item["id_bin"] = id_bin
 
                     # save item, but don't send a notification just yet.
                     # we'll send one notification for all items in the bin
+                    item["updated_by"] = user.id
                     await item.save(notify=False)
                 pos += 1
 

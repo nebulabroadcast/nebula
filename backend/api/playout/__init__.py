@@ -33,10 +33,9 @@ class Request(APIRequest):
                 json=request.payload,
                 timeout=4,
             )
-
             data = response.json()
 
         if not response:
             raise nebula.NebulaException(data["message"])
 
-        return PlayoutResponseModel()
+        return PlayoutResponseModel(plugins=data.get("plugins"))
