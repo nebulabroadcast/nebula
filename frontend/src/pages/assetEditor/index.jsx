@@ -86,11 +86,9 @@ const AssetEditor = () => {
   }, [assetData, originalData])
 
   const isChanged = useMemo(() => {
-    if (!originalData?.id) return false
     let changed = []
-    for (const key in originalData) {
-      if (!isEqual(originalData[key], assetData[key])) {
-        console.log('CHANGE', key, originalData[key], assetData[key])
+    for (const key in assetData) {
+      if (!isEqual(originalData[key] || null, assetData[key] || null)) {
         return true
         //changed.push(key)
       }

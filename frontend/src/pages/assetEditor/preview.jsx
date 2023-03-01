@@ -107,7 +107,7 @@ const Preview = ({ assetData, setAssetData }) => {
   useEffect(() => {
     if (!assetData) return
     if ((assetData.subclips || []) !== subclips) {
-      setAssetData((assetData) => ({ ...assetData, subclips: subclips }))
+      setAssetData((assetData) => ({ ...assetData, subclips: subclips.length ? subclips : null }))
     }
   }, [subclips])
 
