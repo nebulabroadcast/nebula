@@ -1,3 +1,5 @@
+__version__ = "6.0.0-rc.1"
+
 __all__ = [
     "config",
     "settings",
@@ -27,6 +29,12 @@ __all__ = [
     # Plugins
     "CLIPlugin",
 ]
+
+import sys
+
+if "--version" in sys.argv:
+    print(__version__)
+    sys.exit(0)
 
 import asyncio
 
