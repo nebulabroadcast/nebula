@@ -10,7 +10,7 @@ const TableWrapper = styled.div`
     border-collapse: collapse;
 
     tr {
-      border-left: 2px solid black;
+      border-left: 2px solid var(--color-surface-02);
     }
 
     td, th {
@@ -47,7 +47,7 @@ const TableWrapper = styled.div`
         position: sticky;
         top: 0;
         height: var(--input-height);
-        border-right: 2px solid var(--color-surface-02);
+        outline: 2px solid var(--color-surface-02);
       }
 
       :first-child {
