@@ -12,7 +12,7 @@ check: check_version
 
 check_version:
 	echo $(VERSION)
-	sed -i "s/version = \".*\"/version = \"$(VERSION)\"/" backend/pyproject.toml
+	sed -i "s/^version = \".*\"/version = \"$(VERSION)\"/" backend/pyproject.toml
 
 build:
 	docker build -t $(IMAGE_NAME) .

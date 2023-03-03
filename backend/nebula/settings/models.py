@@ -3,7 +3,7 @@ from typing import Any, Literal
 from pydantic import Field
 
 from nebula.enum import ContentType, MediaType, ServiceState
-from nebula.settings.common import SettingsModel
+from nebula.settings.common import SettingsModel, LanguageCode
 from nebula.settings.metatypes import MetaType
 
 CSItemRole = Literal["hidden", "header", "label", "option"]
@@ -57,6 +57,12 @@ class BaseSystemSettings(SettingsModel):
         regex=r"^[a-zA-Z0-9_]+$",
         title="Site name",
         description="A name used as the site (instance) identification",
+    )
+
+    language: LanguageCode = Field(
+        "en",
+        title="Default language",
+        example="en",
     )
 
     ui_asset_create: bool = Field(

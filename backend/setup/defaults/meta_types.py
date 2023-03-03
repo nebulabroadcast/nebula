@@ -189,9 +189,15 @@ META_TYPES = {
         "fulltext": 8,
         "type": T.STRING,
     },
-    "description": {
+    "summary": {
         "ns": "m",
         "fulltext": 8,
+        "type": T.TEXT,
+        "syntax": "md",
+    },
+    "description": {
+        "ns": "m",
+        "fulltext": 7,
         "type": T.TEXT,
         "syntax": "md",
     },
@@ -269,6 +275,10 @@ META_TYPES = {
         "order": "alias",
     },
     "place": {
+        "ns": "m",
+        "type": T.STRING,
+    },
+    "place/type": {
         "ns": "m",
         "type": T.LIST,
         "cs": "urn:tva:metadata-cs:PlaceTypeCS",

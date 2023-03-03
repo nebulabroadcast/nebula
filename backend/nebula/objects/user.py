@@ -4,6 +4,7 @@ from typing import Any
 import asyncpg
 from pydantic import BaseModel, Field
 
+from nebula.settings import settings
 from nebula.config import config
 from nebula.db import db
 from nebula.exceptions import (
@@ -50,7 +51,7 @@ class User(BaseObject):
     @property
     def language(self):
         """Return the preferred language of the user."""
-        return self["language"] or "en"
+        return self["language"] or settings.system.language
 
     @property
     def name(self):

@@ -31,6 +31,7 @@ TEMPLATE = {
     "meta_types": META_TYPES,
     "storages": [],
     "settings": {},
+    "cs": [],
 }
 
 
@@ -47,10 +48,11 @@ def load_overrides():
         for key in TEMPLATE:
             if not hasattr(mod, key.upper()):
                 continue
-            log.info(f"Using settings overrides: {spath}")
             override = getattr(mod, key.upper())
+            log.info(f"Found overrides for {key}")
 
             if type(override) == dict and type(TEMPLATE[key]) == dict:
+                log.info("Updating settings", override)
                 TEMPLATE[key].update(override)
             elif type(override) == list and type(TEMPLATE[key]) == list:
                 TEMPLATE[key] = override
@@ -144,13 +146,23 @@ async def setup_settings(db):
 
     # Setup classifications
 
+    used_urns = set()
+    for meta_type, mset in TEMPLATE["meta_types"].items():
+        if mset.get("cs"):
+            used_urns.add(mset["cs"])
+
     classifications = []
     async with httpx.AsyncClient() as client:
         response = await client.get("https://cs.nbla.xyz/dump")
         classifications = response.json()
 
+    classifications.extend(TEMPLATE["cs"])
+
     for scheme in classifications:
         name = scheme["cs"]
+        if name not in used_urns:
+            log.trace(f"Skipping unused classification scheme: {name}")
+            continue
         await db.execute("DELETE FROM cs WHERE cs = $1", name)
         for value in scheme["data"]:
             settings = scheme["data"][value]

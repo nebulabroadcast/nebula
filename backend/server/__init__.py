@@ -1,4 +1,5 @@
 import os
+import time
 
 import aiofiles
 from fastapi import Depends, FastAPI, Header, Request
@@ -166,16 +167,24 @@ async def upload_media_file(
     assert extension in ["mp4", "mov", "mxf"], "Invalid extension"
 
     nebula.log.debug(f"Uploading media file for {asset}", user=user.name)
+
+    temp_dir = os.path.join(storage.local_path, ".nx", "creating")
+    if not os.path.isdir(temp_dir):
+        os.makedirs(temp_dir)
+
+    temp_path = os.path.join(temp_dir, f"upload-{asset.id}-{time.time()}")
+
     target_path = os.path.join(
         storage.local_path, upload_dir, f"{asset.id}.{extension}"
     )
 
     i = 0
-    async with aiofiles.open(target_path, "wb") as f:
+    async with aiofiles.open(temp_path, "wb") as f:
         async for chunk in request.stream():
             i += len(chunk)
             await f.write(chunk)
 
+    os.rename(temp_path, target_path)
     nebula.log.info(f"Uploaded media file for {asset}", user=user.name)
 
 
