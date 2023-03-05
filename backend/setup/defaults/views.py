@@ -78,7 +78,7 @@ VIEWS: list[ViewSettings] = [
         name="Series",
         separator=True,
         position=30,
-        folders=[11],
+        folders=[13],
         columns=[
             "title",
             "genre",

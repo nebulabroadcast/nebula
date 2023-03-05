@@ -52,7 +52,6 @@ def load_overrides():
             log.info(f"Found overrides for {key}")
 
             if type(override) == dict and type(TEMPLATE[key]) == dict:
-                log.info("Updating settings", override)
                 TEMPLATE[key].update(override)
             elif type(override) == list and type(TEMPLATE[key]) == list:
                 TEMPLATE[key] = override

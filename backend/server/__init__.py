@@ -8,7 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.websockets import WebSocket, WebSocketDisconnect
 
 import nebula
-from nebula.enum import MediaType
+from nebula.enum import MediaType, ObjectStatus
 from nebula.exceptions import NebulaException
 from nebula.settings import load_settings
 from server.dependencies import asset_in_path, current_user, current_user_query
@@ -156,15 +156,21 @@ async def upload_media_file(
     """
 
     assert asset["media_type"] == MediaType.FILE, "Only file assets can be uploaded"
-    assert nebula.settings.system.upload_storage, "Upload storage not configured"
-    assert nebula.settings.system.upload_dir, "Upload path not configured"
-
-    storage = nebula.storages[nebula.settings.system.upload_storage]
-    upload_dir = nebula.settings.system.upload_dir
-
     extension = request.headers.get("X-nebula-extension")
     assert extension, "Missing X-nebula-extension header"
     assert extension in ["mp4", "mov", "mxf"], "Invalid extension"
+
+    if nebula.settings.system_upload_storage and nebula.settings.system_upload_dir:
+        direct = False
+        storage = nebula.storages[nebula.settings.system.upload_storage]
+        upload_dir = nebula.settings.system.upload_dir
+        target_path = os.path.join(
+            storage.local_path, upload_dir, f"{asset.id}.{extension}"
+        )
+    else:
+        direct = True
+        storage = nebula.storages[asset["id_storage"]]
+        target_path = os.path.join(storage.local_path, f"{asset.id}.{extension}")
 
     nebula.log.debug(f"Uploading media file for {asset}", user=user.name)
 
@@ -174,10 +180,6 @@ async def upload_media_file(
 
     temp_path = os.path.join(temp_dir, f"upload-{asset.id}-{time.time()}")
 
-    target_path = os.path.join(
-        storage.local_path, upload_dir, f"{asset.id}.{extension}"
-    )
-
     i = 0
     async with aiofiles.open(temp_path, "wb") as f:
         async for chunk in request.stream():
@@ -185,6 +187,15 @@ async def upload_media_file(
             await f.write(chunk)
 
     os.rename(temp_path, target_path)
+    if direct:
+        if extension != os.path.splitext(asset["path"])[1][1:]:
+            nebula.log.warning(
+                f"Uploaded media file extension {extension} does not match "
+                f"asset extension {os.path.splitext(asset['path'])[1][1:]}"
+            )
+            asset["path"] = os.path.splitext(asset["path"])[0] + "." + extension
+        asset["status"] = ObjectStatus.CREATING
+        await asset.save()
     nebula.log.info(f"Uploaded media file for {asset}", user=user.name)
 
 
