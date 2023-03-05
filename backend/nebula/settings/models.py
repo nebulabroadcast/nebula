@@ -3,7 +3,7 @@ from typing import Any, Literal
 from pydantic import Field
 
 from nebula.enum import ContentType, MediaType, ServiceState
-from nebula.settings.common import SettingsModel, LanguageCode
+from nebula.settings.common import LanguageCode, SettingsModel
 from nebula.settings.metatypes import MetaType
 
 CSItemRole = Literal["hidden", "header", "label", "option"]

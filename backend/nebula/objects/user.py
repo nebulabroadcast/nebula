@@ -4,7 +4,6 @@ from typing import Any
 import asyncpg
 from pydantic import BaseModel, Field
 
-from nebula.settings import settings
 from nebula.config import config
 from nebula.db import db
 from nebula.exceptions import (
@@ -14,6 +13,7 @@ from nebula.exceptions import (
     NotImplementedException,
 )
 from nebula.objects.base import BaseObject
+from nebula.settings import settings
 
 
 def hash_password(password: str):

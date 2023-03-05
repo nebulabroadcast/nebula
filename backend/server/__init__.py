@@ -160,7 +160,7 @@ async def upload_media_file(
     assert extension, "Missing X-nebula-extension header"
     assert extension in ["mp4", "mov", "mxf"], "Invalid extension"
 
-    if nebula.settings.system_upload_storage and nebula.settings.system_upload_dir:
+    if nebula.settings.system.upload_storage and nebula.settings.system.upload_dir:
         direct = False
         storage = nebula.storages[nebula.settings.system.upload_storage]
         upload_dir = nebula.settings.system.upload_dir
