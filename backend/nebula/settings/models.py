@@ -103,9 +103,10 @@ class SystemSettings(BaseSystemSettings):
     smtp_host: str | None = Field(None, title="SMTP host", example="smtp.example.com")
     smtp_port: int | None = Field(None, title="SMTP port", example=465)
     smtp_user: str | None = Field(None, title="SMTP user", example="smtpuser")
-    smtp_password: str | None = Field(None, title="SMTP password", example="smtppass.1")
+    smtp_pass: str | None = Field(None, title="SMTP password", example="smtppass.1")
+
     mail_from: str | None = Field(
-        None,
+        "Nebula <noreply@nebulabroadcast.com>",
         title="Mail from",
         description="Email address used as the sender",
         example="Nebula <noreply@example.com>",
