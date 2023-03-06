@@ -1,8 +1,8 @@
 import smtplib
-import nebula
-
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+
+import nebula
 
 try:
     import mistune  # noqa
@@ -37,19 +37,37 @@ def markdown2email(text) -> MIMEMultipart | MIMEText:
         return MIMEText(text, "plain")
 
 
-def send_mail(to: str, subject: str, body: str | MIMEText | MIMEMultipart, **kwargs):
-    if type(to) == str:
-        to = [to]
+def send_mail(
+    to: str | list[str],
+    subject: str,
+    body: str | MIMEText | MIMEMultipart,
+    **kwargs,
+):
+    addresses: list[str] = []
+    if isinstance(to, str):
+        addresses.append(to)
+    else:
+        addresses.extend(to)
+
     reply_address = kwargs.get("from", nebula.settings.system.mail_from)
 
-    if isinstance(body, MIMEMultipart):
-        msg = body
-    else:
+    msg: MIMEText | MIMEMultipart
+    if isinstance(body, str):
         msg = MIMEText(body)
+    else:
+        msg = body
 
     msg["Subject"] = subject
     msg["From"] = reply_address
     msg["To"] = ",".join(to)
+
+    try:
+        assert nebula.settings.system.smtp_host is not None, "SMTP host not set"
+        assert nebula.settings.system.smtp_port is not None, "SMTP port not set"
+    except AssertionError as e:
+        nebula.log.error(f"Unable to send email: {e}")
+        return
+
     if nebula.settings.system.smtp_port == 25:
         s = smtplib.SMTP(nebula.settings.system.smtp_host, port=25)
     else:
@@ -65,4 +83,4 @@ def send_mail(to: str, subject: str, body: str | MIMEText | MIMEMultipart, **kwa
 
     if user and password:
         s.login(user, password)
-    s.sendmail(reply_address, [to], msg.as_string())
+    s.sendmail(reply_address, addresses, msg.as_string())

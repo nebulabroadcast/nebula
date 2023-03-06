@@ -24,9 +24,11 @@ def get_plugin(name: str):
         try:
             plugin_module = import_module(module_name, module_path)
         except ModuleNotFoundError:
-            nebula.log.error(f"Module {name} not found")
+            nebula.log.error(f"Unable to import module {module_path}")
+            continue
         except ImportError:
             nebula.log.traceback(f"Error importing module {name}")
+            continue
 
         for plugin_class in classes_from_module(
             nebula.plugins.CLIPlugin, plugin_module

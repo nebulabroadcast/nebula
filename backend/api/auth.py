@@ -1,8 +1,9 @@
-from fastapi import Header
+from fastapi import Depends, Header
 from pydantic import Field
 
 import nebula
-from nebula.exceptions import UnauthorizedException
+from nebula.exceptions import NotFoundException, UnauthorizedException
+from server.dependencies import current_user
 from server.models import RequestModel, ResponseModel
 from server.request import APIRequest
 from server.session import Session
@@ -35,6 +36,11 @@ class LoginResponseModel(ResponseModel):
         description="Access token to be used in Authorization header"
         "for the subsequent requests",
     )
+
+
+class PasswordRequestModel(RequestModel):
+    login: str | None = Field(None, title="Login", example="admin")
+    password: str = Field(..., title="Password", example="Password.123")
 
 
 #
@@ -71,3 +77,40 @@ class LogoutRequest(APIRequest):
         await Session.delete(access_token)
 
         raise UnauthorizedException("Logged out")
+
+
+class SetPassword(APIRequest):
+    """Set a new password for the current (or a given) user.
+
+    In order to set a password for another user, the current user must be an admin.
+    """
+
+    name: str = "password"
+    title: str = "Set password"
+
+    async def handle(
+        self,
+        request: PasswordRequestModel,
+        user: nebula.User = Depends(current_user),
+    ):
+        if request.login:
+            if not user.is_admin:
+                raise UnauthorizedException(
+                    "Only admin can change other user's password"
+                )
+            query = "SELECT meta FROM users WHERE login = $1"
+            async for row in nebula.db.iterate(query, request.login):
+                target_user = nebula.User.from_row(row)
+                break
+            else:
+                raise NotFoundException(f"User {request.login} not found")
+        else:
+            target_user = user
+
+        if len(request.password) < 8:
+            raise UnauthorizedException("Password is too short")
+
+        target_user.set_password(request.password)
+        await user.save()
+
+        return ResponseModel()

@@ -11,7 +11,10 @@ class NebulaConfig(BaseModel):
         description="",
     )
 
-    motd: str = Field("Nebula 6 ALPHA")
+    motd: str = Field(
+        "Nebula 6",
+        description="Message of the day",
+    )
 
     postgres: PostgresDsn = Field(
         "postgres://nebula:nebula@postgres/nebula",

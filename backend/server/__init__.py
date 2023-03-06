@@ -185,6 +185,7 @@ async def upload_media_file(
         async for chunk in request.stream():
             i += len(chunk)
             await f.write(chunk)
+    nebula.log.debug(f"Uploaded {i} bytes", user=user.name)
 
     os.rename(temp_path, target_path)
     if direct:
