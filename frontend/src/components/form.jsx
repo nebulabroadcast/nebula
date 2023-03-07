@@ -5,6 +5,13 @@ const Form = styled.div`
   flex-direction: column;
   gap: var(--gap-size);
 
+  h3 {
+    width: 100%;
+    text-align: center;
+    font-size: 1rem;
+    font-weight: 500;
+  }
+
   .form-row {
     display: flex;
     flex-direction: row;
@@ -27,14 +34,17 @@ const Form = styled.div`
   }
 `
 
-const FormRow = ({ title, tooltip, children, ...props }) => {
+const FormRow = ({ title, tooltip, section, children, ...props }) => {
   return (
+    <>
+    {section && <h3>{section}</h3>}
     <div className="form-row" {...props}>
       <div className="form-title">
         <span title={tooltip}>{title}</span>
       </div>
       <div className="form-control">{children}</div>
     </div>
+    </>
   )
 }
 

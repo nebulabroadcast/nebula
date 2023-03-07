@@ -182,6 +182,17 @@ const InputPassword = ({ value, onChange, ...props }) => {
   )
 }
 
+const InputInteger = ({ value, onChange, ...props }) => {
+  return (
+    <Input
+      type="number"
+      value={value || null}
+      onChange={(e) => onChange(e.target.value)}
+      {...props}
+    />
+  )
+}
+
 const TextArea = ({ value, onChange, ...props }) => {
   return (
     <Input
@@ -285,6 +296,7 @@ export {
   TextArea,
   InputTimecode,
   InputText,
+  InputInteger,
   InputNumber,
   InputPassword,
   InputDatetime,

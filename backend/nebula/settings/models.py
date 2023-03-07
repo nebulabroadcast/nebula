@@ -178,6 +178,7 @@ class StorageSettings(BaseStorageSettings):
 
 class FolderField(SettingsModel):
     name: str = Field(..., title="Field name")
+    section: str | None = Field(None, title="Section")
     mode: str | None = None
     format: str | None = None
     order: str | None = None

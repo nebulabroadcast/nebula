@@ -23,6 +23,11 @@ const MAMContainer = styled.div`
     gap: 8px;
     min-width: 400px;
   }
+
+  .__dbk__child-wrapper:last-child {
+    min-width: 1000px;
+  }
+
 `
 
 const MAMPage = () => {

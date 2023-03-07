@@ -9,6 +9,7 @@ import Video from './video'
 
 import {
   InputDatetime,
+  InputInteger,
   InputNumber,
   InputPassword,
   InputText,
@@ -30,6 +31,7 @@ export {
   Form,
   FormRow,
   InputDatetime,
+  InputInteger,
   InputNumber,
   InputPassword,
   InputText,

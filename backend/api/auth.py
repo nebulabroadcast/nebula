@@ -1,8 +1,8 @@
-from fastapi import Depends, Header
+from fastapi import Depends, Header, Response
 from pydantic import Field
 
 import nebula
-from nebula.exceptions import NotFoundException, UnauthorizedException
+
 from server.dependencies import current_user
 from server.models import RequestModel, ResponseModel
 from server.request import APIRequest
@@ -68,15 +68,15 @@ class LogoutRequest(APIRequest):
 
     async def handle(self, authorization: str | None = Header(None)):
         if not authorization:
-            raise UnauthorizedException("No authorization header provided")
+            raise nebula.UnauthorizedException("No authorization header provided")
 
         access_token = parse_access_token(authorization)
         if not access_token:
-            raise UnauthorizedException("Invalid authorization header provided")
+            raise nebula.UnauthorizedException("Invalid authorization header provided")
 
         await Session.delete(access_token)
 
-        raise UnauthorizedException("Logged out")
+        raise nebula.UnauthorizedException("Logged out")
 
 
 class SetPassword(APIRequest):
@@ -95,7 +95,7 @@ class SetPassword(APIRequest):
     ):
         if request.login:
             if not user.is_admin:
-                raise UnauthorizedException(
+                raise nebula.UnauthorizedException(
                     "Only admin can change other user's password"
                 )
             query = "SELECT meta FROM users WHERE login = $1"
@@ -103,14 +103,14 @@ class SetPassword(APIRequest):
                 target_user = nebula.User.from_row(row)
                 break
             else:
-                raise NotFoundException(f"User {request.login} not found")
+                raise nebula.NotFoundException(f"User {request.login} not found")
         else:
             target_user = user
 
         if len(request.password) < 8:
-            raise UnauthorizedException("Password is too short")
+            raise nebula.BadRequestException("Password is too short")
 
         target_user.set_password(request.password)
         await user.save()
 
-        return ResponseModel()
+        return Response(status_code=204)

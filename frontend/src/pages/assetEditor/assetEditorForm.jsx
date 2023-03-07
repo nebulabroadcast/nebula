@@ -3,7 +3,7 @@ import nebula from '/src/nebula'
 import { useMemo } from 'react'
 
 import { Form, FormRow, Select } from '/src/components'
-import { InputText, TextArea, InputDatetime, InputSwitch } from '/src/components'
+import { InputText, InputInteger, TextArea, InputDatetime, InputSwitch } from '/src/components'
 
 const EditorField = ({ field, value, originalValue, onFieldChanged }) => {
   const metaType = { ...nebula.metaType(field.name), ...field }
@@ -78,6 +78,9 @@ const EditorField = ({ field, value, originalValue, onFieldChanged }) => {
     case 'boolean':
       editor = <InputSwitch value={value} onChange={onChange} />
       break
+    case 'integer':
+      editor = <InputInteger value={value} onChange={onChange} />
+      break
     default:
       editor = <InputText value={value} onChange={onChange} disabled={true} />
   }
@@ -86,6 +89,7 @@ const EditorField = ({ field, value, originalValue, onFieldChanged }) => {
     <FormRow
       title={`${metaType.title}${changed ? ' *' : ''}`}
       tooltip={metaType.description}
+      section={metaType.section}
     >
       {editor}
     </FormRow>
