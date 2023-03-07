@@ -3,7 +3,7 @@ import nebula from '/src/nebula'
 import { useMemo } from 'react'
 
 import { Form, FormRow, Select } from '/src/components'
-import { InputText, TextArea, InputDatetime } from '/src/components/input'
+import { InputText, TextArea, InputDatetime, InputSwitch } from '/src/components'
 
 const EditorField = ({ field, value, originalValue, onFieldChanged }) => {
   const metaType = { ...nebula.metaType(field.name), ...field }
@@ -74,6 +74,9 @@ const EditorField = ({ field, value, originalValue, onFieldChanged }) => {
       break
     case 'datetime':
       editor = <InputDatetime value={value} onChange={onChange} />
+      break
+    case 'boolean':
+      editor = <InputSwitch value={value} onChange={onChange} />
       break
     default:
       editor = <InputText value={value} onChange={onChange} disabled={true} />

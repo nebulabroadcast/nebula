@@ -3,7 +3,7 @@ import Dropdown from './dropdown'
 import Loader from './loader'
 import Progress from './progress'
 import Select from './select'
-import Switch from './switch'
+import InputSwitch from './switch'
 import Table from './table'
 import Video from './video'
 
@@ -39,7 +39,7 @@ export {
   Progress,
   Select,
   Spacer,
-  Switch,
+  InputSwitch,
   Table,
   TextArea,
   Timestamp,

@@ -2,7 +2,7 @@ import nebula from '/src/nebula'
 import { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import PubSub from '/src/pubsub'
-import { Table, Button, Switch } from '/src/components'
+import { Table, Button, InputSwitch } from '/src/components'
 import { Duration } from 'luxon'
 import { setPageTitle } from '/src/actions'
 
@@ -66,7 +66,7 @@ const ServicesPage = () => {
 
     return (
       <td style={{ textAlign: 'center' }}>
-        <input type="checkbox" checked={autoStart} onChange={onChange} />
+        <InputSwitch value={autoStart} onChange={onChange} className="small"/>
       </td>
     )
   }
