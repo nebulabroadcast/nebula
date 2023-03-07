@@ -21,10 +21,7 @@ class Request(APIRequest):
         user: nebula.User = Depends(current_user),
     ) -> RundownResponseModel:
 
-        # TODO: Handle ACL here
-        # if not (
-        #     user.has_right("rundown_view", id_channel)
-        #     or user.has_right("rundown_edit", id_channel)
-        # ):
+        if user.can("rundown_view", request.id_channel):
+            raise nebula.ForbiddenException("You are not allowed to view this rundown")
 
         return await get_rundown(request)

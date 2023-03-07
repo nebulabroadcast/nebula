@@ -9,12 +9,17 @@ from server.request import APIRequest
 
 
 class ActionsRequestModel(RequestModel):
-    ids: list[int]
+    ids: list[int] = Field(
+        ...,
+        title="Asset IDs",
+        description="List of asset IDs for which to get available actions",
+        example=[1, 2, 3],
+    )
 
 
 class ActionItemModel(ResponseModel):
-    id: int = Field(..., title="Action ID")
-    name: str = Field(..., title="Action name")
+    id: int = Field(..., title="Action ID", example=1)
+    name: str = Field(..., title="Action name", example="proxy")
 
 
 class ActionsResponseModel(ResponseModel):
@@ -47,7 +52,10 @@ class ActionsRequest(APIRequest):
         """
 
         async for row in nebula.db.iterate(query):
-            # TODO: implement ACL
+
+            if not user.can("job_control", row["id"]):
+                continue
+
             action_settings = xml(row["settings"])
 
             if allow_if_elm := action_settings.findall("allow_if"):
