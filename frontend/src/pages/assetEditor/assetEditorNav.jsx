@@ -17,6 +17,7 @@ import SendToDialog from '/src/containers/sendTo'
 import MetadataDetail from './detail'
 import ContextActionResult from './contextAction'
 import UploadDialog from './uploadDialog'
+import Assignees from './assignees'
 
 import contentType from 'content-type'
 
@@ -183,6 +184,10 @@ const AssetEditorNav = ({
             align="right"
             options={assetActions}
             disabled={!assetData?.id || isChanged}
+          />
+          <Assignees 
+            assignees={assetData?.assignees || []} 
+            setAssignees={val => setMeta('assignees', val)}
           />
         </>
       )}

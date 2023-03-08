@@ -214,7 +214,9 @@ def build_query(
     # Access control
 
     if user.is_limited:
-        cond_list.append(f"meta->>'created_by' = '{user.id}'")
+        c1 = f"meta->>'created_by' = '{user.id}'"
+        c2 = f"meta->'assignees' @> '[{user.id}]'::JSONB"
+        cond_list.append(f"({c1} OR {c2})")
 
     # Build conditions
 
