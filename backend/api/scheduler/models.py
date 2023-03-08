@@ -26,6 +26,8 @@ class EventData(RequestModel):
         example=123,
     )
 
+    items: list[dict[str, Serializable]] | None = Field(default_factory=list)
+
     meta: dict[str, Serializable] | None = Field(
         default=None,
         title="Event metadata",

@@ -22,7 +22,7 @@ class Request(APIRequest):
         initiator: str = Depends(request_initiator),
     ) -> SchedulerResponseModel:
 
-        if user.can("scheduler_view", request.id_channel):
+        if not user.can("scheduler_view", request.id_channel):
             raise nebula.ForbiddenException("You are not allowed to view this channel")
 
         editable = user.can("scheduler_edit", request.id_channel)
