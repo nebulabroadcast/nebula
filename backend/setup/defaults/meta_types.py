@@ -398,8 +398,7 @@ META_TYPES = {
     },
     "commercial/pp": {
         "ns": "m",
-        "type": T.SELECT,
-        "cs": "urn:site:clients",
+        "type": T.BOOLEAN,
     },
     "runs/daily": {
         "ns": "m",

@@ -53,6 +53,7 @@ const Input = styled.input`
   &.textarea {
     padding: ${(props) => props.theme.inputPadding};
     min-height: 60px;
+    max-height: 400px !important;
     resize: vertical;
   }
 `
