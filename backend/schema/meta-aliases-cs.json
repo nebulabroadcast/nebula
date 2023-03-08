@@ -1,5 +1,6 @@
 [
   ["commercial/content"     , "Reklamí obsah"          , "Rekl. obsah"       , ""],
+  ["commercial/pp"          , "Product placement"      , "PP"                , "Obsahuje product placement"],
   ["solver"                 , "Solver"                 , null                , ""],
   ["year"                   , "Rok"                    , null                , "Rok vydání díla"],
   ["id_user"                , "ID uživatele"           , null                , ""],
@@ -75,6 +76,7 @@
   ["audio/silence"          , "Ticho"                  , null                , ""],
   ["place"                  , "Místo"                  , null                , ""],
   ["place/type"             , "Typ místa"              , null                , ""],
+  ["place/specific"         , "Upřesnění místa"        , null                , ""],
   ["video/is_interlaced"    , "Prokládání"             , null                , ""],
   ["id_item"                , "Item ID"                , null                , ""],
   ["rights/spatial"         , "Regionální omezení"     , null                , ""],

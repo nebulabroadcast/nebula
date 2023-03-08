@@ -396,6 +396,11 @@ META_TYPES = {
         "type": T.SELECT,
         "cs": "urn:site:clients",
     },
+    "commercial/pp": {
+        "ns": "m",
+        "type": T.SELECT,
+        "cs": "urn:site:clients",
+    },
     "runs/daily": {
         "ns": "m",
         "type": T.INTEGER,

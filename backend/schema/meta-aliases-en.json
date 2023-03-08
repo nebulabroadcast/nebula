@@ -1,5 +1,6 @@
 [
   ["commercial/content"     , "Commercial content"     , "Content"           , ""],
+  ["commercial/pp"          , "Product placement"      , "PP"                , "Contains product placement"],
   ["solver"                 , "Solver"                 , null                , ""],
   ["year"                   , "Year"                   , null                , ""],
   ["id_user"                , "User ID"                , null                , ""],
@@ -75,6 +76,7 @@
   ["audio/silence"          , "Silence"                , null                , ""],
   ["place"                  , "Place"                  , null                , ""],
   ["place/type"             , "Place type"             , null                , ""],
+  ["place/specific"         , "Place specification"    , null                , ""],
   ["video/is_interlaced"    , "Is interlaced"          , "Interlaced"        , ""],
   ["id_item"                , "Item ID"                , null                , ""],
   ["rights/spatial"         , "Spatial rights"         , null                , ""],
