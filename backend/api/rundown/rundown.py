@@ -165,6 +165,7 @@ async def get_rundown(request: RundownRequestModel) -> RundownResponseModel:
             asset_mtime=ameta.get("mtime", 0),
             mark_in=mark_in,
             mark_out=mark_out,
+            is_empty=False,
         )
 
         rows.append(row)
@@ -177,5 +178,6 @@ async def get_rundown(request: RundownRequestModel) -> RundownResponseModel:
             ts_scheduled += duration
             ts_broadcast += duration
             last_event.duration += duration
+            last_event.is_empty = False
 
     return RundownResponseModel(rows=rows)
