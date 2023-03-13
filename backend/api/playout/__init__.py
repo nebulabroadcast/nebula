@@ -25,6 +25,9 @@ class Request(APIRequest):
         if not channel:
             raise nebula.NotFoundException("Channel not found")
 
+        if channel.engine == "dummy":
+            return PlayoutResponseModel(plugins=[])
+
         controller_url = f"http://{channel.controller_host}:{channel.controller_port}"
 
         async with httpx.AsyncClient() as client:

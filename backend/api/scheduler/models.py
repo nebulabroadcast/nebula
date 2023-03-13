@@ -83,6 +83,14 @@ class SchedulerResponseModel(ResponseModel):
         default_factory=list,
         title="Affected events",
         description="List of event IDs that were affected by this request",
+        example=[134, 135, 136],
+    )
+
+    affected_bins: list[int] = Field(
+        default_factory=list,
+        title="Affected bins",
+        description="List of bin IDs that were affected by this request",
+        example=[134, 135, 136],
     )
 
     events: list[dict] = Field(
