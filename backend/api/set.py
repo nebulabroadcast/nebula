@@ -5,9 +5,11 @@ from fastapi import Depends
 from pydantic import Field
 
 import nebula
+
 from nebula.common import import_module
 from nebula.enum import ObjectType
 from nebula.objects.utils import get_object_class_by_name
+from nebula.settings import load_settings
 from server.dependencies import current_user
 from server.models import RequestModel, ResponseModel
 from server.request import APIRequest
@@ -127,6 +129,8 @@ class SetRequest(APIRequest):
         user: nebula.User = Depends(current_user),
     ) -> SetResponseModel:
         """Create or update an object."""
+
+        reload_settings = False
         pool = await nebula.db.pool()
         async with pool.acquire() as conn:
             async with conn.transaction():
@@ -140,20 +144,32 @@ class SetRequest(APIRequest):
                     object = await object_class.load(request.id, connection=conn)
                     object["updated_by"] = user.id
 
+                if (password := request.data.pop("password", None)) is not None:
+                    assert isinstance(password, str)
+                    assert isinstance(object, nebula.User)
+                    object.set_password(password)
+
                 if validator := Validator.for_object(request.object_type):
-                    await validator(
-                        object,
-                        request.data,
-                        connection=conn,
-                        user=user,
-                    )
+                    try:
+                        await validator(
+                            object,
+                            request.data,
+                            connection=conn,
+                            user=user,
+                        )
+                    except nebula.RequestSettingsReload:
+                        reload_settings = True
                 else:
                     object.update(request.data)
                 await object.save()
-                return SetResponseModel(
-                    id=object.id,
-                    object_type=request.object_type,
-                )
+
+        if reload_settings:
+            await load_settings()
+
+        return SetResponseModel(
+            id=object.id,
+            object_type=request.object_type,
+        )
 
 
 class OperationsRequest(APIRequest):
@@ -170,6 +186,7 @@ class OperationsRequest(APIRequest):
 
         pool = await nebula.db.pool()
         result = []
+        reload_settings = False
         for operation in request.operations:
             success = True
             op_id = operation.id
@@ -190,13 +207,25 @@ class OperationsRequest(APIRequest):
                             )
                             object["updated_by"] = user.id
 
+                        if (password := request.data.pop("password", None)) is not None:
+                            assert isinstance(
+                                password, str
+                            ), "Password must be a string"
+                            assert isinstance(
+                                object, nebula.User
+                            ), "Object must be a user in order to set a password"
+                            object.set_password(password)
+
                         if validator := Validator.for_object(operation.object_type):
-                            await validator(
-                                object,
-                                operation.data,
-                                connection=conn,
-                                user=user,
-                            )
+                            try:
+                                await validator(
+                                    object,
+                                    operation.data,
+                                    connection=conn,
+                                    user=user,
+                                )
+                            except nebula.RequestSettingsReload:
+                                reload_settings = True
                         else:
                             object.update(operation.data)
                         await object.save()
@@ -212,6 +241,9 @@ class OperationsRequest(APIRequest):
                     success=success,
                 )
             )
+
+        if reload_settings:
+            await load_settings()
 
         overall_success = all([x.success for x in result])
         return OperationsResponseModel(operations=result, success=overall_success)

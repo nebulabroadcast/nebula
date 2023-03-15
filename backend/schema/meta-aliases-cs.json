@@ -93,6 +93,7 @@
   ["logo"                   , "Logo"                   , null                , ""],
   ["status"                 , "Stav"                   , null                , ""],
   ["rights/ott"             , "Práva pro OTT"          , null                , "Určuje, zda je pořad možné šířit pomocí OTT platforem (web, sociální sítě, Smart TV...)"],
+  ["rights/broadcast"       , "Práva pro vysílání"     , null                , "Určuje, zda je pořad možné šířit pomocí lineárního vysílání"],
   ["id_event"               , "Event ID"               , null                , ""],
   ["id_bin"                 , "Bin ID"                 , null                , ""],
   ["role/cast"              , "Obsazení"               , null                , "Čárkami oddělený seznam herců"],

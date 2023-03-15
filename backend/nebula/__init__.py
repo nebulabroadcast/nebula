@@ -21,6 +21,7 @@ __all__ = [
     "ForbiddenException",
     "NebulaException",
     "NotFoundException",
+    "RequestSettingsReload",
     "UnauthorizedException",
     "LoginFailedException",
     "NotImplementedException",
@@ -48,6 +49,7 @@ from .exceptions import (
     NebulaException,
     NotFoundException,
     NotImplementedException,
+    RequestSettingsReload,
     UnauthorizedException,
     ValidationException,
 )

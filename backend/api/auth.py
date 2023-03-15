@@ -111,6 +111,6 @@ class SetPassword(APIRequest):
             raise nebula.BadRequestException("Password is too short")
 
         target_user.set_password(request.password)
-        await user.save()
+        await target_user.save()
 
         return Response(status_code=204)

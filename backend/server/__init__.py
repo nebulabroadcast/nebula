@@ -75,6 +75,7 @@ async def openpype_exception_handler(
 
 @app.exception_handler(AssertionError)
 async def assertion_error_handler(request: Request, exc: AssertionError):
+    nebula.log.error(f"AssertionError: {exc}")
     return JSONResponse(
         status_code=500,
         content={

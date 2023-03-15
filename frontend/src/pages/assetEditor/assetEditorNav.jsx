@@ -114,7 +114,7 @@ const AssetEditorNav = ({
   const limited = nebula.user.is_limited
 
   const canAdd = Object.keys(assetData).length > 1 // id_folder is always present
-  const canClone = assetData?.id && isChanged
+  const canClone = assetData?.id
   const canRevert = isChanged
   const canFlag = assetData?.id && !limited
   const canUpload = assetData?.id

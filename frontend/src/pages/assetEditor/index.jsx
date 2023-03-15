@@ -7,7 +7,7 @@ import { toast } from 'react-toastify'
 import { isEqual, isEmpty } from 'lodash'
 
 import { useLocalStorage } from '/src/hooks'
-import { setPageTitle, reloadBrowser } from '/src/actions'
+import { setPageTitle, reloadBrowser, setSelectedAssets, setFocusedAsset } from '/src/actions'
 import { Loader } from '/src/components'
 
 import AssetEditorNav from './assetEditorNav'
@@ -132,9 +132,13 @@ const AssetEditor = () => {
   // Actions
 
   const onNewAsset = () => {
+    dispatch(setSelectedAssets([]))
+    dispatch(setFocusedAsset(null))
     setAssetData({})
   }
   const onCloneAsset = () => {
+    dispatch(setSelectedAssets([]))
+    dispatch(setFocusedAsset(null))
     let ndata = {}
     for (const field in assetData) {
       if (nebula.metaType(field).ns === 'm' || field === 'duration')

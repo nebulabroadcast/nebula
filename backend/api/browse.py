@@ -109,17 +109,17 @@ def sanitize_value(value: Any) -> Any:
 def build_conditions(conditions: list[ConditionModel]) -> list[str]:
     cond_list: list[str] = []
     for condition in conditions:
-        assert condition.key in nebula.settings.metatypes
+        assert condition.key in nebula.settings.metatypes, f"Invalid meta key {condition.key}"
         condition.value = normalize_meta(condition.key, condition.value)
         if condition.operator in ["IN", "NOT IN"]:
-            assert type(condition.value) is list
+            assert type(condition.value) is list, "Value must be a list"
             values = sql_list([sanitize_value(v) for v in condition.value], t="str")
             cond_list.append(f"meta->>'{condition.key}' {condition.operator} {values}")
         elif condition.operator in ["IS NULL", "IS NOT NULL"]:
             cond_list.append(f"meta->>'{condition.key}' {condition.operator}")
         else:
             value = sanitize_value(condition.value)
-            assert value
+            assert value, "Value must not be empty"
             # TODO casting to numbers for <, >, <=, >=
             cond_list.append(f"meta->>'{condition.key}' {condition.operator} '{value}'")
     return cond_list
@@ -188,7 +188,7 @@ def build_query(
     # Process views
 
     if request.view is not None and not request.ignore_view_conditions:
-        assert type(request.view) is int
+        assert type(request.view) is int, "View must be an integer"
         if (view := nebula.settings.get_view(request.view)) is not None:
             if view.folders:
                 cond_list.append(f"id_folder IN {sql_list(view.folders)}")
@@ -260,7 +260,7 @@ class Request(APIRequest):
 
         columns: list[str] = ["title", "duration"]
         if request.view is not None and not request.columns:
-            assert type(request.view) is int
+            assert type(request.view) is int, "View must be an integer"
             if (view := nebula.settings.get_view(request.view)) is not None:
                 if view.columns is not None:
                     columns = view.columns
