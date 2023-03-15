@@ -90,7 +90,9 @@ async def can_user_control_job(user: User, id_job: int) -> bool:
         query = """
             SELECT a.id FROM assets a, jobs j
             WHERE j.id = $1 AND j.id_asset = a.id
-            AND a.meta->>'created_by'::INTEGER = $2
+            AND (
+                a.meta->>'created_by'::INTEGER = $2
+                OR a.meta->'assignees' @> '[$2]'::JSONB
         """
         res = await nebula.db.fetch(query, id_job, user.id)
         return bool(res)
@@ -171,9 +173,14 @@ class JobsRequest(APIRequest):
                 conds.append(f"a.id IN (SELECT id FROM ft WHERE value LIKE '{elm}%')")
 
         if user.is_limited:
-            conds.append(f"a.meta->>'created_by' = {user.id}")
+            conds.append(
+                f"""
+                (a.meta->>'created_by' = '{user.id}'
+                OR a.meta->'assignees' @> '[{user.id}]'::JSONB)
+                """
+            )
 
-        elif request.view == "active":
+        if request.view == "active":
             # Pending, in_progress, restart
             conds.append(f"(j.status IN (0, 1, 5) OR j.end_time > {time.time() - 30})")
         elif request.view == "finished":
