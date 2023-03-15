@@ -1,7 +1,7 @@
 import { Timecode } from '@wfoxall/timeframe'
 import { DateTime } from 'luxon'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, forwardRef } from 'react'
 import styled from 'styled-components'
 import defaultTheme from './theme'
 
@@ -61,16 +61,28 @@ Input.defaultProps = {
   theme: defaultTheme,
 }
 
-const InputText = ({ value, onChange, ...props }) => {
+// const InputText = ({ value, onChange, ...props }) => {
+//   return (
+//     <Input
+//       type="text"
+//       value={value || ''}
+//       onChange={(e) => onChange(e.target.value)}
+//       {...props}
+//     />
+//   )
+// }
+
+const InputText = forwardRef(({ value, onChange, ...props }, ref) => {
   return (
     <Input
+      ref={ref}
       type="text"
       value={value || ''}
       onChange={(e) => onChange(e.target.value)}
       {...props}
     />
   )
-}
+})
 
 const InputNumber = ({ value, onChange, ...props }) => {
   return (

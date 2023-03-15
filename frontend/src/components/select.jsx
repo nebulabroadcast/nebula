@@ -86,13 +86,13 @@ const SelectDialog = ({ options, onHide, selectionMode, initialValue }) => {
   const [selection, setSelection] = useState({})
 
   // Cannot be used rn - InputText does not support forwardRef yet
-  //const filterRef = useRef(null)
-  // useEffect(() => {
-  //   if (filterRef.current) {
-  //     console.log('focus')
-  //     filterRef.current.focus()
-  //   }
-  // }, [filterRef.current])
+  const filterRef = useRef(null)
+  useEffect(() => {
+    if (filterRef.current) {
+      console.log('focus')
+      filterRef.current.focus()
+    }
+  }, [filterRef.current])
 
   // Create the selection object from the given initial Value.
 
@@ -135,7 +135,12 @@ const SelectDialog = ({ options, onHide, selectionMode, initialValue }) => {
 
   return (
     <Dialog onHide={() => onClose()} style={{ minWidth: 400 }}>
-      <InputText placeholder="Filter" value={filter} onChange={setFilter} />
+      <InputText
+        placeholder="Filter"
+        value={filter}
+        onChange={setFilter}
+        ref={filterRef}
+      />
 
       <div className="scroll-box">
         <div className="scroll-box-cont">
@@ -311,16 +316,11 @@ const Select = ({
         placeholder={placeholder}
         readonly
         style={{ flexGrow: 1 }}
+        onDoubleClick={() => setDialogVisible(true)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') setDialogVisible(true)
+        }}
       />
-      {/*
-      <div className="select-field" onClick={() => setDialogVisible(true)}>
-        {displayValue ? (
-          <span>{displayValue}</span>
-        ) : (
-          <span className="placeholder">{placeholder}</span>
-        )}
-      </div>
-      */}
       <Button label="..." onClick={() => setDialogVisible(true)} />
     </DialogBasedSelect>
   )

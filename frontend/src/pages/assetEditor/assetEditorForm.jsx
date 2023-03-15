@@ -11,7 +11,13 @@ import {
   InputSwitch,
 } from '/src/components'
 
-const EditorField = ({ field, value, originalValue, onFieldChanged }) => {
+const EditorField = ({
+  field,
+  value,
+  originalValue,
+  onFieldChanged,
+  disabled,
+}) => {
   const metaType = { ...nebula.metaType(field.name), ...field }
 
   // Memoize options for select and list fields
@@ -61,10 +67,14 @@ const EditorField = ({ field, value, originalValue, onFieldChanged }) => {
   let editor
   switch (metaType.type) {
     case 'string':
-      editor = <InputText value={value} onChange={onChange} />
+      editor = (
+        <InputText value={value} onChange={onChange} disabled={disabled} />
+      )
       break
     case 'text':
-      editor = <TextArea value={value} onChange={onChange} />
+      editor = (
+        <TextArea value={value} onChange={onChange} disabled={disabled} />
+      )
       break
     case 'select':
       editor = (
@@ -87,13 +97,27 @@ const EditorField = ({ field, value, originalValue, onFieldChanged }) => {
       )
       break
     case 'datetime':
-      editor = <InputDatetime value={value} onChange={onChange} />
+      editor = (
+        <InputDatetime
+          value={value || ''}
+          onChange={onChange}
+          disabled={disabled}
+        />
+      )
       break
     case 'boolean':
-      editor = <InputSwitch value={value} onChange={onChange} />
+      editor = (
+        <InputSwitch
+          value={value || false}
+          onChange={onChange}
+          disabled={disabled}
+        />
+      )
       break
     case 'integer':
-      editor = <InputInteger value={value} onChange={onChange} />
+      editor = (
+        <InputInteger value={value} onChange={onChange} disabled={disabled} />
+      )
       break
     default:
       editor = <InputText value={value} onChange={onChange} disabled={true} />
@@ -118,6 +142,7 @@ const EditorForm = ({
   setAssetData,
   fields,
   onSave,
+  disabled,
 }) => {
   const onFieldChanged = (key, value) =>
     setAssetData((o) => {
@@ -140,6 +165,7 @@ const EditorForm = ({
           value={assetData[field.name]}
           originalValue={originalData[field.name]}
           onFieldChanged={onFieldChanged}
+          disabled={disabled}
         />
       ))}
     </Form>

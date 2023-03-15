@@ -27,7 +27,8 @@ const getEnabledActions = ({ assetData, isChanged }) => {
   const limited = nebula.user.is_limited
   const writableFolderIds = nebula.getWritableFolders().map((f) => f.id)
 
-  const save = isChanged
+  const edit = !(limited && assetData['qc/state'] === 4)
+  const save = isChanged && edit
   const revert = isChanged
 
   // it does not make sense to click add, when the current asset is brand new
@@ -39,12 +40,13 @@ const getEnabledActions = ({ assetData, isChanged }) => {
     assetData.id_folder &&
     writableFolderIds.includes(assetData.id_folder)
   const flag = assetData.id && !nebula.user.is_limited
-  const upload = assetData.id && (!limited || assetData['qc/state'] === 4)
+  const upload = assetData.id && edit
   const actions = assetData?.id && !isChanged
   const advanced = !limited
 
   return {
     save,
+    edit,
     revert,
     create,
     clone,
@@ -289,6 +291,7 @@ const AssetEditor = () => {
                 assetData={assetData}
                 setAssetData={setAssetData}
                 fields={fields}
+                disabled={!enabledActions.edit}
               />
             </div>
           </section>

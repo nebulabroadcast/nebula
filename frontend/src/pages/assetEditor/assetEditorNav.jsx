@@ -159,7 +159,7 @@ const AssetEditorNav = ({
         fps={fps}
         onChange={(val) => setMeta('duration', val)}
         title="Duration"
-        readOnly={assetData.status}
+        readOnly={assetData.status && !enabledActions.edit}
       />
 
       <ToolbarSeparator />

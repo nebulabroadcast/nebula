@@ -49,9 +49,22 @@ BaseButton.defaultProps = {
   theme: defaultTheme,
 }
 
-const Button = ({ icon, iconStyle, label, iconOnRight, ...props }) => {
+const Button = ({
+  icon,
+  iconStyle,
+  label,
+  iconOnRight,
+  active,
+  className,
+  ...props
+}) => {
+  const classes = className ? [className] : []
+  if (active) {
+    classes.push('active')
+  }
+
   return (
-    <BaseButton {...props}>
+    <BaseButton {...props} className={classes.join(' ')}>
       {iconOnRight && label}
       {icon && (
         <span className="icon material-symbols-outlined" style={iconStyle}>

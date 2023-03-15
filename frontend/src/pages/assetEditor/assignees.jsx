@@ -23,7 +23,7 @@ const Assignees = ({ assignees, setAssignees }) => {
           selectionMode="multiple"
           initialValue={assignees}
           onHide={(value) => {
-            setAssignees(value.map((v) => parseInt(v)))
+            setAssignees((value || []).map((v) => parseInt(v)))
             setDialogVisible(false)
           }}
         />
@@ -32,6 +32,7 @@ const Assignees = ({ assignees, setAssignees }) => {
         icon="person"
         title="Assignees"
         onClick={() => setDialogVisible(true)}
+        active={assignees?.length > 0}
       />
     </>
   )
