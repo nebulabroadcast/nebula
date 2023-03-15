@@ -355,6 +355,10 @@ META_TYPES = {
         "fulltext": True,
         "type": T.TEXT,
     },
+    "rights/broadcast": {
+        "ns": "m",
+        "type": T.BOOLEAN,
+    },
     "rights/ott": {
         "ns": "m",
         "type": T.BOOLEAN,
