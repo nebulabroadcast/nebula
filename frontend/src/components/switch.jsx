@@ -11,7 +11,11 @@ import defaultTheme from './theme'
 const BaseSwitch = ({ style, className, value, onChange }) => (
   <div style={style} className={className}>
     <label className="switch-body">
-      <input type="checkbox" checked={value} onChange={() => onChange(!value)} />
+      <input
+        type="checkbox"
+        checked={value}
+        onChange={() => onChange(!value)}
+      />
       <span className="slider"></span>
     </label>
   </div>
@@ -25,10 +29,10 @@ const InputSwitch = styled(BaseSwitch)`
   align-items: center;
   justify-content: flex-start;
 
-  --bheight: calc( ${(props) => props.theme.inputHeight} * 0.7);
+  --bheight: calc(${(props) => props.theme.inputHeight} * 0.7);
 
   &.small {
-    --bheight: calc( ${(props) => props.theme.inputHeight} * 0.5);
+    --bheight: calc(${(props) => props.theme.inputHeight} * 0.5);
     min-height: 0;
   }
   --bwidth: calc(var(--bheight) * 1.75);
@@ -77,7 +81,7 @@ const InputSwitch = styled(BaseSwitch)`
         z-index: 1;
       }
     }
-  } 
+  }
 `
 
 InputSwitch.defaultProps = {

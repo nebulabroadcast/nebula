@@ -28,9 +28,9 @@ const AssetEditorNav = ({
   onRevert,
   onSave,
   setMeta,
-  isChanged,
   previewVisible,
   setPreviewVisible,
+  enabledActions,
 }) => {
   const [detailsVisible, setDetailsVisible] = useState(false)
   const [sendToVisible, setSendToVisible] = useState(false)
@@ -111,14 +111,6 @@ const AssetEditorNav = ({
     return assetData['video/fps_f'] || 25
   }, [assetData['video/fps_f']])
 
-  const limited = nebula.user.is_limited
-
-  const canAdd = Object.keys(assetData).length > 1 // id_folder is always present
-  const canClone = assetData?.id
-  const canRevert = isChanged
-  const canFlag = assetData?.id && !limited
-  const canUpload = assetData?.id
-
   return (
     <Navbar>
       {detailsVisible && (
@@ -170,9 +162,24 @@ const AssetEditorNav = ({
         readOnly={assetData.status}
       />
 
+      <ToolbarSeparator />
+
+      <Button
+        icon="add"
+        onClick={onNewAsset}
+        title="Create new asset"
+        disabled={!enabledActions.create}
+      />
+      <Button
+        icon="content_copy"
+        onClick={onCloneAsset}
+        title="Clone asset"
+        disabled={!enabledActions.clone}
+      />
+
       <Spacer />
 
-      {!limited && (
+      {enabledActions.advanced && (
         <>
           <Button
             icon="manage_search"
@@ -183,11 +190,11 @@ const AssetEditorNav = ({
             icon="settings"
             align="right"
             options={assetActions}
-            disabled={!assetData?.id || isChanged}
+            disabled={!enabledActions.actions}
           />
-          <Assignees 
-            assignees={assetData?.assignees || []} 
-            setAssignees={val => setMeta('assignees', val)}
+          <Assignees
+            assignees={assetData?.assignees || []}
+            setAssignees={(val) => setMeta('assignees', val)}
           />
         </>
       )}
@@ -197,7 +204,7 @@ const AssetEditorNav = ({
           icon="visibility"
           onClick={() => setPreviewVisible(!previewVisible)}
           active={previewVisible}
-          tooltip="Preview"
+          title="Preview"
         />
       )}
 
@@ -209,7 +216,7 @@ const AssetEditorNav = ({
         title="Revert QC state"
         onClick={() => setMeta('qc/state', 0)}
         className={!(assetData && assetData['qc/state']) ? 'active' : ''}
-        disabled={!canFlag}
+        disabled={!enabledActions.flag}
       />
       <Button
         icon="flag"
@@ -218,7 +225,7 @@ const AssetEditorNav = ({
         onClick={() => setMeta('qc/state', 3)}
         className={assetData && assetData['qc/state'] === 3 ? 'active' : ''}
         active={assetData && assetData['qc/state'] === 3}
-        disabled={!canFlag}
+        disabled={!enabledActions.flag}
       />
       <Button
         icon="flag"
@@ -227,7 +234,7 @@ const AssetEditorNav = ({
         onClick={() => setMeta('qc/state', 4)}
         className={assetData && assetData['qc/state'] === 4 ? 'active' : ''}
         active={assetData && assetData['qc/state'] === 4}
-        disabled={!canFlag}
+        disabled={!enabledActions.flag}
       />
 
       <ToolbarSeparator />
@@ -237,32 +244,20 @@ const AssetEditorNav = ({
           icon="upload"
           onClick={() => setUploadVisible(true)}
           title="Upload media file"
-          disabled={!canUpload}
+          disabled={!enabledActions.upload}
         />
       )}
-      <Button
-        icon="add"
-        onClick={onNewAsset}
-        title="Create new asset"
-        disabled={!canAdd}
-      />
-      <Button
-        icon="content_copy"
-        onClick={onCloneAsset}
-        title="Clone asset"
-        disabled={!canClone}
-      />
       <Button
         icon="backspace"
         title="Discard changes"
         onClick={onRevert}
-        disabled={!canRevert}
+        disabled={!enabledActions.revert}
       />
       <Button
         icon="check"
         title="Save asset"
         onClick={onSave}
-        disabled={!isChanged}
+        disabled={!enabledActions.save}
       />
     </Navbar>
   )

@@ -27,7 +27,6 @@ const MAMContainer = styled.div`
   .__dbk__child-wrapper:last-child {
     min-width: 1000px;
   }
-
 `
 
 const MAMPage = () => {
@@ -53,17 +52,14 @@ const MAMPage = () => {
     }
   }, [searchParams.get('asset')])
 
-  
   useEffect(() => {
     if (focusedAsset == searchParams.get('asset')) return
     if (focusedAsset === null) {
-      setSearchParams({  })
+      setSearchParams({})
       return
     }
     setSearchParams({ asset: focusedAsset })
   }, [focusedAsset])
-
-
 
   const componentProps = {}
 

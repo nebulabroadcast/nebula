@@ -3,7 +3,6 @@ import { toast } from 'react-toastify'
 import { useEffect, useState } from 'react'
 import { Form, FormRow, InputText, Button } from '/src/components'
 
-
 const ProfileForm = () => {
   const displayName = nebula.user.full_name || nebula.user.login
 
@@ -19,16 +18,15 @@ const ProfileForm = () => {
           <InputText value={nebula.user.full_name} disabled />
         </FormRow>
         <FormRow title="Email">
-          <InputText value={nebula.user.email} disabled/>
+          <InputText value={nebula.user.email} disabled />
         </FormRow>
         <FormRow>
-          <Button label="Save" icon="check" disabled/>
+          <Button label="Save" icon="check" disabled />
         </FormRow>
       </Form>
     </section>
   )
 }
-
 
 const ChangePasswordForm = () => {
   const [password, setPassword] = useState('')
@@ -61,20 +59,25 @@ const ChangePasswordForm = () => {
           <InputText type="password" value={password} onChange={setPassword} />
         </FormRow>
         <FormRow title="Repeat new password">
-          <InputText type="password" value={passwordRepeat} onChange={setPasswordRepeat} />
+          <InputText
+            type="password"
+            value={passwordRepeat}
+            onChange={setPasswordRepeat}
+          />
         </FormRow>
         <FormRow>
-          <Button label="Change password" icon="check" onClick={changePassword} />
+          <Button
+            label="Change password"
+            icon="check"
+            onClick={changePassword}
+          />
         </FormRow>
       </Form>
     </section>
   )
 }
 
-
-
 const ProfilePage = () => {
-
   return (
     <main>
       <div className="column" style={{ minWidth: 400 }}>

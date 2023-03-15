@@ -37,13 +37,13 @@ const Form = styled.div`
 const FormRow = ({ title, tooltip, section, children, ...props }) => {
   return (
     <>
-    {section && <h3>{section}</h3>}
-    <div className="form-row" {...props}>
-      <div className="form-title">
-        <span title={tooltip}>{title}</span>
+      {section && <h3>{section}</h3>}
+      <div className="form-row" {...props}>
+        <div className="form-title">
+          <span title={tooltip}>{title}</span>
+        </div>
+        <div className="form-control">{children}</div>
       </div>
-      <div className="form-control">{children}</div>
-    </div>
     </>
   )
 }

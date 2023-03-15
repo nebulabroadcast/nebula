@@ -7,12 +7,53 @@ import { toast } from 'react-toastify'
 import { isEqual, isEmpty } from 'lodash'
 
 import { useLocalStorage } from '/src/hooks'
-import { setPageTitle, reloadBrowser, setSelectedAssets, setFocusedAsset } from '/src/actions'
+import {
+  setPageTitle,
+  reloadBrowser,
+  setSelectedAssets,
+  setFocusedAsset,
+} from '/src/actions'
 import { Loader } from '/src/components'
 
 import AssetEditorNav from './assetEditorNav'
 import EditorForm from './assetEditorForm'
 import Preview from './preview'
+
+const getEnabledActions = ({ assetData, isChanged }) => {
+  // Return an object with all the actions that are enabled
+  // for the current asset and the current user
+  // This is used to enable/disable buttons in the UI
+
+  const limited = nebula.user.is_limited
+  const writableFolderIds = nebula.getWritableFolders().map((f) => f.id)
+
+  const save = isChanged
+  const revert = isChanged
+
+  // it does not make sense to click add, when the current asset is brand new
+  // (id_folder is always present)
+  const create =
+    nebula.getWritableFolders().length > 0 && Object.keys(assetData).length > 1
+  const clone =
+    assetData.id &&
+    assetData.id_folder &&
+    writableFolderIds.includes(assetData.id_folder)
+  const flag = assetData.id && !nebula.user.is_limited
+  const upload = assetData.id && (!limited || assetData['qc/state'] === 4)
+  const actions = assetData?.id && !isChanged
+  const advanced = !limited
+
+  return {
+    save,
+    revert,
+    create,
+    clone,
+    actions,
+    flag,
+    upload,
+    advanced,
+  }
+}
 
 const AssetEditor = () => {
   const focusedAsset = useSelector((state) => state.context.focusedAsset)
@@ -25,6 +66,8 @@ const AssetEditor = () => {
     'previewVisible',
     false
   )
+
+  // Load asset data
 
   const loadAsset = (id_asset) => {
     setLoading(true)
@@ -48,6 +91,9 @@ const AssetEditor = () => {
       })
   }
 
+  // Update a single asset meta field
+  // (called by EditorForm, flag buttons, etc.)
+
   const setMeta = (key, value) => {
     if (key === 'id_folder' && isEmpty(assetData)) {
       setOriginalData({ id_folder: value })
@@ -57,12 +103,15 @@ const AssetEditor = () => {
     })
   }
 
-  // Parse and show asset data
+  // If the asset is new, set the default folder
+  // (first writable folder)
 
   useEffect(() => {
     if (!assetData?.id_folder)
-      setMeta('id_folder', nebula.settings.folders[0].id)
+      setMeta('id_folder', nebula.getWritableFolders()[0].id)
   }, [assetData?.id_folder])
+
+  // Parse and show asset data
 
   useEffect(() => {
     if (assetData.id) {
@@ -85,6 +134,10 @@ const AssetEditor = () => {
     }
   }, [assetData, originalData])
 
+  // Are there unsaved changes?
+  // ATM it return true if any field is changed,
+  // but it could be changed to return an array of changed fields
+
   const isChanged = useMemo(() => {
     let changed = []
     for (const key in assetData) {
@@ -96,7 +149,17 @@ const AssetEditor = () => {
     return changed.length
   }, [assetData, originalData])
 
-  // TODO: clean-up this mess
+  // Which actions are enabled (save, revert, etc.)
+  // This is used to disable buttons when there are no changes
+  // as well as disable the handlers (since save may be called using a shortcut)
+
+  const enabledActions = useMemo(() => {
+    return getEnabledActions({ assetData, isChanged })
+  }, [assetData, isChanged])
+
+  // When another asset is selected,
+  // check if there are unsaved changes and ask to save them
+
   useEffect(() => {
     if (!focusedAsset) return
     if (isChanged) {
@@ -136,6 +199,7 @@ const AssetEditor = () => {
     dispatch(setFocusedAsset(null))
     setAssetData({})
   }
+
   const onCloneAsset = () => {
     dispatch(setSelectedAssets([]))
     dispatch(setFocusedAsset(null))
@@ -148,11 +212,13 @@ const AssetEditor = () => {
   }
 
   const onRevert = () => {
+    if (!enabledActions.revert) return
     setAssetData(originalData)
   }
 
   const onSave = () => {
-    console.log('save', assetData)
+    if (!enabledActions.save) return
+    setLoading(true)
     nebula
       .request('set', { id: assetData.id, data: assetData })
       .then((response) => {
@@ -167,7 +233,23 @@ const AssetEditor = () => {
           </>
         )
       })
+      .finally(() => {
+        setLoading(false)
+      })
   }
+
+  // Keyboard shortcuts
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.ctrlKey && event.key === 's') {
+        event.preventDefault()
+        onSave()
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [])
 
   // Render
 
@@ -183,6 +265,7 @@ const AssetEditor = () => {
         isChanged={isChanged}
         previewVisible={previewVisible}
         setPreviewVisible={setPreviewVisible}
+        enabledActions={enabledActions}
       />
 
       {Object.keys(assetData || {}).length ? (

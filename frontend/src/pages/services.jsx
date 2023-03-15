@@ -66,7 +66,7 @@ const ServicesPage = () => {
 
     return (
       <td style={{ textAlign: 'center' }}>
-        <InputSwitch value={autoStart} onChange={onChange} className="small"/>
+        <InputSwitch value={autoStart} onChange={onChange} className="small" />
       </td>
     )
   }

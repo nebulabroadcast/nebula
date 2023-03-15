@@ -1,11 +1,11 @@
 import nebula from '/src/nebula'
-import {useMemo, useState} from 'react'
+import { useMemo, useState } from 'react'
 import { Button } from '/src/components'
-import {SelectDialog} from '/src/components/select'
+import { SelectDialog } from '/src/components/select'
 
 const Assignees = ({ assignees, setAssignees }) => {
   const [dialogVisible, setDialogVisible] = useState(false)
-  
+
   const options = useMemo(() => {
     return nebula.settings.users.map((user) => {
       return {
@@ -25,17 +25,16 @@ const Assignees = ({ assignees, setAssignees }) => {
           onHide={(value) => {
             setAssignees(value.map((v) => parseInt(v)))
             setDialogVisible(false)
-            }}
+          }}
         />
       )}
-      <Button 
-        icon="person" 
-        title="Assignees" 
+      <Button
+        icon="person"
+        title="Assignees"
         onClick={() => setDialogVisible(true)}
       />
     </>
   )
-
 }
 
 export default Assignees

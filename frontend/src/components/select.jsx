@@ -326,5 +326,5 @@ const Select = ({
   )
 }
 
-export {SelectDialog}
+export { SelectDialog }
 export default Select
