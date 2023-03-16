@@ -10,6 +10,7 @@ from fastapi.websockets import WebSocket, WebSocketDisconnect
 import nebula
 from nebula.enum import MediaType, ObjectStatus
 from nebula.exceptions import NebulaException
+from nebula.filetypes import FileTypes
 from nebula.settings import load_settings
 from server.dependencies import asset_in_path, current_user, current_user_query
 from server.endpoints import install_endpoints
@@ -159,7 +160,10 @@ async def upload_media_file(
     assert asset["media_type"] == MediaType.FILE, "Only file assets can be uploaded"
     extension = request.headers.get("X-nebula-extension")
     assert extension, "Missing X-nebula-extension header"
-    assert extension in ["mp4", "mov", "mxf"], "Invalid extension"
+
+    assert (
+        FileTypes.data.get(extension) == asset["content_type"]
+    ), "Invalid content type"
 
     if nebula.settings.system.upload_storage and nebula.settings.system.upload_dir:
         direct = False

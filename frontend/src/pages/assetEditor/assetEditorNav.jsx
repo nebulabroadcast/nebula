@@ -152,6 +152,7 @@ const AssetEditorNav = ({
           width: 130,
         }}
         label={currentFolder?.name || 'no folder'}
+        disabled={!enabledActions.folderChange}
       />
 
       <InputTimecode
@@ -159,7 +160,7 @@ const AssetEditorNav = ({
         fps={fps}
         onChange={(val) => setMeta('duration', val)}
         title="Duration"
-        readOnly={assetData.status && !enabledActions.edit}
+        readOnly={assetData.status || !enabledActions.edit}
       />
 
       <ToolbarSeparator />
