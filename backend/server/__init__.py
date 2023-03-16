@@ -169,13 +169,14 @@ async def upload_media_file(
         direct = False
         storage = nebula.storages[nebula.settings.system.upload_storage]
         upload_dir = nebula.settings.system.upload_dir
+        base_name = nebula.settings.system.upload_base_name.format(**asset.meta)
         target_path = os.path.join(
-            storage.local_path, upload_dir, f"{asset.id}.{extension}"
+            storage.local_path, upload_dir, f"{base_name}.{extension}"
         )
     else:
         direct = True
         storage = nebula.storages[asset["id_storage"]]
-        target_path = os.path.join(storage.local_path, f"{asset.id}.{extension}")
+        target_path = os.path.splitext(asset.local_path)[0] + "." + extension
 
     nebula.log.debug(f"Uploading media file for {asset}", user=user.name)
 
@@ -200,6 +201,7 @@ async def upload_media_file(
                 f"asset extension {os.path.splitext(asset['path'])[1][1:]}"
             )
             asset["path"] = os.path.splitext(asset["path"])[0] + "." + extension
+            # TODO: remove old file?
         asset["status"] = ObjectStatus.CREATING
         await asset.save()
     nebula.log.info(f"Uploaded media file for {asset}", user=user.name)
