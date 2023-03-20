@@ -10,6 +10,7 @@ from fastapi.websockets import WebSocket, WebSocketDisconnect
 import nebula
 from nebula.enum import MediaType, ObjectStatus
 from nebula.exceptions import NebulaException
+from nebula.filetypes import FileTypes
 from nebula.settings import load_settings
 from server.dependencies import asset_in_path, current_user, current_user_query
 from server.endpoints import install_endpoints
@@ -159,19 +160,23 @@ async def upload_media_file(
     assert asset["media_type"] == MediaType.FILE, "Only file assets can be uploaded"
     extension = request.headers.get("X-nebula-extension")
     assert extension, "Missing X-nebula-extension header"
-    assert extension in ["mp4", "mov", "mxf"], "Invalid extension"
+
+    assert (
+        FileTypes.data.get(extension) == asset["content_type"]
+    ), "Invalid content type"
 
     if nebula.settings.system.upload_storage and nebula.settings.system.upload_dir:
         direct = False
         storage = nebula.storages[nebula.settings.system.upload_storage]
         upload_dir = nebula.settings.system.upload_dir
+        base_name = nebula.settings.system.upload_base_name.format(**asset.meta)
         target_path = os.path.join(
-            storage.local_path, upload_dir, f"{asset.id}.{extension}"
+            storage.local_path, upload_dir, f"{base_name}.{extension}"
         )
     else:
         direct = True
         storage = nebula.storages[asset["id_storage"]]
-        target_path = os.path.join(storage.local_path, f"{asset.id}.{extension}")
+        target_path = os.path.splitext(asset.local_path)[0] + "." + extension
 
     nebula.log.debug(f"Uploading media file for {asset}", user=user.name)
 
@@ -196,6 +201,7 @@ async def upload_media_file(
                 f"asset extension {os.path.splitext(asset['path'])[1][1:]}"
             )
             asset["path"] = os.path.splitext(asset["path"])[0] + "." + extension
+            # TODO: remove old file?
         asset["status"] = ObjectStatus.CREATING
         await asset.save()
     nebula.log.info(f"Uploaded media file for {asset}", user=user.name)

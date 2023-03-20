@@ -1,6 +1,8 @@
 from pydantic import Field
 
 import nebula
+from nebula.enum import ContentType
+from nebula.filetypes import FileTypes
 from nebula.settings.common import LanguageCode
 from nebula.settings.models import (
     BasePlayoutChannelSettings,
@@ -105,6 +107,7 @@ class ClientSettingsModel(SettingsModel):
     metatypes: dict[str, ClientMetaTypeModel] = Field(default_factory=dict)
     cs: dict[str, ClientCSModel] = Field(default_factory=dict)
     playout_channels: list[BasePlayoutChannelSettings] = Field(default_factory=list)
+    filetypes: dict[str, ContentType] = Field(default_factory=dict)
     server_url: str | None = Field(None, title="Server URL")
 
 
@@ -182,6 +185,14 @@ async def get_client_settings(lang: LanguageCode):
         )
 
     #
+    # FileTypes
+    #
+
+    filetypes = {}
+    for k, v in FileTypes.data.items():
+        filetypes[k] = v
+
+    #
     # Construct the client settings
     #
 
@@ -196,4 +207,5 @@ async def get_client_settings(lang: LanguageCode):
         cs=client_cs,
         metatypes=client_metatypes,
         users=users,
+        filetypes=filetypes,
     )

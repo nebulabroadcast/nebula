@@ -42,7 +42,7 @@ const BaseButton = styled.button`
   &:disabled {
     cursor: not-allowed;
     background: ${(props) => props.theme.colors.surface03};
-    color: ${(props) => props.theme.colors.surface06};
+    color: ${(props) => props.theme.colors.surface08};
   }
 `
 BaseButton.defaultProps = {

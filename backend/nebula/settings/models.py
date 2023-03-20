@@ -99,6 +99,7 @@ class SystemSettings(BaseSystemSettings):
     worker_plugin_path: str = Field(".nx/plugins")
     upload_storage: int | None = Field(None)
     upload_dir: str | None = Field(None)
+    upload_base_name: str = Field("{id}")
 
     smtp_host: str | None = Field(None, title="SMTP host", example="smtp.example.com")
     smtp_port: int | None = Field(None, title="SMTP port", example=465)
