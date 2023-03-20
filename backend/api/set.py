@@ -207,7 +207,9 @@ class OperationsRequest(APIRequest):
                             )
                             object["updated_by"] = user.id
 
-                        if (password := request.data.pop("password", None)) is not None:
+                        if (
+                            password := operation.data.pop("password", None)
+                        ) is not None:
                             assert isinstance(
                                 password, str
                             ), "Password must be a string"
