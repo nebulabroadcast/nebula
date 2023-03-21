@@ -23,7 +23,7 @@ const FileSelectWidget = ({ onSelect, disabled, contentType }) => {
       const type = nebula.settings.filetypes[ext]
       if (type === contentType) result.push(`.${ext}`)
     }
-    console.log("Accept", result)
+    console.log('Accept', result)
     return result.join(',')
   }, [contentType])
 
@@ -154,7 +154,11 @@ const UploadDialog = ({ onHide, assetData }) => {
 
   const footer = (
     <>
-      <FileSelectWidget onSelect={setFile} disabled={uploading} contentType={assetData.content_type}/>
+      <FileSelectWidget
+        onSelect={setFile}
+        disabled={uploading}
+        contentType={assetData.content_type}
+      />
       <Button
         label="Upload"
         icon="upload"

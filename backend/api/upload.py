@@ -1,14 +1,14 @@
-import nebula
 import os
-import aiofiles
 import time
 
+import aiofiles
 from fastapi import Request, Response
 
+import nebula
 from nebula.enum import MediaType, ObjectStatus
 from nebula.filetypes import FileTypes
+from server.dependencies import AssetInPath, CurrentUser
 from server.request import APIRequest
-from server.dependencies import CurrentUser, AssetInPath
 
 
 class UploadRequest(APIRequest):
@@ -34,9 +34,7 @@ class UploadRequest(APIRequest):
         extension = request.headers.get("X-nebula-extension")
         assert extension, "Missing X-nebula-extension header"
 
-        assert (
-            FileTypes.get(extension) == asset["content_type"]
-        ), "Invalid content type"
+        assert FileTypes.get(extension) == asset["content_type"], "Invalid content type"
 
         if nebula.settings.system.upload_storage and nebula.settings.system.upload_dir:
             direct = False

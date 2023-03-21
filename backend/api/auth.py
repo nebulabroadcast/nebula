@@ -2,7 +2,6 @@ from fastapi import Depends, Header, Response
 from pydantic import Field
 
 import nebula
-
 from server.dependencies import current_user
 from server.models import RequestModel, ResponseModel
 from server.request import APIRequest

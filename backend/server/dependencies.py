@@ -1,5 +1,6 @@
-from fastapi import Depends, Header, Path, Query
 from typing import Annotated
+
+from fastapi import Depends, Header, Path, Query
 
 import nebula
 from server.session import Session

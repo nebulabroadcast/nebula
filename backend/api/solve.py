@@ -1,6 +1,6 @@
 import os
 
-from fastapi import Depends, Response
+from fastapi import Response
 from pydantic import Field
 
 import nebula

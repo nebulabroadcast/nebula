@@ -40,7 +40,7 @@ const getEnabledActions = ({ assetData, isChanged }) => {
     assetData.id_folder &&
     writableFolderIds.includes(assetData.id_folder)
 
-  const folderChange = (!assetData.id) && edit
+  const folderChange = !assetData.id && edit
   const flag = assetData.id && !nebula.user.is_limited
   const upload = assetData.id && edit
   const actions = assetData?.id && !isChanged
@@ -203,7 +203,12 @@ const AssetEditor = () => {
     const currentFolder = assetData.id_folder
     dispatch(setSelectedAssets([]))
     dispatch(setFocusedAsset(null))
-    if (nebula.getWritableFolders().map((f) => f.id).includes(currentFolder)) {
+    if (
+      nebula
+        .getWritableFolders()
+        .map((f) => f.id)
+        .includes(currentFolder)
+    ) {
       setAssetData({ id_folder: currentFolder })
       setOriginalData({ id_folder: currentFolder })
     } else {
@@ -215,7 +220,10 @@ const AssetEditor = () => {
   const onCloneAsset = () => {
     let ndata = {}
     for (const field in assetData) {
-      if (nebula.metaType(field).ns === 'm' || ["duration", "id_folder"].includes(field))
+      if (
+        nebula.metaType(field).ns === 'm' ||
+        ['duration', 'id_folder'].includes(field)
+      )
         ndata[field] = assetData[field]
     }
     dispatch(setSelectedAssets([]))

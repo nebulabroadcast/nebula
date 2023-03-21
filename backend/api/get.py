@@ -1,8 +1,8 @@
 from typing import Any
+
 from pydantic import Field
 
 import nebula
-
 from nebula.enum import ObjectType
 from server.dependencies import CurrentUser
 from server.models import RequestModel, ResponseModel

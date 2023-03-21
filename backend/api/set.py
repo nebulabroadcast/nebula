@@ -4,7 +4,6 @@ from typing import Any
 from pydantic import Field
 
 import nebula
-
 from nebula.common import import_module
 from nebula.enum import ObjectType
 from nebula.objects.utils import get_object_class_by_name
