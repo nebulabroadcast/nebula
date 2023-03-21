@@ -1,6 +1,5 @@
 from typing import Any, Literal
 
-from fastapi import Depends
 from nxtools import slugify
 from pydantic import Field
 
@@ -9,7 +8,7 @@ from nebula.common import sql_list
 from nebula.enum import MetaClass
 from nebula.exceptions import NebulaException
 from nebula.metadata.normalize import normalize_meta
-from server.dependencies import current_user
+from server.dependencies import CurrentUser
 from server.models import RequestModel, ResponseModel
 from server.request import APIRequest
 
@@ -109,7 +108,9 @@ def sanitize_value(value: Any) -> Any:
 def build_conditions(conditions: list[ConditionModel]) -> list[str]:
     cond_list: list[str] = []
     for condition in conditions:
-        assert condition.key in nebula.settings.metatypes, f"Invalid meta key {condition.key}"
+        assert (
+            condition.key in nebula.settings.metatypes
+        ), f"Invalid meta key {condition.key}"
         condition.value = normalize_meta(condition.key, condition.value)
         if condition.operator in ["IN", "NOT IN"]:
             assert type(condition.value) is list, "Value must be a list"
@@ -255,7 +256,7 @@ class Request(APIRequest):
     async def handle(
         self,
         request: BrowseRequestModel,
-        user: nebula.User = Depends(current_user),
+        user: CurrentUser,
     ) -> BrowseResponseModel:
 
         columns: list[str] = ["title", "duration"]

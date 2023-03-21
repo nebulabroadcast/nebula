@@ -48,6 +48,7 @@ async def create_new_event(
             if event_data.items:
                 for item_data in event_data.items:
                     if item_data.get("id"):
+                        assert type(item_data["id"]) == int, "Invalid item ID"
                         item = await nebula.Item.load(item_data["id"], connection=conn)
                     else:
                         item = nebula.Item(connection=conn)

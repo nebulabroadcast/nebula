@@ -5,7 +5,7 @@ from pydantic import Field
 
 import nebula
 from nebula.common import classes_from_module, import_module
-from server.dependencies import current_user
+from server.dependencies import CurrentUser
 from server.models import RequestModel
 from server.request import APIRequest
 
@@ -61,7 +61,7 @@ class Request(APIRequest):
     async def handle(
         self,
         request: SolveRequestModel,
-        user: nebula.User = Depends(current_user),
+        user: CurrentUser,
     ) -> Response:
 
         solver = get_solver(request.solver)

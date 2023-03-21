@@ -1,7 +1,9 @@
 from nebula.log import log as logger
 
+
 class RequestSettingsReload(Exception):
     pass
+
 
 class NebulaException(Exception):
     """Base class for all Nebula exceptions."""
@@ -67,4 +69,3 @@ class ConflictException(NebulaException):
 class ValidationException(NebulaException):
     detail = "Validation failed"
     status = 422
-

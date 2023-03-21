@@ -1,11 +1,11 @@
-from fastapi import Depends, Response
+from fastapi import Response
 from pydantic import Field
 
 import nebula
 from nebula.enum import ObjectType
 from nebula.helpers.scheduling import bin_refresh
 from nebula.objects.utils import get_object_class_by_name
-from server.dependencies import current_user, request_initiator
+from server.dependencies import CurrentUser, RequestInitiator
 from server.models import RequestModel
 from server.request import APIRequest
 
@@ -30,8 +30,8 @@ class Request(APIRequest):
     async def handle(
         self,
         request: DeleteRequestModel,
-        user: nebula.User = Depends(current_user),
-        initiator: str | None = Depends(request_initiator),
+        user: CurrentUser,
+        initiator: RequestInitiator,
     ) -> Response:
         """Delete given objects."""
 

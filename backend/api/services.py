@@ -1,11 +1,10 @@
 import time
 
-from fastapi import Depends
 from pydantic import Field
 
 import nebula
 from nebula.enum import ServiceState
-from server.dependencies import current_user
+from server.dependencies import CurrentUser
 from server.models import RequestModel, ResponseModel
 from server.request import APIRequest
 
@@ -55,7 +54,7 @@ class Request(APIRequest):
     async def handle(
         self,
         request: ServiceRequestModel,
-        user: nebula.User = Depends(current_user),
+        user: CurrentUser,
     ) -> ServicesResponseModel:
         """List and control installed services."""
 

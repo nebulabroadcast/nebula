@@ -1,7 +1,6 @@
 import os
 from typing import Any
 
-from fastapi import Depends
 from pydantic import Field
 
 import nebula
@@ -10,7 +9,7 @@ from nebula.common import import_module
 from nebula.enum import ObjectType
 from nebula.objects.utils import get_object_class_by_name
 from nebula.settings import load_settings
-from server.dependencies import current_user
+from server.dependencies import CurrentUser
 from server.models import RequestModel, ResponseModel
 from server.request import APIRequest
 
@@ -126,7 +125,7 @@ class SetRequest(APIRequest):
     async def handle(
         self,
         request: SetRequestModel,
-        user: nebula.User = Depends(current_user),
+        user: CurrentUser,
     ) -> SetResponseModel:
         """Create or update an object."""
 
@@ -180,7 +179,7 @@ class OperationsRequest(APIRequest):
     async def handle(
         self,
         request: OperationsRequestModel,
-        user: nebula.User = Depends(current_user),
+        user: CurrentUser,
     ) -> OperationsResponseModel:
         """Create or update multiple objects in one requests."""
 

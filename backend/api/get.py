@@ -1,11 +1,10 @@
 from typing import Any
-
-from fastapi import Depends
 from pydantic import Field
 
 import nebula
+
 from nebula.enum import ObjectType
-from server.dependencies import current_user
+from server.dependencies import CurrentUser
 from server.models import RequestModel, ResponseModel
 from server.request import APIRequest
 
@@ -38,7 +37,7 @@ class GetResponseModel(ResponseModel):
     )
 
 
-def can_access_object(user: nebula.User, meta: dict[str, Any]) -> False:
+def can_access_object(user: nebula.User, meta: dict[str, Any]) -> bool:
     if user.is_admin:
         return True
     elif user.id in meta.get("assignees", []):
@@ -70,7 +69,7 @@ class Request(APIRequest):
     async def handle(
         self,
         request: GetRequestModel,
-        user: nebula.User = Depends(current_user),
+        user: CurrentUser,
     ) -> GetResponseModel:
 
         object_type_name = request.object_type.value

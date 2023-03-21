@@ -188,9 +188,7 @@ async def get_client_settings(lang: LanguageCode):
     # FileTypes
     #
 
-    filetypes = {}
-    for k, v in FileTypes.data.items():
-        filetypes[k] = v
+    filetypes: dict[str, ContentType] = FileTypes.data
 
     #
     # Construct the client settings

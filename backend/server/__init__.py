@@ -1,18 +1,14 @@
 import os
-import time
 
-import aiofiles
 from fastapi import Depends, FastAPI, Header, Request
 from fastapi.responses import JSONResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.websockets import WebSocket, WebSocketDisconnect
 
 import nebula
-from nebula.enum import MediaType, ObjectStatus
 from nebula.exceptions import NebulaException
-from nebula.filetypes import FileTypes
 from nebula.settings import load_settings
-from server.dependencies import asset_in_path, current_user, current_user_query
+from server.dependencies import current_user_query
 from server.endpoints import install_endpoints
 from server.storage_monitor import storage_monitor
 from server.video import range_requests_response
@@ -144,67 +140,6 @@ async def proxy(
         # maybe return content too? with a placeholder image?
         return Response(status_code=404, content="Not found")
     return range_requests_response(request, video_path, "video/mp4")
-
-
-@app.post("/upload/{id_asset}", response_class=Response)
-async def upload_media_file(
-    request: Request,
-    asset: nebula.Asset = Depends(asset_in_path),
-    user: nebula.User = Depends(current_user),
-):
-    """Upload a media file for a given asset.
-
-    This endpoint is used by the web frontend to upload media files.
-    """
-
-    assert asset["media_type"] == MediaType.FILE, "Only file assets can be uploaded"
-    extension = request.headers.get("X-nebula-extension")
-    assert extension, "Missing X-nebula-extension header"
-
-    assert (
-        FileTypes.data.get(extension) == asset["content_type"]
-    ), "Invalid content type"
-
-    if nebula.settings.system.upload_storage and nebula.settings.system.upload_dir:
-        direct = False
-        storage = nebula.storages[nebula.settings.system.upload_storage]
-        upload_dir = nebula.settings.system.upload_dir
-        base_name = nebula.settings.system.upload_base_name.format(**asset.meta)
-        target_path = os.path.join(
-            storage.local_path, upload_dir, f"{base_name}.{extension}"
-        )
-    else:
-        direct = True
-        storage = nebula.storages[asset["id_storage"]]
-        target_path = os.path.splitext(asset.local_path)[0] + "." + extension
-
-    nebula.log.debug(f"Uploading media file for {asset}", user=user.name)
-
-    temp_dir = os.path.join(storage.local_path, ".nx", "creating")
-    if not os.path.isdir(temp_dir):
-        os.makedirs(temp_dir)
-
-    temp_path = os.path.join(temp_dir, f"upload-{asset.id}-{time.time()}")
-
-    i = 0
-    async with aiofiles.open(temp_path, "wb") as f:
-        async for chunk in request.stream():
-            i += len(chunk)
-            await f.write(chunk)
-    nebula.log.debug(f"Uploaded {i} bytes", user=user.name)
-
-    os.rename(temp_path, target_path)
-    if direct:
-        if extension != os.path.splitext(asset["path"])[1][1:]:
-            nebula.log.warning(
-                f"Uploaded media file extension {extension} does not match "
-                f"asset extension {os.path.splitext(asset['path'])[1][1:]}"
-            )
-            asset["path"] = os.path.splitext(asset["path"])[0] + "." + extension
-            # TODO: remove old file?
-        asset["status"] = ObjectStatus.CREATING
-        await asset.save()
-    nebula.log.info(f"Uploaded media file for {asset}", user=user.name)
 
 
 #

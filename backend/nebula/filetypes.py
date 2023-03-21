@@ -52,6 +52,10 @@ class FileTypes:
     }
 
     @classmethod
+    def get(cls, ext: str) -> ContentType | None:
+        return cls.data.get(ext)
+
+    @classmethod
     def by_ext(cls, ext: str) -> ContentType:
         return cls.data[ext.lower()]
 

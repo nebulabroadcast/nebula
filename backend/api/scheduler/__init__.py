@@ -30,7 +30,11 @@ class Request(APIRequest):
         result = await scheduler(request, editable)
 
         if result.affected_bins:
-            await bin_refresh(result.affected_bins, initiator=initiator, user=user,)
+            await bin_refresh(
+                result.affected_bins,
+                initiator=initiator,
+                user=user,
+            )
 
         if result.affected_events:
             await nebula.msg(

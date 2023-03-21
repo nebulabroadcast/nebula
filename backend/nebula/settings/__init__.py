@@ -90,7 +90,7 @@ async def load_settings():
     This function is called on application startup.
     Either in nebula.server on_init handler or by nebula.run
     """
-    
+
     new_settings = await get_server_settings()
     for key in new_settings.dict().keys():
         if key in settings.dict().keys():
