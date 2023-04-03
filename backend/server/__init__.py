@@ -1,7 +1,7 @@
 import os
 
 from fastapi import Depends, FastAPI, Header, Request
-from fastapi.responses import JSONResponse, RedirectResponse, Response
+from fastapi.responses import JSONResponse, RedirectResponse, Response, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.websockets import WebSocket, WebSocketDisconnect
 
@@ -48,7 +48,13 @@ async def custom_404_handler(request: Request, _):
                 "method": request.method,
             },
         )
-    return RedirectResponse("/")
+
+    index_path = os.path.join(nebula.config.frontend_dir, "index.html")
+    if os.path.exists(index_path):
+        return FileResponse(
+            index_path, status_code=200, media_type="text/html",
+        )
+
 
 
 @app.exception_handler(NebulaException)

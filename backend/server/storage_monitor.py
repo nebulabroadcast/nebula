@@ -24,8 +24,7 @@ async def exec_mount(cmd: str) -> bool:
 
 
 async def handle_samba_storage(storage: Storage):
-
-    if time.time() < min(storage.last_mount_attempt + (storage.mount_attempts), 120):
+    if time.time() - storage.last_mount_attempt < min(storage.mount_attempts * 5, 120):
         return
 
     if not os.path.exists(storage.local_path):
@@ -40,7 +39,7 @@ async def handle_samba_storage(storage: Storage):
             return
 
     nebula.log.info(
-        f"{storage} is not mounted. Mounting (attempt {storage.mount_attempts})..."
+        f"{storage} is not mounted. Mounting..."
     )
 
     smbopts = {}
