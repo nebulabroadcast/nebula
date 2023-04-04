@@ -148,7 +148,11 @@ const JobsPage = () => {
 
   useEffect(() => {
     const token = PubSub.subscribe('job_progress', handlePubSub)
-    return () => PubSub.unsubscribe(token)
+    setInterval(loadJobs, 3000)
+    return () => {
+      PubSub.unsubscribe(token)
+      clearInterval(loadJobs)
+    }
   }, [])
 
   return (
