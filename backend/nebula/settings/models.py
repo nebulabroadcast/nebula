@@ -85,6 +85,8 @@ class BaseSystemSettings(SettingsModel):
         "(when set to false, assets can only be uploaded via API and watch folders)",
     )
 
+    subtitle_separator: str = Field(": ", title="Subtitle separator", description="String used to separate title and subtitle in displayed title")
+
 
 class SystemSettings(BaseSystemSettings):
     """System settings.

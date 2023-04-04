@@ -18,6 +18,8 @@ from server.request import APIRequest
 REQUIRED_COLUMNS = [
     "id",
     "id_folder",
+    "title",
+    "subtitle",
     "status",
     "content_type",
     "media_type",

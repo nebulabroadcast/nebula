@@ -5,6 +5,7 @@ from nxtools import get_base_name, slugify
 from nebula.enum import ContentType, MediaType, ObjectStatus
 from nebula.objects.base import BaseObject
 from nebula.storages import storages
+from nebula.settings import settings
 
 
 class Asset(BaseObject):
@@ -57,6 +58,21 @@ class Asset(BaseObject):
         """
 
         return slugify(f"{self['title']} {self['subtitle']}")
+
+    @property
+    def title(self) -> str:
+        """Return display title.
+
+        Display title is a title with optional subtitle.
+        """
+
+        separator = settings.system.subtitle_separator
+        if not (title := self.get("title")):
+            title = f"Asset {self.id}" if self.id else "New asset"
+
+        if subtitle := self.get("subtitle"):
+            return f"{title}{separator}{subtitle}"
+        return title
 
     @property
     def duration(self) -> float:

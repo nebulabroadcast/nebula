@@ -212,7 +212,8 @@ class JobsRequest(APIRequest):
                 j.creation_time AS ctime,
                 j.start_time AS stime,
                 j.end_time as etime,
-                a.meta->>'title' AS asset_name,
+                a.meta->>'title' AS asset_title,
+                a.meta->>'subtitle' AS asset_subtitle,
                 s.title AS service_name,
                 u.login AS user_name,
                 ac.title AS action_name
@@ -231,6 +232,10 @@ class JobsRequest(APIRequest):
 
         jobs = []
         async for row in nebula.db.iterate(query):
-            jobs.append(JobsItemModel(**row))
+            asset_name = row["asset_title"]
+            if subtitle := row["asset_subtitle"]:
+                separator = nebula.settings.system.subtitle_separator
+                asset_name = f"{asset_name}{separator}{subtitle}"
+            jobs.append(JobsItemModel(asset_name=asset_name, **row))
 
         return JobsResponseModel(jobs=jobs)
