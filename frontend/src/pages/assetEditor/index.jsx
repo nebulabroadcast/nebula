@@ -120,7 +120,14 @@ const AssetEditor = () => {
 
   useEffect(() => {
     if (assetData.id) {
-      dispatch(setPageTitle({ title: assetData.title }))
+
+      let title = assetData.title
+      if (assetData.subtitle){
+        const separator = nebula.settings.system.subtitle_separator || ' - '
+        title = `${title}${separator}${assetData.subtitle}`
+      }
+
+      dispatch(setPageTitle({ title }))
     } else {
       const folderName = assetData.id_folder
         ? nebula.getFolderName(assetData.id_folder).toLowerCase()
