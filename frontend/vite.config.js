@@ -1,34 +1,46 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 
 const nebula_server = 'http://localhost:4455'
 
 // https://vitejs.dev/config/
-export default defineConfig({
-  server: {
-    proxy: {
-      '/api': {
-        target: nebula_server,
-        changeOrigin: true
-      },
-      '/plugin': {
-        target: nebula_server,
-        changeOrigin: true
-      },
-      '/proxy': {
-        target: nebula_server,
-        changeOrigin: true
-      },
-      '/upload': {
-        target: nebula_server,
-        changeOrigin: true
-      },
-      '/ws': {
-        ws: true,
-        target: nebula_server,
-        changeOrigin: true
-      },
-    }
-  },
-  plugins: [react()]
-})
+export default ({ mode }) => {
+  Object.assign(process?.env, loadEnv(mode, process?.cwd(), ''))
+
+  let SERVER_URL = 'http://localhost:4455'
+
+  // use .env if valid
+  if (process?.env?.SERVER_URL) {
+    SERVER_URL = process.env.SERVER_URL
+  }
+
+  return defineConfig({
+    server: {
+      proxy: {
+        '/api': {
+          target: SERVER_URL,
+          changeOrigin: true
+        },
+        '/plugin': {
+          target: SERVER_URL,
+          changeOrigin: true
+        },
+        '/proxy': {
+          target: SERVER_URL,
+          changeOrigin: true
+        },
+        '/upload': {
+          target: SERVER_URL,
+          changeOrigin: true
+        },
+        '/ws': {
+          ws: true,
+          target: SERVER_URL,
+          changeOrigin: true
+        },
+      }
+    },
+    plugins: [react()]
+  })
+
+}
