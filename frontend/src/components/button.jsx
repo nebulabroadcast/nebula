@@ -1,5 +1,6 @@
 import styled from 'styled-components'
 import defaultTheme from './theme'
+import { forwardRef } from 'react'
 
 const BaseButton = styled.button`
   border: 0;
@@ -49,7 +50,7 @@ BaseButton.defaultProps = {
   theme: defaultTheme,
 }
 
-const Button = ({
+const Button = forwardRef(({
   icon,
   iconStyle,
   label,
@@ -57,14 +58,14 @@ const Button = ({
   active,
   className,
   ...props
-}) => {
+}, ref ) => {
   const classes = className ? [className] : []
   if (active) {
     classes.push('active')
   }
 
   return (
-    <BaseButton {...props} className={classes.join(' ')}>
+    <BaseButton {...props} className={classes.join(' ')} ref={ref}>
       {iconOnRight && label}
       {icon && (
         <span className="icon material-symbols-outlined" style={iconStyle}>
@@ -74,6 +75,6 @@ const Button = ({
       {!iconOnRight && label}
     </BaseButton>
   )
-}
+})
 
 export { Button }

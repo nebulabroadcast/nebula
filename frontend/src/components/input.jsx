@@ -61,16 +61,6 @@ Input.defaultProps = {
   theme: defaultTheme,
 }
 
-// const InputText = ({ value, onChange, ...props }) => {
-//   return (
-//     <Input
-//       type="text"
-//       value={value || ''}
-//       onChange={(e) => onChange(e.target.value)}
-//       {...props}
-//     />
-//   )
-// }
 
 const InputText = forwardRef(({ value, onChange, ...props }, ref) => {
   return (

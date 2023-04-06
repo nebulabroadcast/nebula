@@ -270,7 +270,6 @@ const AssetEditor = () => {
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.ctrlKey && event.key === 's') {
-        console.log("ctrl+s")
         event.preventDefault()
         onSave()
       }

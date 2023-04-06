@@ -46,14 +46,15 @@ const MAMPage = () => {
   useEffect(() => {
     if (searchParams.get('asset')) {
       const assetId = parseInt(searchParams.get('asset'))
-      if (assetId == focusedAsset) return
+      if (assetId === focusedAsset) return
+
       dispatch(setFocusedAsset(assetId))
       dispatch(setSelectedAssets([assetId]))
     }
   }, [searchParams.get('asset')])
 
   useEffect(() => {
-    if (focusedAsset == searchParams.get('asset')) return
+    if (focusedAsset === searchParams.get('asset')) return
     if (focusedAsset === null) {
       setSearchParams({})
       return
