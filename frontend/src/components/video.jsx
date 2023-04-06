@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { Spacer } from './layout'
 import { Button } from './button'
 import { InputTimecode } from './input'
@@ -71,18 +71,27 @@ const Video = ({ src, style, showMarks, marks = {}, setMarks = () => {} }) => {
     videoRef.current.currentTime = (event.target.value * videoDuration) / 1000
   }
 
-  const onMarkIn = (value) => {
-    setMarks({ ...marks, mark_in: value })
-  }
+  const onMarkIn = useCallback(() => {
+    if (!videoRef.current) return
+    const value = videoRef.current.currentTime
+    console.log("mark in", value)
+    setMarks(marks => ({ ...marks, mark_in: value }))
+  }, [videoRef.current?.currentTime, setMarks])
 
-  const onMarkOut = (value) => {
-    setMarks({ ...marks, mark_out: value })
-  }
 
-  const frameStep = (frames) => {
+  const onMarkOut = useCallback(() => {
+    if (!videoRef.current) return
+    const value = videoRef.current.currentTime
+    console.log("mark out", value)
+    setMarks(marks => ({ ...marks, mark_out: value }))
+  }, [videoRef.current?.currentTime, setMarks])
+
+
+  const frameStep = useCallback((frames) => {
     if (!videoRef.current.paused) videoRef.current.pause()
     videoRef.current.currentTime += frames / frameRate
-  }
+  }, [videoRef.current?.currentTime, frameRate])
+
 
   useEffect(() => {
     if (!(videoPosition && videoDuration)) {
@@ -97,6 +106,43 @@ const Video = ({ src, style, showMarks, marks = {}, setMarks = () => {} }) => {
     if (videoRef.current.paused) playButtonIcon = 'play_arrow'
     else playButtonIcon = 'pause'
   }
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === 'i' || event.key === 'e') {
+        event.preventDefault()
+        onMarkIn()
+      }
+      else if (event.key === 'o' || event.key === 'r') {
+        event.preventDefault()
+        onMarkOut()
+      }
+      else if (event.key === 'j' || event.key === '1') {
+        event.preventDefault()
+        frameStep(-5)
+      }
+      else if (event.key === 'l' || event.key === '2') {
+        event.preventDefault()
+        frameStep(5)
+      }
+      else if (event.key === '3' || event.key === 'ArrowLeft') {
+        event.preventDefault()
+        frameStep(-1)
+      }
+      else if (event.key === '4' || event.key === 'ArrowRight') {
+        event.preventDefault()
+        frameStep(1)
+      }
+      else if (event.key === 'k' || event.key === ' ') {
+        event.preventDefault()
+        onPlay()
+      }
+      // Todo: clear marks, go to in, go to out
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [])
+
 
   return (
     <VideoPlayerContainer style={style}>

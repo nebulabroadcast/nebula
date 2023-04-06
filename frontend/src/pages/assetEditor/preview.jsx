@@ -124,6 +124,8 @@ const Preview = ({ assetData, setAssetData }) => {
     })
   }
 
+
+
   return (
     <div className="grow column" style={{ minWidth: 300, maxWidth: 600 }}>
       <section className="column">
