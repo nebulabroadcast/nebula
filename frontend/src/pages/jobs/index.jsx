@@ -1,5 +1,5 @@
 import nebula from '/src/nebula'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useDispatch } from 'react-redux'
 import { useParams } from 'react-router-dom'
 import { Table, Button, Timestamp } from '/src/components'
@@ -100,8 +100,12 @@ const JobsPage = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const dispatch = useDispatch()
 
-  const loadJobs = () => {
+  const loadJobs = useCallback(() => {
     setLoading(true)
+    const cleanTitle = view
+      ? view[0].toUpperCase() + view.slice(1) + ' jobs'
+      : 'Jobs'
+    dispatch(setPageTitle({ title: cleanTitle }))
     nebula
       .request('jobs', { view, searchQuery })
       .then((response) => {
@@ -109,51 +113,33 @@ const JobsPage = () => {
       })
       .catch((err) => console.error(err))
       .finally(() => setLoading(false))
-  }
-
-  useEffect(() => {
-    const cleanTitle = view
-      ? view[0].toUpperCase() + view.slice(1) + ' jobs'
-      : 'Jobs'
-    dispatch(setPageTitle({ title: cleanTitle }))
-    loadJobs()
-  }, [view])
+  }, [searchQuery, view])
 
   useEffect(() => {
     loadJobs()
-  }, [jobs.map((job) => job.status).join(',')])
-
-  useEffect(() => {
-    loadJobs()
-  }, [searchQuery])
+  }, [jobs.map((job) => job.status).join(','), view, searchQuery])
 
   const handlePubSub = (topic, message) => {
     setJobs((prevData) => {
-      //let forceReload = false
       const newData = [...prevData]
       const index = newData.findIndex((job) => job.id === message.id)
       if (index !== -1) {
-        // if (newData[index].status !== message.status) {
-        //   forceReload = true
-        // }
         newData[index]['status'] = message.status
         newData[index]['progress'] = message.progress
         newData[index]['message'] = message.message
       }
-      // if (forceReload)
-      //   loadJobs()
       return newData
     })
   } // handlePubSub
 
   useEffect(() => {
     const token = PubSub.subscribe('job_progress', handlePubSub)
-    setInterval(loadJobs, 3000)
+    //setInterval(() => {console.log("GGG"); loadJobs() }, 3000)
     return () => {
       PubSub.unsubscribe(token)
-      clearInterval(loadJobs)
+      //clearInterval(loadJobs)
     }
-  }, [])
+  }, [view, searchQuery])
 
   return (
     <main className="column">
