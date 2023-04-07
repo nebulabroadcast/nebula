@@ -4,7 +4,7 @@ import { createSlice } from '@reduxjs/toolkit'
 const initialState = {
   browserRefresh: 0,
   currentView: JSON.parse(localStorage.getItem('currentView') || 'null'),
-  searchQuery: '',
+  searchQuery: JSON.parse(localStorage.getItem('searchQuery') || '""'),
   selectedAssets: [],
   focusedAsset: null,
   pageTitle: '',
@@ -38,6 +38,7 @@ const contextSlice = createSlice({
 
     setSearchQuery: (state, action) => {
       state.searchQuery = action.payload
+      localStorage.setItem('searchQuery', JSON.stringify(action.payload))
       return state
     },
 
