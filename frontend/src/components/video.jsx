@@ -103,7 +103,6 @@ const Video = ({ src, style, showMarks, marks = {}, setMarks = () => {} }) => {
     setMarks(marks => ({ ...marks, mark_in: value }))
   }, [videoRef.current?.currentTime, setMarks])
 
-
   const onMarkOut = useCallback(() => {
     if (!videoRef.current) return
     const value = videoRef.current.currentTime
@@ -111,17 +110,37 @@ const Video = ({ src, style, showMarks, marks = {}, setMarks = () => {} }) => {
     setMarks(marks => ({ ...marks, mark_out: value }))
   }, [videoRef.current?.currentTime, setMarks])
 
+  const onClearIn = useCallback(() => {
+    setMarks(marks => ({ ...marks, mark_in: null }))
+  }, [setMarks])
+
+  const onClearOut = useCallback(() => {
+    setMarks(marks => ({ ...marks, mark_out: null }))
+  }, [setMarks])
+
+  const onClearAll = useCallback(() => {
+    setMarks(() => ({ mark_in: null, mark_out: null }))
+  }, [setMarks])
+
   const onGoToIn = useCallback(() => {
-    console.log(marks)
     if (!videoRef.current) return
     videoRef.current.currentTime = marks.mark_in || 0
   }, [videoRef.current?.currentTime, marks.mark_in])
 
   const onGoToOut = useCallback(() => {
-    console.log(marks)
     if (!videoRef.current) return
     videoRef.current.currentTime = marks.mark_out || videoRef.current.duration
   }, [videoRef.current?.currentTime, marks.mark_out, videoRef.current?.duration])
+
+  const onGoToStart = useCallback(() => {
+    if (!videoRef.current) return
+    videoRef.current.currentTime = 0
+  }, [videoRef.current?.currentTime])
+
+  const onGoToEnd = useCallback(() => {
+    if (!videoRef.current) return
+    videoRef.current.currentTime = videoRef.current.duration
+  }, [videoRef.current?.currentTime, videoRef.current?.duration])
 
   const frameStep = useCallback((frames) => {
     if (!videoRef.current.paused) videoRef.current.pause()
@@ -181,6 +200,26 @@ const Video = ({ src, style, showMarks, marks = {}, setMarks = () => {} }) => {
       else if (event.key === 'w') {
         event.preventDefault()
         onGoToOut()
+      }
+      else if (event.key === 'a') {
+        event.preventDefault()
+        onGoToStart()
+      }
+      else if (event.key === 's') {
+        event.preventDefault()
+        onGoToEnd()
+      }
+      else if (event.key === 'd') {
+        event.preventDefault()
+        onClearIn()
+      }
+      else if (event.key === 'f') {
+        event.preventDefault()
+        onClearOut()
+      }
+      else if (event.key === 'g') {
+        event.preventDefault()
+        onClearAll()
       }
 
     }

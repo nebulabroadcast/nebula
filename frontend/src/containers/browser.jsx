@@ -156,8 +156,10 @@ const BrowserTable = () => {
       })
       .then((response) => {
         setData(response.data.data)
-        setSortBy(response.data.order_by)
-        setSortDirection(response.data.order_dir)
+        if (response.data.order_by !== sortBy)
+          setSortBy(response.data.order_by)
+        if (response.data.order_dir !== sortDirection)
+          setSortDirection(response.data.order_dir)
 
         let cols = []
         for (const colName of response.data.columns)
