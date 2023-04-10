@@ -47,8 +47,8 @@ class SolverPlugin:
         self.new_items = []
         self.new_events = []
 
-        self._next_event = await self.get_next_event()
-        self._needed_duration = await self.get_needed_duration()
+        self._next_event = await self.get_next_event(force=True)
+        self._needed_duration = await self.get_needed_duration(force=True)
         self._solve_next = None
 
         return await self.main()
@@ -57,9 +57,9 @@ class SolverPlugin:
     # Property loaders
     #
 
-    async def get_next_event(self) -> nebula.Event:
+    async def get_next_event(self, force: bool = False) -> nebula.Event:
         """Load event following the current one."""
-        if self._next_event is None:
+        if (self._next_event is None) or force:
             res = await nebula.db.fetch(
                 """
                 SELECT meta FROM events
@@ -80,9 +80,9 @@ class SolverPlugin:
                 )
         return self._next_event
 
-    async def get_needed_duration(self):
+    async def get_needed_duration(self, force: bool = False):
         """Load the duration needed to fill the current event."""
-        if not self._needed_duration:
+        if (self._needed_duration is None) or force:
             dur = self.next_event["start"] - self.event["start"]
             items = await self.bin.get_items()
             for item in items:
@@ -166,8 +166,9 @@ class SolverPlugin:
 
         await new_event.save(notify=False)
 
-        self._needed_duration = None
-        self._next_event = None
+        self._next_event = new_event
+        self._needed_duration = await self.get_needed_duration(force=True)
+        self._needed_duration -= self.current_duration
         self._solve_next = new_placeholder
 
         if new_bin.id and (new_bin.id not in self.affected_bins):
@@ -207,9 +208,12 @@ class SolverPlugin:
         if self.bin.id not in self.affected_bins:
             self.affected_bins.append(self.bin.id)
 
+        # save event in case solver updated its metadata
+        await self.event.save()
+
         # another paceholder was created, so we need to solve it
         if self._solve_next:
-            self(self._solve_next)
+            await self(self._solve_next.id)
             return
 
         # recalculate bin durations and notify clients about changes
