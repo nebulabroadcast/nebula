@@ -13,12 +13,22 @@ const DateTime = styled.div`
 `
 
 const Timestamp = ({ timestamp, ...props }) => {
-  const date = new Date(timestamp * 1000)
-  const [dd, tt] = date.toISOString().slice(0, 19).split('T')
+  const localDateTime = new Date(timestamp * 1000)
+  
+  // Get the local timezone
+  const localTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+  // Format the local date and time
+  // Using swedish locale, because it's the sane one. Thanks, swedes!
+  const dateFormatter = new Intl.DateTimeFormat('sv-SE', { timeZone: localTimeZone, year: 'numeric', month: '2-digit', day: '2-digit' });
+  const timeFormatter = new Intl.DateTimeFormat('sv-SE', { timeZone: localTimeZone, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+  const localDate = dateFormatter.format(localDateTime);
+  const localTime = timeFormatter.format(localDateTime);
+
   return (
     <DateTime {...props}>
-      <span>{dd}</span>
-      <span>{tt}</span>
+      <span>{localDate}</span>
+      <span>{localTime}</span>
     </DateTime>
   )
 }
