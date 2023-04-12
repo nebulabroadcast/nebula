@@ -53,6 +53,7 @@ const formatTime = (rowData, key) => {
 
 const COLUMNS = [
   { name: 'id', title: '#', width: 1 },
+  { name: 'idec', title: 'IDEC', width: 1 },
   { name: 'asset_name', title: 'Asset' },
   { name: 'action_name', title: 'Action' },
   { name: 'service_name', title: 'Service' },
