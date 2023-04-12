@@ -5,7 +5,6 @@ import InputTimecode from './InputTimecode'
 //import Dialog from '/src/components/dialog'
 import styled from 'styled-components'
 
-
 const VideoPlayerContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -36,12 +35,12 @@ const Trackbar = styled.input`
 
   /* highlight the specified range using the highlightStart and highlightEnd props */
   background: linear-gradient(
-    to right, 
-    var(--color-surface-02), 
-    var(--color-surface-02) ${props => props.highlightStart}%, 
-    var(--color-surface-04) ${props => props.highlightStart}%, 
-    var(--color-surface-04) ${props => props.highlightEnd}%, 
-    var(--color-surface-02) ${props => props.highlightEnd}%, 
+    to right,
+    var(--color-surface-02),
+    var(--color-surface-02) ${(props) => props.highlightStart}%,
+    var(--color-surface-04) ${(props) => props.highlightStart}%,
+    var(--color-surface-04) ${(props) => props.highlightEnd}%,
+    var(--color-surface-02) ${(props) => props.highlightEnd}%,
     var(--color-surface-02)
   );
 `
@@ -64,8 +63,8 @@ const PlayoutControls = styled.div`
 
 const Video = ({ src, style, showMarks, marks = {}, setMarks = () => {} }) => {
   const videoRef = useRef(null)
-  const sliderRef = useRef(null);
-  const playButtonRef = useRef(null);
+  const sliderRef = useRef(null)
+  const playButtonRef = useRef(null)
 
   const [videoPosition, setVideoPosition] = useState(0)
   const [videoDuration, setVideoDuration] = useState(0)
@@ -79,13 +78,11 @@ const Video = ({ src, style, showMarks, marks = {}, setMarks = () => {} }) => {
     setVideoDuration(0)
   }, [src])
 
-
   const handleFinishSlider = useCallback(() => {
     if (playButtonRef.current) {
-      playButtonRef.current.focus();
+      playButtonRef.current.focus()
     }
-  }, [playButtonRef.current]);
-
+  }, [playButtonRef.current])
 
   const onPlay = () => {
     if (!videoRef.current.paused) videoRef.current.pause()
@@ -101,23 +98,23 @@ const Video = ({ src, style, showMarks, marks = {}, setMarks = () => {} }) => {
   const onMarkIn = useCallback(() => {
     if (!videoRef.current) return
     const value = videoRef.current.currentTime
-    console.log("mark in", value)
-    setMarks(marks => ({ ...marks, mark_in: value }))
+    console.log('mark in', value)
+    setMarks((marks) => ({ ...marks, mark_in: value }))
   }, [videoRef.current?.currentTime, setMarks])
 
   const onMarkOut = useCallback(() => {
     if (!videoRef.current) return
     const value = videoRef.current.currentTime
-    console.log("mark out", value)
-    setMarks(marks => ({ ...marks, mark_out: value }))
+    console.log('mark out', value)
+    setMarks((marks) => ({ ...marks, mark_out: value }))
   }, [videoRef.current?.currentTime, setMarks])
 
   const onClearIn = useCallback(() => {
-    setMarks(marks => ({ ...marks, mark_in: null }))
+    setMarks((marks) => ({ ...marks, mark_in: null }))
   }, [setMarks])
 
   const onClearOut = useCallback(() => {
-    setMarks(marks => ({ ...marks, mark_out: null }))
+    setMarks((marks) => ({ ...marks, mark_out: null }))
   }, [setMarks])
 
   const onClearAll = useCallback(() => {
@@ -132,7 +129,11 @@ const Video = ({ src, style, showMarks, marks = {}, setMarks = () => {} }) => {
   const onGoToOut = useCallback(() => {
     if (!videoRef.current) return
     videoRef.current.currentTime = marks.mark_out || videoRef.current.duration
-  }, [videoRef.current?.currentTime, marks.mark_out, videoRef.current?.duration])
+  }, [
+    videoRef.current?.currentTime,
+    marks.mark_out,
+    videoRef.current?.duration,
+  ])
 
   const onGoToStart = useCallback(() => {
     if (!videoRef.current) return
@@ -144,11 +145,13 @@ const Video = ({ src, style, showMarks, marks = {}, setMarks = () => {} }) => {
     videoRef.current.currentTime = videoRef.current.duration
   }, [videoRef.current?.currentTime, videoRef.current?.duration])
 
-  const frameStep = useCallback((frames) => {
-    if (!videoRef.current.paused) videoRef.current.pause()
-    videoRef.current.currentTime += frames / frameRate
-  }, [videoRef.current?.currentTime, frameRate])
-
+  const frameStep = useCallback(
+    (frames) => {
+      if (!videoRef.current.paused) videoRef.current.pause()
+      videoRef.current.currentTime += frames / frameRate
+    },
+    [videoRef.current?.currentTime, frameRate]
+  )
 
   useEffect(() => {
     if (!(videoPosition && videoDuration)) {
@@ -170,65 +173,50 @@ const Video = ({ src, style, showMarks, marks = {}, setMarks = () => {} }) => {
       if (event.key === 'i' || event.key === 'e') {
         event.preventDefault()
         onMarkIn()
-      }
-      else if (event.key === 'o' || event.key === 'r') {
+      } else if (event.key === 'o' || event.key === 'r') {
         event.preventDefault()
         onMarkOut()
-      }
-      else if (event.key === 'j' || event.key === '1') {
+      } else if (event.key === 'j' || event.key === '1') {
         event.preventDefault()
         frameStep(-5)
-      }
-      else if (event.key === 'l' || event.key === '2') {
+      } else if (event.key === 'l' || event.key === '2') {
         event.preventDefault()
         frameStep(5)
-      }
-      else if (event.key === '3' || event.key === 'ArrowLeft') {
+      } else if (event.key === '3' || event.key === 'ArrowLeft') {
         event.preventDefault()
         frameStep(-1)
-      }
-      else if (event.key === '4' || event.key === 'ArrowRight') {
+      } else if (event.key === '4' || event.key === 'ArrowRight') {
         event.preventDefault()
         frameStep(1)
-      }
-      else if (event.key === 'k' || event.key === ' ') {
+      } else if (event.key === 'k' || event.key === ' ') {
         event.preventDefault()
         onPlay()
-      }
-      else if (event.key === 'q') {
+      } else if (event.key === 'q') {
         event.preventDefault()
         onGoToIn()
-      }
-      else if (event.key === 'w') {
+      } else if (event.key === 'w') {
         event.preventDefault()
         onGoToOut()
-      }
-      else if (event.key === 'a') {
+      } else if (event.key === 'a') {
         event.preventDefault()
         onGoToStart()
-      }
-      else if (event.key === 's') {
+      } else if (event.key === 's') {
         event.preventDefault()
         onGoToEnd()
-      }
-      else if (event.key === 'd') {
+      } else if (event.key === 'd') {
         event.preventDefault()
         onClearIn()
-      }
-      else if (event.key === 'f') {
+      } else if (event.key === 'f') {
         event.preventDefault()
         onClearOut()
-      }
-      else if (event.key === 'g') {
+      } else if (event.key === 'g') {
         event.preventDefault()
         onClearAll()
       }
-
     }
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [])
-
 
   const videoContainer = (
     <VideoPlayerContainer style={style}>
@@ -274,15 +262,16 @@ const Video = ({ src, style, showMarks, marks = {}, setMarks = () => {} }) => {
             videoRef.current.currentTime = value
           }}
         />
-        <Trackbar 
-          value={trackbarPosition} 
-          onInput={onSeek} 
-          highlightStart={(marks.mark_in || 0) / videoDuration * 100}
-          highlightEnd={(marks.mark_out || videoDuration) / videoDuration * 100}
+        <Trackbar
+          value={trackbarPosition}
+          onInput={onSeek}
+          highlightStart={((marks.mark_in || 0) / videoDuration) * 100}
+          highlightEnd={
+            ((marks.mark_out || videoDuration) / videoDuration) * 100
+          }
           ref={sliderRef}
           onMouseLeave={handleFinishSlider}
           onMouseUp={handleFinishSlider}
-
         />
         <InputTimecode value={videoDuration} readOnly={true} title="Duration" />
       </PlayoutControls>
@@ -307,7 +296,12 @@ const Video = ({ src, style, showMarks, marks = {}, setMarks = () => {} }) => {
           onClick={() => frameStep(-5)}
         />
         <Button icon="chevron_left" onClick={() => frameStep(-1)} />
-        <Button icon={playButtonIcon} title="Play/Pause" onClick={onPlay} ref={playButtonRef}/>
+        <Button
+          icon={playButtonIcon}
+          title="Play/Pause"
+          onClick={onPlay}
+          ref={playButtonRef}
+        />
         <Button icon="chevron_right" onClick={() => frameStep(1)} />
         <Button
           icon="keyboard_double_arrow_right"
@@ -331,7 +325,6 @@ const Video = ({ src, style, showMarks, marks = {}, setMarks = () => {} }) => {
     </VideoPlayerContainer>
   )
 
-
   //<Button icon="fullscreen" title="Fullscreen" onClick={() => setMaximize(!maximize)} />
   // if (maximize) {
   //   return (
@@ -341,7 +334,6 @@ const Video = ({ src, style, showMarks, marks = {}, setMarks = () => {} }) => {
   //   )
   // }
   return videoContainer
-
 }
 
 export default Video

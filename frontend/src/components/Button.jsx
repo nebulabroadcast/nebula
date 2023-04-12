@@ -50,31 +50,28 @@ BaseButton.defaultProps = {
   theme: defaultTheme,
 }
 
-const Button = forwardRef(({
-  icon,
-  iconStyle,
-  label,
-  iconOnRight,
-  active,
-  className,
-  ...props
-}, ref ) => {
-  const classes = className ? [className] : []
-  if (active) {
-    classes.push('active')
-  }
+const Button = forwardRef(
+  (
+    { icon, iconStyle, label, iconOnRight, active, className, ...props },
+    ref
+  ) => {
+    const classes = className ? [className] : []
+    if (active) {
+      classes.push('active')
+    }
 
-  return (
-    <BaseButton {...props} className={classes.join(' ')} ref={ref}>
-      {iconOnRight && label}
-      {icon && (
-        <span className="icon material-symbols-outlined" style={iconStyle}>
-          {icon}
-        </span>
-      )}
-      {!iconOnRight && label}
-    </BaseButton>
-  )
-})
+    return (
+      <BaseButton {...props} className={classes.join(' ')} ref={ref}>
+        {iconOnRight && label}
+        {icon && (
+          <span className="icon material-symbols-outlined" style={iconStyle}>
+            {icon}
+          </span>
+        )}
+        {!iconOnRight && label}
+      </BaseButton>
+    )
+  }
+)
 
 export default Button

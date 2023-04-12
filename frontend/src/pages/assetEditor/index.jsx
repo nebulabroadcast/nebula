@@ -120,9 +120,8 @@ const AssetEditor = () => {
 
   useEffect(() => {
     if (assetData.id) {
-
       let title = assetData.title
-      if (assetData.subtitle){
+      if (assetData.subtitle) {
         const separator = nebula.settings.system.subtitle_separator || ' - '
         title = `${title}${separator}${assetData.subtitle}`
       }

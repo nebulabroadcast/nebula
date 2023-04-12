@@ -7,7 +7,6 @@ import SelectDialog from './SelectDialog'
 
 import defaultTheme from './theme'
 
-
 // Styled dialog-based select component.
 
 const DialogBasedSelect = styled.div`
@@ -131,7 +130,7 @@ const Select = ({
         readonly={true}
         style={{ flexGrow: 1 }}
         onDoubleClick={() => setDialogVisible(true)}
-        onChange={()=>{}}
+        onChange={() => {}}
         onKeyDown={(e) => {
           if (e.key === 'Enter') setDialogVisible(true)
         }}

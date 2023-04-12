@@ -6,10 +6,8 @@ const InputInteger = ({ value, onChange, ...props }) => {
       type="number"
       value={value || ''}
       onChange={(e) => {
-        if (e.target.value === '')
-          onChange(null)
-        else
-          onChange(e.target.value)
+        if (e.target.value === '') onChange(null)
+        else onChange(e.target.value)
       }}
       {...props}
     />

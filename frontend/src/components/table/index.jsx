@@ -53,11 +53,13 @@ const Table = ({
     )
   }, [columns, data, selection, keyField, rowHighlightColor])
 
-  
   const handleScroll = (event) => {
     if (!onLoadMore) return
     const container = event.target
-    if ( container.scrollHeight - container.scrollTop === container.clientHeight) {
+    if (
+      container.scrollHeight - container.scrollTop ===
+      container.clientHeight
+    ) {
       onLoadMore()
     }
   }

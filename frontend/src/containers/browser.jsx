@@ -13,7 +13,7 @@ import {
 import BrowserNav from './browserNav'
 import './browser.sass'
 
-const ROWS_PER_PAGE = 200 
+const ROWS_PER_PAGE = 200
 
 // Special fields formatters
 
@@ -126,20 +126,25 @@ const getFormatter = (key) => {
   } // end switch key
 } // end getFormatter
 
-
 const Pagination = ({ page, setPage, hasMore }) => {
-
   if (page > 1 || hasMore)
     return (
       <Navbar>
-        <Button icon="keyboard_arrow_left" disabled={page === 1} onClick={() => setPage(page - 1)} />
+        <Button
+          icon="keyboard_arrow_left"
+          disabled={page === 1}
+          onClick={() => setPage(page - 1)}
+        />
         <Spacer>{page}</Spacer>
-        <Button icon="keyboard_arrow_right" disabled={!hasMore} onClick={() => setPage(page + 1)} />
+        <Button
+          icon="keyboard_arrow_right"
+          disabled={!hasMore}
+          onClick={() => setPage(page + 1)}
+        />
       </Navbar>
     )
   return null
 }
-
 
 const BrowserTable = () => {
   const currentView = useSelector((state) => state.context.currentView?.id)
@@ -171,8 +176,7 @@ const BrowserTable = () => {
       .then((response) => {
         const hasMore = response.data.data.length > ROWS_PER_PAGE
         setData(response.data.data.slice(0, ROWS_PER_PAGE))
-        if (response.data.order_by !== sortBy)
-          setSortBy(response.data.order_by)
+        if (response.data.order_by !== sortBy) setSortBy(response.data.order_by)
         if (response.data.order_dir !== sortDirection)
           setSortDirection(response.data.order_dir)
 
@@ -199,8 +203,6 @@ const BrowserTable = () => {
     loadData()
   }, [currentView, searchQuery, browserRefresh, sortBy, sortDirection, page])
 
-
-
   const onRowClick = (rowData) => {
     dispatch(setSelectedAssets([rowData.id]))
     dispatch(setFocusedAsset(rowData.id))
@@ -208,25 +210,25 @@ const BrowserTable = () => {
 
   return (
     <>
-    <section className="grow">
-      <Table
-        data={data}
-        columns={columns}
-        className="contained"
-        keyField="id"
-        selection={selectedAssets}
-        onRowClick={onRowClick}
-        rowHighlightColor={formatRowHighlightColor}
-        loading={loading}
-        sortBy={sortBy}
-        sortDirection={sortDirection}
-        onSort={(sortBy, sortDirection) => {
-          setSortBy(sortBy)
-          setSortDirection(sortDirection)
-        }}
-      />
-    </section>
-    <Pagination page={page} setPage={setPage} hasMore={hasMore} />
+      <section className="grow">
+        <Table
+          data={data}
+          columns={columns}
+          className="contained"
+          keyField="id"
+          selection={selectedAssets}
+          onRowClick={onRowClick}
+          rowHighlightColor={formatRowHighlightColor}
+          loading={loading}
+          sortBy={sortBy}
+          sortDirection={sortDirection}
+          onSort={(sortBy, sortDirection) => {
+            setSortBy(sortBy)
+            setSortDirection(sortDirection)
+          }}
+        />
+      </section>
+      <Pagination page={page} setPage={setPage} hasMore={hasMore} />
     </>
   )
 }

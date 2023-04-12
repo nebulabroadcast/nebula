@@ -7,7 +7,7 @@ import { setPageTitle } from '/src/actions'
 
 import JobsNav from './jobsNav'
 
-const RESTARTABLE = ["conv"]
+const RESTARTABLE = ['conv']
 
 const formatAction = (rowData, key) => {
   if ([0, 1, 5].includes(rowData['status']))
