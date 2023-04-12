@@ -77,4 +77,4 @@ const Button = forwardRef(({
   )
 })
 
-export { Button }
+export default Button

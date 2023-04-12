@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 
-import Loader from '../loader'
+import Loader from '../Loader'
 import TableWrapper from './container'
 import { HeaderCell, DataRow } from './cells'
 

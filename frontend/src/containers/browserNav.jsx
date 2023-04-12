@@ -1,7 +1,6 @@
 import nebula from '/src/nebula'
 
-import { Navbar, Button, Spacer, Dropdown } from '/src/components'
-import { InputText } from '/src/components/input'
+import { Navbar, Button, Spacer, Dropdown, InputText } from '/src/components'
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { debounce } from 'lodash'

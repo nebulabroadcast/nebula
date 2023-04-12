@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { Spacer } from './layout'
-import { Button } from './button'
-import { InputTimecode } from './input'
+import Button from './Button'
+import InputTimecode from './InputTimecode'
 //import Dialog from '/src/components/dialog'
 import styled from 'styled-components'
 

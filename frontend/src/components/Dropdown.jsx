@@ -1,4 +1,4 @@
-import { Button } from './button'
+import Button from './Button'
 import styled from 'styled-components'
 
 const DropdownContainer = styled.div`
