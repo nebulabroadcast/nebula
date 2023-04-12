@@ -1,14 +1,86 @@
 import {useState, useEffect, useRef } from 'react'
-import BaseInput from './BaseInput'
 import { DateTime } from 'luxon'
+import styled from 'styled-components'
+
+import { DialogButtons } from './layout'
+import DatePicker from 'react-datepicker'
+import Dialog from './Dialog'
+
+import BaseInput from './BaseInput'
+import Button from './Button'
+
+//import "react-datepicker/dist/react-datepicker.css"
+
+import './datepicker.sass'
 
 const timeRegex = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/
 const dateRegex = /^(\d{4})-(\d{2})-(\d{2})$/
 const allowedDateCharsRegex = /^[\d-\:\ ]*$/
 
+
+const DateTimeWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
+  min-width: 200px;
+`
+
+const DatePickerWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+`
+
+
+const CalendarDialog = ({ value, onChange, onClose }) => {
+
+  // get current timestamp
+  const defaultDate = DateTime.local().toSeconds()
+
+  const [date, setDate] = useState(DateTime.fromSeconds(value || defaultDate))
+
+
+  return (
+    <Dialog onHide={onClose}>
+      <DatePickerWrapper>
+      <DatePicker
+        locale="sv-SE"
+        calendarStartDay={1}
+        selected={date.toJSDate()}
+        onChange={(date) => {
+          setDate(DateTime.fromJSDate(date))
+        }}
+        inline
+        />
+      </DatePickerWrapper>
+      <DialogButtons>
+        <Button 
+          label="Cancel"
+          icon="close"
+          onClick={onClose}
+        />
+        <Button 
+          icon="check"
+          label="Apply"
+          onClick={() => {
+            const newDate = date.set({ hour: 0, minute: 0, second: 0 })
+            onChange(newDate.toSeconds())
+            onClose()
+          }} 
+        />
+      </DialogButtons>
+    </Dialog>
+  )
+}
+
+
+
+
 const InputDatetime = ({ value, onChange, placeholder, className = '' }) => {
   const [time, setTime] = useState()
   const [isFocused, setIsFocused] = useState(false)
+  const [showCalendar, setShowCalendar] = useState(false)
   const inputRef = useRef(null)
 
   useEffect(() => {
@@ -70,11 +142,16 @@ const InputDatetime = ({ value, onChange, placeholder, className = '' }) => {
   }
 
   return (
+    <DateTimeWrapper>
+    {showCalendar && (
+      <CalendarDialog value={value} onChange={onChange} onClose={() => setShowCalendar(false)} />
+    )}
     <BaseInput
       type="text"
       ref={inputRef}
       value={time || ''}
       onChange={handleChange}
+      style={{ flexGrow: 1 }}
       className={`${className} ${!isValidTime(time) ? 'error' : ''}`}
       placeholder={
         isFocused
@@ -88,6 +165,8 @@ const InputDatetime = ({ value, onChange, placeholder, className = '' }) => {
       }}
       onKeyDown={onKeyDown}
     />
+      <Button icon="calendar_today" onClick={() => setShowCalendar(true)} />
+    </DateTimeWrapper>
   )
 }
 

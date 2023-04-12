@@ -11,41 +11,10 @@ import defaultTheme from './theme'
 // Styled dialog-based select component.
 
 const DialogBasedSelect = styled.div`
-  // pseudo-input element
   display: flex;
   flex-direction: row;
   gap: 4px;
   min-width: 200px;
-
-  .select-field {
-    flex-grow: 1;
-
-    border: 0;
-    border-radius: 4px;
-    background-color: ${(props) => props.theme.colors.surface04};
-    color: ${(props) => props.theme.colors.text};
-    min-height: ${(props) => props.theme.inputHeight};
-    font-size: ${(props) => props.theme.fontSize};
-    padding-left: 5px;
-    padding-right: 5px;
-    position: relative;
-    display: flex;
-    align-items: center;
-
-    span {
-      position: absolute;
-      width: 95%;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      overflow: hidden;
-      &.placeholder {
-        color: ${(props) => props.theme.colors.textDimmer};
-        font-size: 0.9rem;
-      }
-    }
-  }
-
-  // TODO: move to separate component
 
   .scroll-box {
     flex-grow: 1;

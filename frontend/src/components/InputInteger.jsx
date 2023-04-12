@@ -5,7 +5,12 @@ const InputInteger = ({ value, onChange, ...props }) => {
     <BaseInput
       type="number"
       value={value || ''}
-      onChange={(e) => onChange(e.target.value)}
+      onChange={(e) => {
+        if (e.target.value === '')
+          onChange(null)
+        else
+          onChange(e.target.value)
+      }}
       {...props}
     />
   )
