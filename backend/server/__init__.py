@@ -172,7 +172,10 @@ async def ws_endpoint(websocket: WebSocket) -> None:
             nebula.log.trace(f"{client.user_name} disconnected")
         else:
             nebula.log.trace("Anonymous client disconnected")
-        del messaging.clients[client.id]
+        try:
+            del messaging.clients[client.id]
+        except KeyError:
+            pass
 
 
 #

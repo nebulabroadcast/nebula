@@ -67,8 +67,10 @@ class JobsItemModel(RequestModel):
     stime: int | None
     etime: int | None
     asset_name: str | None
+    idec: str | None
     action_name: str | None
     service_name: str | None
+    service_type: str | None
 
 
 class JobsResponseModel(ResponseModel):
@@ -214,9 +216,11 @@ class JobsRequest(APIRequest):
                 j.end_time as etime,
                 a.meta->>'title' AS asset_title,
                 a.meta->>'subtitle' AS asset_subtitle,
+                a.meta->>'id/main' AS idec,
                 s.title AS service_name,
                 u.login AS user_name,
-                ac.title AS action_name
+                ac.title AS action_name,
+                ac.service_type as service_type
         FROM jobs as j
         LEFT JOIN assets as a ON a.id = j.id_asset
         LEFT JOIN services as s ON s.id = j.id_service
