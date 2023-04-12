@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { Spacer } from './layout'
 import { Button } from './button'
 import { InputTimecode } from './input'
+//import Dialog from '/src/components/dialog'
 import styled from 'styled-components'
 
 
@@ -69,6 +70,7 @@ const Video = ({ src, style, showMarks, marks = {}, setMarks = () => {} }) => {
   const [videoPosition, setVideoPosition] = useState(0)
   const [videoDuration, setVideoDuration] = useState(0)
   const [trackbarPosition, setTrackbarPosition] = useState(0)
+  const [maximize, setMaximize] = useState(false)
 
   const frameRate = 25
 
@@ -228,7 +230,7 @@ const Video = ({ src, style, showMarks, marks = {}, setMarks = () => {} }) => {
   }, [])
 
 
-  return (
+  const videoContainer = (
     <VideoPlayerContainer style={style}>
       {showMarks && (
         <PlayoutControls>
@@ -328,6 +330,18 @@ const Video = ({ src, style, showMarks, marks = {}, setMarks = () => {} }) => {
       </PlayoutControls>
     </VideoPlayerContainer>
   )
+
+
+  //<Button icon="fullscreen" title="Fullscreen" onClick={() => setMaximize(!maximize)} />
+  // if (maximize) {
+  //   return (
+  //     <Dialog onHide={() => setMaximize(false)} style={{height: '90%', maxHeight: '90%', width: '80%', position: 'static', overflow:'visible'}}>
+  //       {videoContainer}
+  //     </Dialog>
+  //   )
+  // }
+  return videoContainer
+
 }
 
 export default Video

@@ -7,6 +7,8 @@ import { setPageTitle } from '/src/actions'
 
 import JobsNav from './jobsNav'
 
+const RESTARTABLE = ["conv"]
+
 const formatAction = (rowData, key) => {
   if ([0, 1, 5].includes(rowData['status']))
     return (
@@ -26,6 +28,7 @@ const formatAction = (rowData, key) => {
           onClick={() => {
             nebula.request('jobs', { restart: rowData['id'] })
           }}
+          disabled={!RESTARTABLE.includes(rowData['service_type'])}
           label="Restart"
         />
       </td>
@@ -107,7 +110,7 @@ const JobsPage = () => {
       : 'Jobs'
     dispatch(setPageTitle({ title: cleanTitle }))
     nebula
-      .request('jobs', { view, searchQuery })
+      .request('jobs', { view, search_query: searchQuery })
       .then((response) => {
         setJobs(response.data.jobs)
       })

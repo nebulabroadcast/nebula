@@ -13,7 +13,7 @@ const JobsNav = ({ searchQuery, setSearchQuery }) => {
         value={searchQuery}
         onChange={setSearchQuery}
       />
-      <Button icon="close" />
+      <Button icon="close" onClick={() => setSearchQuery('')}/>
     </Navbar>
   )
 }
