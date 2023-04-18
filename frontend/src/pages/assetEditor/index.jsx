@@ -113,7 +113,7 @@ const AssetEditor = () => {
 
   useEffect(() => {
     if (!assetData?.id_folder)
-      setMeta('id_folder', nebula.getWritableFolders()[0].id)
+      setMeta('id_folder', nebula.getWritableFolders()[0]?.id)
   }, [assetData?.id_folder])
 
   // Parse and show asset data

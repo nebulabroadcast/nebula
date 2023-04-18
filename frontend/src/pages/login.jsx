@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { toast } from 'react-toastify'
 import { Button, InputText, InputPassword } from '/src/components'
 import NebulaLogo from '/src/svg/logo-wide.svg'
@@ -25,7 +25,7 @@ const LoginContainer = styled.div`
 `
 
 const LoginForm = styled.div`
-  padding: 20px;
+  padding: 30px;
   background-color: var(--color-surface-02);
   border-radius: 12px;
   display: flex;
@@ -46,7 +46,7 @@ const LoginForm = styled.div`
     img {
       width: 200px;
       height: auto;
-      margin-bottom: 1rem;
+      margin-bottom: 2em;
     }
   }
 `
@@ -54,6 +54,14 @@ const LoginForm = styled.div`
 const LoginPage = ({ motd, onLogin }) => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+
+  const loginRef = useRef()
+  const passwordRef = useRef()
+  const buttonRef = useRef()
+
+  useEffect(() => {
+    loginRef.current.focus()
+  }, [])
 
   const onSubmit = () => {
     axios
@@ -87,6 +95,7 @@ const LoginPage = ({ motd, onLogin }) => {
             value={username}
             onChange={setUsername}
             onKeyDown={onKeyDown}
+            ref={loginRef}
           />
           <InputPassword
             type="password"
@@ -95,8 +104,13 @@ const LoginPage = ({ motd, onLogin }) => {
             value={password}
             onChange={setPassword}
             onKeyDown={onKeyDown}
+            ref={passwordRef}
           />
-          <Button label="Log in" onClick={onSubmit} />
+          <Button 
+            label="Log in" 
+            onClick={onSubmit} 
+            ref={buttonRef}
+          />
         </LoginForm>
         {motd && <small>{motd}</small>}
       </LoginContainer>
