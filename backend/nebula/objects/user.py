@@ -19,7 +19,7 @@ from nebula.settings import settings
 def hash_password(password: str):
     if config.password_hashing == "legacy":
         return hashlib.sha256(password.encode("ascii")).hexdigest()
-    raise NotImplementedException
+    raise NotImplementedException("Hashing method not available")
 
 
 class UserRights(BaseModel):
@@ -67,7 +67,7 @@ class User(BaseObject):
         """Return the user with the given login."""
         row = await db.fetch("SELECT meta FROM users WHERE login = $1", login)
         if not row:
-            raise NotFoundException
+            raise NotFoundException(f"User {login} not found")
         return cls.from_row(row[0])
 
     @classmethod
@@ -87,7 +87,10 @@ class User(BaseObject):
         except asyncpg.exceptions.UndefinedTableError:
             raise NebulaException("Nebula is not installed")
         if not res:
-            raise LoginFailedException
+            raise LoginFailedException(
+                "Invalid login/password combination",
+                log=f"Invalid logging attempted with name '{username}'",
+            )
         return cls(meta=res[0]["meta"])
 
     def set_password(self, password: str):

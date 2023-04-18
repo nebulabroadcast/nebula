@@ -1,13 +1,14 @@
 import time
 from typing import Literal
 
-from fastapi import Depends, Response
+from fastapi import Response
 from nxtools import slugify
 from pydantic import Field
 
 import nebula
-from nebula.objects.user import User
-from server.dependencies import current_user
+
+from nebula.enum import JobState
+from server.dependencies import CurrentUser
 from server.models import RequestModel, ResponseModel
 from server.request import APIRequest
 
@@ -55,29 +56,42 @@ class JobsRequestModel(ResponseModel):
 
 
 class JobsItemModel(RequestModel):
-    id: int
-    status: int
-    progress: int
-    id_action: int
-    id_service: int | None
-    id_asset: int
-    id_user: int | None
-    message: str
-    ctime: int | None
-    stime: int | None
-    etime: int | None
-    asset_name: str | None
-    idec: str | None
-    action_name: str | None
-    service_name: str | None
-    service_type: str | None
+    id: int = Field(..., title="Job ID")
+    status: JobState = Field(..., title="Job status")
+    progress: int = Field(..., title="Progress", example=24)
+    id_action: int = Field(..., title="Action ID", example=1)
+    id_service: int | None = Field(None, title="Service ID", example=3)
+    id_asset: int = Field(..., title="Asset ID")
+    id_user: int | None = Field(
+        None,
+        title="User ID",
+        description="ID of the user who started the job",
+    )
+    message: str = Field(None, title="Status description", example="Encoding 24%")
+    ctime: int | None = Field(None, title="Created at", example=f"{int(time.time())}")
+    stime: int | None = Field(None, title="Started at", example=f"{int(time.time())}")
+    etime: int | None = Field(None, title="Finished at", example=f"{int(time.time())}")
+    asset_name: str | None = Field(
+        None,
+        title="Asset name",
+        description="Asset full title (title + subtitle)",
+        example="Star Trek IV: The voyage home",
+    )
+    idec: str | None = Field(
+        None,
+        title="Primary identifier",
+        example="A123456",
+    )
+    action_name: str | None = Field(None, example="proxy")
+    service_name: str | None = Field(None, example="conv01")
+    service_type: str | None = Field(None, example="conv")
 
 
 class JobsResponseModel(ResponseModel):
     jobs: list[JobsItemModel] = Field(default_factory=list)
 
 
-async def can_user_control_job(user: User, id_job: int) -> bool:
+async def can_user_control_job(user: nebula.User, id_job: int) -> bool:
     if user.is_admin:
         return True
     if user.can("job_control", True):
@@ -158,7 +172,7 @@ class JobsRequest(APIRequest):
     async def handle(
         self,
         request: JobsRequestModel,
-        user: User = Depends(current_user),
+        user: CurrentUser,
     ) -> JobsResponseModel:
 
         if request.abort:

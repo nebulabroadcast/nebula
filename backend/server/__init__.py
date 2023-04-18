@@ -52,9 +52,10 @@ async def custom_404_handler(request: Request, _):
     index_path = os.path.join(nebula.config.frontend_dir, "index.html")
     if os.path.exists(index_path):
         return FileResponse(
-            index_path, status_code=200, media_type="text/html",
+            index_path,
+            status_code=200,
+            media_type="text/html",
         )
-
 
 
 @app.exception_handler(NebulaException)
@@ -62,8 +63,9 @@ async def openpype_exception_handler(
     request: Request,
     exc: NebulaException,
 ) -> JSONResponse:
-    endpoint = request.url.path.split("/")[-1]
-    nebula.log.error(f"{endpoint}: {exc}")  # TODO: user?
+    # endpoint = request.url.path.split("/")[-1]
+    # We do not need to log this (It is up to NebulaException class)
+    # nebula.log.error(f"{endpoint}: {exc}")  # TODO: user?
     return JSONResponse(
         status_code=exc.status,
         content={

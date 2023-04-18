@@ -10,6 +10,7 @@ class NebulaException(Exception):
 
     detail: str = "Error"
     status: int = 500
+    log: bool = True
 
     def __init__(
         self,
@@ -23,7 +24,7 @@ class NebulaException(Exception):
         if detail is not None:
             self.detail = detail
 
-        if log is True:
+        if log is True or self.log:
             logger.error(f"EXCEPTION: {self.status} {self.detail}")
         elif type(log) is str:
             logger.error(f"EXCEPTION: {self.status} {log}")
@@ -34,38 +35,46 @@ class NebulaException(Exception):
 class BadRequestException(NebulaException):
     detail = "Bad request"
     status = 400
+    log = True
 
 
 class NotFoundException(NebulaException):
     detail = "Not found"
     status = 404
+    log = False
 
 
 class UnauthorizedException(NebulaException):
     detail = "Unauthorized"
     status = 401
+    log = False
 
 
 class ForbiddenException(NebulaException):
     detail = "Forbidden"
     status = 403
+    log = False
 
 
 class LoginFailedException(NebulaException):
     detail = "Login failed"
     status = 401
+    log = True
 
 
 class NotImplementedException(NebulaException):
     detail = "Not implemented"
     status = 501
+    log = True
 
 
 class ConflictException(NebulaException):
     detail = "Conflict"
     status = 409
+    log = True
 
 
 class ValidationException(NebulaException):
     detail = "Validation failed"
     status = 422
+    log = True
