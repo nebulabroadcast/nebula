@@ -1,7 +1,7 @@
 import os
 
 from fastapi import Depends, FastAPI, Header, Request
-from fastapi.responses import JSONResponse, RedirectResponse, Response, FileResponse
+from fastapi.responses import JSONResponse, Response, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.websockets import WebSocket, WebSocketDisconnect
 
@@ -169,11 +169,11 @@ async def ws_endpoint(websocket: WebSocket) -> None:
                     message.get("token"),
                     topics=message.get("subscribe", []),
                 )
+                if client.user_name:
+                    nebula.log.trace(f"{client.user_name} connected")
     except WebSocketDisconnect:
         if client.user_name:
             nebula.log.trace(f"{client.user_name} disconnected")
-        else:
-            nebula.log.trace("Anonymous client disconnected")
         try:
             del messaging.clients[client.id]
         except KeyError:
