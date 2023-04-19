@@ -32,6 +32,7 @@ class RundownRow(ResponseModel):
     mark_in: float | None = Field(None)
     mark_out: float | None = Field(None)
     run_mode: RunMode | None = Field(None)
+    loop: bool | None = Field(None)
     item_role: ItemMode | None = Field(None)
     is_empty: bool = Field(True)
 

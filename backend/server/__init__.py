@@ -169,11 +169,11 @@ async def ws_endpoint(websocket: WebSocket) -> None:
                     message.get("token"),
                     topics=message.get("subscribe", []),
                 )
-                if client.user_name:
-                    nebula.log.trace(f"{client.user_name} connected")
+                # if client.user_name:
+                #     nebula.log.trace(f"{client.user_name} connected")
     except WebSocketDisconnect:
-        if client.user_name:
-            nebula.log.trace(f"{client.user_name} disconnected")
+        # if client.user_name:
+        #     nebula.log.trace(f"{client.user_name} disconnected")
         try:
             del messaging.clients[client.id]
         except KeyError:

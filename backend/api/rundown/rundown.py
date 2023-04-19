@@ -154,6 +154,7 @@ async def get_rundown(request: RundownRequestModel) -> RundownResponseModel:
             scheduled_time=ts_scheduled,
             broadcast_time=ts_broadcast,
             run_mode=imeta.get("run_mode"),
+            loop=imeta.get("loop"),
             item_role=imeta.get("item_role"),
             title=item["title"],
             subtitle=item["subtitle"],

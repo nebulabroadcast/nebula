@@ -26,7 +26,7 @@ class Validator:
 
     @classmethod
     def load_validators(cls) -> None:
-        nebula.log.info("Loading validators")
+        nebula.log.trace("Loading validators")
         cls.validators = {}
 
         if nebula.config.plugin_dir is None:
@@ -39,7 +39,6 @@ class Validator:
                 object_type.value.lower() + ".py",
             )
             if not os.path.exists(validator_path):
-                nebula.log.warn(f"Validator not found in {validator_path}")
                 continue
 
             validator_name = f"{object_type.value.lower()}_validator"
@@ -49,7 +48,7 @@ class Validator:
                 nebula.log.error(f"Validator {validator_name} has no validate method")
                 continue
 
-            nebula.log.info(f"Loaded validator {validator_name}")
+            nebula.log.debug(f"Loaded validator {validator_name}")
             cls.validators[object_type.name] = validator.validate
 
 
