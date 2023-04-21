@@ -1,7 +1,7 @@
 import os
 
 from fastapi import Depends, FastAPI, Header, Request
-from fastapi.responses import JSONResponse, Response, FileResponse
+from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.websockets import WebSocket, WebSocketDisconnect
 
@@ -203,7 +203,7 @@ def install_frontend_plugins(app: FastAPI):
 
 
 # TODO: this is a development hack.
-HLS_DIR = "/storage/nebula_01/hls/"
+HLS_DIR = "/mnt/nebula_01/hls/"
 if os.path.exists(HLS_DIR):
     app.mount("/hls", StaticFiles(directory=HLS_DIR))
 

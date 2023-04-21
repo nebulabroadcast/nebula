@@ -6,7 +6,6 @@ from nxtools import slugify
 from pydantic import Field
 
 import nebula
-
 from nebula.enum import JobState
 from server.dependencies import CurrentUser
 from server.models import RequestModel, ResponseModel
@@ -242,6 +241,7 @@ class JobsRequest(APIRequest):
         LEFT JOIN actions as ac ON ac.id = j.id_action
         {('WHERE ' + (' AND '.join(conds))) if conds else ''}
         ORDER BY
+            j.progress DESC NULLS LAST,
             j.end_time DESC,
             j.start_time DESC,
             j.creation_time DESC

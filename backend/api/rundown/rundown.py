@@ -147,6 +147,12 @@ async def get_rundown(request: RundownRequestModel) -> RundownResponseModel:
 
         # Append item to the result
 
+        meta = {}
+        if asset:
+            for key in channel.rundown_columns:
+                if key in asset.meta:
+                    meta[key] = asset.meta[key]
+
         row = RundownRow(
             id=id_item,
             row_number=len(rows),
@@ -167,6 +173,7 @@ async def get_rundown(request: RundownRequestModel) -> RundownResponseModel:
             mark_in=mark_in,
             mark_out=mark_out,
             is_empty=False,
+            meta=meta,
         )
 
         rows.append(row)

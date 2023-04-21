@@ -4,8 +4,8 @@ from nxtools import get_base_name, slugify
 
 from nebula.enum import ContentType, MediaType, ObjectStatus
 from nebula.objects.base import BaseObject
-from nebula.storages import storages
 from nebula.settings import settings
+from nebula.storages import storages
 
 
 class Asset(BaseObject):

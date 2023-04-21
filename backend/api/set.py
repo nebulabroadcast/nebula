@@ -6,6 +6,7 @@ from pydantic import Field
 import nebula
 from nebula.common import import_module
 from nebula.enum import ObjectType
+from nebula.helpers.scheduling import bin_refresh
 from nebula.objects.utils import get_object_class_by_name
 from nebula.settings import load_settings
 from server.dependencies import CurrentUser
@@ -158,7 +159,11 @@ class SetRequest(APIRequest):
                         reload_settings = True
                 else:
                     object.update(request.data)
+
                 await object.save()
+
+        if isinstance(object, nebula.Item) and object["id_bin"]:
+            await bin_refresh([object["id_bin"]])
 
         if reload_settings:
             await load_settings()
@@ -184,6 +189,7 @@ class OperationsRequest(APIRequest):
         pool = await nebula.db.pool()
         result = []
         reload_settings = False
+        affected_bins: list[int] = []
         for operation in request.operations:
             success = True
             op_id = operation.id
@@ -228,6 +234,12 @@ class OperationsRequest(APIRequest):
                         else:
                             object.update(operation.data)
                         await object.save()
+                        if (
+                            isinstance(object, nebula.Item)
+                            and object["id_bin"]
+                            and object["id_bin"] not in affected_bins
+                        ):
+                            affected_bins.append(object["id_bin"])
                         op_id = object.id
             except Exception:
                 nebula.log.traceback(user=user.name)
@@ -240,6 +252,9 @@ class OperationsRequest(APIRequest):
                     success=success,
                 )
             )
+
+        if affected_bins:
+            await bin_refresh(affected_bins)
 
         if reload_settings:
             await load_settings()

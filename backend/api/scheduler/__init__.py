@@ -24,9 +24,7 @@ class Request(APIRequest):
     ) -> SchedulerResponseModel:
 
         if not user.can("scheduler_view", request.id_channel):
-            raise nebula.ForbiddenException(
-                "You are not allowed to view this channel"
-            )
+            raise nebula.ForbiddenException("You are not allowed to view this channel")
 
         editable = user.can("scheduler_edit", request.id_channel)
         result = await scheduler(request, editable)

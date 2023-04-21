@@ -106,11 +106,7 @@ const LoginPage = ({ motd, onLogin }) => {
             onKeyDown={onKeyDown}
             ref={passwordRef}
           />
-          <Button 
-            label="Log in" 
-            onClick={onSubmit} 
-            ref={buttonRef}
-          />
+          <Button label="Log in" onClick={onSubmit} ref={buttonRef} />
         </LoginForm>
         {motd && <small>{motd}</small>}
       </LoginContainer>

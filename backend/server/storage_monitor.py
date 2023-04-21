@@ -38,9 +38,7 @@ async def handle_samba_storage(storage: Storage):
             storage.mount_attempts = 999
             return
 
-    nebula.log.info(
-        f"{storage} is not mounted. Mounting..."
-    )
+    nebula.log.info(f"{storage} is not mounted. Mounting...")
 
     smbopts = {}
     if storage.options.get("login"):
