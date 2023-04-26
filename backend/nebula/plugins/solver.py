@@ -3,6 +3,10 @@ from nxtools import format_time
 import nebula
 from nebula.helpers.scheduling import bin_refresh
 
+from .common import modules_root
+
+assert modules_root
+
 
 class SolverPlugin:
     name: str = "solver"
