@@ -210,7 +210,7 @@ def build_query(
     # Process full text
 
     if request.query:
-        for elm in slugify(request.query, make_set=True):
+        for elm in slugify(request.query, make_set=True, min_length=3):
             # no need to sanitize this. slugified strings are safe
             cond_list.append(f"id IN (SELECT id FROM ft WHERE value LIKE '{elm}%')")
 
