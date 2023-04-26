@@ -7,12 +7,58 @@ import { toast } from 'react-toastify'
 import { isEqual, isEmpty } from 'lodash'
 
 import { useLocalStorage } from '/src/hooks'
-import { setPageTitle, reloadBrowser } from '/src/actions'
+import {
+  setPageTitle,
+  reloadBrowser,
+  setSelectedAssets,
+  setFocusedAsset,
+} from '/src/actions'
 import { Loader } from '/src/components'
 
 import AssetEditorNav from './assetEditorNav'
 import EditorForm from './assetEditorForm'
 import Preview from './preview'
+
+const getEnabledActions = ({ assetData, isChanged }) => {
+  // Return an object with all the actions that are enabled
+  // for the current asset and the current user
+  // This is used to enable/disable buttons in the UI
+
+  const limited = nebula.user.is_limited
+  const writableFolderIds = nebula.getWritableFolders().map((f) => f.id)
+
+  const edit = !(limited && assetData['qc/state'] === 4)
+  const save = isChanged && edit
+  const revert = isChanged
+
+  // it does not make sense to click add, when the current asset is brand new
+  // (id_folder is always present)
+  const create =
+    nebula.getWritableFolders().length > 0 && Object.keys(assetData).length > 1
+  const clone =
+    assetData.id &&
+    assetData.id_folder &&
+    writableFolderIds.includes(assetData.id_folder)
+
+  const folderChange = !assetData.id && edit
+  const flag = assetData.id && !nebula.user.is_limited
+  const upload = assetData.id && edit
+  const actions = assetData?.id && !isChanged
+  const advanced = !limited
+
+  return {
+    save,
+    edit,
+    revert,
+    folderChange,
+    create,
+    clone,
+    actions,
+    flag,
+    upload,
+    advanced,
+  }
+}
 
 const AssetEditor = () => {
   const focusedAsset = useSelector((state) => state.context.focusedAsset)
@@ -25,6 +71,8 @@ const AssetEditor = () => {
     'previewVisible',
     false
   )
+
+  // Load asset data
 
   const loadAsset = (id_asset) => {
     setLoading(true)
@@ -48,6 +96,9 @@ const AssetEditor = () => {
       })
   }
 
+  // Update a single asset meta field
+  // (called by EditorForm, flag buttons, etc.)
+
   const setMeta = (key, value) => {
     if (key === 'id_folder' && isEmpty(assetData)) {
       setOriginalData({ id_folder: value })
@@ -57,16 +108,25 @@ const AssetEditor = () => {
     })
   }
 
-  // Parse and show asset data
+  // If the asset is new, set the default folder
+  // (first writable folder)
 
   useEffect(() => {
     if (!assetData?.id_folder)
-      setMeta('id_folder', nebula.settings.folders[0].id)
+      setMeta('id_folder', nebula.getWritableFolders()[0]?.id)
   }, [assetData?.id_folder])
+
+  // Parse and show asset data
 
   useEffect(() => {
     if (assetData.id) {
-      dispatch(setPageTitle({ title: assetData.title }))
+      let title = assetData.title
+      if (assetData.subtitle) {
+        const separator = nebula.settings.system.subtitle_separator || ' - '
+        title = `${title}${separator}${assetData.subtitle}`
+      }
+
+      dispatch(setPageTitle({ title }))
     } else {
       const folderName = assetData.id_folder
         ? nebula.getFolderName(assetData.id_folder).toLowerCase()
@@ -85,12 +145,14 @@ const AssetEditor = () => {
     }
   }, [assetData, originalData])
 
+  // Are there unsaved changes?
+  // ATM it return true if any field is changed,
+  // but it could be changed to return an array of changed fields
+
   const isChanged = useMemo(() => {
-    if (!originalData?.id) return false
     let changed = []
-    for (const key in originalData) {
-      if (!isEqual(originalData[key], assetData[key])) {
-        console.log('CHANGE', key, originalData[key], assetData[key])
+    for (const key in assetData) {
+      if (!isEqual(originalData[key] || null, assetData[key] || null)) {
         return true
         //changed.push(key)
       }
@@ -98,7 +160,17 @@ const AssetEditor = () => {
     return changed.length
   }, [assetData, originalData])
 
-  // TODO: clean-up this mess
+  // Which actions are enabled (save, revert, etc.)
+  // This is used to disable buttons when there are no changes
+  // as well as disable the handlers (since save may be called using a shortcut)
+
+  const enabledActions = useMemo(() => {
+    return getEnabledActions({ assetData, isChanged })
+  }, [assetData, isChanged])
+
+  // When another asset is selected,
+  // check if there are unsaved changes and ask to save them
+
   useEffect(() => {
     if (!focusedAsset) return
     if (isChanged) {
@@ -134,23 +206,45 @@ const AssetEditor = () => {
   // Actions
 
   const onNewAsset = () => {
-    setAssetData({})
+    const currentFolder = assetData.id_folder
+    dispatch(setSelectedAssets([]))
+    dispatch(setFocusedAsset(null))
+    if (
+      nebula
+        .getWritableFolders()
+        .map((f) => f.id)
+        .includes(currentFolder)
+    ) {
+      setAssetData({ id_folder: currentFolder })
+      setOriginalData({ id_folder: currentFolder })
+    } else {
+      setAssetData({})
+      setOriginalData({})
+    }
   }
+
   const onCloneAsset = () => {
     let ndata = {}
     for (const field in assetData) {
-      if (nebula.metaType(field).ns === 'm' || field === 'duration')
+      if (
+        nebula.metaType(field).ns === 'm' ||
+        ['duration', 'id_folder'].includes(field)
+      )
         ndata[field] = assetData[field]
     }
+    dispatch(setSelectedAssets([]))
+    dispatch(setFocusedAsset(null))
     setAssetData(ndata)
   }
 
   const onRevert = () => {
+    if (!enabledActions.revert) return
     setAssetData(originalData)
   }
 
   const onSave = () => {
-    console.log('save', assetData)
+    if (!enabledActions.save) return
+    setLoading(true)
     nebula
       .request('set', { id: assetData.id, data: assetData })
       .then((response) => {
@@ -165,7 +259,23 @@ const AssetEditor = () => {
           </>
         )
       })
+      .finally(() => {
+        setLoading(false)
+      })
   }
+
+  // Keyboard shortcuts
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.ctrlKey && event.key === 's') {
+        event.preventDefault()
+        onSave()
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [])
 
   // Render
 
@@ -181,6 +291,7 @@ const AssetEditor = () => {
         isChanged={isChanged}
         previewVisible={previewVisible}
         setPreviewVisible={setPreviewVisible}
+        enabledActions={enabledActions}
       />
 
       {Object.keys(assetData || {}).length ? (
@@ -204,6 +315,7 @@ const AssetEditor = () => {
                 assetData={assetData}
                 setAssetData={setAssetData}
                 fields={fields}
+                disabled={!enabledActions.edit}
               />
             </div>
           </section>

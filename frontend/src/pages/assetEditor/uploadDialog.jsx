@@ -1,13 +1,13 @@
 import axios from 'axios'
 import styled from 'styled-components'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useMemo } from 'react'
 import { toast } from 'react-toastify'
 import { Dialog, Button, Progress } from '/src/components'
 
 import nebula from '/src/nebula'
 
-const FileSelectWidget = ({ onSelect, disabled }) => {
+const FileSelectWidget = ({ onSelect, disabled, contentType }) => {
   const inputRef = useRef(null)
 
   const onChange = (event) => {
@@ -17,7 +17,15 @@ const FileSelectWidget = ({ onSelect, disabled }) => {
     inputRef.current.value = null
   }
 
-  const accept = '.mov,.mxf,.mp4'
+  const accept = useMemo(() => {
+    let result = []
+    for (const ext in nebula.settings.filetypes) {
+      const type = nebula.settings.filetypes[ext]
+      if (type === contentType) result.push(`.${ext}`)
+    }
+    console.log('Accept', result)
+    return result.join(',')
+  }, [contentType])
 
   return (
     <>
@@ -122,12 +130,19 @@ const UploadDialog = ({ onHide, assetData }) => {
           Authorization: `Bearer ${nebula.getAccessToken()}`,
         },
       })
+
+      toast.success('Upload complete')
     } catch (error) {
       console.log(error)
       if (axios.isCancel(error)) {
         console.log('Request canceled', error.message)
       } else if (error.response) {
-        toast.error('Upload failed')
+        toast.error(
+          <>
+            <strong>Upload failed</strong>
+            <p>{error.response.data?.detail || 'Unknown error'}</p>
+          </>
+        )
         console.log('Error response', error.response)
       }
       setBytesTransferred(0)
@@ -135,12 +150,15 @@ const UploadDialog = ({ onHide, assetData }) => {
     }
 
     setUploading(false)
-    toast.success('Upload complete')
   } // handleUpload
 
   const footer = (
     <>
-      <FileSelectWidget onSelect={setFile} disabled={uploading} />
+      <FileSelectWidget
+        onSelect={setFile}
+        disabled={uploading}
+        contentType={assetData.content_type}
+      />
       <Button
         label="Upload"
         icon="upload"

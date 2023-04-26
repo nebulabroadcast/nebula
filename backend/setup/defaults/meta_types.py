@@ -189,9 +189,15 @@ META_TYPES = {
         "fulltext": 8,
         "type": T.STRING,
     },
-    "description": {
+    "summary": {
         "ns": "m",
         "fulltext": 8,
+        "type": T.TEXT,
+        "syntax": "md",
+    },
+    "description": {
+        "ns": "m",
+        "fulltext": 7,
         "type": T.TEXT,
         "syntax": "md",
     },
@@ -270,6 +276,10 @@ META_TYPES = {
     },
     "place": {
         "ns": "m",
+        "type": T.STRING,
+    },
+    "place/type": {
+        "ns": "m",
         "type": T.LIST,
         "cs": "urn:tva:metadata-cs:PlaceTypeCS",
         "mode": "tree",
@@ -345,6 +355,10 @@ META_TYPES = {
         "fulltext": True,
         "type": T.TEXT,
     },
+    "rights/broadcast": {
+        "ns": "m",
+        "type": T.BOOLEAN,
+    },
     "rights/ott": {
         "ns": "m",
         "type": T.BOOLEAN,
@@ -385,6 +399,10 @@ META_TYPES = {
         "ns": "m",
         "type": T.SELECT,
         "cs": "urn:site:clients",
+    },
+    "commercial/pp": {
+        "ns": "m",
+        "type": T.BOOLEAN,
     },
     "runs/daily": {
         "ns": "m",

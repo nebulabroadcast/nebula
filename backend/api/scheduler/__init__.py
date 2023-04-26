@@ -1,6 +1,7 @@
 from fastapi import Depends
 
 import nebula
+from nebula.helpers.scheduling import bin_refresh
 from server.dependencies import current_user, request_initiator
 from server.request import APIRequest
 
@@ -22,9 +23,18 @@ class Request(APIRequest):
         initiator: str = Depends(request_initiator),
     ) -> SchedulerResponseModel:
 
-        has_rights = True  # TODO
+        if not user.can("scheduler_view", request.id_channel):
+            raise nebula.ForbiddenException("You are not allowed to view this channel")
 
-        result = await scheduler(request, has_rights)
+        editable = user.can("scheduler_edit", request.id_channel)
+        result = await scheduler(request, editable)
+
+        if result.affected_bins:
+            await bin_refresh(
+                result.affected_bins,
+                initiator=initiator,
+                user=user,
+            )
 
         if result.affected_events:
             await nebula.msg(

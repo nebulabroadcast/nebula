@@ -1,11 +1,13 @@
 import nebula from '/src/nebula'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useDispatch } from 'react-redux'
 import { useParams } from 'react-router-dom'
 import { Table, Button, Timestamp } from '/src/components'
 import { setPageTitle } from '/src/actions'
 
 import JobsNav from './jobsNav'
+
+const RESTARTABLE = ['conv']
 
 const formatAction = (rowData, key) => {
   if ([0, 1, 5].includes(rowData['status']))
@@ -26,6 +28,7 @@ const formatAction = (rowData, key) => {
           onClick={() => {
             nebula.request('jobs', { restart: rowData['id'] })
           }}
+          disabled={!RESTARTABLE.includes(rowData['service_type'])}
           label="Restart"
         />
       </td>
@@ -50,6 +53,7 @@ const formatTime = (rowData, key) => {
 
 const COLUMNS = [
   { name: 'id', title: '#', width: 1 },
+  { name: 'idec', title: 'IDEC', width: 1 },
   { name: 'asset_name', title: 'Asset' },
   { name: 'action_name', title: 'Action' },
   { name: 'service_name', title: 'Service' },
@@ -100,56 +104,46 @@ const JobsPage = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const dispatch = useDispatch()
 
-  const loadJobs = () => {
+  const loadJobs = useCallback(() => {
     setLoading(true)
+    const cleanTitle = view
+      ? view[0].toUpperCase() + view.slice(1) + ' jobs'
+      : 'Jobs'
+    dispatch(setPageTitle({ title: cleanTitle }))
     nebula
-      .request('jobs', { view, searchQuery })
+      .request('jobs', { view, search_query: searchQuery })
       .then((response) => {
         setJobs(response.data.jobs)
       })
       .catch((err) => console.error(err))
       .finally(() => setLoading(false))
-  }
-
-  useEffect(() => {
-    const cleanTitle = view
-      ? view[0].toUpperCase() + view.slice(1) + ' jobs'
-      : 'Jobs'
-    dispatch(setPageTitle({ title: cleanTitle }))
-    loadJobs()
-  }, [view])
+  }, [searchQuery, view])
 
   useEffect(() => {
     loadJobs()
-  }, [jobs.map((job) => job.status).join(',')])
-
-  useEffect(() => {
-    loadJobs()
-  }, [searchQuery])
+  }, [jobs.map((job) => job.status).join(','), view, searchQuery])
 
   const handlePubSub = (topic, message) => {
     setJobs((prevData) => {
-      //let forceReload = false
       const newData = [...prevData]
       const index = newData.findIndex((job) => job.id === message.id)
       if (index !== -1) {
-        // if (newData[index].status !== message.status) {
-        //   forceReload = true
-        // }
         newData[index]['status'] = message.status
         newData[index]['progress'] = message.progress
         newData[index]['message'] = message.message
       }
-      // if (forceReload)
-      //   loadJobs()
       return newData
     })
   } // handlePubSub
 
   useEffect(() => {
     const token = PubSub.subscribe('job_progress', handlePubSub)
-    return () => PubSub.unsubscribe(token)
-  }, [])
+    //setInterval(() => {console.log("GGG"); loadJobs() }, 3000)
+    return () => {
+      PubSub.unsubscribe(token)
+      //clearInterval(loadJobs)
+    }
+  }, [view, searchQuery])
 
   return (
     <main className="column">

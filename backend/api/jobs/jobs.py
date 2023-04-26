@@ -1,13 +1,13 @@
 import time
 from typing import Literal
 
-from fastapi import Depends, Response
+from fastapi import Response
 from nxtools import slugify
 from pydantic import Field
 
 import nebula
-from nebula.objects.user import User
-from server.dependencies import current_user
+from nebula.enum import JobState
+from server.dependencies import CurrentUser
 from server.models import RequestModel, ResponseModel
 from server.request import APIRequest
 
@@ -55,27 +55,42 @@ class JobsRequestModel(ResponseModel):
 
 
 class JobsItemModel(RequestModel):
-    id: int
-    status: int
-    progress: int
-    id_action: int
-    id_service: int | None
-    id_asset: int
-    id_user: int | None
-    message: str
-    ctime: int | None
-    stime: int | None
-    etime: int | None
-    asset_name: str | None
-    action_name: str | None
-    service_name: str | None
+    id: int = Field(..., title="Job ID")
+    status: JobState = Field(..., title="Job status")
+    progress: int = Field(..., title="Progress", example=24)
+    id_action: int = Field(..., title="Action ID", example=1)
+    id_service: int | None = Field(None, title="Service ID", example=3)
+    id_asset: int = Field(..., title="Asset ID")
+    id_user: int | None = Field(
+        None,
+        title="User ID",
+        description="ID of the user who started the job",
+    )
+    message: str = Field(None, title="Status description", example="Encoding 24%")
+    ctime: int | None = Field(None, title="Created at", example=f"{int(time.time())}")
+    stime: int | None = Field(None, title="Started at", example=f"{int(time.time())}")
+    etime: int | None = Field(None, title="Finished at", example=f"{int(time.time())}")
+    asset_name: str | None = Field(
+        None,
+        title="Asset name",
+        description="Asset full title (title + subtitle)",
+        example="Star Trek IV: The voyage home",
+    )
+    idec: str | None = Field(
+        None,
+        title="Primary identifier",
+        example="A123456",
+    )
+    action_name: str | None = Field(None, example="proxy")
+    service_name: str | None = Field(None, example="conv01")
+    service_type: str | None = Field(None, example="conv")
 
 
 class JobsResponseModel(ResponseModel):
     jobs: list[JobsItemModel] = Field(default_factory=list)
 
 
-async def can_user_control_job(user: User, id_job: int) -> bool:
+async def can_user_control_job(user: nebula.User, id_job: int) -> bool:
     if user.is_admin:
         return True
     if user.can("job_control", True):
@@ -90,7 +105,9 @@ async def can_user_control_job(user: User, id_job: int) -> bool:
         query = """
             SELECT a.id FROM assets a, jobs j
             WHERE j.id = $1 AND j.id_asset = a.id
-            AND a.meta->>'created_by'::INTEGER = $2
+            AND (
+                a.meta->>'created_by'::INTEGER = $2
+                OR a.meta->'assignees' @> '[$2]'::JSONB
         """
         res = await nebula.db.fetch(query, id_job, user.id)
         return bool(res)
@@ -154,7 +171,7 @@ class JobsRequest(APIRequest):
     async def handle(
         self,
         request: JobsRequestModel,
-        user: User = Depends(current_user),
+        user: CurrentUser,
     ) -> JobsResponseModel:
 
         if request.abort:
@@ -171,9 +188,14 @@ class JobsRequest(APIRequest):
                 conds.append(f"a.id IN (SELECT id FROM ft WHERE value LIKE '{elm}%')")
 
         if user.is_limited:
-            conds.append(f"a.meta->>'created_by' = {user.id}")
+            conds.append(
+                f"""
+                (a.meta->>'created_by' = '{user.id}'
+                OR a.meta->'assignees' @> '[{user.id}]'::JSONB)
+                """
+            )
 
-        elif request.view == "active":
+        if request.view == "active":
             # Pending, in_progress, restart
             conds.append(f"(j.status IN (0, 1, 5) OR j.end_time > {time.time() - 30})")
         elif request.view == "finished":
@@ -205,10 +227,13 @@ class JobsRequest(APIRequest):
                 j.creation_time AS ctime,
                 j.start_time AS stime,
                 j.end_time as etime,
-                a.meta->>'title' AS asset_name,
+                a.meta->>'title' AS asset_title,
+                a.meta->>'subtitle' AS asset_subtitle,
+                a.meta->>'id/main' AS idec,
                 s.title AS service_name,
                 u.login AS user_name,
-                ac.title AS action_name
+                ac.title AS action_name,
+                ac.service_type as service_type
         FROM jobs as j
         LEFT JOIN assets as a ON a.id = j.id_asset
         LEFT JOIN services as s ON s.id = j.id_service
@@ -216,6 +241,7 @@ class JobsRequest(APIRequest):
         LEFT JOIN actions as ac ON ac.id = j.id_action
         {('WHERE ' + (' AND '.join(conds))) if conds else ''}
         ORDER BY
+            j.progress DESC NULLS LAST,
             j.end_time DESC,
             j.start_time DESC,
             j.creation_time DESC
@@ -224,6 +250,10 @@ class JobsRequest(APIRequest):
 
         jobs = []
         async for row in nebula.db.iterate(query):
-            jobs.append(JobsItemModel(**row))
+            asset_name = row["asset_title"]
+            if subtitle := row["asset_subtitle"]:
+                separator = nebula.settings.system.subtitle_separator
+                asset_name = f"{asset_name}{separator}{subtitle}"
+            jobs.append(JobsItemModel(asset_name=asset_name, **row))
 
         return JobsResponseModel(jobs=jobs)

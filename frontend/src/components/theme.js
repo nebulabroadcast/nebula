@@ -5,6 +5,8 @@ const colors = {
   surface04: '#2e2a38',
   surface05: '#302c3a',
   surface06: '#3a3644',
+  surface07: '#413e4e',
+  surface08: '#514a5e',
   text: '#d7d4d5',
   textHl: '#fbfbfb',
   textDim: '#ababab',

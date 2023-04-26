@@ -56,6 +56,8 @@ class Client:
             await self.sock.send_text(json_dumps(message))
         except WebSocketDisconnect:
             self.disconnected = True
+        except Exception as e:
+            nebula.log.trace("WS: Error sending message", e)
 
     async def receive(self):
         data = await self.sock.receive_text()
@@ -132,7 +134,8 @@ class Messaging(BackgroundTask):
                         "data": data[4],
                     }
 
-                for client_id, client in self.clients.items():
+                clients = list(self.clients.values())
+                for client in clients:
                     for topic in client.topics:
                         if topic == "*" or message["topic"].startswith(topic):
                             await client.send(message)

@@ -1,22 +1,24 @@
-import Dialog from './dialog'
-import Dropdown from './dropdown'
-import Loader from './loader'
-import Progress from './progress'
-import Select from './select'
-import Switch from './switch'
 import Table from './table'
-import Video from './video'
 
-import {
-  InputDatetime,
-  InputNumber,
-  InputPassword,
-  InputText,
-  InputTimecode,
-  TextArea,
-} from './input'
+import Dialog from './Dialog'
+import Dropdown from './Dropdown'
+import Loader from './Loader'
+import Progress from './Progress'
+import Select from './Select'
+import Video from './Video'
+import SelectDialog from './SelectDialog'
 
-import { Button } from './button'
+import InputDatetime from './InputDatetime'
+import InputInteger from './InputInteger'
+import InputNumber from './InputNumber'
+import InputPassword from './InputPassword'
+import InputText from './InputText'
+import InputTimecode from './InputTimecode'
+import InputSwitch from './InputSwitch'
+import TextArea from './TextArea'
+
+import Button from './Button'
+
 import { DateTime, Timestamp } from './fields'
 import { Form, FormRow } from './form'
 import { Navbar, Spacer, ToolbarSeparator, DialogButtons } from './layout'
@@ -30,6 +32,7 @@ export {
   Form,
   FormRow,
   InputDatetime,
+  InputInteger,
   InputNumber,
   InputPassword,
   InputText,
@@ -38,8 +41,9 @@ export {
   Navbar,
   Progress,
   Select,
+  SelectDialog,
   Spacer,
-  Switch,
+  InputSwitch,
   Table,
   TextArea,
   Timestamp,

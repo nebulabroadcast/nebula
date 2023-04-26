@@ -1,11 +1,10 @@
 import time
 from typing import Any
 
-from fastapi import Depends
 from pydantic import Field
 
 import nebula
-from server.dependencies import current_user
+from server.dependencies import CurrentUser
 from server.models import RequestModel, ResponseModel
 from server.request import APIRequest
 
@@ -163,7 +162,7 @@ class SendRequest(APIRequest):
     async def handle(
         self,
         request: SendRequestModel,
-        user: nebula.User = Depends(current_user),
+        user: CurrentUser,
     ) -> SendResponseModel:
 
         if not user.can("job_control", request.id_action):

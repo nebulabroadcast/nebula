@@ -16,7 +16,6 @@ async def setup_metatypes(meta_types, db):
             aliases[lang][key] = [alias, header, description]
 
     for key, data in meta_types.items():
-
         meta_type = {}
         meta_type["ns"] = data["ns"]
         meta_type["editable"] = True
@@ -28,7 +27,14 @@ async def setup_metatypes(meta_types, db):
                 meta_type[opt] = data[opt]
 
         for lang in languages:
-            meta_type["aliases"][lang] = aliases[lang][key]
+            try:
+                meta_type["aliases"][lang] = aliases[lang][key]
+            except KeyError:
+                meta_type["aliases"][lang] = [
+                    data.get("title", key.capitalize()),
+                    None,
+                    "",
+                ]
 
         await db.execute(
             """

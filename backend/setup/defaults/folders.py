@@ -14,18 +14,18 @@ primary_description: FieldList = [
 ]
 
 serie_description: FieldList = [
-    FolderField(name="serie"),
+    FolderField(name="serie", section="Series"),
     FolderField(name="serie/season"),
     FolderField(name="serie/episode"),
 ]
 
 roles_description: FieldList = [
-    FolderField(name="role/director"),
+    FolderField(name="role/director", section="Roles"),
     FolderField(name="role/cast"),
 ]
 
 content_description: FieldList = [
-    FolderField(name="genre", filter=movie_genre_pattern),
+    FolderField(name="genre", filter=movie_genre_pattern, section="Content"),
     FolderField(name="editorial_format", filter=r"^2(\.\d+){0,2}$"),
     FolderField(name="atmosphere"),
     FolderField(name="intention", filter=r"^1\.(1|2|3|4|5|6|7|8)$"),
@@ -35,11 +35,12 @@ content_description: FieldList = [
 ]
 
 production_description: FieldList = [
-    FolderField(name="date/valid"),
+    FolderField(name="date/valid", section="Production"),
     FolderField(name="editorial_control"),
     FolderField(name="rights"),
     FolderField(name="rights/type"),
     FolderField(name="rights/description"),
+    FolderField(name="rights/ott"),
     FolderField(name="notes"),
     FolderField(name="qc/report"),
 ]

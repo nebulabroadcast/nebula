@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 
-import Loader from '../loader'
+import Loader from '../Loader'
 import TableWrapper from './container'
 import { HeaderCell, DataRow } from './cells'
 
@@ -16,6 +16,7 @@ const Table = ({
   sortBy,
   sortDirection,
   onSort,
+  onLoadMore,
   loading = false,
 }) => {
   const head = useMemo(() => {
@@ -52,8 +53,19 @@ const Table = ({
     )
   }, [columns, data, selection, keyField, rowHighlightColor])
 
+  const handleScroll = (event) => {
+    if (!onLoadMore) return
+    const container = event.target
+    if (
+      container.scrollHeight - container.scrollTop ===
+      container.clientHeight
+    ) {
+      onLoadMore()
+    }
+  }
+
   return (
-    <TableWrapper className={className} style={style}>
+    <TableWrapper className={className} style={style} onScroll={handleScroll}>
       {loading && (
         <div className="contained center">
           <Loader />

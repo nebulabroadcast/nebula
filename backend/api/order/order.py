@@ -33,6 +33,9 @@ async def set_rundown_order(
                             connection=conn,
                             username=user.name,
                         )
+
+                        assert isinstance(item, nebula.Item)  # mypy
+
                         # Empty event may not have id_bin set,
                         # but we know, where we are putting it.
                         item["id_bin"] = id_bin

@@ -3,7 +3,7 @@ from typing import Any, Literal
 from pydantic import Field
 
 from nebula.enum import ContentType, MediaType, ServiceState
-from nebula.settings.common import SettingsModel
+from nebula.settings.common import LanguageCode, SettingsModel
 from nebula.settings.metatypes import MetaType
 
 CSItemRole = Literal["hidden", "header", "label", "option"]
@@ -59,6 +59,12 @@ class BaseSystemSettings(SettingsModel):
         description="A name used as the site (instance) identification",
     )
 
+    language: LanguageCode = Field(
+        "en",
+        title="Default language",
+        example="en",
+    )
+
     ui_asset_create: bool = Field(
         True,
         title="Create assets in UI",
@@ -79,6 +85,12 @@ class BaseSystemSettings(SettingsModel):
         "(when set to false, assets can only be uploaded via API and watch folders)",
     )
 
+    subtitle_separator: str = Field(
+        ": ",
+        title="Subtitle separator",
+        description="String used to separate title and subtitle in displayed title",
+    )
+
 
 class SystemSettings(BaseSystemSettings):
     """System settings.
@@ -93,13 +105,15 @@ class SystemSettings(BaseSystemSettings):
     worker_plugin_path: str = Field(".nx/plugins")
     upload_storage: int | None = Field(None)
     upload_dir: str | None = Field(None)
+    upload_base_name: str = Field("{id}")
 
     smtp_host: str | None = Field(None, title="SMTP host", example="smtp.example.com")
     smtp_port: int | None = Field(None, title="SMTP port", example=465)
     smtp_user: str | None = Field(None, title="SMTP user", example="smtpuser")
-    smtp_password: str | None = Field(None, title="SMTP password", example="smtppass.1")
+    smtp_pass: str | None = Field(None, title="SMTP password", example="smtppass.1")
+
     mail_from: str | None = Field(
-        None,
+        "Nebula <noreply@nebulabroadcast.com>",
         title="Mail from",
         description="Email address used as the sender",
         example="Nebula <noreply@example.com>",
@@ -171,6 +185,7 @@ class StorageSettings(BaseStorageSettings):
 
 class FolderField(SettingsModel):
     name: str = Field(..., title="Field name")
+    section: str | None = Field(None, title="Section")
     mode: str | None = None
     format: str | None = None
     order: str | None = None

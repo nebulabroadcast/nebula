@@ -107,7 +107,10 @@ const Preview = ({ assetData, setAssetData }) => {
   useEffect(() => {
     if (!assetData) return
     if ((assetData.subclips || []) !== subclips) {
-      setAssetData((assetData) => ({ ...assetData, subclips: subclips }))
+      setAssetData((assetData) => ({
+        ...assetData,
+        subclips: subclips.length ? subclips : null,
+      }))
     }
   }, [subclips])
 
@@ -121,11 +124,14 @@ const Preview = ({ assetData, setAssetData }) => {
     })
   }
 
+  const videoSrc =
+    assetData.id && accessToken && `/proxy/${assetData.id}?token=${accessToken}`
+
   return (
     <div className="grow column" style={{ minWidth: 300, maxWidth: 600 }}>
       <section className="column">
         <Video
-          src={`/proxy/${assetData.id}?token=${accessToken}`}
+          src={videoSrc}
           style={{ width: '100%' }}
           showMarks={true}
           marks={selection}

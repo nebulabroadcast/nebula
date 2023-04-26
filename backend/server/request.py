@@ -5,6 +5,7 @@ from server.models import ResponseModel
 
 class APIRequest:
     name: str
+    path: str | None = None
     title: str | None = None
     methods: list[str] = ["POST"]
     response_class: Any = None

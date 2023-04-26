@@ -1,16 +1,14 @@
 import os
 
-import aiofiles
 from fastapi import Depends, FastAPI, Header, Request
-from fastapi.responses import JSONResponse, RedirectResponse, Response
+from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.websockets import WebSocket, WebSocketDisconnect
 
 import nebula
-from nebula.enum import MediaType
 from nebula.exceptions import NebulaException
 from nebula.settings import load_settings
-from server.dependencies import asset_in_path, current_user, current_user_query
+from server.dependencies import current_user_query
 from server.endpoints import install_endpoints
 from server.storage_monitor import storage_monitor
 from server.video import range_requests_response
@@ -50,7 +48,14 @@ async def custom_404_handler(request: Request, _):
                 "method": request.method,
             },
         )
-    return RedirectResponse("/")
+
+    index_path = os.path.join(nebula.config.frontend_dir, "index.html")
+    if os.path.exists(index_path):
+        return FileResponse(
+            index_path,
+            status_code=200,
+            media_type="text/html",
+        )
 
 
 @app.exception_handler(NebulaException)
@@ -58,8 +63,9 @@ async def openpype_exception_handler(
     request: Request,
     exc: NebulaException,
 ) -> JSONResponse:
-    endpoint = request.url.path.split("/")[-1]
-    nebula.log.error(f"{endpoint}: {exc}")  # TODO: user?
+    # endpoint = request.url.path.split("/")[-1]
+    # We do not need to log this (It is up to NebulaException class)
+    # nebula.log.error(f"{endpoint}: {exc}")  # TODO: user?
     return JSONResponse(
         status_code=exc.status,
         content={
@@ -74,6 +80,7 @@ async def openpype_exception_handler(
 
 @app.exception_handler(AssertionError)
 async def assertion_error_handler(request: Request, exc: AssertionError):
+    nebula.log.error(f"AssertionError: {exc}")
     return JSONResponse(
         status_code=500,
         content={
@@ -143,42 +150,6 @@ async def proxy(
     return range_requests_response(request, video_path, "video/mp4")
 
 
-@app.post("/upload/{id_asset}", response_class=Response)
-async def upload_media_file(
-    request: Request,
-    asset: nebula.Asset = Depends(asset_in_path),
-    user: nebula.User = Depends(current_user),
-):
-    """Upload a media file for a given asset.
-
-    This endpoint is used by the web frontend to upload media files.
-    """
-
-    assert asset["media_type"] == MediaType.FILE, "Only file assets can be uploaded"
-    assert nebula.settings.system.upload_storage, "Upload storage not configured"
-    assert nebula.settings.system.upload_dir, "Upload path not configured"
-
-    storage = nebula.storages[nebula.settings.system.upload_storage]
-    upload_dir = nebula.settings.system.upload_dir
-
-    extension = request.headers.get("X-nebula-extension")
-    assert extension, "Missing X-nebula-extension header"
-    assert extension in ["mp4", "mov", "mxf"], "Invalid extension"
-
-    nebula.log.debug(f"Uploading media file for {asset}", user=user.name)
-    target_path = os.path.join(
-        storage.local_path, upload_dir, f"{asset.id}.{extension}"
-    )
-
-    i = 0
-    async with aiofiles.open(target_path, "wb") as f:
-        async for chunk in request.stream():
-            i += len(chunk)
-            await f.write(chunk)
-
-    nebula.log.info(f"Uploaded media file for {asset}", user=user.name)
-
-
 #
 # Messaging
 #
@@ -198,12 +169,15 @@ async def ws_endpoint(websocket: WebSocket) -> None:
                     message.get("token"),
                     topics=message.get("subscribe", []),
                 )
+                # if client.user_name:
+                #     nebula.log.trace(f"{client.user_name} connected")
     except WebSocketDisconnect:
-        if client.user_name:
-            nebula.log.trace(f"{client.user_name} disconnected")
-        else:
-            nebula.log.trace("Anonymous client disconnected")
-        del messaging.clients[client.id]
+        # if client.user_name:
+        #     nebula.log.trace(f"{client.user_name} disconnected")
+        try:
+            del messaging.clients[client.id]
+        except KeyError:
+            pass
 
 
 #
@@ -229,7 +203,7 @@ def install_frontend_plugins(app: FastAPI):
 
 
 # TODO: this is a development hack.
-HLS_DIR = "/storage/nebula_01/hls/"
+HLS_DIR = "/mnt/nebula_01/hls/"
 if os.path.exists(HLS_DIR):
     app.mount("/hls", StaticFiles(directory=HLS_DIR))
 

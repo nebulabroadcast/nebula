@@ -1,3 +1,5 @@
+__version__ = "6.0.0"
+
 __all__ = [
     "config",
     "settings",
@@ -19,6 +21,7 @@ __all__ = [
     "ForbiddenException",
     "NebulaException",
     "NotFoundException",
+    "RequestSettingsReload",
     "UnauthorizedException",
     "LoginFailedException",
     "NotImplementedException",
@@ -27,6 +30,12 @@ __all__ = [
     # Plugins
     "CLIPlugin",
 ]
+
+import sys
+
+if "--version" in sys.argv:
+    print(__version__)
+    sys.exit(0)
 
 import asyncio
 
@@ -40,6 +49,7 @@ from .exceptions import (
     NebulaException,
     NotFoundException,
     NotImplementedException,
+    RequestSettingsReload,
     UnauthorizedException,
     ValidationException,
 )

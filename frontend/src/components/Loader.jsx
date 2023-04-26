@@ -6,6 +6,21 @@ const LoaderContainer = styled.div`
   width: 80px;
   height: 80px;
   z-index: 1000;
+  
+  animation-name: fadeIn;
+  animation-duration: .1s;
+  animation-delay: .2s;
+  animation-fill-mode: forwards;
+  opacity: 0;
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
 
   div {
     position: absolute;

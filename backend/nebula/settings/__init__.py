@@ -2,6 +2,7 @@ from typing import Any
 
 from nebula.config import config
 from nebula.db import db
+from nebula.log import log
 from nebula.settings.metatypes import MetaType
 from nebula.settings.models import (
     CSItemModel,
@@ -91,6 +92,7 @@ async def load_settings():
     Either in nebula.server on_init handler or by nebula.run
     """
 
+    log.trace("Loading settings")
     new_settings = await get_server_settings()
     for key in new_settings.dict().keys():
         if key in settings.dict().keys():

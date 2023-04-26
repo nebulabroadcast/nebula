@@ -1,11 +1,10 @@
 from typing import Any
 
-from fastapi import Depends
 from pydantic import Field
 
 import nebula
 from nebula.enum import ObjectType
-from server.dependencies import current_user
+from server.dependencies import CurrentUser
 from server.models import RequestModel, ResponseModel
 from server.request import APIRequest
 
@@ -38,6 +37,28 @@ class GetResponseModel(ResponseModel):
     )
 
 
+def can_access_object(user: nebula.User, meta: dict[str, Any]) -> bool:
+    if user.is_admin:
+        return True
+    elif user.id in meta.get("assignees", []):
+        return True
+    elif user.is_limited:
+        if meta.get("created_by") != user.id:
+            return False
+        return True
+    if id_folder := meta.get("id_folder"):
+        # Users can view assets in folders they have access to
+        return user.can("asset_view", id_folder)
+
+    if login := meta.get("login"):
+        # Users can view their own data
+        return login == user.name
+
+    # Normal users don't need to access items, bins or events
+    # using get requests.
+    return False
+
+
 class Request(APIRequest):
     """Get a list of objects"""
 
@@ -48,7 +69,7 @@ class Request(APIRequest):
     async def handle(
         self,
         request: GetRequestModel,
-        user: nebula.User = Depends(current_user),
+        user: CurrentUser,
     ) -> GetResponseModel:
 
         object_type_name = request.object_type.value
@@ -56,12 +77,10 @@ class Request(APIRequest):
 
         data = []
         async for row in nebula.db.iterate(query, request.ids):
-            if user.is_limited:
-                # Limited users can only see their own objects
-                if row["meta"].get("created_by") != user.id:
-                    raise nebula.ForbiddenException(
-                        "You are not allowed to access this object"
-                    )
+            if not can_access_object(user, row["meta"]):
+                raise nebula.ForbiddenException(
+                    "You are not allowed to access this object"
+                )
             data.append(row["meta"])
 
         return GetResponseModel(data=data)

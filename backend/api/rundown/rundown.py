@@ -147,6 +147,14 @@ async def get_rundown(request: RundownRequestModel) -> RundownResponseModel:
 
         # Append item to the result
 
+        meta = {}
+        if asset:
+            for key in channel.rundown_columns:
+                if (key in asset.meta) and (
+                    key not in ["title", "subtitle", "id_asset", "duration", "status"]
+                ):
+                    meta[key] = asset.meta[key]
+
         row = RundownRow(
             id=id_item,
             row_number=len(rows),
@@ -154,6 +162,7 @@ async def get_rundown(request: RundownRequestModel) -> RundownResponseModel:
             scheduled_time=ts_scheduled,
             broadcast_time=ts_broadcast,
             run_mode=imeta.get("run_mode"),
+            loop=imeta.get("loop"),
             item_role=imeta.get("item_role"),
             title=item["title"],
             subtitle=item["subtitle"],
@@ -165,6 +174,8 @@ async def get_rundown(request: RundownRequestModel) -> RundownResponseModel:
             asset_mtime=ameta.get("mtime", 0),
             mark_in=mark_in,
             mark_out=mark_out,
+            is_empty=False,
+            meta=meta,
         )
 
         rows.append(row)
@@ -177,5 +188,6 @@ async def get_rundown(request: RundownRequestModel) -> RundownResponseModel:
             ts_scheduled += duration
             ts_broadcast += duration
             last_event.duration += duration
+            last_event.is_empty = False
 
     return RundownResponseModel(rows=rows)

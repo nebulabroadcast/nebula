@@ -57,6 +57,9 @@ Navbar.defaultProps = {
 
 const Spacer = styled.div`
   flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `
 
 const ToolbarSeparator = styled.div`

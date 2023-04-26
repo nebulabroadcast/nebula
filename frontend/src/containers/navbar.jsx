@@ -15,6 +15,9 @@ const BasePageTitle = styled.div`
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 
   .icon {
     font-size: 2.1rem;

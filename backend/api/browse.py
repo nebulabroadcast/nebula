@@ -1,6 +1,5 @@
 from typing import Any, Literal
 
-from fastapi import Depends
 from nxtools import slugify
 from pydantic import Field
 
@@ -9,7 +8,7 @@ from nebula.common import sql_list
 from nebula.enum import MetaClass
 from nebula.exceptions import NebulaException
 from nebula.metadata.normalize import normalize_meta
-from server.dependencies import current_user
+from server.dependencies import CurrentUser
 from server.models import RequestModel, ResponseModel
 from server.request import APIRequest
 
@@ -19,6 +18,8 @@ from server.request import APIRequest
 REQUIRED_COLUMNS = [
     "id",
     "id_folder",
+    "title",
+    "subtitle",
     "status",
     "content_type",
     "media_type",
@@ -109,17 +110,19 @@ def sanitize_value(value: Any) -> Any:
 def build_conditions(conditions: list[ConditionModel]) -> list[str]:
     cond_list: list[str] = []
     for condition in conditions:
-        assert condition.key in nebula.settings.metatypes
+        assert (
+            condition.key in nebula.settings.metatypes
+        ), f"Invalid meta key {condition.key}"
         condition.value = normalize_meta(condition.key, condition.value)
         if condition.operator in ["IN", "NOT IN"]:
-            assert type(condition.value) is list
+            assert type(condition.value) is list, "Value must be a list"
             values = sql_list([sanitize_value(v) for v in condition.value], t="str")
             cond_list.append(f"meta->>'{condition.key}' {condition.operator} {values}")
         elif condition.operator in ["IS NULL", "IS NOT NULL"]:
             cond_list.append(f"meta->>'{condition.key}' {condition.operator}")
         else:
             value = sanitize_value(condition.value)
-            assert value
+            assert value, "Value must not be empty"
             # TODO casting to numbers for <, >, <=, >=
             cond_list.append(f"meta->>'{condition.key}' {condition.operator} '{value}'")
     return cond_list
@@ -188,7 +191,7 @@ def build_query(
     # Process views
 
     if request.view is not None and not request.ignore_view_conditions:
-        assert type(request.view) is int
+        assert type(request.view) is int, "View must be an integer"
         if (view := nebula.settings.get_view(request.view)) is not None:
             if view.folders:
                 cond_list.append(f"id_folder IN {sql_list(view.folders)}")
@@ -207,14 +210,16 @@ def build_query(
     # Process full text
 
     if request.query:
-        for elm in slugify(request.query, make_set=True):
+        for elm in slugify(request.query, make_set=True, min_length=3):
             # no need to sanitize this. slugified strings are safe
             cond_list.append(f"id IN (SELECT id FROM ft WHERE value LIKE '{elm}%')")
 
     # Access control
 
     if user.is_limited:
-        cond_list.append(f"meta->>'created_by' = '{user.id}'")
+        c1 = f"meta->>'created_by' = '{user.id}'"
+        c2 = f"meta->'assignees' @> '[{user.id}]'::JSONB"
+        cond_list.append(f"({c1} OR {c2})")
 
     # Build conditions
 
@@ -253,12 +258,12 @@ class Request(APIRequest):
     async def handle(
         self,
         request: BrowseRequestModel,
-        user: nebula.User = Depends(current_user),
+        user: CurrentUser,
     ) -> BrowseResponseModel:
 
         columns: list[str] = ["title", "duration"]
         if request.view is not None and not request.columns:
-            assert type(request.view) is int
+            assert type(request.view) is int, "View must be an integer"
             if (view := nebula.settings.get_view(request.view)) is not None:
                 if view.columns is not None:
                     columns = view.columns
