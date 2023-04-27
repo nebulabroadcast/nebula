@@ -151,7 +151,16 @@ async def get_rundown(request: RundownRequestModel) -> RundownResponseModel:
         if asset:
             for key in channel.rundown_columns:
                 if (key in asset.meta) and (
-                    key not in ["title", "subtitle", "id_asset", "duration", "status"]
+                    key
+                    not in [
+                        "title",
+                        "subtitle",
+                        "id_asset",
+                        "duration",
+                        "status",
+                        "mark_in",
+                        "mark_out",
+                    ]
                 ):
                     meta[key] = asset.meta[key]
 

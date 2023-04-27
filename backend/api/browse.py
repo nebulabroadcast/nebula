@@ -221,6 +221,10 @@ def build_query(
         c2 = f"meta->'assignees' @> '[{user.id}]'::JSONB"
         cond_list.append(f"({c1} OR {c2})")
 
+    if can_view := user["can/asset_view"]:
+        if type(can_view) is list:
+            cond_list.append(f"id_folder IN {sql_list(can_view)}")
+
     # Build conditions
 
     if cond_list:

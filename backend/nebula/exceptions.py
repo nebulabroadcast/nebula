@@ -16,6 +16,7 @@ class NebulaException(Exception):
         self,
         detail: str | None = None,
         log: bool | str = False,
+        user_name: str | None = None,
         **kwargs,
     ) -> None:
 
@@ -25,9 +26,9 @@ class NebulaException(Exception):
             self.detail = detail
 
         if log is True or self.log:
-            logger.error(f"EXCEPTION: {self.status} {self.detail}")
+            logger.error(f"EXCEPTION: {self.status} {self.detail}", user=user_name)
         elif type(log) is str:
-            logger.error(f"EXCEPTION: {self.status} {log}")
+            logger.error(f"EXCEPTION: {self.status} {log}", user=user_name)
 
         super().__init__(self.detail)
 

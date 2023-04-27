@@ -60,7 +60,7 @@ class Validator:
 # Single operation request
 
 
-class SetRequestModel(RequestModel):
+class OperationModel(RequestModel):
     object_type: ObjectType = Field(ObjectType.ASSET, description="Object type")
     id: int | None = Field(
         None,
@@ -74,8 +74,10 @@ class SetRequestModel(RequestModel):
     )
 
 
-class SetResponseModel(ResponseModel):
+class OperationResponseModel(ResponseModel):
     object_type: ObjectType = Field("asset", title="Object type")
+    success: bool = Field(..., title="Success")
+    error: str | None = Field(None, title="Error message")
     id: int | None = Field(
         None,
         title="Object ID",
@@ -84,14 +86,6 @@ class SetResponseModel(ResponseModel):
 
 
 # Multiple operation request
-
-
-class OperationModel(SetRequestModel):
-    pass
-
-
-class OperationResponseModel(SetResponseModel):
-    success: bool = Field(..., title="Success")
 
 
 class OperationsRequestModel(RequestModel):
@@ -116,64 +110,6 @@ class OperationsResponseModel(ResponseModel):
 #
 
 
-class SetRequest(APIRequest):
-    name = "set"
-    title = "Create or update an object"
-    response_model = SetResponseModel
-
-    async def handle(
-        self,
-        request: SetRequestModel,
-        user: CurrentUser,
-    ) -> SetResponseModel:
-        """Create or update an object."""
-
-        reload_settings = False
-        pool = await nebula.db.pool()
-        async with pool.acquire() as conn:
-            async with conn.transaction():
-                object_class = get_object_class_by_name(request.object_type)
-                if request.id is None:
-                    object = object_class(connection=conn)
-                    object["created_by"] = user.id
-                    object["updated_by"] = user.id
-                    request.data.pop("id", None)
-                else:
-                    object = await object_class.load(request.id, connection=conn)
-                    object["updated_by"] = user.id
-
-                if (password := request.data.pop("password", None)) is not None:
-                    assert isinstance(password, str)
-                    assert isinstance(object, nebula.User)
-                    object.set_password(password)
-
-                if validator := Validator.for_object(request.object_type):
-                    try:
-                        await validator(
-                            object,
-                            request.data,
-                            connection=conn,
-                            user=user,
-                        )
-                    except nebula.RequestSettingsReload:
-                        reload_settings = True
-                else:
-                    object.update(request.data)
-
-                await object.save()
-
-        if isinstance(object, nebula.Item) and object["id_bin"]:
-            await bin_refresh([object["id_bin"]])
-
-        if reload_settings:
-            await load_settings()
-
-        return SetResponseModel(
-            id=object.id,
-            object_type=request.object_type,
-        )
-
-
 class OperationsRequest(APIRequest):
     name: str = "ops"
     title: str = "Create / update multiple objects at once"
@@ -192,6 +128,7 @@ class OperationsRequest(APIRequest):
         affected_bins: list[int] = []
         for operation in request.operations:
             success = True
+            error = None
             op_id = operation.id
             try:
                 async with pool.acquire() as conn:
@@ -210,6 +147,10 @@ class OperationsRequest(APIRequest):
                             )
                             object["updated_by"] = user.id
 
+                        #
+                        # Setting password
+                        #
+
                         if (
                             password := operation.data.pop("password", None)
                         ) is not None:
@@ -219,7 +160,29 @@ class OperationsRequest(APIRequest):
                             assert isinstance(
                                 object, nebula.User
                             ), "Object must be a user in order to set a password"
+                            assert (
+                                user.is_admin or user.id == object.id
+                            ), "Only admins can set passwords for other users"
                             object.set_password(password)
+
+                        #
+                        # Asset ACL
+                        #
+
+                        if isinstance(object, nebula.Asset) and (not user.is_admin):
+                            acl = user.get("can/asset_edit", False)
+                            if not acl:
+                                raise nebula.ForbiddenException(
+                                    "You are not allowed to edit assets"
+                                )
+                            elif type(acl) == list:
+                                assert (
+                                    object["id_folder"] in acl
+                                ), "You are not allowed to edit assets in this folder"
+
+                        #
+                        # Run validator
+                        #
 
                         if validator := Validator.for_object(operation.object_type):
                             try:
@@ -241,14 +204,15 @@ class OperationsRequest(APIRequest):
                         ):
                             affected_bins.append(object["id_bin"])
                         op_id = object.id
-            except Exception:
-                nebula.log.traceback(user=user.name)
+            except Exception as e:
+                error = str(e)
                 success = False
 
             result.append(
                 OperationResponseModel(
                     id=op_id,
                     object_type=operation.object_type,
+                    error=error,
                     success=success,
                 )
             )
@@ -261,3 +225,29 @@ class OperationsRequest(APIRequest):
 
         overall_success = all([x.success for x in result])
         return OperationsResponseModel(operations=result, success=overall_success)
+
+
+class SetRequest(APIRequest):
+    name = "set"
+    title = "Create or update an object"
+    response_model = OperationResponseModel
+
+    async def handle(
+        self,
+        request: OperationModel,
+        user: CurrentUser,
+    ) -> OperationResponseModel:
+        """Create or update an object."""
+
+        operation = OperationsRequest()
+        result = await operation.handle(
+            OperationsRequestModel(operations=[request]),
+            user=user,
+        )
+
+        if not result.success:
+            raise nebula.NebulaException(
+                result.operations[0].error or "Unknown error", user_name=user.name,
+            )
+
+        return result.operations[0]
