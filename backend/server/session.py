@@ -91,13 +91,21 @@ class Session:
         request: Request | None = None,
     ) -> SessionModel:
         """Create a new session for a given user."""
+
+        client_info = get_client_info(request) if request else None
+        if client_info:
+            if user["local_network_only"] and not is_local_ip(client_info.ip):
+                raise nebula.UnauthorizedException(
+                    "You can only log in from local network"
+                )
+
         token = create_hash()
         session = SessionModel(
             user=user.meta,
             token=token,
             created=time.time(),
             accessed=time.time(),
-            client_info=get_client_info(request) if request else None,
+            client_info=client_info,
         )
         await nebula.redis.set(cls.ns, token, session.json())
         return session
