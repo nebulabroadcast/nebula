@@ -99,13 +99,18 @@ const AssetEditor = () => {
   // Update a single asset meta field
   // (called by EditorForm, flag buttons, etc.)
 
-  const setMeta = (key, value) => {
+  const setMeta = (key, value, instant) => {
     if (key === 'id_folder' && isEmpty(assetData)) {
       setOriginalData({ id_folder: value })
     }
-    setAssetData((o) => {
-      return { ...o, [key]: value }
-    })
+    if (instant) {
+      console.log('instant save', key, value)
+      onSave({ [key]: value })
+    } else {
+      setAssetData((o) => {
+        return { ...o, [key]: value }
+      })
+    }
   }
 
   // If the asset is new, set the default folder
@@ -242,11 +247,15 @@ const AssetEditor = () => {
     setAssetData(originalData)
   }
 
-  const onSave = () => {
-    if (!enabledActions.save) return
+  const onSave = (payload) => {
+    console.log('Save', payload || 'all')
+    if (!enabledActions.save && !payload) {
+      console.log('Save disabled')
+      return
+    }
     setLoading(true)
     nebula
-      .request('set', { id: assetData.id, data: assetData })
+      .request('set', { id: assetData.id, data: payload || assetData })
       .then((response) => {
         loadAsset(response.data.id)
         dispatch(reloadBrowser())

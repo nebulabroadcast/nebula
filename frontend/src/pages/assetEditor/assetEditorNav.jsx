@@ -98,6 +98,13 @@ const AssetEditorNav = ({
         label: 'Send to...',
         onClick: () => setSendToVisible(true),
       },
+      {
+        label: 'Reset',
+        disabled: assetData.status !== 1,
+        onClick: () => {
+          setMeta('status', 5, true)
+        },
+      },
       ...scopedEndpoints,
       ...linkOptions,
     ]

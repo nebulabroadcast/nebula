@@ -170,6 +170,9 @@ const Video = ({ src, style, showMarks, marks = {}, setMarks = () => {} }) => {
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (['INPUT', 'TEXTAREA'].includes(event.target.tagName)) return
+      //abort if control or alt key pressed
+      if (event.ctrlKey || event.altKey) return
+
       if (event.key === 'i' || event.key === 'e') {
         event.preventDefault()
         onMarkIn()

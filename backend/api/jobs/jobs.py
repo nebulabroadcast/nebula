@@ -52,6 +52,13 @@ class JobsRequestModel(ResponseModel):
         title="Restart",
         description="Restart job with given id",
     )
+    priority: tuple[int, int] | None = Field(
+        None,
+        title="Priority",
+        descriprion="Set priority of job with given id. "
+        "First value is job id, second is priority",
+        example=[42, 3],
+    )
 
 
 class JobsItemModel(RequestModel):
@@ -66,7 +73,8 @@ class JobsItemModel(RequestModel):
         title="User ID",
         description="ID of the user who started the job",
     )
-    message: str = Field(None, title="Status description", example="Encoding 24%")
+    priority: int = Field(3, title="Priority", example=3)
+    message: str = Field(..., title="Status description", example="Encoding 24%")
     ctime: int | None = Field(None, title="Created at", example=f"{int(time.time())}")
     stime: int | None = Field(None, title="Started at", example=f"{int(time.time())}")
     etime: int | None = Field(None, title="Finished at", example=f"{int(time.time())}")
@@ -161,6 +169,18 @@ async def abort_job(id_job: int, user: nebula.User) -> None:
     )
 
 
+async def set_priority(id_job: int, priority: int, user: nebula.User) -> None:
+    if not await can_user_control_job(user, id_job):
+        raise nebula.ForbiddenException("You cannot set priority of this job")
+    nebula.log.info(f"Setting priority of job {id_job} to {priority}", user=user.name)
+    query = """
+        UPDATE jobs SET
+        priority = $1
+        WHERE id = $2
+    """
+    await nebula.db.execute(query, priority, id_job)
+
+
 class JobsRequest(APIRequest):
     """List and control jobs"""
 
@@ -179,6 +199,9 @@ class JobsRequest(APIRequest):
 
         if request.restart:
             await restart_job(request.restart, user)
+
+        if request.priority is not None:
+            await set_priority(request.priority[0], request.priority[1], user)
 
         # Return a list of jobs if requested
 
@@ -223,6 +246,7 @@ class JobsRequest(APIRequest):
                 j.id_user AS id_user,
                 j.status AS status,
                 j.progress AS progress,
+                j.priority AS priority,
                 j.message AS message,
                 j.creation_time AS ctime,
                 j.start_time AS stime,
