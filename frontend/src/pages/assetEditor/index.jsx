@@ -104,7 +104,6 @@ const AssetEditor = () => {
       setOriginalData({ id_folder: value })
     }
     if (instant) {
-      console.log('instant save', key, value)
       onSave({ [key]: value })
     } else {
       setAssetData((o) => {
@@ -254,6 +253,7 @@ const AssetEditor = () => {
       return
     }
     setLoading(true)
+    console.log('Saving...', assetData)
     nebula
       .request('set', { id: assetData.id, data: payload || assetData })
       .then((response) => {
@@ -264,7 +264,7 @@ const AssetEditor = () => {
         toast.error(
           <>
             <strong>Unable to save asset</strong>
-            <p>{error.response.data?.detail || 'Unknown error'}</p>
+            <p>{error.response?.data?.detail || 'Unknown error'}</p>
           </>
         )
       })

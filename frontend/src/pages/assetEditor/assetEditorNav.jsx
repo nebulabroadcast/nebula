@@ -264,7 +264,7 @@ const AssetEditorNav = ({
       <Button
         icon="check"
         title="Save asset"
-        onClick={onSave}
+        onClick={() => onSave()}
         disabled={!enabledActions.save}
       />
     </Navbar>
