@@ -109,6 +109,42 @@ class OperationsResponseModel(ResponseModel):
 # The actual API
 #
 
+async def can_modify_object(obj, user: nebula.User):
+    if user.is_admin:
+        True
+
+    if isinstance(obj, nebula.Asset):
+        acl = user.get("can/asset_edit", False)
+        if not acl:
+            raise nebula.ForbiddenException(
+                "You are not allowed to edit assets"
+            )
+        elif type(acl) == list:
+            if obj["id_folder"] not in acl:
+                raise nebula.ForbiddenException(
+                    "You are not allowed to edit assets in this folder"
+                )
+
+    elif isinstance(obj, nebula.Event):
+        acl = user.get("can/scheduler_edit", False)
+        if not acl:
+            raise nebula.ForbiddenException(
+                "You are not allowed to edit schedule"
+            )
+        elif type(acl) == list:
+            if obj["id_channel"] not in acl:
+                raise nebula.ForbiddenException(
+                    "You are not allowed to edit schedule for this channel"
+                )
+
+    elif isinstance(obj, nebula.Item):
+        acl = user.get("can/rundown_edit", False)
+        if not acl:
+            raise nebula.ForbiddenException(
+                "You are not allowed to edit rundown"
+            )
+        # TODO: Check if user can edit rundown for this channel
+
 
 class OperationsRequest(APIRequest):
     name: str = "ops"
@@ -169,16 +205,7 @@ class OperationsRequest(APIRequest):
                         # Asset ACL
                         #
 
-                        if isinstance(object, nebula.Asset) and (not user.is_admin):
-                            acl = user.get("can/asset_edit", False)
-                            if not acl:
-                                raise nebula.ForbiddenException(
-                                    "You are not allowed to edit assets"
-                                )
-                            elif type(acl) == list:
-                                assert (
-                                    object["id_folder"] in acl
-                                ), "You are not allowed to edit assets in this folder"
+                        await can_modify_object(object, user)
 
                         #
                         # Run validator

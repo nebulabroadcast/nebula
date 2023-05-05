@@ -1,4 +1,4 @@
-from fastapi import Depends, Header, Response
+from fastapi import Depends, Header, Response, Request
 from pydantic import Field
 
 import nebula
@@ -53,9 +53,13 @@ class LoginRequest(APIRequest):
     name: str = "login"
     response_model = LoginResponseModel
 
-    async def handle(self, request: LoginRequestModel) -> LoginResponseModel:
-        user = await nebula.User.login(request.username, request.password)
-        session = await Session.create(user)
+    async def handle(
+        self,
+        request: Request,
+        payload: LoginRequestModel,
+    ) -> LoginResponseModel:
+        user = await nebula.User.login(payload.username, payload.password)
+        session = await Session.create(user, request)
         return LoginResponseModel(access_token=session.token)
 
 

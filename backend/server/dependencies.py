@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import Depends, Header, Path, Query
+from fastapi import Depends, Header, Path, Query, Request
 
 import nebula
 from server.session import Session
@@ -39,12 +39,13 @@ CurrentUserInQuery = Annotated[nebula.User, Depends(current_user_query)]
 
 
 async def current_user(
+    request: Request,
     access_token: str | None = Depends(access_token),
 ) -> nebula.User:
     """Return the currently logged-in user"""
     if access_token is None:
         raise nebula.UnauthorizedException("No access token provided")
-    session = await Session.check(access_token, None)
+    session = await Session.check(access_token, request)
     if session is None:
         raise nebula.UnauthorizedException("Invalid access token")
     return nebula.User(meta=session.user)

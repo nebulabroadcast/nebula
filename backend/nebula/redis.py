@@ -78,3 +78,16 @@ class Redis:
         if not cls.connected:
             await cls.connect()
         await cls.redis_pool.publish(cls.channel, message)
+
+    @classmethod
+    async def iterate(cls, namespace: str):
+        """Iterate over stored keys and yield [key, payload] tuples
+        matching given namespace.
+        """
+        if not cls.connected:
+            await cls.connect()
+
+        async for key in cls.redis_pool.scan_iter(match=f"{namespace}-*"):
+            key_without_ns = key.decode("ascii").removeprefix(f"{namespace}-")
+            payload = await cls.redis_pool.get(key)
+            yield key_without_ns, payload
