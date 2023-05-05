@@ -109,16 +109,15 @@ class OperationsResponseModel(ResponseModel):
 # The actual API
 #
 
+
 async def can_modify_object(obj, user: nebula.User):
     if user.is_admin:
-        True
+        return True
 
     if isinstance(obj, nebula.Asset):
         acl = user.get("can/asset_edit", False)
         if not acl:
-            raise nebula.ForbiddenException(
-                "You are not allowed to edit assets"
-            )
+            raise nebula.ForbiddenException("You are not allowed to edit assets")
         elif type(acl) == list:
             if obj["id_folder"] not in acl:
                 raise nebula.ForbiddenException(
@@ -128,9 +127,7 @@ async def can_modify_object(obj, user: nebula.User):
     elif isinstance(obj, nebula.Event):
         acl = user.get("can/scheduler_edit", False)
         if not acl:
-            raise nebula.ForbiddenException(
-                "You are not allowed to edit schedule"
-            )
+            raise nebula.ForbiddenException("You are not allowed to edit schedule")
         elif type(acl) == list:
             if obj["id_channel"] not in acl:
                 raise nebula.ForbiddenException(
@@ -140,10 +137,11 @@ async def can_modify_object(obj, user: nebula.User):
     elif isinstance(obj, nebula.Item):
         acl = user.get("can/rundown_edit", False)
         if not acl:
-            raise nebula.ForbiddenException(
-                "You are not allowed to edit rundown"
-            )
+            raise nebula.ForbiddenException("You are not allowed to edit rundown")
         # TODO: Check if user can edit rundown for this channel
+
+    elif isinstance(obj, nebula.Event):
+        return
 
 
 class OperationsRequest(APIRequest):
@@ -184,25 +182,26 @@ class OperationsRequest(APIRequest):
                             object["updated_by"] = user.id
 
                         #
-                        # Setting password
+                        # Modyfiing users
                         #
 
-                        if (
-                            password := operation.data.pop("password", None)
-                        ) is not None:
-                            assert isinstance(
-                                password, str
-                            ), "Password must be a string"
-                            assert isinstance(
-                                object, nebula.User
-                            ), "Object must be a user in order to set a password"
-                            assert (
-                                user.is_admin or user.id == object.id
-                            ), "Only admins can set passwords for other users"
-                            object.set_password(password)
+                        if isinstance(object, nebula.User):
+                            if not (user.is_admin or object.id == user.id):
+                                raise nebula.ForbiddenException(
+                                    "Unable to modify other users"
+                                )
+
+                            if not user.is_admin:
+                                for key in operation.data:
+                                    if key.startswith("can/") or key.startswith("is_"):
+                                        operation.data.pop(key, None)
+
+                            password = operation.data.pop("password", None)
+                            if password:
+                                object.set_password(password)
 
                         #
-                        # Asset ACL
+                        # ACL
                         #
 
                         await can_modify_object(object, user)
