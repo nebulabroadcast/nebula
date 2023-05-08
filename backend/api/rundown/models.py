@@ -17,6 +17,7 @@ class RundownRow(ResponseModel):
     id: int = Field(...)
     type: Literal["item", "event"] = Field(...)
     id_bin: int = Field(...)
+    id_event: int = Field(...)
     scheduled_time: float = Field(...)
     broadcast_time: float = Field(...)
     meta: dict[str, Any] | None = Field(None)
@@ -35,6 +36,7 @@ class RundownRow(ResponseModel):
     loop: bool | None = Field(None)
     item_role: ItemMode | None = Field(None)
     is_empty: bool = Field(True)
+    is_primary: bool = Field(False)
 
 
 class RundownResponseModel(ResponseModel):

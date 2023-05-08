@@ -82,6 +82,7 @@ async def get_rundown(request: RundownRequestModel) -> RundownResponseModel:
                 subtitle=event.get("subtitle"),
                 id_asset=event.get("id_asset"),
                 id_bin=id_bin,
+                id_event=id_event,
                 meta=emeta,
             )
 
@@ -164,6 +165,8 @@ async def get_rundown(request: RundownRequestModel) -> RundownResponseModel:
                 ):
                     meta[key] = asset.meta[key]
 
+        id_asset = imeta.get("id_asset")
+        primary = bool(event.get("id_asset") and (event["id_asset"] == id_asset))
         row = RundownRow(
             id=id_item,
             row_number=len(rows),
@@ -175,8 +178,9 @@ async def get_rundown(request: RundownRequestModel) -> RundownResponseModel:
             item_role=imeta.get("item_role"),
             title=item["title"],
             subtitle=item["subtitle"],
-            id_asset=imeta.get("id_asset"),
+            id_asset=id_asset,
             id_bin=id_bin,
+            id_event=id_event,
             duration=duration,
             status=istatus,
             transfer_progress=transfer_progress,
@@ -184,6 +188,7 @@ async def get_rundown(request: RundownRequestModel) -> RundownResponseModel:
             mark_in=mark_in,
             mark_out=mark_out,
             is_empty=False,
+            is_primary=primary,
             meta=meta,
         )
 

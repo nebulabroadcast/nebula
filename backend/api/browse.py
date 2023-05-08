@@ -26,6 +26,7 @@ REQUIRED_COLUMNS = [
     "ctime",
     "mtime",
     "video/fps_f",
+    "subclips",
 ]
 
 #
