@@ -29,7 +29,6 @@ const Sessions = () => {
     nebula
     .request('sessions', {id_user: nebula.user.id})
     .then((res) => {
-      console.log(res.data)
       setSessions(res.data)
     })
     .finally(() => setLoading(false))
