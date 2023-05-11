@@ -18,7 +18,7 @@ class LoginRequestModel(RequestModel):
         ...,
         title="Username",
         example="admin",
-        regex=r"^[a-zA-Z0-9_\-\.]{3,}$",
+        regex=r"^[a-zA-Z0-9_\-\.]{2,}$",
     )
     password: str = Field(
         ...,
