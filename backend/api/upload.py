@@ -46,7 +46,9 @@ class UploadRequest(APIRequest):
                 try:
                     os.makedirs(upload_full_dir)
                 except Exception as e:
-                    raise nebula.NebulaException("Unable to create uplad directory") from e
+                    raise nebula.NebulaException(
+                        "Unable to create uplad directory"
+                    ) from e
             target_path = os.path.join(upload_full_dir, f"{base_name}.{extension}")
         else:
             direct = True

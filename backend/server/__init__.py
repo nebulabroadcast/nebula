@@ -179,7 +179,6 @@ async def ws_endpoint(websocket: WebSocket) -> None:
             del messaging.clients[client.id]
 
 
-
 #
 # API endpoints and the frontend
 #

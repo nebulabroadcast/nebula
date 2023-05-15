@@ -21,7 +21,7 @@ class SolverPlugin:
 
     _solve_next: nebula.Item | None = None
     _next_event: nebula.Event | None = None
-    _needed_duration: int | None = None
+    _needed_duration: float | None = None
 
     async def __call__(self, id_item: int):
         """Solver entrypoint."""
@@ -61,7 +61,7 @@ class SolverPlugin:
     # Property loaders
     #
 
-    async def get_next_event(self, force: bool = False) -> nebula.Event:
+    async def get_next_event(self, force: bool = False) -> nebula.Event | None:
         """Load event following the current one."""
         if (self._next_event is None) or force:
             res = await nebula.db.fetch(
@@ -84,7 +84,7 @@ class SolverPlugin:
                 )
         return self._next_event
 
-    async def get_needed_duration(self, force: bool = False):
+    async def get_needed_duration(self, force: bool = False) -> float:
         """Load the duration needed to fill the current event."""
         if (self._needed_duration is None) or force:
             dur = self.next_event["start"] - self.event["start"]
@@ -95,6 +95,7 @@ class SolverPlugin:
                     continue
                 dur -= item.duration
             self._needed_duration = dur
+        assert self._needed_duration is not None, "Needed duration not loaded"
         return self._needed_duration
 
     #
@@ -102,7 +103,7 @@ class SolverPlugin:
     #
 
     @property
-    def next_event(self):
+    def next_event(self) -> nebula.Event:
         assert self._next_event, "Next event not loaded"
         return self._next_event
 

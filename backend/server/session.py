@@ -146,12 +146,12 @@ class Session:
         async for _session_id, data in nebula.redis.iterate(cls.ns):
             session = SessionModel(**json_loads(data))
             if cls.is_expired(session):
-                # nebula.log.info(
-                #     f"Removing expired session for user"
-                #     f"{session.user.name} {session.token}"
-                # )
+                nebula.log.info(
+                    f"Removing expired session for user"
+                    f"{session.user['login']} {session.token}"
+                )
                 await nebula.redis.delete(cls.ns, session.token)
                 continue
 
-            if user_name is None or session.user.name == user_name:
+            if user_name is None or session.user.get("login") == user_name:
                 yield session
