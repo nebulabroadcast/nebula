@@ -1,9 +1,6 @@
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 
-const nebula_server = 'http://localhost:4455'
-
-// https://vitejs.dev/config/
 export default ({ mode }) => {
   Object.assign(process?.env, loadEnv(mode, process?.cwd(), ''))
 

@@ -71,6 +71,7 @@ const MAMPage = () => {
     return 'Not implemented'
   }, [module])
 
+  // eslint-disable-next-line no-unused-vars
   const onResize = (gutter, size) => {
     setSplitterSizes(size)
   }

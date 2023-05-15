@@ -1,4 +1,5 @@
 import styled from 'styled-components'
+import PropTypes from 'prop-types'
 import defaultTheme from './theme'
 import { forwardRef } from 'react'
 
@@ -73,5 +74,20 @@ const Button = forwardRef(
     )
   }
 )
+
+Button.defaultProps = {
+  iconOnRight: false,
+  component: 'button',
+}
+
+Button.propTypes = {
+  icon: PropTypes.string,
+  label: PropTypes.string,
+  iconOnRight: PropTypes.bool,
+  active: PropTypes.bool,
+  className: PropTypes.string,
+  component: PropTypes.oneOfType([PropTypes.string, PropTypes.func]),
+}
+
 
 export default Button

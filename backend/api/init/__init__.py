@@ -73,7 +73,7 @@ class Request(APIRequest):
         user: nebula.User = Depends(current_user_optional),
     ) -> InitResponseModel:
 
-        motd = "Nebula 6 pre-release"
+        motd = f"Nebula {nebula.__version__} @ {nebula.config.site_name}"
 
         # Nebula is not installed. Frontend should display
         # an error message or redirect to the installation page.
@@ -95,7 +95,7 @@ class Request(APIRequest):
         plugins = get_frontend_plugins()
 
         return InitResponseModel(
-            motd=nebula.config.motd,
+            motd=motd,
             user=user.meta,
             settings=client_settings,
             frontend_plugins=plugins,
