@@ -24,7 +24,7 @@ const LoginContainer = styled.div`
   }
 `
 
-const LoginForm = styled.div`
+const LoginForm = styled.form`
   padding: 30px;
   background-color: var(--color-surface-02);
   border-radius: 12px;
@@ -63,7 +63,8 @@ const LoginPage = ({ motd, onLogin }) => {
     loginRef.current.focus()
   }, [])
 
-  const onSubmit = () => {
+  const onSubmit = (event) => {
+    event.preventDefault()
     axios
       .post('/api/login', { username, password })
       .then((response) => {
@@ -75,17 +76,10 @@ const LoginPage = ({ motd, onLogin }) => {
       })
   }
 
-  const onKeyDown = (event) => {
-    if (event.key === 'Enter') {
-      event.preventDefault()
-      onSubmit()
-    }
-  }
-
   return (
     <main>
       <LoginContainer>
-        <LoginForm>
+        <LoginForm onSubmit={onSubmit}>
           <div className="logo-container">
             <img src={NebulaLogo} alt="Nebula" />
           </div>
@@ -94,7 +88,6 @@ const LoginPage = ({ motd, onLogin }) => {
             name="username"
             value={username}
             onChange={setUsername}
-            onKeyDown={onKeyDown}
             ref={loginRef}
           />
           <InputPassword
@@ -103,10 +96,9 @@ const LoginPage = ({ motd, onLogin }) => {
             placeholder="Password"
             value={password}
             onChange={setPassword}
-            onKeyDown={onKeyDown}
             ref={passwordRef}
           />
-          <Button label="Log in" onClick={onSubmit} ref={buttonRef} />
+          <Button label="Log in" type="submit" ref={buttonRef} />
         </LoginForm>
         {motd && <small>{motd}</small>}
       </LoginContainer>

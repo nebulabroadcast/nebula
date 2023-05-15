@@ -1,14 +1,16 @@
+import { forwardRef } from 'react'
 import BaseInput from './BaseInput'
 
-const InputPassword = ({ value, onChange, ...props }) => {
+const InputPassword = forwardRef(({ value, onChange, ...props }, ref) => {
   return (
     <BaseInput
+      ref={ref}
       type="password"
       value={value || ''}
       onChange={(e) => onChange(e.target.value)}
       {...props}
     />
   )
-}
+})
 
 export default InputPassword

@@ -45,7 +45,6 @@ const App = () => {
               error.response.status === 401 &&
               window.location.pathname !== '/'
             ) {
-              toast.error('Not logged in')
               window.location.href = '/'
             }
             return Promise.reject(error)
