@@ -26,9 +26,8 @@ user-agents = "^2.2.0"
 [tool.poetry.dev-dependencies]
 pytest = "^7.0"
 black = "^22.1.0"
-flake8 = "^4.0.1"
 mypy = "^0.941"
-isort = "^5.10.1"
+ruff = "^0.0.267"
 pytest-asyncio = "^0.20.3"
 
 [tool.isort]
