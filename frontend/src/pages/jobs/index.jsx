@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useDispatch } from 'react-redux'
 import { useParams } from 'react-router-dom'
 import { Table, Button, Timestamp } from '/src/components'
+import { NavLink } from 'react-router-dom'
 import { setPageTitle } from '/src/actions'
 
 import JobsNav from './jobsNav'
@@ -20,6 +21,16 @@ const formatTime = (rowData, key) => {
   return (
     <td>
       <Timestamp timestamp={timestamp} />
+    </td>
+  )
+}
+
+const formatTitle = (rowData, key) => {
+  return (
+    <td>
+      <NavLink to={`/mam/editor?asset=${rowData['id_asset']}`}>
+        {rowData[key]}
+      </NavLink>
     </td>
   )
 }
@@ -98,7 +109,7 @@ const JobsPage = () => {
   const COLUMNS = [
     { name: 'id', title: '#', width: 1 },
     { name: 'idec', title: 'IDEC', width: 1 },
-    { name: 'asset_name', title: 'Asset' },
+    { name: 'asset_name', title: 'Asset', formatter: formatTitle },
     { name: 'action_name', title: 'Action' },
     { name: 'service_name', title: 'Service' },
     {

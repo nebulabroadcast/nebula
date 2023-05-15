@@ -10,6 +10,7 @@ import {
   setFocusedAsset,
 } from '/src/actions'
 
+import { useLocalStorage } from '/src/hooks'
 import BrowserNav from './browserNav'
 import './browser.sass'
 
@@ -157,8 +158,8 @@ const BrowserTable = () => {
   const [columns, setColumns] = useState([])
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(false)
-  const [sortBy, setSortBy] = useState()
-  const [sortDirection, setSortDirection] = useState('asc')
+  const [sortBy, setSortBy] = useLocalStorage('sortBy', 'ctime')
+  const [sortDirection, setSortDirection] = useLocalStorage('sortDirection' ,'desc')
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(false)
 
