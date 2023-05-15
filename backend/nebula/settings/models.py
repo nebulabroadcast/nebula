@@ -24,7 +24,7 @@ class CSItemModel(SettingsModel):
         adef: dict[str, str] = settings.get("aliases", {})
         ddef: dict[str, str] = settings.get("description", {})
 
-        for lang in adef.keys():
+        for lang in adef:
             aliases[lang] = CSAlias(
                 title=adef[lang],
                 description=ddef.get(lang),

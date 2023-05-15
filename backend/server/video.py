@@ -29,8 +29,8 @@ def _get_range_header(range_header: str, file_size: int) -> tuple[int, int]:
         h = range_header.replace("bytes=", "").split("-")
         start = int(h[0]) if h[0] != "" else 0
         end = int(h[1]) if h[1] != "" else file_size - 1
-    except ValueError:
-        raise _invalid_range()
+    except ValueError as e:
+        raise _invalid_range() from e
 
     if start > end or start < 0 or end > file_size - 1:
         raise _invalid_range()

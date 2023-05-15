@@ -52,10 +52,7 @@ def send_mail(
     reply_address = kwargs.get("from", nebula.settings.system.mail_from)
 
     msg: MIMEText | MIMEMultipart
-    if isinstance(body, str):
-        msg = MIMEText(body)
-    else:
-        msg = body
+    msg = MIMEText(body) if isinstance(body, str) else body
 
     msg["Subject"] = subject
     msg["From"] = reply_address

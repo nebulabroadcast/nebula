@@ -15,12 +15,9 @@ def filter_match(filter_string: str, value: str) -> bool:
     if filter_string is None:
         return True
     if type(filter_string) in [list, tuple]:
-        for fl in filter_string:
-            if re.match(fl, value):
-                return True
-        return False
+        return any(re.match(fl, value) for fl in filter_string)
     else:
-        return not not re.match(filter_string, value)
+        return bool(re.match(filter_string, value))
 
 
 @lru_cache(maxsize=512)
@@ -107,13 +104,12 @@ def make_cs_tree(
         for child in parents.get(parent, []):
             if not child:
                 continue
-            has_children = child["value"] in parents.keys()
+            has_children = child["value"] in parents
             if not filter_match(filter, child["value"]):
                 continue
             items.append(child)
-            if has_children:
-                if d := build_tree(parents, child["value"]):
-                    items[-1]["children"] = d
+            if has_children and (d := build_tree(parents, child["value"])):
+                items[-1]["children"] = d
         return items
 
     return build_tree(parents, "")

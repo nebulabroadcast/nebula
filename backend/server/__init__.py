@@ -1,3 +1,4 @@
+import contextlib
 import os
 
 from fastapi import Depends, FastAPI, Header, Request
@@ -174,10 +175,9 @@ async def ws_endpoint(websocket: WebSocket) -> None:
     except WebSocketDisconnect:
         # if client.user_name:
         #     nebula.log.trace(f"{client.user_name} disconnected")
-        try:
+        with contextlib.suppress(KeyError):
             del messaging.clients[client.id]
-        except KeyError:
-            pass
+
 
 
 #

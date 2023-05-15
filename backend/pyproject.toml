@@ -30,8 +30,25 @@ mypy = "^0.941"
 ruff = "^0.0.267"
 pytest-asyncio = "^0.20.3"
 
-[tool.isort]
-profile = "black"
+[tool.ruff]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "C",   # flake8-comprehensions
+    "B",   # flake8-bugbear
+    "ISC", # flake8-implicit-str-concat
+    "C4",  # flake8-comprehensions
+    # "N",    # pep8-naming
+    # "SIM",  # flake8-simplify
+]
+
+ignore = [
+    "E501",  # line too long, handled by black
+    "B008",  # do not perform function calls in argument defaults
+    "C901",  # too complex. C'mon - this is a complex project
+]
 
 [tool.black]
 line-length = 88

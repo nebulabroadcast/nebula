@@ -1,12 +1,12 @@
 __all__ = ["Session"]
 
 import time
-import nebula
-
 from typing import Any, AsyncGenerator
-from pydantic import BaseModel
-from fastapi import Request
 
+from fastapi import Request
+from pydantic import BaseModel
+
+import nebula
 from nebula.common import create_hash, json_dumps, json_loads
 from server.clientinfo import ClientInfo, get_client_info, get_real_ip
 
@@ -64,14 +64,13 @@ class Session:
                 await nebula.redis.set(cls.ns, token, session.json())
             else:
                 real_ip = get_real_ip(request)
-                if not is_local_ip(real_ip):
-                    if session.client_info.ip != real_ip:
-                        nebula.log.warning(
-                            "Session IP mismatch. "
-                            f"Stored: {session.client_info.ip}, current: {real_ip}"
-                        )
-                        await nebula.redis.delete(cls.ns, token)
-                        return None
+                if not is_local_ip(real_ip) and session.client_info.ip != real_ip:
+                    nebula.log.warning(
+                        "Session IP mismatch. "
+                        f"Stored: {session.client_info.ip}, current: {real_ip}"
+                    )
+                    await nebula.redis.delete(cls.ns, token)
+                    return None
 
         # Extend the session lifetime only if it's in its second half
         # (save update requests).
@@ -144,7 +143,7 @@ class Session:
         from the database.
         """
 
-        async for session_id, data in nebula.redis.iterate(cls.ns):
+        async for _session_id, data in nebula.redis.iterate(cls.ns):
             session = SessionModel(**json_loads(data))
             if cls.is_expired(session):
                 # nebula.log.info(

@@ -155,7 +155,7 @@ class SolverPlugin:
         new_placeholder["id_bin"] = new_bin.id
         new_placeholder["position"] = 0
 
-        for key in self.placeholder.meta.keys():
+        for key in self.placeholder.meta:
             if key not in ["id_bin", "position", "id_asset", "id"]:
                 new_placeholder[key] = self.placeholder[key]
 
@@ -184,12 +184,12 @@ class SolverPlugin:
             async for new_item in self.solve():
                 await new_item.get_asset()
                 self.new_items.append(new_item)
-        except Exception:
+        except Exception as e:
             message = nebula.log.traceback(
                 "Error occured during solving",
                 user=self.name,
             )
-            raise nebula.NebulaException(message)
+            raise nebula.NebulaException(message) from e
 
         if not self.new_items:
             return

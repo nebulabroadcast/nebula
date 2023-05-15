@@ -22,7 +22,7 @@ async def set_rundown_order(
     pool = await nebula.db.pool()
     async with pool.acquire() as conn:
         async with conn.transaction():
-            for i, obj in enumerate(order):
+            for _i, obj in enumerate(order):
                 item: nebula.Item | None = None
 
                 if obj.type == "item":

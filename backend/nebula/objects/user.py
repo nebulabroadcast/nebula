@@ -84,8 +84,8 @@ class User(BaseObject):
                 username,
                 passhash,
             )
-        except asyncpg.exceptions.UndefinedTableError:
-            raise NebulaException("Nebula is not installed")
+        except asyncpg.exceptions.UndefinedTableError as e:
+            raise NebulaException("Nebula is not installed") from e
         if not res:
             raise LoginFailedException(
                 "Invalid login/password combination",
@@ -120,9 +120,8 @@ class User(BaseObject):
         if self[key] == value:
             return True
 
-        if isinstance(self[key], list):
-            if value in self[key]:
-                return True
+        if isinstance(self[key], list) and value in self[key]:
+            return True
 
         return False
 

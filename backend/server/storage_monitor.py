@@ -1,4 +1,5 @@
 import asyncio
+import contextlib
 import os
 import subprocess
 import time
@@ -105,10 +106,9 @@ class StorageMonitor(BackgroundTask):
 
             if storage.protocol == "local":
                 if not os.path.isdir(storage.path):
-                    try:
+                    with contextlib.suppress(FileExistsError):
                         os.makedirs(storage.path)
-                    except FileExistsError:
-                        pass
+
                 continue
 
             if storage.protocol == "samba":

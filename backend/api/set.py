@@ -118,21 +118,19 @@ async def can_modify_object(obj, user: nebula.User):
         acl = user.get("can/asset_edit", False)
         if not acl:
             raise nebula.ForbiddenException("You are not allowed to edit assets")
-        elif type(acl) == list:
-            if obj["id_folder"] not in acl:
-                raise nebula.ForbiddenException(
-                    "You are not allowed to edit assets in this folder"
-                )
+        elif type(acl) == list and obj["id_folder"] not in acl:
+            raise nebula.ForbiddenException(
+                "You are not allowed to edit assets in this folder"
+            )
 
     elif isinstance(obj, nebula.Event):
         acl = user.get("can/scheduler_edit", False)
         if not acl:
             raise nebula.ForbiddenException("You are not allowed to edit schedule")
-        elif type(acl) == list:
-            if obj["id_channel"] not in acl:
-                raise nebula.ForbiddenException(
-                    "You are not allowed to edit schedule for this channel"
-                )
+        elif type(acl) == list and obj["id_channel"] not in acl:
+            raise nebula.ForbiddenException(
+                "You are not allowed to edit schedule for this channel"
+            )
 
     elif isinstance(obj, nebula.Item):
         acl = user.get("can/rundown_edit", False)
@@ -249,7 +247,7 @@ class OperationsRequest(APIRequest):
         if reload_settings:
             await load_settings()
 
-        overall_success = all([x.success for x in result])
+        overall_success = all(x.success for x in result)
         return OperationsResponseModel(operations=result, success=overall_success)
 
 

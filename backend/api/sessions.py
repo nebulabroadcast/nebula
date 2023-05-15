@@ -1,10 +1,11 @@
-import nebula
-
 from fastapi import Query
-from server.session import SessionModel, Session
+
+import nebula
 from server.dependencies import CurrentUser
-from server.request import APIRequest
 from server.models import RequestModel
+from server.request import APIRequest
+from server.session import Session, SessionModel
+
 
 class SessionsRequest(RequestModel):
     id_user: int = Query(..., example=1)
