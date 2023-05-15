@@ -54,10 +54,12 @@ class Item(BaseObject):
             asset.id == self["id_asset"]
         ), f"Asset id must match item id_asset: {asset.id} != {self['id_asset']}"
         self._asset = asset
-        if not self.meta.get("mark_in") and self._asset["mark_in"]:
-            self["mark_in"] = self._asset["mark_in"]
-        if not self.meta.get("mark_out") and self._asset["mark_out"]:
-            self["mark_out"] = self._asset["mark_out"]
+
+        # BIG NO-NO - if needed, do that manually!!!
+        # if not self.meta.get("mark_in") and self._asset["mark_in"]:
+        #     self["mark_in"] = self._asset["mark_in"]
+        # if not self.meta.get("mark_out") and self._asset["mark_out"]:
+        #     self["mark_out"] = self._asset["mark_out"]
 
     @property
     def duration(self) -> float:

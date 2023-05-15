@@ -26,6 +26,7 @@ REQUIRED_COLUMNS = [
     "ctime",
     "mtime",
     "video/fps_f",
+    "subclips",
 ]
 
 #
@@ -220,6 +221,10 @@ def build_query(
         c1 = f"meta->>'created_by' = '{user.id}'"
         c2 = f"meta->'assignees' @> '[{user.id}]'::JSONB"
         cond_list.append(f"({c1} OR {c2})")
+
+    if can_view := user["can/asset_view"]:
+        if type(can_view) is list:
+            cond_list.append(f"id_folder IN {sql_list(can_view)}")
 
     # Build conditions
 

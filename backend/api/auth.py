@@ -1,4 +1,4 @@
-from fastapi import Depends, Header, Response
+from fastapi import Depends, Header, Response, Request
 from pydantic import Field
 
 import nebula
@@ -18,7 +18,7 @@ class LoginRequestModel(RequestModel):
         ...,
         title="Username",
         example="admin",
-        regex=r"^[a-zA-Z0-9_\-\.]{3,}$",
+        regex=r"^[a-zA-Z0-9_\-\.]{2,}$",
     )
     password: str = Field(
         ...,
@@ -53,9 +53,13 @@ class LoginRequest(APIRequest):
     name: str = "login"
     response_model = LoginResponseModel
 
-    async def handle(self, request: LoginRequestModel) -> LoginResponseModel:
-        user = await nebula.User.login(request.username, request.password)
-        session = await Session.create(user)
+    async def handle(
+        self,
+        request: Request,
+        payload: LoginRequestModel,
+    ) -> LoginResponseModel:
+        user = await nebula.User.login(payload.username, payload.password)
+        session = await Session.create(user, request)
         return LoginResponseModel(access_token=session.token)
 
 

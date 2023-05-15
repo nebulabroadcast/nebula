@@ -9,33 +9,6 @@ import JobsNav from './jobsNav'
 
 const RESTARTABLE = ['conv']
 
-const formatAction = (rowData, key) => {
-  if ([0, 1, 5].includes(rowData['status']))
-    return (
-      <td className="action">
-        <Button
-          onClick={() => {
-            nebula.request('jobs', { abort: rowData['id'] })
-          }}
-          label="Abort"
-        />
-      </td>
-    )
-  else if ([2, 3, 4, 6].includes(rowData['status']))
-    return (
-      <td className="action">
-        <Button
-          onClick={() => {
-            nebula.request('jobs', { restart: rowData['id'] })
-          }}
-          disabled={!RESTARTABLE.includes(rowData['service_type'])}
-          label="Restart"
-        />
-      </td>
-    )
-  else return <td className="action">-</td>
-}
-
 const formatTime = (rowData, key) => {
   const timestamp = rowData[key]
   if (!timestamp)
@@ -51,58 +24,119 @@ const formatTime = (rowData, key) => {
   )
 }
 
-const COLUMNS = [
-  { name: 'id', title: '#', width: 1 },
-  { name: 'idec', title: 'IDEC', width: 1 },
-  { name: 'asset_name', title: 'Asset' },
-  { name: 'action_name', title: 'Action' },
-  { name: 'service_name', title: 'Service' },
-  {
-    name: 'ctime',
-    title: 'Created',
-    className: 'time',
-    formatter: formatTime,
-    width: 150,
-  },
-  {
-    name: 'stime',
-    title: 'Started',
-    className: 'time',
-    formatter: formatTime,
-    width: 150,
-  },
-  {
-    name: 'etime',
-    title: 'Finished',
-    className: 'time',
-    formatter: formatTime,
-    width: 150,
-  },
-  { name: 'message', title: 'Message', className: 'job-message', width: 400 },
-  {
-    name: 'controls',
-    title: '',
-    className: 'job-controls',
-    formatter: formatAction,
-    width: 75,
-  },
-]
-
-const jobs = []
-for (let idx = 0; idx < 10; idx++) {
-  jobs.push({
-    id: idx,
-    asset_title: `Asset ${idx}`,
-    progress: Math.floor(Math.random() * 100),
-  })
-}
-
 const JobsPage = () => {
   const { view } = useParams()
   const [jobs, setJobs] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const dispatch = useDispatch()
+
+  const formatAction = (rowData, key) => {
+    if ([0, 1, 5].includes(rowData['status']))
+      return (
+        <td className="action">
+          <Button
+            onClick={() => {
+              nebula.request('jobs', { abort: rowData['id'] }).then(() => {
+                loadJobs()
+              })
+            }}
+            label="Abort"
+          />
+        </td>
+      )
+    else if ([2, 3, 4, 6].includes(rowData['status']))
+      return (
+        <td className="action">
+          <Button
+            onClick={() => {
+              nebula.request('jobs', { restart: rowData['id'] })
+            }}
+            disabled={!RESTARTABLE.includes(rowData['service_type'])}
+            label="Restart"
+          />
+        </td>
+      )
+    else return <td className="action">-</td>
+  }
+
+  const formatPriority = (rowData, key) => {
+    const enabled = [0, 5].includes(rowData['status'])
+
+    const setPriority = (priority) => {
+      nebula.request('jobs', { priority: [rowData.id, priority] }).then(() => {
+        loadJobs()
+      })
+    }
+
+    const PRIORITIES = [
+      { label: 'Hold', color: 'var(--color-violet)' },
+      { label: 'Lowest', color: 'var(--color-magenta)' },
+      { label: 'Low', color: 'var(--color-blue)' },
+      { label: 'Normal', color: 'var(--color-green)' },
+      { label: 'High', color: 'var(--color-yellow)' },
+      { label: 'Highest', color: 'var(--color-red)' },
+    ]
+
+    if (!enabled) return <td>&nbsp;</td>
+
+    return (
+      <td onClick={() => setPriority((rowData.priority + 1) % 6)}>
+        <span
+          style={{
+            color: PRIORITIES[rowData[key]].color,
+            fontSize: '0.8rem',
+            userSelect: 'none',
+          }}
+        >
+          {PRIORITIES[rowData[key]].label}
+        </span>
+      </td>
+    )
+  }
+
+  const COLUMNS = [
+    { name: 'id', title: '#', width: 1 },
+    { name: 'idec', title: 'IDEC', width: 1 },
+    { name: 'asset_name', title: 'Asset' },
+    { name: 'action_name', title: 'Action' },
+    { name: 'service_name', title: 'Service' },
+    {
+      name: 'ctime',
+      title: 'Created',
+      className: 'time',
+      formatter: formatTime,
+      width: 150,
+    },
+    {
+      name: 'stime',
+      title: 'Started',
+      className: 'time',
+      formatter: formatTime,
+      width: 150,
+    },
+    {
+      name: 'etime',
+      title: 'Finished',
+      className: 'time',
+      formatter: formatTime,
+      width: 150,
+    },
+    { name: 'message', title: 'Message', className: 'job-message', width: 400 },
+    {
+      name: 'priority',
+      title: 'Priority',
+      width: 1,
+      formatter: formatPriority,
+    },
+    {
+      name: 'controls',
+      title: '',
+      className: 'job-controls',
+      formatter: formatAction,
+      width: 75,
+    },
+  ]
 
   const loadJobs = useCallback(() => {
     setLoading(true)
@@ -138,10 +172,8 @@ const JobsPage = () => {
 
   useEffect(() => {
     const token = PubSub.subscribe('job_progress', handlePubSub)
-    //setInterval(() => {console.log("GGG"); loadJobs() }, 3000)
     return () => {
       PubSub.unsubscribe(token)
-      //clearInterval(loadJobs)
     }
   }, [view, searchQuery])
 

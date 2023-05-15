@@ -18,6 +18,7 @@ import InputSwitch from './InputSwitch'
 import TextArea from './TextArea'
 
 import Button from './Button'
+import DatePicker from './DatePicker'
 
 import { DateTime, Timestamp } from './fields'
 import { Form, FormRow } from './form'
@@ -25,6 +26,7 @@ import { Navbar, Spacer, ToolbarSeparator, DialogButtons } from './layout'
 
 export {
   Button,
+  DatePicker,
   DateTime,
   Dialog,
   DialogButtons,

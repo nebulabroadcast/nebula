@@ -98,6 +98,13 @@ const AssetEditorNav = ({
         label: 'Send to...',
         onClick: () => setSendToVisible(true),
       },
+      {
+        label: 'Reset',
+        disabled: assetData.status !== 1,
+        onClick: () => {
+          setMeta('status', 5, true)
+        },
+      },
       ...scopedEndpoints,
       ...linkOptions,
     ]
@@ -257,7 +264,7 @@ const AssetEditorNav = ({
       <Button
         icon="check"
         title="Save asset"
-        onClick={onSave}
+        onClick={() => onSave()}
         disabled={!enabledActions.save}
       />
     </Navbar>

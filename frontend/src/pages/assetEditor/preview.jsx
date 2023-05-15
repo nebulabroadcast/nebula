@@ -152,12 +152,12 @@ const Preview = ({ assetData, setAssetData }) => {
           />
           <Button
             icon="download"
-            title="Content start from selection"
+            title="Marks from selection"
             onClick={onSetMarks}
           />
           <Button
             icon="upload"
-            title="Content end to selection"
+            title="Marks to selection"
             onClick={() =>
               setSelection({
                 mark_in: assetData.mark_in || null,

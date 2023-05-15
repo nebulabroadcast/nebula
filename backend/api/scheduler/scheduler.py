@@ -156,8 +156,9 @@ async def scheduler(
                 # update the event
                 event_at_position["id_asset"] = event_data.id_asset
                 for field in channel.fields:
-                    if field.name in asset.meta:
-                        event_at_position[field.name] = asset.meta[field.name]
+                    if field.name in ["color", "start", "stop", "promoted"]:
+                        continue
+                    event_at_position[field.name] = asset[field.name]
                 affected_events.append(event_at_position.id)
                 await ex_bin.save()
                 await event_at_position.save()
