@@ -159,7 +159,10 @@ const BrowserTable = () => {
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(false)
   const [sortBy, setSortBy] = useLocalStorage('sortBy', 'ctime')
-  const [sortDirection, setSortDirection] = useLocalStorage('sortDirection' ,'desc')
+  const [sortDirection, setSortDirection] = useLocalStorage(
+    'sortDirection',
+    'desc'
+  )
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(false)
 

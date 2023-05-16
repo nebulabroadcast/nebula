@@ -4,7 +4,7 @@ import time
 from typing import Any, AsyncGenerator
 
 from fastapi import Request
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 import nebula
 from nebula.common import create_hash, json_dumps, json_loads
@@ -21,11 +21,11 @@ def is_local_ip(ip: str) -> bool:
 
 
 class SessionModel(BaseModel):
-    user: dict[str, Any]
-    token: str
-    created: float
-    accessed: float
-    client_info: ClientInfo | None = None
+    user: dict[str, Any] = Field(..., description="User data")
+    token: str = Field(..., description="Access token")
+    created: float = Field(..., description="Creation timestamp")
+    accessed: float = Field(..., description="Last access timestamp")
+    client_info: ClientInfo | None = Field(None, description="Client info")
 
 
 class Session:
@@ -148,7 +148,7 @@ class Session:
             if cls.is_expired(session):
                 nebula.log.info(
                     f"Removing expired session for user"
-                    f"{session.user['login']} {session.token}"
+                    f" {session.user['login']} {session.token}"
                 )
                 await nebula.redis.delete(cls.ns, session.token)
                 continue

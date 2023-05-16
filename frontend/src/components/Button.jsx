@@ -89,5 +89,4 @@ Button.propTypes = {
   component: PropTypes.oneOfType([PropTypes.string, PropTypes.func]),
 }
 
-
 export default Button

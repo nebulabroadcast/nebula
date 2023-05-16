@@ -25,7 +25,8 @@ const FormattedClientInfo = (rowData) => {
 
   return (
     <td>
-      {clientInfo?.ip || 'Unknown'} ({clientInfo?.agent?.platform || 'Unknown'})
+      {clientInfo?.ip || 'Unknown'} ({clientInfo?.agent?.platform || 'Unknown'}{' '}
+      {clientInfo?.agent?.client || ''})
     </td>
   )
 }
