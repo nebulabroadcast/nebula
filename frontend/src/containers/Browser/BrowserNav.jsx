@@ -1,10 +1,10 @@
 import nebula from '/src/nebula'
-
-import { Navbar, Button, Spacer, Dropdown, InputText } from '/src/components'
+import { debounce } from 'lodash'
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { debounce } from 'lodash'
+
 import { setCurrentView, setSearchQuery } from '/src/actions'
+import { Navbar, Button, Spacer, Dropdown, InputText } from '/src/components'
 
 const BrowserNav = () => {
   const dispatch = useDispatch()

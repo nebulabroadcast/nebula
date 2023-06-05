@@ -1,8 +1,9 @@
 import nebula from '/src/nebula'
-
-import { Timecode } from '@wfoxall/timeframe'
+import styled from 'styled-components'
 import { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
+import { Timecode } from '@wfoxall/timeframe'
+
 import { Table, Timestamp, Navbar, Button, Spacer } from '/src/components'
 import {
   setCurrentView,
@@ -11,23 +12,24 @@ import {
 } from '/src/actions'
 
 import { useLocalStorage } from '/src/hooks'
-import BrowserNav from './browserNav'
-import './browser.sass'
+import BrowserNav from './BrowserNav'
 
 const ROWS_PER_PAGE = 200
 
-// Special fields formatters
-
-const getQcStateClass = (state) => {
-  switch (state) {
-    case 3:
-      return 'qc-state-rejected'
-    case 4:
-      return 'qc-state-accepted'
-    default:
-      return 'qc-state-new'
+const QCState = styled.div`
+  display: inline-block;
+  &::before {
+    content: '⚑';
   }
-}
+
+  &.qc-state-3 {
+    color: var(--color-red);
+  }
+
+  &.qc-state-4 {
+    color: var(--color-green);
+  }
+`
 
 const formatRowHighlightColor = (rowData) => {
   switch (rowData['status']) {
@@ -50,6 +52,12 @@ const formatRowHighlightColor = (rowData) => {
   }
 }
 
+// Column width
+
+const getColumnWidth = (key) => {
+  if (!['title', 'subtitle', 'description'].includes(key)) return '1px'
+}
+
 // Field formatters
 
 const getFormatter = (key) => {
@@ -59,7 +67,9 @@ const getFormatter = (key) => {
   switch (key) {
     case 'qc/state':
       return (rowData, key) => (
-        <td className={getQcStateClass(rowData[key])}>&#9873;</td>
+        <td>
+          <QCState className={`qc-state-${rowData[key]}`} />
+        </td>
       )
 
     case 'id_folder':
@@ -190,6 +200,7 @@ const BrowserTable = () => {
             name: colName,
             title: nebula.metaHeader(colName),
             formatter: getFormatter(colName),
+            width: getColumnWidth(colName),
           })
         setColumns(cols)
         setHasMore(hasMore)

@@ -13,11 +13,12 @@ import {
   Dialog,
 } from '/src/components'
 
-import SendToDialog from '/src/containers/sendTo'
-import MetadataDetail from './detail'
-import ContextActionResult from './contextAction'
-import UploadDialog from './uploadDialog'
-import Assignees from './assignees'
+import { UploadButton } from '/src/containers/Upload'
+import { SendToDialog } from '/src/containers/SendTo'
+
+import MetadataDetail from './MetadataDetail'
+import ContextActionResult from './ContextAction'
+import AssigneesButton from './AssigneesButton'
 
 import contentType from 'content-type'
 
@@ -34,7 +35,6 @@ const AssetEditorNav = ({
 }) => {
   const [detailsVisible, setDetailsVisible] = useState(false)
   const [sendToVisible, setSendToVisible] = useState(false)
-  const [uploadVisible, setUploadVisible] = useState(false)
   const [contextActionResult, setContextActionResult] = useState(null)
 
   const dispatch = useDispatch()
@@ -136,13 +136,6 @@ const AssetEditorNav = ({
         />
       )}
 
-      {uploadVisible && (
-        <UploadDialog
-          assetData={assetData}
-          onHide={() => setUploadVisible(false)}
-        />
-      )}
-
       {contextActionResult && (
         <ContextActionResult
           mime={contextActionResult.contentType}
@@ -200,7 +193,7 @@ const AssetEditorNav = ({
             options={assetActions}
             disabled={!enabledActions.actions}
           />
-          <Assignees
+          <AssigneesButton
             assignees={assetData?.assignees || []}
             setAssignees={(val) => setMeta('assignees', val)}
           />
@@ -248,12 +241,7 @@ const AssetEditorNav = ({
       <ToolbarSeparator />
 
       {nebula.settings?.system?.ui_asset_upload && (
-        <Button
-          icon="upload"
-          onClick={() => setUploadVisible(true)}
-          title="Upload media file"
-          disabled={!enabledActions.upload}
-        />
+        <UploadButton assetData={assetData} disabled={!enabledActions.upload} />
       )}
       <Button
         icon="backspace"

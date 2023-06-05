@@ -1,10 +1,10 @@
 import nebula from '/src/nebula'
+import styled from 'styled-components'
 import { useMemo } from 'react'
 import { useSelector } from 'react-redux'
+import { NavLink, useNavigate } from 'react-router-dom'
 
 import { Navbar, Dropdown } from '/src/components'
-import { NavLink, useNavigate } from 'react-router-dom'
-import styled from 'styled-components'
 
 const BasePageTitle = styled.div`
   font-size: 1.2rem;

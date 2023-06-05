@@ -15,9 +15,9 @@ import {
 } from '/src/actions'
 import { Loader } from '/src/components'
 
-import AssetEditorNav from './assetEditorNav'
-import EditorForm from './assetEditorForm'
-import Preview from './preview'
+import AssetEditorNav from './EditorNav'
+import EditorForm from './EditorForm'
+import Preview from './Preview'
 
 const getEnabledActions = ({ assetData, isChanged }) => {
   // Return an object with all the actions that are enabled

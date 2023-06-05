@@ -1,54 +1,22 @@
-import Table from './table'
+export { default as Table } from './table'
+export { default as Dialog } from './Dialog'
+export { default as Dropdown } from './Dropdown'
+export { default as Loader } from './Loader'
+export { default as Progress } from './Progress'
+export { default as Select } from './Select'
+export { default as Video } from './Video'
+export { default as SelectDialog } from './SelectDialog'
+export { default as InputDatetime } from './InputDatetime'
+export { default as InputInteger } from './InputInteger'
+export { default as InputNumber } from './InputNumber'
+export { default as InputPassword } from './InputPassword'
+export { default as InputText } from './InputText'
+export { default as InputTimecode } from './InputTimecode'
+export { default as InputSwitch } from './InputSwitch'
+export { default as TextArea } from './TextArea'
+export { default as Button } from './Button'
+export { default as DatePicker } from './DatePicker'
 
-import Dialog from './Dialog'
-import Dropdown from './Dropdown'
-import Loader from './Loader'
-import Progress from './Progress'
-import Select from './Select'
-import Video from './Video'
-import SelectDialog from './SelectDialog'
-
-import InputDatetime from './InputDatetime'
-import InputInteger from './InputInteger'
-import InputNumber from './InputNumber'
-import InputPassword from './InputPassword'
-import InputText from './InputText'
-import InputTimecode from './InputTimecode'
-import InputSwitch from './InputSwitch'
-import TextArea from './TextArea'
-
-import Button from './Button'
-import DatePicker from './DatePicker'
-
-import { DateTime, Timestamp } from './fields'
-import { Form, FormRow } from './form'
-import { Navbar, Spacer, ToolbarSeparator, DialogButtons } from './layout'
-
-export {
-  Button,
-  DatePicker,
-  DateTime,
-  Dialog,
-  DialogButtons,
-  Dropdown,
-  Form,
-  FormRow,
-  InputDatetime,
-  InputInteger,
-  InputNumber,
-  InputPassword,
-  InputText,
-  InputTimecode,
-  Loader,
-  Navbar,
-  Progress,
-  Select,
-  SelectDialog,
-  Spacer,
-  InputSwitch,
-  Table,
-  TextArea,
-  Timestamp,
-  ToolbarSeparator,
-  Video,
-}
+export { DateTime, Timestamp } from './Fields'
+export { Form, FormRow } from './Form'
+export { Navbar, Spacer, ToolbarSeparator, DialogButtons } from './Layout'

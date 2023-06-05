@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { DateTime } from 'luxon'
 import styled from 'styled-components'
 
-import { DialogButtons } from './layout'
+import { DialogButtons } from './Layout'
 import DatePicker from 'react-datepicker'
 import Dialog from './Dialog'
 

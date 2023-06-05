@@ -6,9 +6,8 @@ import styled from 'styled-components'
 
 import { useLocalStorage } from '/src/hooks'
 import { setFocusedAsset, setSelectedAssets } from '/src/actions'
-import Browser from '/src/containers/browser'
-import AssetEditor from '/src/pages/assetEditor'
-import AssetPreview from '/src/pages/assetPreview'
+import Browser from '/src/containers/Browser'
+import AssetEditor from '/src/pages/AssetEditor'
 
 const MAMContainer = styled.div`
   flex-grow: 1;
@@ -66,7 +65,6 @@ const MAMPage = () => {
 
   const moduleComponent = useMemo(() => {
     if (module == 'editor') return <AssetEditor {...componentProps} />
-    if (module == 'preview') return <AssetPreview {...componentProps} />
 
     return 'Not implemented'
   }, [module])

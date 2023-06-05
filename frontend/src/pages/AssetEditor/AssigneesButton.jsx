@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react'
 import { Button } from '/src/components'
 import { SelectDialog } from '/src/components'
 
-const Assignees = ({ assignees, setAssignees }) => {
+const AssigneesButton = ({ assignees, setAssignees }) => {
   const [dialogVisible, setDialogVisible] = useState(false)
 
   const options = useMemo(() => {
@@ -38,4 +38,4 @@ const Assignees = ({ assignees, setAssignees }) => {
   )
 }
 
-export default Assignees
+export default AssigneesButton

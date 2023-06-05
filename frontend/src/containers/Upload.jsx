@@ -7,7 +7,6 @@ import { Dialog, Button, Progress } from '/src/components'
 
 import nebula from '/src/nebula'
 
-
 const StatusMessage = styled.div`
   display: flex;
   align-items: center;
@@ -35,7 +34,6 @@ const StatusMessage = styled.div`
   }
 `
 
-
 const FileSelectWidget = ({ onSelect, disabled, contentType }) => {
   const inputRef = useRef(null)
 
@@ -52,7 +50,6 @@ const FileSelectWidget = ({ onSelect, disabled, contentType }) => {
       const type = nebula.settings.filetypes[ext]
       if (type === contentType) result.push(`.${ext}`)
     }
-    console.log('Accept', result)
     return result.join(',')
   }, [contentType])
 
@@ -194,7 +191,11 @@ const UploadDialog = ({ onHide, assetData }) => {
         label="Upload"
         icon="upload"
         onClick={handleUpload}
-        disabled={!file?.size || status === "uploading" || file.size === bytesTransferred}
+        disabled={
+          !file?.size ||
+          status === 'uploading' ||
+          file.size === bytesTransferred
+        }
       />
       <Button
         label="Close"
@@ -204,7 +205,6 @@ const UploadDialog = ({ onHide, assetData }) => {
       />
     </>
   )
-
 
   return (
     <Dialog
@@ -218,4 +218,25 @@ const UploadDialog = ({ onHide, assetData }) => {
   )
 }
 
-export default UploadDialog
+const UploadButton = ({ assetData, disabled }) => {
+  const [dialogVisible, setDialogVisible] = useState(false)
+
+  return (
+    <>
+      {dialogVisible && (
+        <UploadDialog
+          assetData={assetData}
+          onHide={() => setDialogVisible(false)}
+        />
+      )}
+      <Button
+        icon="upload"
+        title="Upload"
+        onClick={() => setDialogVisible(true)}
+        disabled={disabled}
+      />
+    </>
+  )
+}
+
+export { UploadDialog, UploadButton }

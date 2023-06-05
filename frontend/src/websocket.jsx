@@ -1,6 +1,6 @@
+import nebula from '/src/nebula'
 import { useEffect, useState } from 'react'
 import useWebSocket, { ReadyState } from 'react-use-websocket'
-import axios from 'axios'
 import PubSub from '/src/pubsub'
 import { arrayEquals } from '/src/utils'
 
@@ -35,9 +35,9 @@ const WebsocketListener = () => {
   const onMessage = (message) => {
     const data = JSON.parse(message.data)
     if (data.topic === 'heartbeat') return
-    // if (data.sender === axios.defaults.headers.common['X-Sender']) {
-    //   return // my own message. ignore
-    // }
+    if (data.sender === nebula.senderId) {
+      return // my own message. ignore
+    }
     if (data.topic === 'shout' && data?.summary?.text)
       toast.info(data.summary.text)
 

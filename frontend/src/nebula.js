@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { v4 as uuidv4 } from 'uuid'
 
 const nebula = {
   // Settings
@@ -8,6 +9,7 @@ const nebula = {
   plugins: [],
   scopedEndpoints: {},
   language: 'en',
+  senderId: uuidv4(),
   users: [],
 
   // API

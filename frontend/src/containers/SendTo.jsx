@@ -62,4 +62,4 @@ const SendToDialog = ({ assets, onHide }) => {
   )
 }
 
-export default SendToDialog
+export { SendToDialog }

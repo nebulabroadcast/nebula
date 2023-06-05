@@ -1,8 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { Spacer } from './layout'
+import { Spacer } from './Layout'
 import Button from './Button'
 import InputTimecode from './InputTimecode'
-//import Dialog from '/src/components/dialog'
 import styled from 'styled-components'
 
 const VideoPlayerContainer = styled.div`

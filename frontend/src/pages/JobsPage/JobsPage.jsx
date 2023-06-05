@@ -6,7 +6,7 @@ import { Table, Button, Timestamp } from '/src/components'
 import { NavLink } from 'react-router-dom'
 import { setPageTitle } from '/src/actions'
 
-import JobsNav from './jobsNav'
+import JobsNav from './JobsNav'
 
 const RESTARTABLE = ['conv']
 

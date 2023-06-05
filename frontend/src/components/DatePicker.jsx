@@ -3,8 +3,6 @@ import RDatePicker from 'react-datepicker'
 import styled from 'styled-components'
 import defaultTheme from './theme'
 
-//import "react-datepicker/dist/react-datepicker.css"
-
 import './datepicker.sass'
 
 const PickerContainer = styled.div`

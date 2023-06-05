@@ -4,7 +4,7 @@ import Dialog from './Dialog'
 import InputText from './InputText'
 import Button from './Button'
 
-import { DialogButtons } from './layout'
+import { DialogButtons } from './Layout'
 import { sortByKey } from '/src/utils'
 import styled from 'styled-components'
 import defaultTheme from './theme'
