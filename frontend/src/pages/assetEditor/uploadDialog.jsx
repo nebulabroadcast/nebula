@@ -7,6 +7,35 @@ import { Dialog, Button, Progress } from '/src/components'
 
 import nebula from '/src/nebula'
 
+
+const StatusMessage = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &.uploading {
+    color: var(--color-violet);
+    &::before {
+      content: 'Uploading...';
+    }
+  }
+
+  &.success {
+    color: var(--color-green);
+    &::before {
+      content: 'Upload finished';
+    }
+  }
+
+  &.error {
+    color: var(--color-red);
+    &::before {
+      content: 'Upload failed';
+    }
+  }
+`
+
+
 const FileSelectWidget = ({ onSelect, disabled, contentType }) => {
   const inputRef = useRef(null)
 
@@ -100,13 +129,14 @@ const UploadDialog = ({ onHide, assetData }) => {
   const [file, setFile] = useState(null)
   const [bytesTransferred, setBytesTransferred] = useState(0)
   const [uploading, setUploading] = useState(false)
+  const [status, setStatus] = useState('idle') // idle, uploading, error, success
 
   const abortController = new AbortController()
   const cancelToken = axios.CancelToken
   const cancelTokenSource = cancelToken.source()
 
   const handleHide = () => {
-    if (uploading) {
+    if (status === 'uploading') {
       toast.error('Upload in progress')
       return
     }
@@ -118,7 +148,7 @@ const UploadDialog = ({ onHide, assetData }) => {
   }
 
   const handleUpload = async () => {
-    setUploading(true)
+    setStatus('uploading')
     try {
       await axios.post(`/upload/${assetData.id}`, file, {
         signal: abortController.signal,
@@ -131,7 +161,8 @@ const UploadDialog = ({ onHide, assetData }) => {
         },
       })
 
-      toast.success('Upload complete')
+      setStatus('success')
+      toast.success('Upload finished')
     } catch (error) {
       console.log(error)
       if (axios.isCancel(error)) {
@@ -146,7 +177,7 @@ const UploadDialog = ({ onHide, assetData }) => {
         console.log('Error response', error.response)
       }
       setBytesTransferred(0)
-      setUploading(false)
+      setStatus('error')
     }
 
     setUploading(false)
@@ -163,16 +194,17 @@ const UploadDialog = ({ onHide, assetData }) => {
         label="Upload"
         icon="upload"
         onClick={handleUpload}
-        disabled={!file?.size || uploading || file.size === bytesTransferred}
+        disabled={!file?.size || status === "uploading" || file.size === bytesTransferred}
       />
       <Button
-        label="Cancel"
+        label="Close"
         icon="close"
         onClick={handleHide}
         disabled={uploading}
       />
     </>
   )
+
 
   return (
     <Dialog
@@ -181,6 +213,7 @@ const UploadDialog = ({ onHide, assetData }) => {
       footer={footer}
     >
       <FileDetails file={file} bytesTransferred={bytesTransferred} />
+      <StatusMessage className={status} />
     </Dialog>
   )
 }
