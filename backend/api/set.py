@@ -138,8 +138,8 @@ async def can_modify_object(obj, user: nebula.User):
             raise nebula.ForbiddenException("You are not allowed to edit rundown")
         # TODO: Check if user can edit rundown for this channel
 
-    elif isinstance(obj, nebula.Event):
-        return
+    elif isinstance(obj, nebula.Bin):
+        raise nebula.ForbiddenException("It is not allowed to edit bins directly")
 
 
 class OperationsRequest(APIRequest):
@@ -166,11 +166,19 @@ class OperationsRequest(APIRequest):
                 async with pool.acquire() as conn:
                     async with conn.transaction():
                         object_class = get_object_class_by_name(operation.object_type)
+
+                        # Object ACL on which ACL check will be performed
+                        # For new objects, it's just a copy of operation.data
+                        # For existing objects, it's a copy of the existing object
+                        acl_obj: nebula.Object
+
                         if operation.id is None:
                             object = object_class(connection=conn, username=user.name)
                             operation.data.pop("id", None)
                             object["created_by"] = user.id
                             object["updated_by"] = user.id
+
+                            acl_obj = object_class.from_meta(operation.data)
                         else:
                             object = await object_class.load(
                                 operation.id,
@@ -178,6 +186,7 @@ class OperationsRequest(APIRequest):
                                 username=user.name,
                             )
                             object["updated_by"] = user.id
+                            acl_obj = object_class.from_meta({**object.meta})
 
                         #
                         # Modyfiing users
@@ -202,7 +211,7 @@ class OperationsRequest(APIRequest):
                         # ACL
                         #
 
-                        await can_modify_object(object, user)
+                        await can_modify_object(acl_obj, user)
 
                         #
                         # Run validator
