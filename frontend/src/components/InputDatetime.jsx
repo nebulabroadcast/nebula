@@ -66,11 +66,14 @@ const CalendarDialog = ({ value, onChange, onClose }) => {
   )
 }
 
-const InputDatetime = ({ value, onChange, placeholder, className = '' }) => {
+const InputDatetime = ({ value, onChange, placeholder, mode, className = '' }) => {
   const [time, setTime] = useState()
   const [isFocused, setIsFocused] = useState(false)
   const [showCalendar, setShowCalendar] = useState(false)
   const inputRef = useRef(null)
+
+  const timestampFormat = mode === 'date' ? 'yyyy-MM-dd' : 'yyyy-MM-dd HH:mm:ss'
+  const timestampRegex = mode === 'date' ? dateRegex : timeRegex
 
   useEffect(() => {
     if (!value) {
@@ -78,7 +81,7 @@ const InputDatetime = ({ value, onChange, placeholder, className = '' }) => {
       return
     }
 
-    setTime(DateTime.fromSeconds(value).toFormat('yyyy-MM-dd HH:mm:ss'))
+    setTime(DateTime.fromSeconds(value).toFormat(timestampFormat))
   }, [value])
 
   const handleChange = (event) => {
@@ -102,8 +105,8 @@ const InputDatetime = ({ value, onChange, placeholder, className = '' }) => {
   const isValidTime = (timeString) => {
     if (!timeString) return true
 
-    if (timeRegex.test(timeString))
-      if (!isNaN(DateTime.fromFormat(timeString, 'yyyy-MM-dd HH:mm:ss')))
+    if (timestampRegex.test(timeString))
+      if (!isNaN(DateTime.fromFormat(timeString, timestampFormat)))
         return true
     return false
   }
@@ -111,13 +114,13 @@ const InputDatetime = ({ value, onChange, placeholder, className = '' }) => {
   const onSubmit = () => {
     let value = 0
 
-    if (dateRegex.test(time)) {
+    if (dateRegex.test(time) && mode !== 'date') {
       setTime(time + ' 00:00:00')
       return
     }
 
     if (time && isValidTime(time)) {
-      value = DateTime.fromFormat(time, 'yyyy-MM-dd HH:mm:ss').toSeconds()
+      value = DateTime.fromFormat(time, timestampFormat).toSeconds()
     }
     onChange(value)
     inputRef.current.blur()
@@ -148,10 +151,10 @@ const InputDatetime = ({ value, onChange, placeholder, className = '' }) => {
         className={`${className} ${!isValidTime(time) ? 'error' : ''}`}
         placeholder={
           isFocused
-            ? 'YYYY-MM-DD HH:MM:SS  (Hit enter after the date for midnight)'
+            ? timestampFormat
             : placeholder
         }
-        title="Please enter a valid time in the format yyyy-mm-dd hh:mm:ss"
+        title={`Please enter a valid time in the format ${timestampFormat}`}
         onBlur={onSubmit}
         onFocus={(e) => {
           e.target.select(), setIsFocused(true)

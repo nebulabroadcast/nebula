@@ -102,6 +102,7 @@ const EditorField = ({
           value={value || ''}
           onChange={onChange}
           disabled={disabled}
+          mode={metaType.mode}
         />
       )
       break

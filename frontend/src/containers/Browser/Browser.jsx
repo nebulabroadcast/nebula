@@ -107,7 +107,7 @@ const getFormatter = (key) => {
         case 'datetime':
           return (rowData, key) => (
             <td>
-              <Timestamp timestamp={rowData[key]} />{' '}
+              <Timestamp timestamp={rowData[key]} mode={metaType.mode} />{' '}
             </td>
           )
 

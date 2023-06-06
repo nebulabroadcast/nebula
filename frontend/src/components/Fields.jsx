@@ -12,7 +12,8 @@ const DateTime = styled.div`
   }
 `
 
-const Timestamp = ({ timestamp, ...props }) => {
+const Timestamp = ({ timestamp, mode, ...props }) => {
+  if (!timestamp) return <></>
   const localDateTime = new Date(timestamp * 1000)
 
   // Get the local timezone
@@ -39,7 +40,7 @@ const Timestamp = ({ timestamp, ...props }) => {
   return (
     <DateTime {...props}>
       <span>{localDate}</span>
-      <span>{localTime}</span>
+      {!(mode === "date") && <span>{localTime}</span>}
     </DateTime>
   )
 }
