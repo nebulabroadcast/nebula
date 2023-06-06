@@ -1,5 +1,5 @@
 import os
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from pydantic import Field
 
@@ -12,6 +12,9 @@ from nebula.settings import load_settings
 from server.dependencies import CurrentUser
 from server.models import RequestModel, ResponseModel
 from server.request import APIRequest
+
+if TYPE_CHECKING:
+    from nebula.objects.base import BaseObject
 
 
 class Validator:
@@ -170,7 +173,7 @@ class OperationsRequest(APIRequest):
                         # Object ACL on which ACL check will be performed
                         # For new objects, it's just a copy of operation.data
                         # For existing objects, it's a copy of the existing object
-                        acl_obj: nebula.Object
+                        acl_obj: BaseObject
 
                         if operation.id is None:
                             object = object_class(connection=conn, username=user.name)

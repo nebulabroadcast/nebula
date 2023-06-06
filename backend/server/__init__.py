@@ -1,18 +1,16 @@
 import contextlib
 import os
 
-from fastapi import Depends, FastAPI, Header, Request
-from fastapi.responses import FileResponse, JSONResponse, Response
+from fastapi import FastAPI, Request
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.websockets import WebSocket, WebSocketDisconnect
 
 import nebula
 from nebula.exceptions import NebulaException
 from nebula.settings import load_settings
-from server.dependencies import current_user_query
 from server.endpoints import install_endpoints
 from server.storage_monitor import storage_monitor
-from server.video import range_requests_response
 from server.websocket import messaging
 
 app = FastAPI(
@@ -113,45 +111,6 @@ async def catchall_exception_handler(
 
 
 #
-# Proxies
-#
-
-
-class ProxyResponse(Response):
-    content_type = "video/mp4"
-
-
-@app.get("/proxy/{id_asset}", response_class=ProxyResponse)
-async def proxy(
-    request: Request,
-    id_asset: int,
-    user: nebula.User = Depends(current_user_query),
-    range: str = Header(None),
-):
-    """Serve a low-res (proxy) media for a given asset.
-
-    This endpoint supports range requests, so it is possible to use
-    the file in media players that support HTTPS pseudo-streaming.
-    """
-
-    sys_settings = nebula.settings.system
-    proxy_storage_path = nebula.storages[sys_settings.proxy_storage].local_path
-    proxy_path_template = os.path.join(proxy_storage_path, sys_settings.proxy_path)
-
-    vars = {
-        "id": id_asset,
-        "id1000": id_asset // 1000,
-    }
-
-    video_path = proxy_path_template.format(**vars)
-
-    if not os.path.exists(video_path):
-        # maybe return content too? with a placeholder image?
-        return Response(status_code=404, content="Not found")
-    return range_requests_response(request, video_path, "video/mp4")
-
-
-#
 # Messaging
 #
 
@@ -224,7 +183,6 @@ install_frontend(app)
 
 @app.on_event("startup")
 async def startup_event():
-
     with open("/var/run/nebula.pid", "w") as f:
         f.write(str(os.getpid()))
 

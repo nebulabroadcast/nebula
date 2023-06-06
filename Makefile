@@ -6,7 +6,7 @@ check: check_version
 
 	cd backend && \
 		poetry run black . && \
-		poetry run ruff . && \
+		poetry run ruff --fix . && \
 		poetry run mypy .
 
 check_version:

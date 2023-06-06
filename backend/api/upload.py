@@ -18,6 +18,7 @@ class UploadRequest(APIRequest):
     path: str = "/upload/{id_asset}"
     title: str = "Get objects"
     response_class = Response
+    methods = ["GET"]
 
     async def handle(
         self,
