@@ -1,4 +1,5 @@
-import httpx
+# import httpx
+import requests
 from fastapi import Depends
 
 import nebula
@@ -15,12 +16,11 @@ class Request(APIRequest):
     title: str = "Playout"
     response_model = PlayoutResponseModel
 
-    async def handle(
+    def handle(
         self,
         request: PlayoutRequestModel,
         user: nebula.User = Depends(current_user),
     ) -> PlayoutResponseModel:
-
         channel = nebula.settings.get_playout_channel(request.id_channel)
         if not channel:
             raise nebula.NotFoundException("Channel not found")
@@ -30,13 +30,26 @@ class Request(APIRequest):
 
         controller_url = f"http://{channel.controller_host}:{channel.controller_port}"
 
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                f"{controller_url}/{request.action.value}",
-                json=request.payload,
-                timeout=4,
-            )
+        response = requests.post(
+            f"{controller_url}/{request.action.value}",
+            json=request.payload,
+            timeout=4,
+        )
+        try:
             data = response.json()
+        except Exception as e:
+            nebula.log.error("Unable to parse response from playout controller")
+            raise nebula.NebulaException(
+                "Unable to parse response from playout controller"
+            ) from e
+ 
+        # async with httpx.AsyncClient() as client:
+        #     response = await client.post(
+        #         f"{controller_url}/{request.action.value}",
+        #         json=request.payload,
+        #         timeout=4,
+        #     )
+        #     data = response.json()
 
         if not response:
             raise nebula.NebulaException(data["message"])
