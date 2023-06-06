@@ -84,6 +84,12 @@ class ProxyResponse(Response):
 
 
 class ServeProxy(APIRequest):
+    """Serve a low-res (proxy) media for a given asset.
+
+    This endpoint supports range requests, so it is possible to use
+    the file in media players that support HTTPS pseudo-streaming.
+    """
+
     name: str = "proxy"
     path: str = "/proxy/{id_asset}"
     title: str = "Serve proxy"
@@ -97,12 +103,6 @@ class ServeProxy(APIRequest):
         user: CurrentUserInQuery,
         range: str = Header(None),
     ):
-        """Serve a low-res (proxy) media for a given asset.
-
-        This endpoint supports range requests, so it is possible to use
-        the file in media players that support HTTPS pseudo-streaming.
-        """
-
         sys_settings = nebula.settings.system
         proxy_storage_path = nebula.storages[sys_settings.proxy_storage].local_path
         proxy_path_template = os.path.join(proxy_storage_path, sys_settings.proxy_path)

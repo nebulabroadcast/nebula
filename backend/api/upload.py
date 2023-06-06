@@ -12,13 +12,15 @@ from server.request import APIRequest
 
 
 class UploadRequest(APIRequest):
-    """Get a list of objects"""
+    """Upload a media file for a given asset.
+
+    This endpoint is used by the web frontend to upload media files.
+    """
 
     name: str = "upload"
     path: str = "/upload/{id_asset}"
     title: str = "Get objects"
     response_class = Response
-    methods = ["GET"]
 
     async def handle(
         self,
@@ -26,11 +28,6 @@ class UploadRequest(APIRequest):
         asset: AssetInPath,
         user: CurrentUser,
     ):
-        """Upload a media file for a given asset.
-
-        This endpoint is used by the web frontend to upload media files.
-        """
-
         assert asset["media_type"] == MediaType.FILE, "Only file assets can be uploaded"
         extension = request.headers.get("X-nebula-extension")
         assert extension, "Missing X-nebula-extension header"
