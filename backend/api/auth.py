@@ -1,8 +1,8 @@
-from fastapi import Depends, Header, Request, Response
+from fastapi import Header, Request, Response
 from pydantic import Field
 
 import nebula
-from server.dependencies import current_user
+from server.dependencies import CurrentUser
 from server.models import RequestModel, ResponseModel
 from server.request import APIRequest
 from server.session import Session
@@ -94,7 +94,7 @@ class SetPassword(APIRequest):
     async def handle(
         self,
         request: PasswordRequestModel,
-        user: nebula.User = Depends(current_user),
+        user: CurrentUser,
     ):
         if request.login:
             if not user.is_admin:

@@ -13,7 +13,7 @@ if [ $1 = "start" ] || [ $1 = "reload" ]; then
     python -m setup
 
     while true; do
-        uvicorn --log-level warning --host 0.0.0.0 --port 80 server:app
+        uvicorn --log-level warning --host 0.0.0.0 --port 80 server.server:app
         return_code=$?
         if [ $return_code -eq 0 ]; then
             echo "Server exited with code 0. Respawning..." >&2

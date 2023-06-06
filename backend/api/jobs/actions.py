@@ -1,9 +1,8 @@
-from fastapi import Depends
 from nxtools import xml
 from pydantic import Field
 
 import nebula
-from server.dependencies import current_user
+from server.dependencies import CurrentUser
 from server.models import RequestModel, ResponseModel
 from server.request import APIRequest
 
@@ -40,7 +39,7 @@ class ActionsRequest(APIRequest):
     async def handle(
         self,
         request: ActionsRequestModel,
-        user: nebula.User = Depends(current_user),
+        user: CurrentUser,
     ) -> ActionsResponseModel:
 
         result = []

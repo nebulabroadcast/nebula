@@ -14,7 +14,10 @@ RUN yarn install && yarn build
 FROM python:3.11-bullseye
 ENV PYTHONBUFFERED=1
 
-RUN apt-get update && apt-get upgrade -y && apt-get install -y \
+RUN \
+  apt-get update \
+  && apt-get -yqq upgrade \
+  && apt-get -yqq install \
   cifs-utils
 
 RUN mkdir /backend
