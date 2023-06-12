@@ -5,33 +5,16 @@ if [ $# -ne 1 ]; then
   exit 1
 fi
 
-if [ $1 = "start" ] || [ $1 = "reload" ]; then
-  if [ $1 = "start" ]; then
-    echo ""
-    echo "Starting the service..."
-    echo ""
-    python -m setup
+if [ $1 = "reload" ]; then
+  echo ""
+  echo "Reloading the server..."
+  echo ""
+    
+  # find gunicorn process
+  pid=$(ps aux | grep 'gunicorn' | awk '{print $2}')
+  # send HUP 
+  kill -HUP $pid 2> /dev/null
 
-    while true; do
-        uvicorn --log-level warning --host 0.0.0.0 --port 80 server.server:app
-        return_code=$?
-        if [ $return_code -eq 0 ]; then
-            echo "Server exited with code 0. Respawning..." >&2
-            continue
-        fi
-        echo ""
-        echo "Server terminated with code $return_code." 
-        echo "Waiting before respawn." >&2
-        echo ""
-        sleep 5
-    done
-
-  elif [ $1 = "reload" ]; then
-    echo ""
-    echo "Reloading the service..."
-    echo ""
-    kill -15 `cat /var/run/nebula.pid`
-  fi
 else
   echo ""
   echo "Error: invalid argument '$1'. Expected 'start' or 'reload'"

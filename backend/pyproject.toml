@@ -23,6 +23,7 @@ geoip2 = "^4.6.0"
 user-agents = "^2.2.0"
 httpx = "^0.24.1"
 requests = "^2.31.0"
+gunicorn = "^20.1.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.0"
