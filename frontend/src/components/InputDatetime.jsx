@@ -66,7 +66,13 @@ const CalendarDialog = ({ value, onChange, onClose }) => {
   )
 }
 
-const InputDatetime = ({ value, onChange, placeholder, mode, className = '' }) => {
+const InputDatetime = ({
+  value,
+  onChange,
+  placeholder,
+  mode,
+  className = '',
+}) => {
   const [time, setTime] = useState()
   const [isFocused, setIsFocused] = useState(false)
   const [showCalendar, setShowCalendar] = useState(false)
@@ -106,8 +112,7 @@ const InputDatetime = ({ value, onChange, placeholder, mode, className = '' }) =
     if (!timeString) return true
 
     if (timestampRegex.test(timeString))
-      if (!isNaN(DateTime.fromFormat(timeString, timestampFormat)))
-        return true
+      if (!isNaN(DateTime.fromFormat(timeString, timestampFormat))) return true
     return false
   }
 
@@ -149,11 +154,7 @@ const InputDatetime = ({ value, onChange, placeholder, mode, className = '' }) =
         onChange={handleChange}
         style={{ flexGrow: 1 }}
         className={`${className} ${!isValidTime(time) ? 'error' : ''}`}
-        placeholder={
-          isFocused
-            ? timestampFormat
-            : placeholder
-        }
+        placeholder={isFocused ? timestampFormat : placeholder}
         title={`Please enter a valid time in the format ${timestampFormat}`}
         onBlur={onSubmit}
         onFocus={(e) => {

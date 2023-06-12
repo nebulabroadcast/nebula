@@ -8,7 +8,7 @@ import { setPageTitle } from '/src/actions'
 
 import JobsNav from './JobsNav'
 
-const RESTARTABLE = ['conv']
+const NOT_RESTARTABLE = ['import']
 
 const formatTime = (rowData, key) => {
   const timestamp = rowData[key]
@@ -42,28 +42,46 @@ const JobsPage = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const dispatch = useDispatch()
 
+  const loadJobs = useCallback(() => {
+    setLoading(true)
+    const cleanTitle = view
+      ? view[0].toUpperCase() + view.slice(1) + ' jobs'
+      : 'Jobs'
+    dispatch(setPageTitle({ title: cleanTitle }))
+    nebula
+      .request('jobs', { view, search_query: searchQuery })
+      .then((response) => {
+        setJobs(response.data.jobs)
+      })
+      .catch((err) => console.error(err))
+      .finally(() => setLoading(false))
+  }, [searchQuery, view])
+
+  useEffect(() => {
+    loadJobs()
+  }, [jobs.map((job) => job.status).join(','), view, searchQuery])
+
+  const restartJob = (id) => {
+    nebula.request('jobs', { restart: id }).then(() => loadJobs())
+  }
+
+  const abortJob = (id) => {
+    nebula.request('jobs', { abort: id }).then(() => loadJobs())
+  }
+
   const formatAction = (rowData, key) => {
     if ([0, 1, 5].includes(rowData['status']))
       return (
         <td className="action">
-          <Button
-            onClick={() => {
-              nebula.request('jobs', { abort: rowData['id'] }).then(() => {
-                loadJobs()
-              })
-            }}
-            label="Abort"
-          />
+          <Button onClick={() => abortJob(rowData['id'])} label="Abort" />
         </td>
       )
     else if ([2, 3, 4, 6].includes(rowData['status']))
       return (
         <td className="action">
           <Button
-            onClick={() => {
-              nebula.request('jobs', { restart: rowData['id'] })
-            }}
-            disabled={!RESTARTABLE.includes(rowData['service_type'])}
+            onClick={() => restartJob(rowData['id'])}
+            disabled={NOT_RESTARTABLE.includes(rowData['service_type'])}
             label="Restart"
           />
         </td>
@@ -149,25 +167,6 @@ const JobsPage = () => {
     },
   ]
 
-  const loadJobs = useCallback(() => {
-    setLoading(true)
-    const cleanTitle = view
-      ? view[0].toUpperCase() + view.slice(1) + ' jobs'
-      : 'Jobs'
-    dispatch(setPageTitle({ title: cleanTitle }))
-    nebula
-      .request('jobs', { view, search_query: searchQuery })
-      .then((response) => {
-        setJobs(response.data.jobs)
-      })
-      .catch((err) => console.error(err))
-      .finally(() => setLoading(false))
-  }, [searchQuery, view])
-
-  useEffect(() => {
-    loadJobs()
-  }, [jobs.map((job) => job.status).join(','), view, searchQuery])
-
   const handlePubSub = (topic, message) => {
     setJobs((prevData) => {
       const newData = [...prevData]
@@ -183,10 +182,8 @@ const JobsPage = () => {
 
   useEffect(() => {
     const token = PubSub.subscribe('job_progress', handlePubSub)
-    return () => {
-      PubSub.unsubscribe(token)
-    }
-  }, [view, searchQuery])
+    return () => PubSub.unsubscribe(token)
+  }, [])
 
   return (
     <main className="column">

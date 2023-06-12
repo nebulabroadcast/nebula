@@ -40,7 +40,7 @@ const Timestamp = ({ timestamp, mode, ...props }) => {
   return (
     <DateTime {...props}>
       <span>{localDate}</span>
-      {!(mode === "date") && <span>{localTime}</span>}
+      {!(mode === 'date') && <span>{localTime}</span>}
     </DateTime>
   )
 }
