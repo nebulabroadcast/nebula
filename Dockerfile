@@ -33,4 +33,4 @@ RUN \
 COPY ./backend /backend
 COPY --from=build /frontend/dist/ /frontend
 
-CMD ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "--log-level", "warning", "-b", ":80", "server.server:app"]
+CMD ["/bin/bash", "manage", "start"]
