@@ -53,7 +53,10 @@ function filterHierarchy(array, query, currentSelection) {
   const result = []
   const set = new Set()
   for (const item of array) {
-    item.level = item.value.split('.').length
+    if (typeof item.value !== 'string')
+      item.level = 1
+    else
+      item.level = item.value.split('.').length
     if (
       item.title.toLowerCase().includes(queryLower) ||
       item.value in currentSelection
@@ -65,7 +68,7 @@ function filterHierarchy(array, query, currentSelection) {
       set.add(item.value)
       let value = item.value
       while (value) {
-        const parts = value.split('.')
+        const parts = typeof value === 'string' ? value.split('.') : [value]
         if (parts.length === 1) {
           value = ''
         } else {

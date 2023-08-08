@@ -1,74 +1,17 @@
 import nebula from '/src/nebula'
 import { toast } from 'react-toastify'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import {
   Form,
   FormRow,
   InputText,
   Button,
-  Table,
-  Timestamp,
 } from '/src/components'
 
-const FormattedTimestamp = (rowData) => {
-  const timestamp = parseInt(rowData['accessed'])
-  console.log(timestamp)
-  return (
-    <td>
-      <Timestamp timestamp={timestamp} />
-    </td>
-  )
-}
 
-const FormattedClientInfo = (rowData) => {
-  const clientInfo = rowData['client_info']
+import Sessions from '/src/containers/Sessions.jsx'
 
-  return (
-    <td>
-      {clientInfo?.ip || 'Unknown'} ({clientInfo?.agent?.platform || 'Unknown'}{' '}
-      {clientInfo?.agent?.client || ''})
-    </td>
-  )
-}
 
-const Sessions = () => {
-  const [sessions, setSessions] = useState([])
-  const [loading, setLoading] = useState(false)
-
-  useEffect(() => {
-    setLoading(true)
-    nebula
-      .request('sessions', { id_user: nebula.user.id })
-      .then((res) => {
-        setSessions(res.data)
-      })
-      .finally(() => setLoading(false))
-  }, [])
-
-  return (
-    <section className="column" style={{ minWidth: 500 }}>
-      <h1>Sessions</h1>
-      <Table
-        data={sessions}
-        loading={loading}
-        keyField="token"
-        columns={[
-          {
-            name: 'client_info',
-            title: 'Client info',
-            formatter: FormattedClientInfo,
-          },
-          {
-            name: 'accessed',
-            title: 'Last used',
-            width: 150,
-            formatter: FormattedTimestamp,
-          },
-        ]}
-      />
-    </section>
-  )
-}
 
 const ProfileForm = () => {
   const displayName = nebula.user.full_name || nebula.user.login
@@ -158,7 +101,7 @@ const ProfilePage = () => {
         )}
       </section>
 
-      <Sessions />
+      <Sessions userId={nebula.user.id} />
     </main>
   )
 }
