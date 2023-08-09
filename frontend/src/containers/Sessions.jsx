@@ -27,7 +27,7 @@ const Sessions = ({userId}) => {
   const [sessions, setSessions] = useState([])
   const [loading, setLoading] = useState(false)
 
-  useEffect(() => {
+  const loadSessions = () => {
     setLoading(true)
     nebula
       .request('sessions', { id_user: userId })
@@ -35,7 +35,31 @@ const Sessions = ({userId}) => {
         setSessions(res.data)
       })
       .finally(() => setLoading(false))
+  }
+
+  useEffect(() => {
+    loadSessions()
   }, [userId])
+
+
+  const invalidateSession = (token) => {
+    nebula
+      .request('invalidate_session', { token })
+      .then(() => {
+          loadSessions()
+        })
+      .catch((err) => console.error(err))
+  }
+
+
+  const invalidateFormatter = (rowData) => {
+    const token = rowData['token']
+    return (
+      <td onClick={() => invalidateSession(token)}>
+        X
+      </td>
+    )
+  }
 
   return (
     <section className="column grow" style={{ minWidth: 500 }}>
@@ -56,6 +80,12 @@ const Sessions = ({userId}) => {
             width: 150,
             formatter: FormattedTimestamp,
           },
+          {
+            name: 'invalidate',
+            title: 'Invalidate',
+            width: 100,
+            formatter: invalidateFormatter,
+          }
         ]}
       />
     </section>

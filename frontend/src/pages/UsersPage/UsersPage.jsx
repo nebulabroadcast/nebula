@@ -1,5 +1,6 @@
 import nebula from '/src/nebula'
 
+import {toast} from 'react-toastify'
 import {useState, useEffect} from 'react'
 import { 
   Navbar, 
@@ -193,18 +194,27 @@ const UserForm = ({userData, setUserData}) => {
 
 const UsersPage = () => {
   const [userData, setUserData] = useState({})
+  const [currentId, setCurrentId] = useState(null)
   const [reloadTrigger, setReloadTrigger] = useState(0)
 
   const onSave = () => {
     nebula.request('save_user', userData)
       .then(() => {
-        setUserData({})
         setReloadTrigger(reloadTrigger + 1)
+        toast.success('User saved')
       })
       .catch((err) => {
+        toast.error('Error saving user')
         console.error(err)
       })
   }
+
+  useEffect(() => {
+    if (userData?.id) {
+      setCurrentId(userData.id)
+    }
+  }, [userData])
+
 
   return (
     <main className="column">
@@ -222,7 +232,7 @@ const UsersPage = () => {
       <div className="row grow">
         <UserList 
           onSelect={setUserData} 
-          currentId={userData?.id}
+          currentId={currentId}
           reloadTrigger={reloadTrigger}
         />
         <UserForm userData={userData} setUserData={setUserData}/>
