@@ -19,7 +19,6 @@ const ProfileForm = () => {
   return (
     <section className="column">
       <h1>Profile: {displayName}</h1>
-
       <Form>
         <FormRow title="Login">
           <InputText value={nebula.user.login} disabled />
@@ -66,7 +65,11 @@ const ChangePasswordForm = () => {
       <h2>Change password</h2>
       <Form>
         <FormRow title="New password">
-          <InputText type="password" value={password} onChange={setPassword} />
+          <InputPassword 
+            value={password} 
+            onChange={setPassword} 
+            autocomplete="new-password"
+          />
         </FormRow>
         <FormRow title="Repeat new password">
           <InputText
@@ -87,6 +90,30 @@ const ChangePasswordForm = () => {
   )
 }
 
+
+const AdminPanel = () => {
+  return (
+    <section className="grow column">
+      <h2>Administration</h2>
+      Remember; with great power comes great responsibility.
+
+      <ul>
+        <li><a href="/users">User management</a></li>
+      </ul>
+
+    </section>
+  )
+}
+
+const UserPanel = () => {
+  return (
+    <section className="grow column">
+      <h2>Access control</h2>
+    </section>
+  )
+}
+
+
 const ProfilePage = () => {
   return (
     <main>
@@ -94,12 +121,8 @@ const ProfilePage = () => {
         <ProfileForm />
         <ChangePasswordForm />
       </div>
-      <section className="grow column">
-        <h1>Access control</h1>
-        {nebula.user.is_admin && (
-          <p>You are an administrator. You can do whatever you want</p>
-        )}
-      </section>
+
+      {nebula.user.is_admin ? <AdminPanel /> : <UserPanel />}
 
       <Sessions userId={nebula.user.id} />
     </main>

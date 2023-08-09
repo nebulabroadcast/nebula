@@ -15,6 +15,7 @@ class UserModel(ResponseModel):
     is_admin: bool = Field(False, title="Is user an administrator")
     is_limited: bool = Field(False, title="Is user limited")
     local_network_only: bool = Field(False, title="Allow only local login")
+    password: str | None = Field(None, title="Password")
 
     can_asset_view: bool | list[int] = Field(False)
     can_asset_edit: bool | list[int] = Field(False)
@@ -81,6 +82,9 @@ class SaveUserRequest(APIRequest):
 
         meta = payload.dict()
         meta.pop("id", None)
+
+        password = meta.pop("password", None)
+
         for key, value in list(meta.items()):
             if key.startswith("can_"):
                 meta[key.replace("can_", "can/")] = value
@@ -91,6 +95,9 @@ class SaveUserRequest(APIRequest):
         else:
             user = await nebula.User.load(payload.id)
             user.update(meta)
+
+        if password:
+            user.set_password(password)
 
         await user.save()
 
