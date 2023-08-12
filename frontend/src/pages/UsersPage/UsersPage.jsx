@@ -29,8 +29,6 @@ const UserForm = ({userData, setUserData}) => {
 
   return (
     <div className="invisible column grow">
-
-
       <section className="column">
         <PanelHeader>
           {userData?.id ? userData.login : "New user"}
@@ -115,6 +113,13 @@ const UsersPage = () => {
       })
   }
 
+  const copyUser = () => {
+    const copy = {...userData}
+    for (const key of ['id', 'login', 'password', 'full_name', 'email'])
+      copy[key] = undefined
+    setUserData(copy)
+  }
+
   useEffect(() => {
     if (userData?.id)
       setCurrentId(userData.id)
@@ -124,9 +129,15 @@ const UsersPage = () => {
     <main className="column">
       <Navbar>
         <Button 
-          icon="add" 
-          label="New user" 
+          icon="person_add"
+          label="New user"
           onClick={() => setUserData({})}
+        />
+        <Button
+          icon="content_copy"
+          label="Copy user"
+          onClick={() => copyUser()}
+          disabled={!userData?.id}
         />
         <Spacer />
         <Button icon="check" label="Save" onClick={onSave}/>
@@ -139,7 +150,7 @@ const UsersPage = () => {
           reloadTrigger={reloadTrigger}
         />
         <UserForm userData={userData} setUserData={setUserData}/>
-        {userData?.id && <Sessions userId={userData?.id}/>}
+        <Sessions userId={userData?.id}/>
       </div>
     </main>
   )
