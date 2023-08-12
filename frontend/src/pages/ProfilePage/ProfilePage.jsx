@@ -68,7 +68,7 @@ const ChangePasswordForm = () => {
           <InputPassword 
             value={password} 
             onChange={setPassword} 
-            autocomplete="new-password"
+            autoComplete="new-password"
           />
         </FormRow>
         <FormRow title="Repeat new password">

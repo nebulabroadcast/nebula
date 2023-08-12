@@ -79,4 +79,13 @@ const DialogButtons = styled.div`
   margin-top: 10px;
 `
 
-export { Navbar, Spacer, ToolbarSeparator, DialogButtons }
+const PanelHeader = styled.h2`
+  padding: 0;
+  padding-bottom: 10px;
+  margin: 0;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #514a5e;
+  font-size: 18px;
+`
+
+export { Navbar, Spacer, ToolbarSeparator, DialogButtons, PanelHeader }

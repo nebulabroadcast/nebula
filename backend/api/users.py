@@ -30,6 +30,7 @@ class UserModel(ResponseModel):
         False,
         description="Use list of action IDs to grant access to specific actions",
     )
+    can_mcr: bool | list[int] = Field( False)
 
 
 class UserListResponseModel(ResponseModel):

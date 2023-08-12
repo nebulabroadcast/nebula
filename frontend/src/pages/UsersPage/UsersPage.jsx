@@ -9,79 +9,19 @@ import {
   InputPassword,
   Button, 
   Spacer, 
+  PanelHeader,
   Form, 
   FormRow, 
   InputSwitch, 
-  Select 
 } from '/src/components'
 
 import Sessions from '/src/containers/Sessions'
 import UserList from './UserList'
-
-
-const PanelHeader = styled.h2`
-  padding: 0;
-  padding-bottom: 10px;
-  margin: 0;
-  margin-bottom: 10px;
-  border-bottom: 1px solid #514a5e;
-  font-size: 18px;
-`
-
-
-const AllOrList = ({value, setValue, options }) => {
-  const [all, setAll] = useState(false)
-  const [values, setValues] = useState([])
-
-  useEffect(() => {
-    if (value === true) {
-      setAll(true)
-    }
-    else if (value === false) {
-      setAll(false)
-      setValues([])
-      }
-    else {
-      setAll(false)
-      setValues(value)
-    }
-  }, [value])
-
-  return (
-    <div className="row" style={{flexGrow: 1, gap: 12, alignItems: "center"}}>
-      <Select 
-        options={options} 
-        value={values} 
-        onChange={(v) => {
-          const m = v.map((i) => parseInt(i))
-          setValues(m)
-          setValue(m.length === 0 ? false : m)
-        }} 
-        disabled={all} 
-        selectionMode="multiple"
-        style={{flexGrow: 1}}
-      />
-
-      All
-
-      <InputSwitch 
-        value={all} 
-        onChange={(v) => {
-          setAll(v)
-          setValue(v ? true : values)
-        }} 
-        title="All"
-      />
-    </div>
-  )
-}
+import AccessControl from './AccessControl'
 
 
 
 const UserForm = ({userData, setUserData}) => {
-  const folderOptions = nebula.settings.folders.map((folder) => (
-    {title: folder.name, value: folder.id}
-  ))
 
   const setValue = (key, value) => {
     setUserData((prev) => ({...prev, [key]: value}))
@@ -126,7 +66,7 @@ const UserForm = ({userData, setUserData}) => {
             <InputPassword
               value={userData?.password || ""}
               onChange={(value) => setValue('password', value)}
-              autocomplete="new-password"
+              autoComplete="new-password"
               placeholder="Change current password"
             />
           </FormRow>
@@ -140,39 +80,16 @@ const UserForm = ({userData, setUserData}) => {
 
       </section>
 
+      <AccessControl userData={userData} setValue={setValue} />
+
+      {/*
       <section className="column">
-        <PanelHeader>
-          Access control
-        </PanelHeader>
-        <Form>
-          <FormRow title="Administrator">
-            <InputSwitch 
-              value={userData?.is_admin || false}
-              onChange={(value) => setValue('is_admin', value)}
-            />
-          </FormRow>
-          <FormRow title="Limited">
-            <InputSwitch 
-              value={userData?.is_limited || false}
-              onChange={(value) => setValue('is_limited', value)}
-            />
-          </FormRow>
-          <FormRow title="Asset view">
-            <AllOrList 
-              value={userData?.can_asset_view || false} 
-              setValue={(value) => setValue('can_asset_view', value)}
-              options={folderOptions}
-            />
-          </FormRow>
-          <FormRow title="Asset edit">
-            <AllOrList 
-              value={userData?.can_asset_edit || false} 
-              setValue={(value) => setValue('can_asset_edit', value)}
-              options={folderOptions}
-            />
-          </FormRow>
-        </Form>
+        <pre>
+          {JSON.stringify(userData, null, 2)}
+        </pre>
       </section>
+      */}
+
     </div>
   )
 }
