@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 
 import nebula
 from nebula.common import create_hash, json_dumps, json_loads
+from nebula.exceptions import LoginFailedException
 from server.clientinfo import ClientInfo, get_client_info, get_real_ip
 
 
@@ -94,7 +95,7 @@ class Session:
         client_info = get_client_info(request) if request else None
         if client_info:
             if user["local_network_only"] and not is_local_ip(client_info.ip):
-                raise nebula.UnauthorizedException(
+                raise LoginFailedException(
                     "You can only log in from local network"
                 )
 

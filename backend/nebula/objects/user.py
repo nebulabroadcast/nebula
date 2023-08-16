@@ -88,7 +88,7 @@ class User(BaseObject):
             raise NebulaException("Nebula is not installed") from e
         if not res:
             raise LoginFailedException(
-                "Invalid login/password combination",
+                "Invalid user name/password combination",
                 log=f"Invalid logging attempted with name '{username}'",
             )
         return cls(meta=res[0]["meta"])
