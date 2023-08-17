@@ -5,6 +5,7 @@ import {
   Form,
   FormRow,
   InputText,
+  InputPassword,
   Button,
 } from '/src/components'
 
