@@ -71,14 +71,6 @@ ToolbarSeparator.defaultProps = {
   theme: defaultTheme,
 }
 
-const DialogButtons = styled.div`
-  display: flex;
-  flex-direction: row;
-  gap: 4px;
-  justify-content: flex-end;
-  margin-top: 10px;
-`
-
 const PanelHeader = styled.h2`
   padding: 0;
   padding-bottom: 10px;
@@ -88,4 +80,4 @@ const PanelHeader = styled.h2`
   font-size: 18px;
 `
 
-export { Navbar, Spacer, ToolbarSeparator, DialogButtons, PanelHeader }
+export { Navbar, Spacer, ToolbarSeparator, PanelHeader }

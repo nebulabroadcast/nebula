@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react'
 import { DateTime } from 'luxon'
 import styled from 'styled-components'
 
-import { DialogButtons } from './Layout'
 import DatePicker from 'react-datepicker'
 import Dialog from './Dialog'
 
@@ -37,8 +36,23 @@ const CalendarDialog = ({ value, onChange, onClose }) => {
 
   const [date, setDate] = useState(DateTime.fromSeconds(value || defaultDate))
 
+  footer = (
+    <> 
+      <Button label="Cancel" icon="close" onClick={onClose} />
+      <Button
+        icon="check"
+        label="Apply"
+        onClick={() => {
+          const newDate = date.set({ hour: 0, minute: 0, second: 0 })
+          onChange(newDate.toSeconds())
+          onClose()
+        }}
+      />
+    </>
+  )
+
   return (
-    <Dialog onHide={onClose}>
+    <Dialog onHide={onClose} footer={footer}>
       <DatePickerWrapper>
         <DatePicker
           locale="sv-SE"
@@ -50,18 +64,6 @@ const CalendarDialog = ({ value, onChange, onClose }) => {
           inline
         />
       </DatePickerWrapper>
-      <DialogButtons>
-        <Button label="Cancel" icon="close" onClick={onClose} />
-        <Button
-          icon="check"
-          label="Apply"
-          onClick={() => {
-            const newDate = date.set({ hour: 0, minute: 0, second: 0 })
-            onChange(newDate.toSeconds())
-            onClose()
-          }}
-        />
-      </DialogButtons>
     </Dialog>
   )
 }

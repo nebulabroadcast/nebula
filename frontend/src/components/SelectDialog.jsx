@@ -4,7 +4,6 @@ import Dialog from './Dialog'
 import InputText from './InputText'
 import Button from './Button'
 
-import { DialogButtons } from './Layout'
 import { sortByKey } from '/src/utils'
 import styled from 'styled-components'
 import defaultTheme from './theme'
@@ -137,15 +136,38 @@ const SelectDialog = ({ options, onHide, selectionMode, initialValue }) => {
     onHide(value)
   }
 
-  return (
-    <Dialog onHide={() => onClose()} style={{ minWidth: 400 }}>
+  const header = (
+    <>
       <InputText
         placeholder="Filter"
         value={filter}
         onChange={setFilter}
         ref={filterRef}
+        style={{flexGrow: 1}}
       />
+      <Button 
+        onClick={() => setFilter('')} 
+        icon="backspace" 
+        title="Clear filter"
+      />
+    </>
+  )
 
+  const footer = (
+    <>
+      <Button onClick={() => onUnset()} label="Unset" icon="backspace" />
+      <Button onClick={() => onClose()} label="Cancel" icon="close" />
+      <Button onClick={() => onApply()} label="Apply" icon="check" />
+    </>
+  )
+
+  return (
+    <Dialog 
+      onHide={() => onClose()} 
+      style={{ minWidth: 400 }}
+      header={header}
+      footer={footer}
+    >
       <div className="scroll-box">
         <div className="scroll-box-cont">
           {filteredOptions.map((option) => (
@@ -158,11 +180,6 @@ const SelectDialog = ({ options, onHide, selectionMode, initialValue }) => {
           ))}
         </div>
       </div>
-      <DialogButtons>
-        <Button onClick={() => onUnset()} label="Unset" icon="backspace" />
-        <Button onClick={() => onClose()} label="Cancel" icon="close" />
-        <Button onClick={() => onApply()} label="Apply" icon="check" />
-      </DialogButtons>
     </Dialog>
   )
 }

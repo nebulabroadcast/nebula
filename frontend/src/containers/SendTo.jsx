@@ -47,7 +47,7 @@ const SendToDialog = ({ assets, onHide }) => {
 
   const footer = useMemo(() => {
     if (sendToOptions.length === 0) return null
-    return <Button label="Cancel" onClick={onHide} />
+    return <Button label="Cancel" onClick={onHide} icon="close"/>
   }, [sendToOptions])
 
   return (

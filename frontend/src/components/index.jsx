@@ -19,4 +19,4 @@ export { default as DatePicker } from './DatePicker'
 
 export { DateTime, Timestamp } from './Fields'
 export { Form, FormRow } from './Form'
-export { Navbar, Spacer, ToolbarSeparator, DialogButtons, PanelHeader } from './Layout'
+export { Navbar, Spacer, ToolbarSeparator, PanelHeader } from './Layout'
