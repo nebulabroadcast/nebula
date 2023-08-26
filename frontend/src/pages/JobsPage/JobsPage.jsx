@@ -2,28 +2,14 @@ import nebula from '/src/nebula'
 import { useState, useEffect, useCallback } from 'react'
 import { useDispatch } from 'react-redux'
 import { useParams } from 'react-router-dom'
-import { Table, Button, Timestamp } from '/src/components'
+import { Table, Button } from '/src/components'
 import { NavLink } from 'react-router-dom'
 import { setPageTitle } from '/src/actions'
+import { tableFormatTime } from '/src/tableFormatters'
 
 import JobsNav from './JobsNav'
 
 const NOT_RESTARTABLE = ['import']
-
-const formatTime = (rowData, key) => {
-  const timestamp = rowData[key]
-  if (!timestamp)
-    return (
-      <td>
-        <hr />
-      </td>
-    )
-  return (
-    <td>
-      <Timestamp timestamp={timestamp} />
-    </td>
-  )
-}
 
 const formatTitle = (rowData, key) => {
   return (
@@ -134,21 +120,21 @@ const JobsPage = () => {
       name: 'ctime',
       title: 'Created',
       className: 'time',
-      formatter: formatTime,
+      formatter: tableFormatTime,
       width: 150,
     },
     {
       name: 'stime',
       title: 'Started',
       className: 'time',
-      formatter: formatTime,
+      formatter: tableFormatTime,
       width: 150,
     },
     {
       name: 'etime',
       title: 'Finished',
       className: 'time',
-      formatter: formatTime,
+      formatter: tableFormatTime,
       width: 150,
     },
     { name: 'message', title: 'Message', className: 'job-message', width: 400 },

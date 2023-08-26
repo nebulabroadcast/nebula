@@ -36,7 +36,7 @@ const CalendarDialog = ({ value, onChange, onClose }) => {
 
   const [date, setDate] = useState(DateTime.fromSeconds(value || defaultDate))
 
-  footer = (
+  const footer = (
     <> 
       <Button label="Cancel" icon="close" onClick={onClose} />
       <Button
@@ -52,7 +52,7 @@ const CalendarDialog = ({ value, onChange, onClose }) => {
   )
 
   return (
-    <Dialog onHide={onClose} footer={footer}>
+    <Dialog onHide={onClose} footer={footer} header="Select a date...">
       <DatePickerWrapper>
         <DatePicker
           locale="sv-SE"
