@@ -92,7 +92,7 @@ class SaveUserRequest(APIRequest):
                 del meta[key]
 
         if new_user:
-            user = nebula.User(from_meta=meta)
+            user = nebula.User.from_meta(meta)
         else:
             user = await nebula.User.load(payload.id)
             user.update(meta)
