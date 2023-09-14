@@ -41,10 +41,17 @@ CurrentUserInQuery = Annotated[nebula.User, Depends(current_user_query)]
 async def current_user(
     request: Request,
     access_token: str | None = Depends(access_token),
+    x_api_key: str | None = Header(None),
 ) -> nebula.User:
     """Return the currently logged-in user"""
     if access_token is None:
-        raise nebula.UnauthorizedException("No access token provided")
+        if x_api_key is None:
+            raise nebula.UnauthorizedException("No access token provided")
+        try:
+            return await nebula.User.by_api_key(x_api_key)
+        except nebula.NotFoundException as e:
+            raise nebula.UnauthorizedException("Invalid API key") from e
+
     session = await Session.check(access_token, request)
     if session is None:
         raise nebula.UnauthorizedException("Invalid access token")

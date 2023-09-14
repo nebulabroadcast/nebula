@@ -30,7 +30,7 @@ class UserModel(ResponseModel):
         False,
         description="Use list of action IDs to grant access to specific actions",
     )
-    can_mcr: bool | list[int] = Field( False)
+    can_mcr: bool | list[int] = Field(False)
 
 
 class UserListResponseModel(ResponseModel):
@@ -94,6 +94,7 @@ class SaveUserRequest(APIRequest):
         if new_user:
             user = nebula.User.from_meta(meta)
         else:
+            assert payload.id is not None, "This shoudn't happen"
             user = await nebula.User.load(payload.id)
             user.update(meta)
 

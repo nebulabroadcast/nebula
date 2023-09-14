@@ -51,7 +51,9 @@ class InvalidateSession(APIRequest):
     responses = [204, 201]
 
     async def handle(
-        self, payload: InvalidateSessionRequest, user: CurrentUser,
+        self,
+        payload: InvalidateSessionRequest,
+        user: CurrentUser,
     ) -> None:
         """Create or update an object."""
 

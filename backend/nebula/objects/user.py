@@ -71,6 +71,17 @@ class User(BaseObject):
         return cls.from_row(row[0])
 
     @classmethod
+    async def by_api_key(cls, api_key: str) -> "User":
+        api_key_hash = hash_password(api_key)
+        row = await db.fetch(
+            "SELECT meta FROM users WHERE meta->>'api_key' = $1",
+            api_key_hash,
+        )
+        if not row:
+            raise NotFoundException(f"User with API key {api_key} not found")
+        return cls.from_row(row[0])
+
+    @classmethod
     async def login(cls, username: str, password: str) -> "User":
         """Return a User instance based on username and password."""
 
