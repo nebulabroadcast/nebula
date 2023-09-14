@@ -104,8 +104,11 @@ class User(BaseObject):
             )
         return cls(meta=res[0]["meta"])
 
-    def set_password(self, password: str):
+    def set_password(self, password: str) -> None:
         self.meta["password"] = hash_password(password)
+
+    def set_api_key(self, api_key: str) -> None:
+        self.meta["api_key"] = hash_password(api_key)
 
     def can(
         self,

@@ -1,5 +1,4 @@
 import nebula from '/src/nebula'
-import styled from 'styled-components'
 
 import { toast } from 'react-toastify'
 import { useState, useEffect } from 'react'
@@ -18,6 +17,7 @@ import {
 import Sessions from '/src/containers/Sessions'
 import UserList from './UserList'
 import AccessControl from './AccessControl'
+import ApiKeyPicker from './ApiKeyPicker'
 
 const UserForm = ({ userData, setUserData }) => {
   const setValue = (key, value) => {
@@ -62,6 +62,9 @@ const UserForm = ({ userData, setUserData }) => {
               autoComplete="new-password"
               placeholder="Change current password"
             />
+          </FormRow>
+          <FormRow title="API Key">
+            <ApiKeyPicker setApiKey={(value) => setValue('api_key', value)} />
           </FormRow>
           <FormRow title="Local network only">
             <InputSwitch

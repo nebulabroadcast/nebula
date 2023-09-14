@@ -16,6 +16,7 @@ class UserModel(ResponseModel):
     is_limited: bool = Field(False, title="Is user limited")
     local_network_only: bool = Field(False, title="Allow only local login")
     password: str | None = Field(None, title="Password")
+    api_key: str | None = Field(None, title="API key")
 
     can_asset_view: bool | list[int] = Field(False)
     can_asset_edit: bool | list[int] = Field(False)
@@ -85,6 +86,7 @@ class SaveUserRequest(APIRequest):
         meta.pop("id", None)
 
         password = meta.pop("password", None)
+        api_key = meta.pop("api_key", None)
 
         for key, value in list(meta.items()):
             if key.startswith("can_"):
@@ -100,6 +102,9 @@ class SaveUserRequest(APIRequest):
 
         if password:
             user.set_password(password)
+
+        if api_key:
+            user.set_api_key(api_key)
 
         await user.save()
 
