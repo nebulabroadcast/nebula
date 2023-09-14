@@ -36,4 +36,4 @@ const formatTimeString = (timestamp) => {
   return `${localDate} ${localTime}`
 }
 
-export { arrayEquals, deepCopy, isEmpty, sortByKey, formatTimeString}
+export { arrayEquals, deepCopy, isEmpty, sortByKey, formatTimeString }

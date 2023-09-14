@@ -15,5 +15,4 @@ const tableFormatTime = (rowData, key) => {
   )
 }
 
-
 export { tableFormatTime }

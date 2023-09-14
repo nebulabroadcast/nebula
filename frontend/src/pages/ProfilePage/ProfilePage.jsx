@@ -9,10 +9,7 @@ import {
   Button,
 } from '/src/components'
 
-
 import Sessions from '/src/containers/Sessions.jsx'
-
-
 
 const ProfileForm = () => {
   const displayName = nebula.user.full_name || nebula.user.login
@@ -66,9 +63,9 @@ const ChangePasswordForm = () => {
       <h2>Change password</h2>
       <Form>
         <FormRow title="New password">
-          <InputPassword 
-            value={password} 
-            onChange={setPassword} 
+          <InputPassword
+            value={password}
+            onChange={setPassword}
             autoComplete="new-password"
           />
         </FormRow>
@@ -91,17 +88,16 @@ const ChangePasswordForm = () => {
   )
 }
 
-
 const AdminPanel = () => {
   return (
     <section className="grow column">
       <h2>Administration</h2>
       Remember; with great power comes great responsibility.
-
       <ul>
-        <li><a href="/users">User management</a></li>
+        <li>
+          <a href="/users">User management</a>
+        </li>
       </ul>
-
     </section>
   )
 }
@@ -113,7 +109,6 @@ const UserPanel = () => {
     </section>
   )
 }
-
 
 const ProfilePage = () => {
   return (

@@ -1,8 +1,7 @@
-import {useState, useEffect} from 'react'
+import { useState, useEffect } from 'react'
 import nebula from '/src/nebula'
-import {Table, Timestamp} from '/src/components'
+import { Table, Timestamp } from '/src/components'
 import styled from 'styled-components'
-
 
 const InvalidateButton = styled.button`
   background: none;
@@ -13,11 +12,12 @@ const InvalidateButton = styled.button`
   margin: 0;
 `
 
-
 const FormattedTimestamp = (rowData) => {
   const timestamp = parseInt(rowData['accessed'])
   return (
-    <td><Timestamp timestamp={timestamp} /></td>
+    <td>
+      <Timestamp timestamp={timestamp} />
+    </td>
   )
 }
 
@@ -32,7 +32,7 @@ const FormattedClientInfo = (rowData) => {
   )
 }
 
-const Sessions = ({userId}) => {
+const Sessions = ({ userId }) => {
   const [sessions, setSessions] = useState([])
   const [loading, setLoading] = useState(false)
 
@@ -51,21 +51,19 @@ const Sessions = ({userId}) => {
     loadSessions()
   }, [userId])
 
-
   const invalidateSession = (token) => {
     nebula
       .request('invalidate_session', { token })
       .then(() => {
-          loadSessions()
-        })
+        loadSessions()
+      })
       .catch((err) => console.error(err))
   }
-
 
   const invalidateFormatter = (rowData) => {
     const token = rowData['token']
     return (
-      <td style={{textAlign: 'right'}}>
+      <td style={{ textAlign: 'right' }}>
         <InvalidateButton onClick={() => invalidateSession(token)}>
           Invalidate
         </InvalidateButton>
@@ -97,7 +95,7 @@ const Sessions = ({userId}) => {
             title: '',
             width: 100,
             formatter: invalidateFormatter,
-          }
+          },
         ]}
       />
     </section>

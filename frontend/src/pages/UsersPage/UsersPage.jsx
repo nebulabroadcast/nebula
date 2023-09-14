@@ -1,54 +1,49 @@
 import nebula from '/src/nebula'
 import styled from 'styled-components'
 
-import {toast} from 'react-toastify'
-import {useState, useEffect} from 'react'
-import { 
-  Navbar, 
-  InputText, 
+import { toast } from 'react-toastify'
+import { useState, useEffect } from 'react'
+import {
+  Navbar,
+  InputText,
   InputPassword,
-  Button, 
-  Spacer, 
+  Button,
+  Spacer,
   PanelHeader,
-  Form, 
-  FormRow, 
-  InputSwitch, 
+  Form,
+  FormRow,
+  InputSwitch,
 } from '/src/components'
 
 import Sessions from '/src/containers/Sessions'
 import UserList from './UserList'
 import AccessControl from './AccessControl'
 
-
-
-const UserForm = ({userData, setUserData}) => {
-
+const UserForm = ({ userData, setUserData }) => {
   const setValue = (key, value) => {
-    setUserData((prev) => ({...prev, [key]: value}))
+    setUserData((prev) => ({ ...prev, [key]: value }))
   }
 
   return (
     <div className="invisible column grow">
       <section className="column">
-        <PanelHeader>
-          {userData?.id ? userData.login : "New user"}
-        </PanelHeader>
+        <PanelHeader>{userData?.id ? userData.login : 'New user'}</PanelHeader>
         <Form>
           <FormRow title="Login">
-            <InputText 
-              value={userData?.login || ''} 
+            <InputText
+              value={userData?.login || ''}
               disabled={!!userData?.id}
               onChange={(value) => setValue('login', value)}
             />
           </FormRow>
           <FormRow title="Full name">
-            <InputText 
+            <InputText
               value={userData?.full_name || ''}
               onChange={(value) => setValue('full_name', value)}
             />
           </FormRow>
           <FormRow title="Email">
-            <InputText 
+            <InputText
               value={userData?.email || ''}
               onChange={(value) => setValue('email', value)}
             />
@@ -62,20 +57,19 @@ const UserForm = ({userData, setUserData}) => {
         <Form>
           <FormRow title="Password">
             <InputPassword
-              value={userData?.password || ""}
+              value={userData?.password || ''}
               onChange={(value) => setValue('password', value)}
               autoComplete="new-password"
               placeholder="Change current password"
             />
           </FormRow>
           <FormRow title="Local network only">
-            <InputSwitch 
+            <InputSwitch
               value={userData?.local_network_only || false}
               onChange={(value) => setValue('local_network_only', value)}
             />
           </FormRow>
         </Form>
-
       </section>
 
       <AccessControl userData={userData} setValue={setValue} />
@@ -87,11 +81,9 @@ const UserForm = ({userData, setUserData}) => {
         </pre>
       </section>
       */}
-
     </div>
   )
 }
-
 
 const UsersPage = () => {
   const [userData, setUserData] = useState({})
@@ -99,7 +91,8 @@ const UsersPage = () => {
   const [reloadTrigger, setReloadTrigger] = useState(0)
 
   const onSave = () => {
-    nebula.request('save_user', userData)
+    nebula
+      .request('save_user', userData)
       .then(() => {
         setReloadTrigger(reloadTrigger + 1)
         toast.success('User saved')
@@ -109,26 +102,25 @@ const UsersPage = () => {
         console.error(err)
       })
       .finally(() => {
-        setUserData((data) => ({...data, password: undefined}))
+        setUserData((data) => ({ ...data, password: undefined }))
       })
   }
 
   const copyUser = () => {
-    const copy = {...userData}
+    const copy = { ...userData }
     for (const key of ['id', 'login', 'password', 'full_name', 'email'])
       copy[key] = undefined
     setUserData(copy)
   }
 
   useEffect(() => {
-    if (userData?.id)
-      setCurrentId(userData.id)
+    if (userData?.id) setCurrentId(userData.id)
   }, [userData])
 
   return (
     <main className="column">
       <Navbar>
-        <Button 
+        <Button
           icon="person_add"
           label="New user"
           onClick={() => setUserData({})}
@@ -140,21 +132,20 @@ const UsersPage = () => {
           disabled={!userData?.id}
         />
         <Spacer />
-        <Button icon="check" label="Save" onClick={onSave}/>
+        <Button icon="check" label="Save" onClick={onSave} />
       </Navbar>
 
       <div className="row grow">
-        <UserList 
-          onSelect={setUserData} 
+        <UserList
+          onSelect={setUserData}
           currentId={currentId}
           reloadTrigger={reloadTrigger}
         />
-        <UserForm userData={userData} setUserData={setUserData}/>
-        <Sessions userId={userData?.id}/>
+        <UserForm userData={userData} setUserData={setUserData} />
+        <Sessions userId={userData?.id} />
       </div>
     </main>
   )
-
 }
 
 export default UsersPage

@@ -37,7 +37,7 @@ const CalendarDialog = ({ value, onChange, onClose }) => {
   const [date, setDate] = useState(DateTime.fromSeconds(value || defaultDate))
 
   const footer = (
-    <> 
+    <>
       <Button label="Cancel" icon="close" onClick={onClose} />
       <Button
         icon="check"

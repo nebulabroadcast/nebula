@@ -32,7 +32,8 @@ const DialogWindow = styled.div`
     outline: none;
   }
 
-  header, footer {
+  header,
+  footer {
     padding: 12px 6px;
     display: flex;
     flex-direction: row;

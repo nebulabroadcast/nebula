@@ -52,10 +52,8 @@ function filterHierarchy(array, query, currentSelection) {
   const result = []
   const set = new Set()
   for (const item of array) {
-    if (typeof item.value !== 'string')
-      item.level = 1
-    else
-      item.level = item.value.split('.').length
+    if (typeof item.value !== 'string') item.level = 1
+    else item.level = item.value.split('.').length
     if (
       item.title.toLowerCase().includes(queryLower) ||
       item.value in currentSelection
@@ -143,11 +141,11 @@ const SelectDialog = ({ options, onHide, selectionMode, initialValue }) => {
         value={filter}
         onChange={setFilter}
         ref={filterRef}
-        style={{flexGrow: 1}}
+        style={{ flexGrow: 1 }}
       />
-      <Button 
-        onClick={() => setFilter('')} 
-        icon="backspace" 
+      <Button
+        onClick={() => setFilter('')}
+        icon="backspace"
         title="Clear filter"
       />
     </>
@@ -162,8 +160,8 @@ const SelectDialog = ({ options, onHide, selectionMode, initialValue }) => {
   )
 
   return (
-    <Dialog 
-      onHide={() => onClose()} 
+    <Dialog
+      onHide={() => onClose()}
       style={{ minWidth: 400 }}
       header={header}
       footer={footer}

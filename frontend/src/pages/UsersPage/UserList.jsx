@@ -1,8 +1,8 @@
 import nebula from '/src/nebula'
-import {useEffect, useState} from 'react'
-import { Table } from '/src/components' 
+import { useEffect, useState } from 'react'
+import { Table } from '/src/components'
 
-const UserList = ({onSelect, currentId, reloadTrigger}) => {
+const UserList = ({ onSelect, currentId, reloadTrigger }) => {
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(false)
 

@@ -132,15 +132,17 @@ const Select = ({
         placeholder={placeholder}
         readonly={true}
         style={{ flexGrow: 1 }}
-        onDoubleClick={() => {!disabled && setDialogVisible(true)}}
+        onDoubleClick={() => {
+          !disabled && setDialogVisible(true)
+        }}
         onChange={() => {}}
         onKeyDown={(e) => {
           if (e.key === 'Enter') setDialogVisible(true)
         }}
       />
-      <Button 
-        label="..." 
-        onClick={() => setDialogVisible(true)} 
+      <Button
+        label="..."
+        onClick={() => setDialogVisible(true)}
         disabled={disabled}
       />
     </DialogBasedSelect>

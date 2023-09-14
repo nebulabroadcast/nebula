@@ -72,12 +72,14 @@ const LoginPage = ({ motd, onLogin }) => {
         onLogin(response.data.access_token)
       })
       .catch((err) => {
-        toast.error((
+        toast.error(
           <>
-            <p><strong>Login failed</strong></p>
-            <p>{err.response.data?.detail || "Unknown error" }</p>
+            <p>
+              <strong>Login failed</strong>
+            </p>
+            <p>{err.response.data?.detail || 'Unknown error'}</p>
           </>
-        ))
+        )
       })
   }
 
