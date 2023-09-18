@@ -12,7 +12,7 @@ class NebulaConfig(BaseModel):
     )
 
     motd: str = Field(
-        "Nebula 6",
+        "",
         description="Message of the day",
     )
 

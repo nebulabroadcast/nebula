@@ -72,7 +72,8 @@ class Request(APIRequest):
         user: CurrentUserOptional,
     ) -> InitResponseModel:
 
-        motd = f"Nebula {nebula.__version__} @ {nebula.config.site_name}"
+        default_motd = f"Nebula {nebula.__version__} @ {nebula.config.site_name}"
+        motd = nebula.config.motd or default_motd
 
         # Nebula is not installed. Frontend should display
         # an error message or redirect to the installation page.
