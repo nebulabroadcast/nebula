@@ -53,10 +53,10 @@ def normalize_meta(key: str, value: Any) -> Any:
 
     match meta_type.metaclass:
         case MetaClass.STRING:
-            return str(value)
+            return str(value).strip()
 
         case MetaClass.TEXT:
-            return str(value)
+            return str(value).strip()
 
         case MetaClass.INTEGER:
             return int(value or 0)
