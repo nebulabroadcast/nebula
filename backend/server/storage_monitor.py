@@ -54,7 +54,7 @@ async def handle_samba_storage(storage: Storage):
         smbopts["vers"] = smbver
 
     if smbopts:
-        opts = " -o '{}'".format(
+        opts = " -o 'noserverino,{}'".format(
             ",".join(["{}={}".format(k, smbopts[k]) for k in smbopts])
         )
     else:

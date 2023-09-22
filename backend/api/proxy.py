@@ -1,4 +1,3 @@
-import asyncio
 import os
 
 import aiofiles
@@ -120,8 +119,6 @@ class ServeProxy(APIRequest):
 
         try:
             return await range_requests_response(request, video_path, "video/mp4")
-        except asyncio.CancelledError:
-            return None
         except Exception:
             nebula.log.traceback("Error serving proxy")
             return Response(status_code=500, content="Internal server error")
