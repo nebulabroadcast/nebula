@@ -1,4 +1,5 @@
 import nebula from '/src/nebula'
+import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { useState } from 'react'
 import {
@@ -89,15 +90,21 @@ const ChangePasswordForm = () => {
 }
 
 const AdminPanel = () => {
+
+  const navigate = useNavigate()
+
   return (
     <section className="grow column">
       <h2>Administration</h2>
-      Remember; with great power comes great responsibility.
-      <ul>
-        <li>
-          <a href="/users">User management</a>
-        </li>
-      </ul>
+
+      <div style={{flexDirection: 'column', display: 'flex',  maxWidth: 200}}>
+        <Button 
+          label="User management" 
+          icon="group" 
+          onClick={() => navigate('/users')}
+        />
+      </div>
+
     </section>
   )
 }
