@@ -1,3 +1,5 @@
+import { useMemo } from 'react'
+
 const HeaderCell = ({ name, width, title, sortDirection, onSort }) => {
   let sortArrowElement = null
   if (onSort) {
@@ -63,22 +65,32 @@ const DataRow = ({
   }
   //
   // Reder the row
-  return (
-    <tr
-      onClick={handleClick}
-      className={selected ? 'selected' : ''}
-      style={rowStyle}
-    >
-      {columns.map((column) => (
-        <BodyCell
-          key={column.name}
-          column={column}
-          rowData={rowData}
-          cellFormatter={column.formatter}
-        />
-      ))}
-    </tr>
-  )
+  
+  const rowContent = useMemo(() => {
+    return (
+      <>
+        {columns.map((column) => (
+          <BodyCell
+            key={column.name}
+            column={column}
+            rowData={rowData}
+            cellFormatter={column.formatter}
+          />
+        ))}
+      </>
+    )
+  }, [columns, rowData])
+
+    return (
+      <tr
+        onClick={handleClick}
+        className={selected ? 'selected' : ''}
+        style={rowStyle}
+      >
+        {rowContent}
+      </tr>
+    )
+
 }
 
 export { DataRow, HeaderCell }
