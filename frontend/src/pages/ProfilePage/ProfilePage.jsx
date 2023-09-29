@@ -90,21 +90,19 @@ const ChangePasswordForm = () => {
 }
 
 const AdminPanel = () => {
-
   const navigate = useNavigate()
 
   return (
     <section className="grow column">
       <h2>Administration</h2>
 
-      <div style={{flexDirection: 'column', display: 'flex',  maxWidth: 200}}>
-        <Button 
-          label="User management" 
-          icon="group" 
+      <div style={{ flexDirection: 'column', display: 'flex', maxWidth: 200 }}>
+        <Button
+          label="User management"
+          icon="group"
           onClick={() => navigate('/users')}
         />
       </div>
-
     </section>
   )
 }

@@ -65,7 +65,7 @@ const DataRow = ({
   }
   //
   // Reder the row
-  
+
   const rowContent = useMemo(() => {
     return (
       <>
@@ -81,16 +81,15 @@ const DataRow = ({
     )
   }, [columns, rowData])
 
-    return (
-      <tr
-        onClick={handleClick}
-        className={selected ? 'selected' : ''}
-        style={rowStyle}
-      >
-        {rowContent}
-      </tr>
-    )
-
+  return (
+    <tr
+      onClick={handleClick}
+      className={selected ? 'selected' : ''}
+      style={rowStyle}
+    >
+      {rowContent}
+    </tr>
+  )
 }
 
 export { DataRow, HeaderCell }

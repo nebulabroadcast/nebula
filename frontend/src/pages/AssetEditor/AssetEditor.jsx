@@ -247,7 +247,6 @@ const AssetEditor = () => {
   }
 
   const onSave = (payload) => {
-    console.log('Save', payload || 'all')
     if (!enabledActions.save && !payload) {
       console.log('Save disabled')
       return

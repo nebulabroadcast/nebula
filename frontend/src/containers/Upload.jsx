@@ -161,9 +161,9 @@ const UploadDialog = ({ onHide, assetData }) => {
       setStatus('success')
       toast.success('Upload finished')
     } catch (error) {
-      console.log(error)
+      console.error(error)
       if (axios.isCancel(error)) {
-        console.log('Request canceled', error.message)
+        console.error('Request canceled', error.message)
       } else if (error.response) {
         toast.error(
           <>
@@ -171,7 +171,7 @@ const UploadDialog = ({ onHide, assetData }) => {
             <p>{error.response.data?.detail || 'Unknown error'}</p>
           </>
         )
-        console.log('Error response', error.response)
+        console.error('Error response', error.response)
       }
       setBytesTransferred(0)
       setStatus('error')

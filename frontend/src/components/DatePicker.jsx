@@ -59,7 +59,6 @@ const DatePicker = ({ value, onChange }) => {
   useEffect(() => {
     if (!value) {
       const newValue = formatDate(new Date())
-      console.log('new value', newValue)
       onChange(newValue)
     }
   }, [value])
