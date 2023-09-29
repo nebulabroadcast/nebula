@@ -246,7 +246,6 @@ def build_query(
         LIMIT {request.limit}
         OFFSET {request.offset}
     """
-    # print(query)
     return query
 
 
