@@ -38,9 +38,7 @@ class GetResponseModel(ResponseModel):
 
 
 def can_access_object(user: nebula.User, meta: dict[str, Any]) -> bool:
-    if user.is_admin:
-        return True
-    elif user.id in meta.get("assignees", []):
+    if user.is_admin or (user.id in meta.get("assignees", [])):
         return True
     elif user.is_limited:
         if meta.get("created_by") != user.id:

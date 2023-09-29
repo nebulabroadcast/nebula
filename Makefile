@@ -5,9 +5,8 @@ check: check_version
 	cd frontend && yarn format
 
 	cd backend && \
-		poetry run isort . && \
 		poetry run black . && \
-		poetry run flake8 . && \
+		poetry run ruff --fix . && \
 		poetry run mypy .
 
 check_version:

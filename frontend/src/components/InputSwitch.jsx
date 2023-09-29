@@ -1,10 +1,3 @@
-/*
-import styled from 'styled-components'
-
-const BaseSwitch = styled.div`
-  max-height: ${(props) => props.theme.inputHeight};
-  min-height: ${(props) => props.theme.inputHeight};
-*/
 import styled from 'styled-components'
 import defaultTheme from './theme'
 

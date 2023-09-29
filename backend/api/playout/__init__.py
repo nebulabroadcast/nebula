@@ -1,8 +1,8 @@
-import httpx
-from fastapi import Depends
+# import httpx
+import requests
 
 import nebula
-from server.dependencies import current_user
+from server.dependencies import CurrentUser
 from server.request import APIRequest
 
 from .models import PlayoutRequestModel, PlayoutResponseModel
@@ -15,28 +15,52 @@ class Request(APIRequest):
     title: str = "Playout"
     response_model = PlayoutResponseModel
 
-    async def handle(
+    def handle(
         self,
         request: PlayoutRequestModel,
-        user: nebula.User = Depends(current_user),
+        user: CurrentUser,
     ) -> PlayoutResponseModel:
-
         channel = nebula.settings.get_playout_channel(request.id_channel)
         if not channel:
             raise nebula.NotFoundException("Channel not found")
 
+        # For dummy engine, return empty response
         if channel.engine == "dummy":
             return PlayoutResponseModel(plugins=[])
 
+        #
+        # Make a request to the playout controller
+        #
+
         controller_url = f"http://{channel.controller_host}:{channel.controller_port}"
 
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                f"{controller_url}/{request.action.value}",
-                json=request.payload,
-                timeout=4,
-            )
+        # async with httpx.AsyncClient() as client:
+        #     response = await client.post(
+        #         f"{controller_url}/{request.action.value}",
+        #         json=request.payload,
+        #         timeout=4,
+        #     )
+
+        # HTTPx stopped working for some reason, raising asyncio.CancelledError
+        # when trying to send a request. Using requests for now.
+
+        response = requests.post(
+            f"{controller_url}/{request.action.value}",
+            json=request.payload,
+            timeout=4,
+        )
+
+        #
+        # Parse response and return
+        #
+
+        try:
             data = response.json()
+        except Exception as e:
+            nebula.log.error("Unable to parse response from playout controller")
+            raise nebula.NebulaException(
+                "Unable to parse response from playout controller"
+            ) from e
 
         if not response:
             raise nebula.NebulaException(data["message"])

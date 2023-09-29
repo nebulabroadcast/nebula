@@ -66,8 +66,6 @@ class Request(APIRequest):
 
         solver = get_solver(request.solver)
 
-        print(request)
-
         for item in request.items:
             await solver(item)
 

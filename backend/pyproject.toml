@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nebula"
-version = "6.0.1"
+version = "6.0.2"
 description = "Open source broadcast automation system"
 authors = ["Nebula Broadcast <info@nebulabroadcast.com>"]
 
@@ -8,8 +8,7 @@ authors = ["Nebula Broadcast <info@nebulabroadcast.com>"]
 python = "^3.10"
 aiofiles = "^22.1.0"
 asyncpg = "^0.27.0"
-fastapi = "^0.95"
-httpx = "^0.23.3"
+fastapi = "^0.96"
 mistune = "^2.0.4"
 nxtools = "^1.6"
 orjson = "^3.8.6"
@@ -22,17 +21,36 @@ shortuuid = "^1.0.11"
 email-validator = "^2.0.0.post2"
 geoip2 = "^4.6.0"
 user-agents = "^2.2.0"
+httpx = "^0.24.1"
+requests = "^2.31.0"
+gunicorn = "^20.1.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.0"
 black = "^22.1.0"
-flake8 = "^4.0.1"
 mypy = "^0.941"
-isort = "^5.10.1"
+ruff = "^0.0.267"
 pytest-asyncio = "^0.20.3"
 
-[tool.isort]
-profile = "black"
+[tool.ruff]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "C",   # flake8-comprehensions
+    "B",   # flake8-bugbear
+    "ISC", # flake8-implicit-str-concat
+    "C4",  # flake8-comprehensions
+    # "N",    # pep8-naming
+    # "SIM",  # flake8-simplify
+]
+
+ignore = [
+    "E501",  # line too long, handled by black
+    "B008",  # do not perform function calls in argument defaults
+    "C901",  # too complex. C'mon - this is a complex project
+]
 
 [tool.black]
 line-length = 88

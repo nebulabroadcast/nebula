@@ -69,6 +69,8 @@ const Select = ({
   value,
   onChange,
   placeholder,
+  style,
+  disabled,
   selectionMode = 'single',
 }) => {
   const [dialogVisible, setDialogVisible] = useState(false)
@@ -110,6 +112,7 @@ const Select = ({
         onChange={(e) => {
           onChange(e.target.value || null)
         }}
+        style={style}
       >
         <option value={null}></option>
         {options.map((option) => (
@@ -122,20 +125,26 @@ const Select = ({
   }
 
   return (
-    <DialogBasedSelect>
+    <DialogBasedSelect style={style}>
       {dialog}
       <InputText
         value={displayValue}
         placeholder={placeholder}
         readonly={true}
         style={{ flexGrow: 1 }}
-        onDoubleClick={() => setDialogVisible(true)}
+        onDoubleClick={() => {
+          !disabled && setDialogVisible(true)
+        }}
         onChange={() => {}}
         onKeyDown={(e) => {
           if (e.key === 'Enter') setDialogVisible(true)
         }}
       />
-      <Button label="..." onClick={() => setDialogVisible(true)} />
+      <Button
+        label="..."
+        onClick={() => setDialogVisible(true)}
+        disabled={disabled}
+      />
     </DialogBasedSelect>
   )
 }

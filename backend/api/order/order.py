@@ -22,7 +22,7 @@ async def set_rundown_order(
     pool = await nebula.db.pool()
     async with pool.acquire() as conn:
         async with conn.transaction():
-            for i, obj in enumerate(order):
+            for _i, obj in enumerate(order):
                 item: nebula.Item | None = None
 
                 if obj.type == "item":
@@ -62,7 +62,7 @@ async def set_rundown_order(
                     assert item is not None, "Item should not be None at this point"
                     assert item["id_bin"] is not None, "Item w/o bin. Shouldn't happen."
 
-                    if item["id_bin"] and (not item["id_bin"] in affected_bins):
+                    if item["id_bin"] and (item["id_bin"] not in affected_bins):
                         affected_bins.append(item["id_bin"])
 
                 elif obj.type == "asset":

@@ -1,21 +1,20 @@
 import axios from 'axios'
-
 import nebula from '/src/nebula'
 
 import { useState, useEffect, Suspense } from 'react'
 import { useLocalStorage } from '/src/hooks'
-import { toast } from 'react-toastify'
 import { Routes, Route, Navigate, BrowserRouter } from 'react-router-dom'
 
 import WebsocketListener from '/src/websocket'
-import NavBar from '/src/containers/navbar'
-import LoginPage from '/src/pages/login'
-import LoadingPage from '/src/pages/loading'
-import MAMPage from '/src/pages/mam'
-import JobsPage from '/src/pages/jobs'
-import ServicesPage from '/src/pages/services'
-import ToolPage from '/src/pages/tool'
-import ProfilePage from '/src/pages/profile'
+import NavBar from '/src/containers/Navbar'
+import LoginPage from '/src/pages/LoginPage'
+import LoadingPage from '/src/pages/LoadingPage'
+import MAMPage from '/src/pages/MAMPage'
+import JobsPage from '/src/pages/JobsPage'
+import ServicesPage from '/src/pages/ServicesPage'
+import ToolPage from '/src/pages/ToolPage'
+import ProfilePage from '/src/pages/ProfilePage'
+import UsersPage from '/src/pages/UsersPage'
 
 const App = () => {
   const [accessToken, setAccessToken] = useLocalStorage('accessToken', null)
@@ -27,6 +26,7 @@ const App = () => {
 
   useEffect(() => {
     axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`
+    axios.defaults.headers.common['X-Sender'] = nebula.senderId
     axios
       .post('/api/init', {})
       .then((response) => {
@@ -45,7 +45,6 @@ const App = () => {
               error.response.status === 401 &&
               window.location.pathname !== '/'
             ) {
-              toast.error('Not logged in')
               window.location.href = '/'
             }
             return Promise.reject(error)
@@ -94,6 +93,7 @@ const App = () => {
           <Route path="/tool/:tool" element={<ToolPage />} />
           <Route path="/services" element={<ServicesPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/users" element={<UsersPage />} />
         </Routes>
       </BrowserRouter>
     </Suspense>

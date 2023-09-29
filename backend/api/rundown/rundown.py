@@ -107,10 +107,7 @@ async def get_rundown(request: RundownRequestModel) -> RundownResponseModel:
         if (runs := item_runs.get(id_item)) is not None:
             as_start, as_stop = runs
             ts_broadcast = as_start
-            if as_stop:
-                airstatus = ObjectStatus.AIRED
-            else:
-                airstatus = ObjectStatus.ONAIR
+            airstatus = ObjectStatus.AIRED if as_stop else ObjectStatus.ONAIR
 
         # TODO
         # if rundown_event_asset:
@@ -136,10 +133,7 @@ async def get_rundown(request: RundownRequestModel) -> RundownResponseModel:
         else:
             istatus = ObjectStatus.UNKNOWN
 
-        if asset and asset.id in pending_assets:
-            transfer_progress = -1
-        else:
-            transfer_progress = None
+        transfer_progress = -1 if asset and asset.id in pending_assets else None
 
         # duration, mark_in, mark_out = parse_durations(ameta, imeta)
         duration = item.duration

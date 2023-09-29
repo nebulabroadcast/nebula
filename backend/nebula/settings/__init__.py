@@ -94,6 +94,6 @@ async def load_settings():
 
     log.trace("Loading settings")
     new_settings = await get_server_settings()
-    for key in new_settings.dict().keys():
-        if key in settings.dict().keys():
+    for key in new_settings.dict():
+        if key in settings.dict():
             setattr(settings, key, getattr(new_settings, key))

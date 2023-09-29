@@ -4,7 +4,6 @@ import Dialog from './Dialog'
 import InputText from './InputText'
 import Button from './Button'
 
-import { DialogButtons } from './layout'
 import { sortByKey } from '/src/utils'
 import styled from 'styled-components'
 import defaultTheme from './theme'
@@ -53,7 +52,8 @@ function filterHierarchy(array, query, currentSelection) {
   const result = []
   const set = new Set()
   for (const item of array) {
-    item.level = item.value.split('.').length
+    if (typeof item.value !== 'string') item.level = 1
+    else item.level = item.value.split('.').length
     if (
       item.title.toLowerCase().includes(queryLower) ||
       item.value in currentSelection
@@ -65,7 +65,7 @@ function filterHierarchy(array, query, currentSelection) {
       set.add(item.value)
       let value = item.value
       while (value) {
-        const parts = value.split('.')
+        const parts = typeof value === 'string' ? value.split('.') : [value]
         if (parts.length === 1) {
           value = ''
         } else {
@@ -134,15 +134,38 @@ const SelectDialog = ({ options, onHide, selectionMode, initialValue }) => {
     onHide(value)
   }
 
-  return (
-    <Dialog onHide={() => onClose()} style={{ minWidth: 400 }}>
+  const header = (
+    <>
       <InputText
         placeholder="Filter"
         value={filter}
         onChange={setFilter}
         ref={filterRef}
+        style={{ flexGrow: 1 }}
       />
+      <Button
+        onClick={() => setFilter('')}
+        icon="backspace"
+        title="Clear filter"
+      />
+    </>
+  )
 
+  const footer = (
+    <>
+      <Button onClick={() => onUnset()} label="Unset" icon="backspace" />
+      <Button onClick={() => onClose()} label="Cancel" icon="close" />
+      <Button onClick={() => onApply()} label="Apply" icon="check" />
+    </>
+  )
+
+  return (
+    <Dialog
+      onHide={() => onClose()}
+      style={{ minWidth: 400 }}
+      header={header}
+      footer={footer}
+    >
       <div className="scroll-box">
         <div className="scroll-box-cont">
           {filteredOptions.map((option) => (
@@ -155,11 +178,6 @@ const SelectDialog = ({ options, onHide, selectionMode, initialValue }) => {
           ))}
         </div>
       </div>
-      <DialogButtons>
-        <Button onClick={() => onUnset()} label="Unset" icon="backspace" />
-        <Button onClick={() => onClose()} label="Cancel" icon="close" />
-        <Button onClick={() => onApply()} label="Apply" icon="check" />
-      </DialogButtons>
     </Dialog>
   )
 }

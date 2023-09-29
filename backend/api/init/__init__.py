@@ -1,13 +1,12 @@
 from typing import Any
 
 import fastapi
-from fastapi import Depends
 from pydantic import Field
 
 import nebula
 from nebula.settings.common import LanguageCode
 from server.context import ScopedEndpoint, server_context
-from server.dependencies import current_user_optional
+from server.dependencies import CurrentUserOptional
 from server.models import ResponseModel
 from server.request import APIRequest
 
@@ -70,10 +69,11 @@ class Request(APIRequest):
     async def handle(
         self,
         request: fastapi.Request,
-        user: nebula.User = Depends(current_user_optional),
+        user: CurrentUserOptional,
     ) -> InitResponseModel:
 
-        motd = "Nebula 6 pre-release"
+        default_motd = f"Nebula {nebula.__version__} @ {nebula.config.site_name}"
+        motd = nebula.config.motd or default_motd
 
         # Nebula is not installed. Frontend should display
         # an error message or redirect to the installation page.
@@ -95,7 +95,7 @@ class Request(APIRequest):
         plugins = get_frontend_plugins()
 
         return InitResponseModel(
-            motd=nebula.config.motd,
+            motd=motd,
             user=user.meta,
             settings=client_settings,
             frontend_plugins=plugins,

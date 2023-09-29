@@ -1,4 +1,5 @@
 import asyncio
+import contextlib
 import os
 import subprocess
 import time
@@ -53,7 +54,7 @@ async def handle_samba_storage(storage: Storage):
         smbopts["vers"] = smbver
 
     if smbopts:
-        opts = " -o '{}'".format(
+        opts = " -o 'noserverino,{}'".format(
             ",".join(["{}={}".format(k, smbopts[k]) for k in smbopts])
         )
     else:
@@ -105,10 +106,9 @@ class StorageMonitor(BackgroundTask):
 
             if storage.protocol == "local":
                 if not os.path.isdir(storage.path):
-                    try:
+                    with contextlib.suppress(FileExistsError):
                         os.makedirs(storage.path)
-                    except FileExistsError:
-                        pass
+
                 continue
 
             if storage.protocol == "samba":

@@ -119,16 +119,14 @@ def parse_rundown_date(
 
 
 def can_append(asset: nebula.Asset, conditions: "AcceptModel"):
-    if conditions.folders:
-        if asset["id_folder"] not in conditions.folders:
-            nebula.log.warn(f"Folder {asset['id_folder']} not in {conditions.folders}")
-            return False
-    if conditions.media_types:
-        if asset["media_type"] not in conditions.media_types:
-            nebula.log.warn(
-                f"Media type {asset['media_type']} not in {conditions.media_types}"
-            )
-            return False
+    if conditions.folders and asset["id_folder"] not in conditions.folders:
+        nebula.log.warn(f"Folder {asset['id_folder']} not in {conditions.folders}")
+        return False
+    if conditions.media_types and asset["media_type"] not in conditions.media_types:
+        nebula.log.warn(
+            f"Media type {asset['media_type']} not in {conditions.media_types}"
+        )
+        return False
     if conditions.content_types:
         if asset["content_type"] not in conditions.content_types:
             nebula.log.warn(

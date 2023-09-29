@@ -1,8 +1,6 @@
-from fastapi import Depends
-
 import nebula
 from nebula.helpers.scheduling import bin_refresh
-from server.dependencies import current_user, request_initiator
+from server.dependencies import CurrentUser, RequestInitiator
 from server.request import APIRequest
 
 from .models import OrderRequestModel, OrderResponseModel
@@ -19,8 +17,8 @@ class Request(APIRequest):
     async def handle(
         self,
         request: OrderRequestModel,
-        user: nebula.User = Depends(current_user),
-        initiator: str | None = Depends(request_initiator),
+        user: CurrentUser,
+        initiator: RequestInitiator,
     ) -> OrderResponseModel:
 
         if not user.can("rundown_edit", request.id_channel):

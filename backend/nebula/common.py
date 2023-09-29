@@ -35,10 +35,7 @@ def create_hash() -> str:
 
 
 def sql_list(lst: list[Any], t="int"):
-    if t == "int":
-        flist = [f"{val}" for val in lst]
-    else:
-        flist = [f"'{val}'" for val in lst]
+    flist = [f"{val}" for val in lst] if t == "int" else [f"'{val}'" for val in lst]
     return f"({','.join(flist)})"
 
 
@@ -55,7 +52,7 @@ def import_module(name: str, path: str) -> ModuleType:
 
 
 def classes_from_module(superclass: T, module: ModuleType) -> list[T]:
-    classes = list()
+    classes = []
     for name in dir(module):
         # It could be anything at this point
         obj = getattr(module, name)

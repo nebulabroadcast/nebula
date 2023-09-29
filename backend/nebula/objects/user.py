@@ -71,6 +71,17 @@ class User(BaseObject):
         return cls.from_row(row[0])
 
     @classmethod
+    async def by_api_key(cls, api_key: str) -> "User":
+        api_key_hash = hash_password(api_key)
+        row = await db.fetch(
+            "SELECT meta FROM users WHERE meta->>'api_key' = $1",
+            api_key_hash,
+        )
+        if not row:
+            raise NotFoundException(f"User with API key {api_key} not found")
+        return cls.from_row(row[0])
+
+    @classmethod
     async def login(cls, username: str, password: str) -> "User":
         """Return a User instance based on username and password."""
 
@@ -84,17 +95,20 @@ class User(BaseObject):
                 username,
                 passhash,
             )
-        except asyncpg.exceptions.UndefinedTableError:
-            raise NebulaException("Nebula is not installed")
+        except asyncpg.exceptions.UndefinedTableError as e:
+            raise NebulaException("Nebula is not installed") from e
         if not res:
             raise LoginFailedException(
-                "Invalid login/password combination",
+                "Invalid user name/password combination",
                 log=f"Invalid logging attempted with name '{username}'",
             )
         return cls(meta=res[0]["meta"])
 
-    def set_password(self, password: str):
+    def set_password(self, password: str) -> None:
         self.meta["password"] = hash_password(password)
+
+    def set_api_key(self, api_key: str) -> None:
+        self.meta["api_key"] = hash_password(api_key)
 
     def can(
         self,
@@ -120,9 +134,8 @@ class User(BaseObject):
         if self[key] == value:
             return True
 
-        if isinstance(self[key], list):
-            if value in self[key]:
-                return True
+        if isinstance(self[key], list) and value in self[key]:
+            return True
 
         return False
 

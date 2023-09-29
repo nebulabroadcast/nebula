@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react'
 import { DateTime } from 'luxon'
 import styled from 'styled-components'
 
-import { DialogButtons } from './layout'
 import DatePicker from 'react-datepicker'
 import Dialog from './Dialog'
 
@@ -37,8 +36,23 @@ const CalendarDialog = ({ value, onChange, onClose }) => {
 
   const [date, setDate] = useState(DateTime.fromSeconds(value || defaultDate))
 
+  const footer = (
+    <>
+      <Button label="Cancel" icon="close" onClick={onClose} />
+      <Button
+        icon="check"
+        label="Apply"
+        onClick={() => {
+          const newDate = date.set({ hour: 0, minute: 0, second: 0 })
+          onChange(newDate.toSeconds())
+          onClose()
+        }}
+      />
+    </>
+  )
+
   return (
-    <Dialog onHide={onClose}>
+    <Dialog onHide={onClose} footer={footer} header="Select a date...">
       <DatePickerWrapper>
         <DatePicker
           locale="sv-SE"
@@ -50,27 +64,24 @@ const CalendarDialog = ({ value, onChange, onClose }) => {
           inline
         />
       </DatePickerWrapper>
-      <DialogButtons>
-        <Button label="Cancel" icon="close" onClick={onClose} />
-        <Button
-          icon="check"
-          label="Apply"
-          onClick={() => {
-            const newDate = date.set({ hour: 0, minute: 0, second: 0 })
-            onChange(newDate.toSeconds())
-            onClose()
-          }}
-        />
-      </DialogButtons>
     </Dialog>
   )
 }
 
-const InputDatetime = ({ value, onChange, placeholder, className = '' }) => {
+const InputDatetime = ({
+  value,
+  onChange,
+  placeholder,
+  mode,
+  className = '',
+}) => {
   const [time, setTime] = useState()
   const [isFocused, setIsFocused] = useState(false)
   const [showCalendar, setShowCalendar] = useState(false)
   const inputRef = useRef(null)
+
+  const timestampFormat = mode === 'date' ? 'yyyy-MM-dd' : 'yyyy-MM-dd HH:mm:ss'
+  const timestampRegex = mode === 'date' ? dateRegex : timeRegex
 
   useEffect(() => {
     if (!value) {
@@ -78,7 +89,7 @@ const InputDatetime = ({ value, onChange, placeholder, className = '' }) => {
       return
     }
 
-    setTime(DateTime.fromSeconds(value).toFormat('yyyy-MM-dd HH:mm:ss'))
+    setTime(DateTime.fromSeconds(value).toFormat(timestampFormat))
   }, [value])
 
   const handleChange = (event) => {
@@ -102,22 +113,21 @@ const InputDatetime = ({ value, onChange, placeholder, className = '' }) => {
   const isValidTime = (timeString) => {
     if (!timeString) return true
 
-    if (timeRegex.test(timeString))
-      if (!isNaN(DateTime.fromFormat(timeString, 'yyyy-MM-dd HH:mm:ss')))
-        return true
+    if (timestampRegex.test(timeString))
+      if (!isNaN(DateTime.fromFormat(timeString, timestampFormat))) return true
     return false
   }
 
   const onSubmit = () => {
     let value = 0
 
-    if (dateRegex.test(time)) {
+    if (dateRegex.test(time) && mode !== 'date') {
       setTime(time + ' 00:00:00')
       return
     }
 
     if (time && isValidTime(time)) {
-      value = DateTime.fromFormat(time, 'yyyy-MM-dd HH:mm:ss').toSeconds()
+      value = DateTime.fromFormat(time, timestampFormat).toSeconds()
     }
     onChange(value)
     inputRef.current.blur()
@@ -146,12 +156,8 @@ const InputDatetime = ({ value, onChange, placeholder, className = '' }) => {
         onChange={handleChange}
         style={{ flexGrow: 1 }}
         className={`${className} ${!isValidTime(time) ? 'error' : ''}`}
-        placeholder={
-          isFocused
-            ? 'YYYY-MM-DD HH:MM:SS  (Hit enter after the date for midnight)'
-            : placeholder
-        }
-        title="Please enter a valid time in the format yyyy-mm-dd hh:mm:ss"
+        placeholder={isFocused ? timestampFormat : placeholder}
+        title={`Please enter a valid time in the format ${timestampFormat}`}
         onBlur={onSubmit}
         onFocus={(e) => {
           e.target.select(), setIsFocused(true)

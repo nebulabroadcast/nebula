@@ -1,8 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { Spacer } from './layout'
+import { Spacer } from './Layout'
 import Button from './Button'
 import InputTimecode from './InputTimecode'
-//import Dialog from '/src/components/dialog'
 import styled from 'styled-components'
 
 const VideoPlayerContainer = styled.div`
@@ -98,14 +97,12 @@ const Video = ({ src, style, showMarks, marks = {}, setMarks = () => {} }) => {
   const onMarkIn = useCallback(() => {
     if (!videoRef.current) return
     const value = videoRef.current.currentTime
-    console.log('mark in', value)
     setMarks((marks) => ({ ...marks, mark_in: value }))
   }, [videoRef.current?.currentTime, setMarks])
 
   const onMarkOut = useCallback(() => {
     if (!videoRef.current) return
     const value = videoRef.current.currentTime
-    console.log('mark out', value)
     setMarks((marks) => ({ ...marks, mark_out: value }))
   }, [videoRef.current?.currentTime, setMarks])
 
@@ -261,7 +258,6 @@ const Video = ({ src, style, showMarks, marks = {}, setMarks = () => {} }) => {
           title="Current position"
           value={(trackbarPosition * (videoDuration || 0)) / 1000}
           onChange={(value) => {
-            console.log('Seeking to', value)
             videoRef.current.currentTime = value
           }}
         />

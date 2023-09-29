@@ -12,7 +12,10 @@ from server.request import APIRequest
 
 
 class UploadRequest(APIRequest):
-    """Get a list of objects"""
+    """Upload a media file for a given asset.
+
+    This endpoint is used by the web frontend to upload media files.
+    """
 
     name: str = "upload"
     path: str = "/upload/{id_asset}"
@@ -25,11 +28,6 @@ class UploadRequest(APIRequest):
         asset: AssetInPath,
         user: CurrentUser,
     ):
-        """Upload a media file for a given asset.
-
-        This endpoint is used by the web frontend to upload media files.
-        """
-
         assert asset["media_type"] == MediaType.FILE, "Only file assets can be uploaded"
         extension = request.headers.get("X-nebula-extension")
         assert extension, "Missing X-nebula-extension header"
@@ -45,8 +43,10 @@ class UploadRequest(APIRequest):
             if not os.path.isdir(upload_full_dir):
                 try:
                     os.makedirs(upload_full_dir)
-                except Exception:
-                    raise nebula.NebulaException("Unable to create uplad directory")
+                except Exception as e:
+                    raise nebula.NebulaException(
+                        "Unable to create uplad directory"
+                    ) from e
             target_path = os.path.join(upload_full_dir, f"{base_name}.{extension}")
         else:
             direct = True

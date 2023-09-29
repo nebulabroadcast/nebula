@@ -31,23 +31,25 @@ const DialogWindow = styled.div`
   :focus {
     outline: none;
   }
-`
 
-const BaseDialogEdge = styled.div`
-  padding: 12px 6px;
-  display: flex;
-  flex-direction: row;
-  gap: 6px;
-`
+  header,
+  footer {
+    padding: 12px 6px;
+    display: flex;
+    flex-direction: row;
+    gap: 6px;
+  }
 
-const DialogHeader = styled(BaseDialogEdge)`
-  font-weight: bold;
-  border-bottom: 1px solid var(--color-surface-04);
-`
+  header {
+    font-weight: bold;
+    border-bottom: 1px solid var(--color-surface-04);
+    justify-content: flex-start;
+  }
 
-const DialogFooter = styled(BaseDialogEdge)`
-  border-top: 1px solid var(--color-surface-04);
-  justify-content: flex-end;
+  footer {
+    border-top: 1px solid var(--color-surface-04);
+    justify-content: flex-end;
+  }
 `
 
 const DialogBody = styled.div`
@@ -78,12 +80,12 @@ const Dialog = ({
 
   const headerComp = useMemo(() => {
     if (!header) return null
-    return <DialogHeader style={headerStyle}>{header}</DialogHeader>
+    return <header style={headerStyle}>{header}</header>
   }, [header])
 
   const footerComp = useMemo(() => {
     if (!footer) return null
-    return <DialogFooter style={footerStyle}>{footer}</DialogFooter>
+    return <footer style={footerStyle}>{footer}</footer>
   }, [footer])
 
   const onShadeClick = (event) => {

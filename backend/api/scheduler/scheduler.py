@@ -69,8 +69,8 @@ async def create_new_event(
             try:
                 await new_event.save()
                 await new_bin.save()
-            except Exception:
-                raise nebula.ConflictException()
+            except Exception as e:
+                raise nebula.ConflictException() from e
 
 
 async def scheduler(

@@ -1,7 +1,5 @@
-from fastapi import Depends
-
 import nebula
-from server.dependencies import current_user
+from server.dependencies import CurrentUser
 from server.request import APIRequest
 
 from .models import RundownRequestModel, RundownResponseModel
@@ -18,7 +16,7 @@ class Request(APIRequest):
     async def handle(
         self,
         request: RundownRequestModel,
-        user: nebula.User = Depends(current_user),
+        user: CurrentUser,
     ) -> RundownResponseModel:
 
         if not user.can("rundown_view", request.id_channel):

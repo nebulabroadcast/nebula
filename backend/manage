@@ -5,39 +5,52 @@ if [ $# -ne 1 ]; then
   exit 1
 fi
 
-if [ $1 = "start" ] || [ $1 = "reload" ]; then
-  if [ $1 = "start" ]; then
-    echo ""
-    echo "Starting the service..."
-    echo ""
-    python -m setup
+function start_server () {
+  echo ""
+  echo "Starting the server..."
+  echo ""
 
-    while true; do
-        uvicorn --log-level warning --host 0.0.0.0 --port 80 server:app
-        return_code=$?
-        if [ $return_code -eq 0 ]; then
-            echo "Server exited with code 0. Respawning..." >&2
-            continue
-        fi
-        echo ""
-        echo "Server terminated with code $return_code." 
-        echo "Waiting before respawn." >&2
-        echo ""
-        sleep 5
-    done
+  # Run setup to make sure database is up to date
+  python -m setup
+  
+  # Start gunicorn
+  exec gunicorn \
+    -k uvicorn.workers.UvicornWorker \
+    --log-level warning \
+    -b :80 \
+    server.server:app
+}
 
-  elif [ $1 = "reload" ]; then
-    echo ""
-    echo "Reloading the service..."
-    echo ""
-    kill -15 `cat /var/run/nebula.pid`
-  fi
+function stop_server () {
+  echo ""
+  echo "SIGTERM signal received. Shutting down..."
+  echo ""
+  pid=$(ps aux | grep 'gunicorn' | awk '{print $2}')
+  kill -TERM $pid 2> /dev/null
+  exit 0
+}
+
+function reload_server () {
+  echo ""
+  echo "Reloading the server..."
+  echo ""
+  pid=$(ps aux | grep 'gunicorn' | awk '{print $2}')
+  kill -HUP $pid 2> /dev/null
+  exit 0
+}
+
+trap stop_server SIGTERM SIGINT
+
+
+if [ $1 = "start" ]; then
+  start_server
+elif [ $1 = "stop" ]; then
+  stop_server
+elif [ $1 = "reload" ]; then
+  reload_server
 else
   echo ""
   echo "Error: invalid argument '$1'. Expected 'start' or 'reload'"
   echo ""
   exit 1
 fi
-
-
-

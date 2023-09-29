@@ -186,8 +186,8 @@ def build_query(
     if request.view is None:
         try:
             request.view = nebula.settings.views[0]
-        except IndexError:
-            raise NebulaException("No views defined")
+        except IndexError as e:
+            raise NebulaException("No views defined") from e
 
     # Process views
 
@@ -222,16 +222,12 @@ def build_query(
         c2 = f"meta->'assignees' @> '[{user.id}]'::JSONB"
         cond_list.append(f"({c1} OR {c2})")
 
-    if can_view := user["can/asset_view"]:
-        if type(can_view) is list:
-            cond_list.append(f"id_folder IN {sql_list(can_view)}")
+    if (can_view := user["can/asset_view"]) and type(can_view) is list:
+        cond_list.append(f"id_folder IN {sql_list(can_view)}")
 
     # Build conditions
 
-    if cond_list:
-        conds = "WHERE " + " AND ".join(cond_list)
-    else:
-        conds = ""
+    conds = "WHERE " + " AND ".join(cond_list) if cond_list else ""
 
     # Build order
 
@@ -250,7 +246,6 @@ def build_query(
         LIMIT {request.limit}
         OFFSET {request.offset}
     """
-    # print(query)
     return query
 
 

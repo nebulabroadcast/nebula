@@ -59,7 +59,7 @@ class BaseObject:
     def __init__(self, meta: dict[str, Any] | None = None, **kwargs) -> None:
 
         if (conn := kwargs.get("connection")) is not None:
-            assert isinstance(conn, asyncpg.Connection) or isinstance(conn, DB)
+            assert isinstance(conn, (asyncpg.Connection, DB))
             self.connection = conn
         else:
             self.connection = db
@@ -120,9 +120,9 @@ class BaseObject:
         try:
             value = normalize_meta(key, value)
         except AssertionError as e:
-            raise ValidationException(str(e), key=key)
+            raise ValidationException(str(e), key=key) from e
         except ValueError as e:
-            raise ValidationException(str(e), key=key)
+            raise ValidationException(str(e), key=key) from e
         if value is None:
             self.meta.pop(key, None)
         else:

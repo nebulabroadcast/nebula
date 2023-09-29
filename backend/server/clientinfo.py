@@ -68,15 +68,23 @@ def is_internal_ip(ip: str) -> bool:
 
 def get_ua_data(request) -> AgentInfo | None:
     if ua_string := request.headers.get("user-agent"):
+        if ua_string.startswith("firefly"):
+            firefly_version = ua_string.split("/")[1]
+            return AgentInfo(
+                platform="Nebula",
+                client=f"Firefly {firefly_version}",
+                device="Desktop",
+            )
+
         ua = user_agents.parse(ua_string)
         if "mac" in ua_string.lower():
-            platform = "darwin"
+            platform = "MacOS"
         elif "windows" in ua_string.lower():
-            platform = "windows"
+            platform = "Windows"
         elif "linux" in ua_string.lower():
-            platform = "linux"
+            platform = "Linux"
         else:
-            platform = ua_string.lower()
+            platform = ua_string.capitalize()
         return AgentInfo(
             platform=platform,
             client=ua.browser.family,
@@ -102,10 +110,7 @@ def get_prefed_languages(request: Request) -> list[str]:
 
 def get_client_info(request: Request) -> ClientInfo:
     ip = get_real_ip(request)
-    if is_internal_ip(ip):
-        location = None
-    else:
-        location = geo_lookup(ip)
+    location = None if is_internal_ip(ip) else geo_lookup(ip)
     return ClientInfo(
         ip=ip,
         agent=get_ua_data(request),

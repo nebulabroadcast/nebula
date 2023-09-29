@@ -3,8 +3,6 @@ import RDatePicker from 'react-datepicker'
 import styled from 'styled-components'
 import defaultTheme from './theme'
 
-//import "react-datepicker/dist/react-datepicker.css"
-
 import './datepicker.sass'
 
 const PickerContainer = styled.div`
@@ -61,7 +59,6 @@ const DatePicker = ({ value, onChange }) => {
   useEffect(() => {
     if (!value) {
       const newValue = formatDate(new Date())
-      console.log('new value', newValue)
       onChange(newValue)
     }
   }, [value])

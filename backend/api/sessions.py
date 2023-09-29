@@ -1,10 +1,11 @@
-import nebula
+from fastapi import Query, Response
 
-from fastapi import Query
-from server.session import SessionModel, Session
+import nebula
 from server.dependencies import CurrentUser
-from server.request import APIRequest
 from server.models import RequestModel
+from server.request import APIRequest
+from server.session import Session, SessionModel
+
 
 class SessionsRequest(RequestModel):
     id_user: int = Query(..., example=1)
@@ -29,7 +30,6 @@ class Sessions(APIRequest):
 
         result = []
         async for session in Session.list():
-
             if (id_user is not None) and (id_user != session.user["id"]):
                 continue
 
@@ -39,3 +39,33 @@ class Sessions(APIRequest):
             result.append(session)
 
         return result
+
+
+class InvalidateSessionRequest(RequestModel):
+    token: str = Query(...)
+
+
+class InvalidateSession(APIRequest):
+    name = "invalidate_session"
+    title = "Invalidate session"
+    responses = [204, 201]
+
+    async def handle(
+        self,
+        payload: InvalidateSessionRequest,
+        user: CurrentUser,
+    ) -> None:
+        """Create or update an object."""
+
+        session = await Session.check(payload.token)
+        if session is None:
+            raise nebula.NotFoundException("Session not found")
+
+        if (not user.is_admin) and (session.user["login"] != user["login"]):
+            raise nebula.ForbiddenException(
+                "You are not allowed to invalidate this session"
+            )
+
+        await Session.delete(payload.token)
+
+        return Response(status_code=204)

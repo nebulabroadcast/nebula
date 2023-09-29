@@ -1,13 +1,14 @@
 __all__ = ["Session"]
 
 import time
-import nebula
-
 from typing import Any, AsyncGenerator
-from pydantic import BaseModel
-from fastapi import Request
 
+from fastapi import Request
+from pydantic import BaseModel, Field
+
+import nebula
 from nebula.common import create_hash, json_dumps, json_loads
+from nebula.exceptions import LoginFailedException
 from server.clientinfo import ClientInfo, get_client_info, get_real_ip
 
 
@@ -21,11 +22,11 @@ def is_local_ip(ip: str) -> bool:
 
 
 class SessionModel(BaseModel):
-    user: dict[str, Any]
-    token: str
-    created: float
-    accessed: float
-    client_info: ClientInfo | None = None
+    user: dict[str, Any] = Field(..., description="User data")
+    token: str = Field(..., description="Access token")
+    created: float = Field(..., description="Creation timestamp")
+    accessed: float = Field(..., description="Last access timestamp")
+    client_info: ClientInfo | None = Field(None, description="Client info")
 
 
 class Session:
@@ -64,14 +65,13 @@ class Session:
                 await nebula.redis.set(cls.ns, token, session.json())
             else:
                 real_ip = get_real_ip(request)
-                if not is_local_ip(real_ip):
-                    if session.client_info.ip != real_ip:
-                        nebula.log.warning(
-                            "Session IP mismatch. "
-                            f"Stored: {session.client_info.ip}, current: {real_ip}"
-                        )
-                        await nebula.redis.delete(cls.ns, token)
-                        return None
+                if not is_local_ip(real_ip) and session.client_info.ip != real_ip:
+                    nebula.log.warning(
+                        "Session IP mismatch. "
+                        f"Stored: {session.client_info.ip}, current: {real_ip}"
+                    )
+                    await nebula.redis.delete(cls.ns, token)
+                    return None
 
         # Extend the session lifetime only if it's in its second half
         # (save update requests).
@@ -95,9 +95,7 @@ class Session:
         client_info = get_client_info(request) if request else None
         if client_info:
             if user["local_network_only"] and not is_local_ip(client_info.ip):
-                raise nebula.UnauthorizedException(
-                    "You can only log in from local network"
-                )
+                raise LoginFailedException("You can only log in from local network")
 
         token = create_hash()
         session = SessionModel(
@@ -144,15 +142,15 @@ class Session:
         from the database.
         """
 
-        async for session_id, data in nebula.redis.iterate(cls.ns):
+        async for _session_id, data in nebula.redis.iterate(cls.ns):
             session = SessionModel(**json_loads(data))
             if cls.is_expired(session):
-                # nebula.log.info(
-                #     f"Removing expired session for user"
-                #     f"{session.user.name} {session.token}"
-                # )
+                nebula.log.info(
+                    f"Removing expired session for user"
+                    f" {session.user['login']} {session.token}"
+                )
                 await nebula.redis.delete(cls.ns, session.token)
                 continue
 
-            if user_name is None or session.user.name == user_name:
+            if user_name is None or session.user.get("login") == user_name:
                 yield session

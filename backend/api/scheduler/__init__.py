@@ -1,8 +1,6 @@
-from fastapi import Depends
-
 import nebula
 from nebula.helpers.scheduling import bin_refresh
-from server.dependencies import current_user, request_initiator
+from server.dependencies import CurrentUser, RequestInitiator
 from server.request import APIRequest
 
 from .models import SchedulerRequestModel, SchedulerResponseModel
@@ -19,8 +17,8 @@ class Request(APIRequest):
     async def handle(
         self,
         request: SchedulerRequestModel,
-        user: nebula.User = Depends(current_user),
-        initiator: str = Depends(request_initiator),
+        user: CurrentUser,
+        initiator: RequestInitiator,
     ) -> SchedulerResponseModel:
 
         if not user.can("scheduler_view", request.id_channel):
