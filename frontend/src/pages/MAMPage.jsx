@@ -9,6 +9,8 @@ import { setFocusedAsset, setSelectedAssets } from '/src/actions'
 import Browser from '/src/containers/Browser'
 import AssetEditor from '/src/pages/AssetEditor'
 
+import { DndContext } from "@dnd-kit/core";
+
 const MAMContainer = styled.div`
   flex-grow: 1;
 
@@ -74,16 +76,22 @@ const MAMPage = () => {
     setSplitterSizes(size)
   }
 
+  const onDragEnd = (event) => {
+    console.log(event)
+  }
+
   return (
     <MAMContainer>
-      <Splitter
-        direction={SplitDirection.Horizontal}
-        onResizeFinished={onResize}
-        initialSizes={splitterSizes}
-      >
-        <Browser />
-        {moduleComponent}
-      </Splitter>
+      <DndContext onDragEnd={onDragEnd}>
+        <Splitter
+          direction={SplitDirection.Horizontal}
+          onResizeFinished={onResize}
+          initialSizes={splitterSizes}
+        >
+          <Browser />
+          {moduleComponent}
+        </Splitter>
+      </DndContext>
     </MAMContainer>
   )
 }
