@@ -109,6 +109,7 @@ class User(BaseObject):
 
     def set_api_key(self, api_key: str) -> None:
         self.meta["api_key"] = hash_password(api_key)
+        self.meta["api_key_preview"] = api_key[:4] + "*******" + api_key[-4:]
 
     def can(
         self,

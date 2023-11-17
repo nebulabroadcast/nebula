@@ -57,7 +57,11 @@ class UserListRequest(APIRequest):
         async for row in nebula.db.iterate(query):
             meta = {}
             for key, value in row["meta"].items():
-                if key == "password":
+                if key == "api_key_preview":
+                    continue
+                if key == "api_key":
+                    meta[key] = row["meta"].get("api_key_preview", "*****")
+                elif key == "password":
                     continue
                 elif key.startswith("can/"):
                     meta[key.replace("can/", "can_")] = value
@@ -76,7 +80,7 @@ class SaveUserRequest(APIRequest):
     title: str = "Save user data"
     responses = [204, 201]
 
-    async def handle(self, user: CurrentUser, payload: UserModel) -> None:
+    async def handle(self, user: CurrentUser, payload: UserModel) -> Response:
         new_user = payload.id is None
 
         if not user.is_admin:
