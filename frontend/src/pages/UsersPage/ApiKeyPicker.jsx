@@ -4,7 +4,6 @@ import styled from 'styled-components'
 
 import { Dialog, InputText, Button } from '/src/components'
 
-
 const SubRow = styled.div`
   display: flex;
   flex-direction: row;
@@ -12,26 +11,25 @@ const SubRow = styled.div`
   align-items: center;
 `
 
-
 const createApiKey = () => {
-    const prefix = 'nb';
-    const segmentCount = 4;
-    const segmentLength = 12;
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_';
-    const segments = [];
+  const prefix = 'nb'
+  const segmentCount = 4
+  const segmentLength = 12
+  const characters =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_'
+  const segments = []
 
-    for (let i = 0; i < segmentCount; i++) {
-        let segment = '';
-        for (let j = 0; j < segmentLength; j++) {
-            const randomIndex = Math.floor(Math.random() * characters.length);
-            segment += characters[randomIndex];
-        }
-        segments.push(segment);
+  for (let i = 0; i < segmentCount; i++) {
+    let segment = ''
+    for (let j = 0; j < segmentLength; j++) {
+      const randomIndex = Math.floor(Math.random() * characters.length)
+      segment += characters[randomIndex]
     }
+    segments.push(segment)
+  }
 
-    return `${prefix}.${segments.join('.')}`;
+  return `${prefix}.${segments.join('.')}`
 }
-
 
 const ApiKeyPicker = ({ setApiKey, apiKeyPreview }) => {
   const [dialogVisible, setDialogVisible] = useState(false)
@@ -70,15 +68,15 @@ const ApiKeyPicker = ({ setApiKey, apiKeyPreview }) => {
         </p>
 
         <SubRow>
-          <InputText 
-            value={newKey} 
-            readOnly 
-            style={{ 
+          <InputText
+            value={newKey}
+            readOnly
+            style={{
               flexGrow: 1,
-              fontFamily: "monospace",
-              fontStyle: "normal",
-              textAlign: "center",
-            }} 
+              fontFamily: 'monospace',
+              fontStyle: 'normal',
+              textAlign: 'center',
+            }}
             onClick={(e) => e.target.select()}
           />
           <Button
@@ -96,24 +94,24 @@ const ApiKeyPicker = ({ setApiKey, apiKeyPreview }) => {
 
   return (
     <>
-    <SubRow>
-      <InputText 
-        value={apiKeyPreview} 
-        readOnly 
-        style={{ 
-          flexGrow: 1,
-          fontFamily: "monospace",
-          fontStyle: "normal",
-          textAlign: "center",
-        }} 
-      />
-      <Button
-        icon="key"
-        label="Create API key"
-        onClick={() => setDialogVisible(true)}
-      />
-    </SubRow>
-    {dialog}
+      <SubRow>
+        <InputText
+          value={apiKeyPreview}
+          readOnly
+          style={{
+            flexGrow: 1,
+            fontFamily: 'monospace',
+            fontStyle: 'normal',
+            textAlign: 'center',
+          }}
+        />
+        <Button
+          icon="key"
+          label="Create API key"
+          onClick={() => setDialogVisible(true)}
+        />
+      </SubRow>
+      {dialog}
     </>
   )
 }

@@ -27,7 +27,7 @@ class NebulaException(Exception):
 
         if log is True or self.log:
             logger.error(f"EXCEPTION: {self.status} {self.detail}", user=user_name)
-        elif type(log) is str:
+        elif isinstance(log, str):
             logger.error(f"EXCEPTION: {self.status} {log}", user=user_name)
 
         super().__init__(self.detail)

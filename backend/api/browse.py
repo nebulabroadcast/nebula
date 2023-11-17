@@ -103,7 +103,7 @@ class BrowseResponseModel(ResponseModel):
 
 
 def sanitize_value(value: Any) -> Any:
-    if type(value) is str:
+    if isinstance(value, str):
         value = value.replace("'", "''")
     return str(value)
 
@@ -116,7 +116,7 @@ def build_conditions(conditions: list[ConditionModel]) -> list[str]:
         ), f"Invalid meta key {condition.key}"
         condition.value = normalize_meta(condition.key, condition.value)
         if condition.operator in ["IN", "NOT IN"]:
-            assert type(condition.value) is list, "Value must be a list"
+            assert isinstance(condition.value, list), "Value must be a list"
             values = sql_list([sanitize_value(v) for v in condition.value], t="str")
             cond_list.append(f"meta->>'{condition.key}' {condition.operator} {values}")
         elif condition.operator in ["IS NULL", "IS NOT NULL"]:
@@ -185,14 +185,14 @@ def build_query(
 
     if request.view is None:
         try:
-            request.view = nebula.settings.views[0]
+            request.view = nebula.settings.views[0].id
         except IndexError as e:
             raise NebulaException("No views defined") from e
 
     # Process views
 
     if request.view is not None and not request.ignore_view_conditions:
-        assert type(request.view) is int, "View must be an integer"
+        assert isinstance(request.view, int), "View must be an integer"
         if (view := nebula.settings.get_view(request.view)) is not None:
             if view.folders:
                 cond_list.append(f"id_folder IN {sql_list(view.folders)}")
@@ -222,7 +222,7 @@ def build_query(
         c2 = f"meta->'assignees' @> '[{user.id}]'::JSONB"
         cond_list.append(f"({c1} OR {c2})")
 
-    if (can_view := user["can/asset_view"]) and type(can_view) is list:
+    if (can_view := user["can/asset_view"]) and isinstance(can_view, list):
         cond_list.append(f"id_folder IN {sql_list(can_view)}")
 
     # Build conditions
@@ -260,10 +260,9 @@ class Request(APIRequest):
         request: BrowseRequestModel,
         user: CurrentUser,
     ) -> BrowseResponseModel:
-
         columns: list[str] = ["title", "duration"]
         if request.view is not None and not request.columns:
-            assert type(request.view) is int, "View must be an integer"
+            assert isinstance(request.view, int), "View must be an integer"
             if (view := nebula.settings.get_view(request.view)) is not None:
                 if view.columns is not None:
                     columns = view.columns

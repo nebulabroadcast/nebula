@@ -1,4 +1,5 @@
 import os
+from typing import Any
 from urllib.parse import urlparse
 
 import httpx
@@ -51,9 +52,9 @@ def load_overrides():
             override = getattr(mod, key.upper())
             log.info(f"Found overrides for {key}")
 
-            if type(override) == dict and type(TEMPLATE[key]) == dict:
+            if isinstance(override, dict) and isinstance(TEMPLATE[key], dict):
                 TEMPLATE[key].update(override)
-            elif type(override) == list and type(TEMPLATE[key]) == list:
+            elif isinstance(override, list) and isinstance(TEMPLATE[key], list):
                 TEMPLATE[key] = override
             else:
                 log.error(f"Invalid settings override: {spath}")
@@ -64,7 +65,7 @@ async def setup_settings(db):
     load_overrides()
 
     log.info("Applying system settings")
-    settings: dict[str, any] = {}
+    settings: dict[str, Any] = {}
 
     # Nebula 5 compat
     redis_url = urlparse(config.redis)

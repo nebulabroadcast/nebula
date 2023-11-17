@@ -84,7 +84,7 @@ def install_endpoints(app: fastapi.FastAPI):
             additional_params["response_model"] = endpoint.response_model
             additional_params["response_model_exclude_none"] = endpoint.exclude_none
 
-        if type(endpoint.__doc__) is str:
+        if isinstance(endpoint.__doc__, str):
             docstring = "\n".join([r.strip() for r in endpoint.__doc__.split("\n")])
         else:
             docstring = ""
@@ -93,7 +93,7 @@ def install_endpoints(app: fastapi.FastAPI):
             server_context.scoped_endpoints.append(
                 ScopedEndpoint(
                     endpoint=endpoint.name,
-                    title=endpoint.title,
+                    title=endpoint.title or endpoint.name,
                     scopes=endpoint.scopes,
                 )
             )

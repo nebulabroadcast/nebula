@@ -19,13 +19,11 @@ import UserList from './UserList'
 import AccessControl from './AccessControl'
 import ApiKeyPicker from './ApiKeyPicker'
 
-
 const apiKeyPreview = (apiKey) => {
-    const start = apiKey.substring(0, 4);
-    const end = apiKey.substring(apiKey.length - 4);
-    return start + "*******" + end;
+  const start = apiKey.substring(0, 4)
+  const end = apiKey.substring(apiKey.length - 4)
+  return start + '*******' + end
 }
-
 
 const UserForm = ({ userData, setUserData }) => {
   const setValue = (key, value) => {
@@ -72,11 +70,11 @@ const UserForm = ({ userData, setUserData }) => {
             />
           </FormRow>
           <FormRow title="API Key">
-            <ApiKeyPicker 
+            <ApiKeyPicker
               setApiKey={(value) => {
                 setValue('api_key', value)
                 setValue('api_key_preview', apiKeyPreview(value))
-              }} 
+              }}
               apiKeyPreview={userData?.api_key_preview}
             />
           </FormRow>
@@ -119,9 +117,9 @@ const UsersPage = () => {
         console.error(err)
       })
       .finally(() => {
-        setUserData((data) => ({ 
-          ...data, 
-          password: undefined, 
+        setUserData((data) => ({
+          ...data,
+          password: undefined,
           api_key: undefined,
         }))
       })
@@ -129,7 +127,15 @@ const UsersPage = () => {
 
   const copyUser = () => {
     const copy = { ...userData }
-    for (const key of ['id', 'login', 'password', 'api_key', 'api_key_preview', 'full_name', 'email'])
+    for (const key of [
+      'id',
+      'login',
+      'password',
+      'api_key',
+      'api_key_preview',
+      'full_name',
+      'email',
+    ])
       copy[key] = undefined
     setUserData(copy)
   }

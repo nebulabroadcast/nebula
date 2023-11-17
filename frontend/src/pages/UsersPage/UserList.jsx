@@ -11,13 +11,14 @@ const UserList = ({ onSelect, currentId, reloadTrigger }) => {
     nebula
       .request('user_list')
       .then((res) => {
-        
-        setUsers(res.data.users.map((user) => ({
-          ...user,
-          password: undefined,
-          api_key: undefined,
-          api_key_preview: user.api_key,
-        })))
+        setUsers(
+          res.data.users.map((user) => ({
+            ...user,
+            password: undefined,
+            api_key: undefined,
+            api_key_preview: user.api_key,
+          }))
+        )
       })
       .finally(() => setLoading(false))
   }, [reloadTrigger])
