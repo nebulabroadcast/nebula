@@ -18,6 +18,14 @@ async def access_token(authorization: str = Header(None)) -> str | None:
 AccessToken = Annotated[str | None, Depends(access_token)]
 
 
+async def api_key(x_api_key: str | None = Header(None)) -> str | None:
+    """Return the API key provided in the request headers."""
+    return x_api_key
+
+
+ApiKey = Annotated[str | None, Depends(api_key)]
+
+
 async def request_initiator(x_client_id: str | None = Header(None)) -> str | None:
     """Return the client ID of the request initiator."""
     return x_client_id
@@ -40,15 +48,15 @@ CurrentUserInQuery = Annotated[nebula.User, Depends(current_user_query)]
 
 async def current_user(
     request: Request,
-    access_token: str | None = Depends(access_token),
-    x_api_key: str | None = Header(None),
+    access_token: AccessToken,
+    api_key: ApiKey,
 ) -> nebula.User:
     """Return the currently logged-in user"""
     if access_token is None:
-        if x_api_key is None:
+        if api_key is None:
             raise nebula.UnauthorizedException("No access token provided")
         try:
-            return await nebula.User.by_api_key(x_api_key)
+            return await nebula.User.by_api_key(api_key)
         except nebula.NotFoundException as e:
             raise nebula.UnauthorizedException("Invalid API key") from e
 

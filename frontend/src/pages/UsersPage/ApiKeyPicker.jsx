@@ -1,19 +1,47 @@
 import { toast } from 'react-toastify'
-import { v4 as uuidv4 } from 'uuid'
 import { useState, useMemo } from 'react'
+import styled from 'styled-components'
 
 import { Dialog, InputText, Button } from '/src/components'
 
-const ApiKeyPicker = ({ setApiKey }) => {
+const SubRow = styled.div`
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  align-items: center;
+`
+
+const createApiKey = () => {
+  const prefix = 'nb'
+  const segmentCount = 4
+  const segmentLength = 12
+  const characters =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_'
+  const segments = []
+
+  for (let i = 0; i < segmentCount; i++) {
+    let segment = ''
+    for (let j = 0; j < segmentLength; j++) {
+      const randomIndex = Math.floor(Math.random() * characters.length)
+      segment += characters[randomIndex]
+    }
+    segments.push(segment)
+  }
+
+  return `${prefix}.${segments.join('.')}`
+}
+
+const ApiKeyPicker = ({ setApiKey, apiKeyPreview }) => {
   const [dialogVisible, setDialogVisible] = useState(false)
 
   const dialog = useMemo(() => {
     if (!dialogVisible) return null
 
-    const newKey = uuidv4()
+    const newKey = createApiKey()
     return (
       <Dialog
         onHide={() => setDialogVisible(false)}
+        style={{ width: 550 }}
         header="Create API key"
         footer={
           <>
@@ -35,42 +63,55 @@ const ApiKeyPicker = ({ setApiKey }) => {
       >
         <p>
           This API key will be used to authenticate your requests to the server.
-        </p>
-        <p>
           Copy it to your clipboard and store it in a safe place. You will not
           be able to retrieve it later.
         </p>
 
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 8,
-          }}
-        >
-          <InputText value={newKey} readOnly style={{ flexGrow: 1 }} />
+        <SubRow>
+          <InputText
+            value={newKey}
+            readOnly
+            style={{
+              flexGrow: 1,
+              fontFamily: 'monospace',
+              fontStyle: 'normal',
+              textAlign: 'center',
+            }}
+            onClick={(e) => e.target.select()}
+          />
           <Button
             icon="content_copy"
-            label="Copy to clipboard"
+            tooltip="Copy to clipboard"
             onClick={() => {
               navigator.clipboard.writeText(newKey)
               toast.success('Copied to clipboard')
             }}
           />
-        </div>
+        </SubRow>
       </Dialog>
     )
   }, [dialogVisible])
 
   return (
     <>
+      <SubRow>
+        <InputText
+          value={apiKeyPreview}
+          readOnly
+          style={{
+            flexGrow: 1,
+            fontFamily: 'monospace',
+            fontStyle: 'normal',
+            textAlign: 'center',
+          }}
+        />
+        <Button
+          icon="key"
+          label="Create API key"
+          onClick={() => setDialogVisible(true)}
+        />
+      </SubRow>
       {dialog}
-      <Button
-        icon="key"
-        label="Create API key"
-        onClick={() => setDialogVisible(true)}
-      />
     </>
   )
 }
