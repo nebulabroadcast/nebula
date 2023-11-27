@@ -1,5 +1,3 @@
-__version__ = "6.0.3"
-
 __all__ = [
     "config",
     "settings",
@@ -32,6 +30,8 @@ __all__ = [
 ]
 
 import sys
+
+from nebula.version import __version__
 
 if "--version" in sys.argv:
     print(__version__)
