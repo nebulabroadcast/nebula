@@ -101,7 +101,7 @@ def install_endpoints(app: fastapi.FastAPI):
         app.router.add_api_route(
             route,
             endpoint.handle,  # type: ignore
-            name=endpoint.name,
+            name=endpoint.title or endpoint.name,
             operation_id=slugify(endpoint.name, separator="_"),
             methods=endpoint.methods,
             description=docstring,

@@ -146,8 +146,10 @@ async def can_modify_object(obj, user: nebula.User):
 
 
 class OperationsRequest(APIRequest):
+    """Create or update multiple objects in one requests."""
+
     name: str = "ops"
-    title: str = "Create / update multiple objects at once"
+    title: str = "Save multiple objects"
     response_model = OperationsResponseModel
 
     async def handle(
@@ -155,7 +157,6 @@ class OperationsRequest(APIRequest):
         request: OperationsRequestModel,
         user: CurrentUser,
     ) -> OperationsResponseModel:
-        """Create or update multiple objects in one requests."""
 
         pool = await nebula.db.pool()
         result = []
@@ -264,8 +265,10 @@ class OperationsRequest(APIRequest):
 
 
 class SetRequest(APIRequest):
+    """Create or update an object."""
+
     name = "set"
-    title = "Create or update an object"
+    title = "Save an object"
     response_model = OperationResponseModel
 
     async def handle(
@@ -273,7 +276,6 @@ class SetRequest(APIRequest):
         request: OperationModel,
         user: CurrentUser,
     ) -> OperationResponseModel:
-        """Create or update an object."""
 
         operation = OperationsRequest()
         result = await operation.handle(
