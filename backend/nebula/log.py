@@ -26,10 +26,13 @@ class Logger:
     def __call__(self, level: LogLevel, *args, **kwargs):
         if level < self.level:
             return
+
+        lvl = level.name.upper()
+        usr = kwargs.get("user") or self.user
+        msg = " ".join([str(arg) for arg in args])
+
         print(
-            f"{level.name.upper():<8}",
-            f"{kwargs.get('user') or self.user:<10}",
-            " ".join([str(arg) for arg in args]),
+            f"{lvl:<8} {usr:<12} {msg}",
             file=sys.stderr,
             flush=True,
         )
