@@ -10,6 +10,7 @@ const BaseProgress = styled.div`
 
   div {
     height: 100%;
+    transition: width 0.3s linear;
     background: ${(props) => props.theme.colors.cyan};
   }
 `
