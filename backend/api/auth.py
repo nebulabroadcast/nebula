@@ -75,7 +75,7 @@ async def set_failed_login(ip_address: str):
         await nebula.redis.set(
             "banned-ip-until",
             ip_address,
-            time.time() + nebula.config.failed_login_ban_time,
+            str(int(time.time() + nebula.config.failed_login_ban_time)),
         )
 
 

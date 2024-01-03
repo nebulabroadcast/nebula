@@ -1,7 +1,7 @@
 from typing import Any
 
 from redis import asyncio as aioredis
-from redis.client import PubSub
+from redis.asyncio.client import PubSub
 
 from nebula.config import config
 from nebula.log import log
@@ -27,7 +27,7 @@ class Redis:
         else:
             cls.connected = True
             return
-            cls.connected = False
+        cls.connected = False
         raise ConnectionError("Redis is not connected")
 
     @classmethod
@@ -59,7 +59,7 @@ class Redis:
         await cls.redis_pool.delete(f"{namespace}-{key}")
 
     @classmethod
-    async def incr(cls, namespace: str, key: str) -> None:
+    async def incr(cls, namespace: str, key: str) -> int:
         """Increment a value in Redis"""
         if not cls.connected:
             await cls.connect()
