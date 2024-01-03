@@ -21,7 +21,7 @@ class LogLevel(enum.IntEnum):
 
 class Logger:
     user: str = "nebula"
-    level = LogLevel.TRACE
+    level = LogLevel.DEBUG
 
     def __call__(self, level: LogLevel, *args, **kwargs):
         if level < self.level:
