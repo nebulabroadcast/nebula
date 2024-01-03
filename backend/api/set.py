@@ -121,7 +121,7 @@ async def can_modify_object(obj, user: nebula.User):
         acl = user.get("can/asset_edit", False)
         if not acl:
             raise nebula.ForbiddenException("You are not allowed to edit assets")
-        elif type(acl) == list and obj["id_folder"] not in acl:
+        elif isinstance(acl, list) and obj["id_folder"] not in acl:
             raise nebula.ForbiddenException(
                 "You are not allowed to edit assets in this folder"
             )
@@ -130,7 +130,7 @@ async def can_modify_object(obj, user: nebula.User):
         acl = user.get("can/scheduler_edit", False)
         if not acl:
             raise nebula.ForbiddenException("You are not allowed to edit schedule")
-        elif type(acl) == list and obj["id_channel"] not in acl:
+        elif isinstance(acl, list) and obj["id_channel"] not in acl:
             raise nebula.ForbiddenException(
                 "You are not allowed to edit schedule for this channel"
             )

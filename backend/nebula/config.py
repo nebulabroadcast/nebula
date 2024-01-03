@@ -41,6 +41,24 @@ class NebulaConfig(BaseModel):
         description="Password hashing method",
     )
 
+    max_failed_login_attempts: int = Field(
+        10,
+        description="Maximum number of failed login attempts before the IP is banned",
+    )
+
+    failed_login_ban_time: int = Field(
+        1800,
+        description="Time in seconds for which the IP is banned "
+        "after too many failed login attempts",
+    )
+
+    log_level: Literal[
+        "trace", "debug", "info", "success", "warning", "error", "critical"
+    ] = Field(
+        "debug",
+        description="Logging level",
+    )
+
 
 def load_config() -> NebulaConfig:
     prefix = "NEBULA_"

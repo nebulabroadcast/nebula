@@ -1,5 +1,3 @@
-__version__ = "6.0.2"
-
 __all__ = [
     "config",
     "settings",
@@ -33,6 +31,8 @@ __all__ = [
 
 import sys
 
+from nebula.version import __version__
+
 if "--version" in sys.argv:
     print(__version__)
     sys.exit(0)
@@ -53,7 +53,7 @@ from .exceptions import (
     UnauthorizedException,
     ValidationException,
 )
-from .log import log
+from .log import LogLevel, log
 from .messaging import msg
 from .objects.asset import Asset
 from .objects.bin import Bin
@@ -64,6 +64,9 @@ from .plugins import CLIPlugin
 from .redis import Redis as redis
 from .settings import load_settings, settings
 from .storages import Storage, storages
+
+log.user = "nebula"
+log.level = LogLevel[config.log_level.upper()]
 
 
 def run(entrypoint):

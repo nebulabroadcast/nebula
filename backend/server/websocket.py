@@ -63,7 +63,7 @@ class Client:
         data = await self.sock.receive_text()
         try:
             message = json_loads(data)
-            assert type(message) is dict
+            assert isinstance(message, dict)
             assert "topic" in message
         except AssertionError:
             return None
