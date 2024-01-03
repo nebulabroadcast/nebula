@@ -13,7 +13,7 @@
     "@devbookhq/splitter": "^1.4.0",
     "@reduxjs/toolkit": "^1.8.5",
     "@wfoxall/timeframe": "^1.2.0",
-    "axios": "^0.27.2",
+    "axios": "^1.6.3",
     "content-type": "^1.0.4",
     "lodash": "^4.17.21",
     "luxon": "^3.1.0",
