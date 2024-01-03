@@ -53,7 +53,7 @@ from .exceptions import (
     UnauthorizedException,
     ValidationException,
 )
-from .log import log
+from .log import LogLevel, log
 from .messaging import msg
 from .objects.asset import Asset
 from .objects.bin import Bin
@@ -64,6 +64,8 @@ from .plugins import CLIPlugin
 from .redis import Redis as redis
 from .settings import load_settings, settings
 from .storages import Storage, storages
+
+log.level = LogLevel[config.log_level.upper()]
 
 
 def run(entrypoint):
