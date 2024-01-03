@@ -65,6 +65,7 @@ from .redis import Redis as redis
 from .settings import load_settings, settings
 from .storages import Storage, storages
 
+log.user = "nebula"
 log.level = LogLevel[config.log_level.upper()]
 
 
