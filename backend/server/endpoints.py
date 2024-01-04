@@ -74,7 +74,7 @@ def install_endpoints(app: fastapi.FastAPI):
 
         endpoint_names.add(endpoint.name)
         route = endpoint.path or f"/api/{endpoint.name}"
-        nebula.log.debug("Adding endpoint", route)
+        nebula.log.trace("Adding endpoint", route)
 
         additional_params = {}
 
