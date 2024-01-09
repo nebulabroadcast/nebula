@@ -18,9 +18,12 @@ async def access_token(authorization: str = Header(None)) -> str | None:
 AccessToken = Annotated[str | None, Depends(access_token)]
 
 
-async def api_key(x_api_key: str | None = Header(None)) -> str | None:
-    """Return the API key provided in the request headers."""
-    return x_api_key
+async def api_key(
+    x_api_key: str | None = Header(None),
+    api_key: str | None = Query(None),
+) -> str | None:
+    """Return the API key provided in the request headers or query parameters."""
+    return api_key or x_api_key
 
 
 ApiKey = Annotated[str | None, Depends(api_key)]
