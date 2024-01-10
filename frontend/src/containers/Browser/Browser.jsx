@@ -40,6 +40,7 @@ const BrowserTable = () => {
   const currentView = useSelector((state) => state.context.currentView?.id)
   const searchQuery = useSelector((state) => state.context.searchQuery)
   const selectedAssets = useSelector((state) => state.context.selectedAssets)
+  const focusedAsset = useSelector((state) => state.context.focusedAsset)
   const browserRefresh = useSelector((state) => state.context.browserRefresh)
 
   const dispatch = useDispatch()
@@ -97,10 +98,63 @@ const BrowserTable = () => {
     loadData()
   }, [currentView, searchQuery, browserRefresh, sortBy, sortDirection, page])
 
-  const onRowClick = (rowData) => {
-    dispatch(setSelectedAssets([rowData.id]))
+
+  const onRowClick = (rowData, event) => {
+    let newSelectedAssets = [];
+    if (event.ctrlKey) {
+      if (selectedAssets.includes(rowData.id)) {
+        newSelectedAssets = selectedAssets.filter(obj => obj !== rowData.id);
+      } else {
+        newSelectedAssets = [...selectedAssets, rowData.id];
+      }
+    } else if (event.shiftKey) {
+
+      const clickedIndex = data.findIndex((row) => row.id === rowData.id);
+      const focusedIndex = data.findIndex((row) => row.id === focusedAsset) ||
+        data.findIndex((row) => selectedAssets.includes(row.id)) ||
+        clickedIndex ||
+        0;
+
+      
+      const min = Math.min(clickedIndex, focusedIndex);
+      const max = Math.max(clickedIndex, focusedIndex);
+
+      // Get the ids of the rows in the range
+      const rangeIds = data.slice(min, max + 1).map(row => row.id);
+
+      newSelectedAssets = [...new Set([...selectedAssets, ...rangeIds])];
+
+    } else {
+      newSelectedAssets = [rowData.id];
+    }
+
+    dispatch(setSelectedAssets(newSelectedAssets))
     dispatch(setFocusedAsset(rowData.id))
   }
+
+
+  const focusNext = (offset) => {
+    if (!focusedAsset) return
+    const nextIndex = data.findIndex((row) => row.id === focusedAsset) + offset
+    if (nextIndex < data.length) {
+      const nextRow = data[nextIndex]
+      dispatch(setSelectedAssets([nextRow.id]))
+      dispatch(setFocusedAsset(nextRow.id))
+    }
+  }
+
+
+  const onKeyDown = (e) => {
+    if (e.key === 'ArrowDown') {
+      focusNext(1)
+      e.preventDefault()
+    }
+    if (e.key === 'ArrowUp') {
+      focusNext(-1)
+      e.preventDefault()
+    }
+  }
+
 
   return (
     <>
@@ -112,6 +166,7 @@ const BrowserTable = () => {
           keyField="id"
           selection={selectedAssets}
           onRowClick={onRowClick}
+          onKeyDown={onKeyDown}
           rowHighlightColor={formatRowHighlightColor}
           loading={loading}
           sortBy={sortBy}
