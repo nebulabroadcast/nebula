@@ -1,24 +1,26 @@
 import nebula from '/src/nebula'
 import { useState, useEffect, useMemo } from 'react'
+import { useSelector } from 'react-redux'
 import { toast } from 'react-toastify'
 import { Dialog, Button } from '/src/components'
 
-const SendToDialog = ({ assets, onHide }) => {
+const SendToDialog = ({ onHide }) => {
   const [sendToOptions, setSendToOptions] = useState([])
+  const selectedAssets = useSelector((state) => state.context.selectedAssets)
 
   const loadOptions = () => {
-    nebula.request('actions', { ids: assets }).then((response) => {
+    nebula.request('actions', { ids: selectedAssets }).then((response) => {
       setSendToOptions(response.data.actions)
     })
   }
 
   useEffect(() => {
     loadOptions()
-  }, [assets])
+  }, [selectedAssets])
 
   const onSend = (action) => {
     nebula
-      .request('send', { ids: assets, id_action: action })
+      .request('send', { ids: selectedAssets, id_action: action })
       .then(() => {
         toast.success('Job request accepted')
         onHide()
@@ -29,7 +31,13 @@ const SendToDialog = ({ assets, onHide }) => {
   }
 
   const body = useMemo(() => {
-    if (sendToOptions.length === 0) return null
+    if (sendToOptions.length === 0) {
+      return (
+        <p>
+          No actions available for the current selection
+        </p>
+      )
+    }
     return (
       <>
         {sendToOptions.map((option) => {
@@ -50,11 +58,14 @@ const SendToDialog = ({ assets, onHide }) => {
     return <Button label="Cancel" onClick={onHide} icon="close" />
   }, [sendToOptions])
 
+
+  const what = (selectedAssets.length === 1) ? 'the asset' : `${selectedAssets.length} assets`
+
   return (
     <Dialog
       onHide={onHide}
       style={{ width: 600 }}
-      header="Send to..."
+      header={`Send ${what} to...`}
       footer={footer}
     >
       {body}
