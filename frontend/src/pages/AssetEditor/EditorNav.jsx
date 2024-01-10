@@ -1,8 +1,9 @@
 import nebula from '/src/nebula'
 
-import { useDispatch } from 'react-redux'
+import { toast } from 'react-toastify'
+import { useSelector, useDispatch } from 'react-redux'
 import { useState, useMemo } from 'react'
-import { setCurrentViewId, setSearchQuery } from '/src/actions'
+import { setCurrentViewId, setSearchQuery, reloadBrowser } from '/src/actions'
 import {
   Navbar,
   Button,
@@ -36,6 +37,7 @@ const AssetEditorNav = ({
   const [detailsVisible, setDetailsVisible] = useState(false)
   const [sendToVisible, setSendToVisible] = useState(false)
   const [contextActionResult, setContextActionResult] = useState(null)
+  const selectedAssets = useSelector((state) => state.context.selectedAssets)
 
   const dispatch = useDispatch()
 
@@ -56,6 +58,23 @@ const AssetEditorNav = ({
   }, [])
 
   // Actions
+
+
+  const setSelectionStatus = (status) => {
+    const operations = selectedAssets.map((id) => ({
+      id,
+      data: { status },
+    }))
+    nebula
+      .request('ops', {operations})
+      .then(() => {
+        toast.success('Request accepted')
+        dispatch(reloadBrowser())
+      })
+      .catch((error) => {
+        toast.error(error.response.detail)
+      })
+  }
 
   const scopedEndpoints = useMemo(() => {
     const result = []
@@ -102,7 +121,8 @@ const AssetEditorNav = ({
         label: 'Reset',
         disabled: assetData.status !== 1,
         onClick: () => {
-          setMeta('status', 5, true)
+          //setMeta('status', 5, true)
+          setSelectionStatus(5)
         },
       },
       ...scopedEndpoints,

@@ -2,7 +2,8 @@ import nebula from '/src/nebula'
 import { useState, useEffect, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { toast } from 'react-toastify'
-import { Dialog, Button } from '/src/components'
+import { Dialog, Button, ErrorBanner } from '/src/components'
+
 
 const SendToDialog = ({ onHide }) => {
   const [sendToOptions, setSendToOptions] = useState([])
@@ -31,11 +32,11 @@ const SendToDialog = ({ onHide }) => {
   }
 
   const body = useMemo(() => {
-    if (sendToOptions.length === 0) {
+    if (sendToOptions.length) {
       return (
-        <p>
+        <ErrorBanner>
           No actions available for the current selection
-        </p>
+        </ErrorBanner>
       )
     }
     return (
