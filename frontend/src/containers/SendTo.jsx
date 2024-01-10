@@ -6,7 +6,7 @@ import { Dialog, Button, ErrorBanner } from '/src/components'
 
 
 const SendToDialog = ({ onHide }) => {
-  const [sendToOptions, setSendToOptions] = useState([])
+  const [sendToOptions, setSendToOptions] = useState(null)
   const selectedAssets = useSelector((state) => state.context.selectedAssets)
 
   const loadOptions = () => {
@@ -32,7 +32,9 @@ const SendToDialog = ({ onHide }) => {
   }
 
   const body = useMemo(() => {
-    if (sendToOptions.length) {
+    if (!sendToOptions) 
+      return null
+    if (sendToOptions.length === 0) {
       return (
         <ErrorBanner>
           No actions available for the current selection
@@ -55,7 +57,7 @@ const SendToDialog = ({ onHide }) => {
   }, [sendToOptions])
 
   const footer = useMemo(() => {
-    if (sendToOptions.length === 0) return null
+    if (!sendToOptions?.length) return null
     return <Button label="Cancel" onClick={onHide} icon="close" />
   }, [sendToOptions])
 
