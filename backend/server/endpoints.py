@@ -45,10 +45,8 @@ def find_api_endpoints() -> Generator[APIRequest, None, None]:
 
             try:
                 module = import_module(module_name, module_path)
-            except ModuleNotFoundError:
-                nebula.log.error(f"Module {module_name} not found in {module_path}")
             except ImportError:
-                nebula.log.traceback(f"Failed to import module {module_name}")
+                nebula.log.traceback(f"Failed to load endpoint {module_name}")
 
             # Find API endpoints in module and yield them
 
