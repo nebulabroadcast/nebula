@@ -1,10 +1,8 @@
 import nebula from '/src/nebula'
-import styled from 'styled-components'
 import { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { Timecode } from '@wfoxall/timeframe'
 
-import { Table, Timestamp, Navbar, Button, Spacer } from '/src/components'
+import { Table, Navbar, Button, Spacer } from '/src/components'
 import {
   setCurrentView,
   setSelectedAssets,
@@ -13,129 +11,10 @@ import {
 
 import { useLocalStorage } from '/src/hooks'
 import BrowserNav from './BrowserNav'
+import { getColumnWidth, getFormatter, formatRowHighlightColor } from './Formatting.jsx'
 
 const ROWS_PER_PAGE = 200
 
-const QCState = styled.div`
-  display: inline-block;
-  &::before {
-    content: '⚑';
-  }
-
-  &.qc-state-3 {
-    color: var(--color-red);
-  }
-
-  &.qc-state-4 {
-    color: var(--color-green);
-  }
-`
-
-const formatRowHighlightColor = (rowData) => {
-  switch (rowData['status']) {
-    case 0:
-      return 'var(--color-red)'
-    case 2:
-      return 'var(--color-yellow)' // creating
-    case 3:
-      return 'var(--color-violet)' // trashed
-    case 4:
-      return 'var(--color-blue)' // archived
-    case 5:
-      return 'var(--color-yellow)' // reset
-    case 6:
-      return 'var(--color-red)' // corrupted
-    case 11:
-      return 'var(--color-yellow)' // retrieving
-    default:
-      return 'transparent'
-  }
-}
-
-// Column width
-
-const getColumnWidth = (key) => {
-  if (!['title', 'subtitle', 'description'].includes(key)) return '1px'
-}
-
-// Field formatters
-
-const getFormatter = (key) => {
-  if (['title', 'subtitle', 'description'].includes(key))
-    return (rowData, key) => <td>{rowData[key]}</td>
-
-  switch (key) {
-    case 'qc/state':
-      return (rowData, key) => (
-        <td>
-          <QCState className={`qc-state-${rowData[key]}`} />
-        </td>
-      )
-
-    case 'id_folder':
-      return (rowData, key) => {
-        const folder = nebula.settings.folders.find(
-          (f) => f.id === rowData[key]
-        )
-        return <td style={{ color: folder?.color }}>{folder?.name}</td>
-      }
-
-    case 'duration':
-      return (rowData, key) => {
-        const fps = rowData['video/fps_f'] || 25
-        const duration = rowData[key] || 0
-        const timecode = new Timecode(duration * fps, fps)
-        return <td>{timecode.toString().substring(0, 11)}</td>
-      }
-
-    case 'created_by':
-      return (rowData, key) => {
-        return <td>{nebula.getUserName(rowData[key])}</td>
-      }
-
-    case 'updated_by':
-      return (rowData, key) => {
-        return <td>{nebula.getUserName(rowData[key])}</td>
-      }
-
-    default:
-      const metaType = nebula.metaType(key)
-      switch (metaType.type) {
-        case 'boolean':
-          return (rowData, key) => <td>{rowData[key] ? '✓' : ''}</td>
-
-        case 'datetime':
-          return (rowData, key) => (
-            <td>
-              <Timestamp timestamp={rowData[key]} mode={metaType.mode} />{' '}
-            </td>
-          )
-
-        case 'select':
-          return (rowData, key) => {
-            if (!metaType.cs) return <td>{rowData[key]}</td>
-
-            const option = nebula
-              .csOptions(metaType.cs)
-              .find((opt) => opt.value === rowData[key])
-
-            return <td>{option?.title}</td>
-          }
-
-        case 'list':
-          return (rowData, key) => {
-            if (!metaType.cs) return <td>{rowData[key].join(', ')}</td>
-            const options = nebula
-              .csOptions(metaType.cs)
-              .filter((opt) => rowData[key].includes(opt.value))
-            return <td>{options.map((opt) => opt.title).join(', ')}</td>
-          }
-
-        default:
-          return (rowData, key) => <td>{rowData[key]}</td>
-      } // switch metaType
-  } // end switch key
-} // end getFormatter
 
 const Pagination = ({ page, setPage, hasMore }) => {
   if (page > 1 || hasMore)
