@@ -11,6 +11,7 @@ const Table = ({
   style,
   keyField,
   onRowClick,
+  onKeyDown,
   selection,
   rowHighlightColor,
   sortBy,
@@ -35,6 +36,12 @@ const Table = ({
       </thead>
     )
   }, [columns, sortBy, sortDirection, onSort])
+
+  const handleKeyDown = (event) => {
+    if (onKeyDown) {
+      onKeyDown(event)
+    }
+  }
 
   const body = useMemo(() => {
     return (
@@ -65,13 +72,18 @@ const Table = ({
   }
 
   return (
-    <TableWrapper className={className} style={style} onScroll={handleScroll}>
+    <TableWrapper
+      className={className}
+      style={style}
+      onScroll={handleScroll}
+      onKeyDown={handleKeyDown}
+    >
       {loading && (
         <div className="contained center">
           <Loader />
         </div>
       )}
-      <table>
+      <table onKeyDown={handleKeyDown} tabIndex={0}>
         {head}
         {body}
       </table>

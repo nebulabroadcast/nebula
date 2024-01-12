@@ -48,8 +48,8 @@ const DataRow = ({
   rowHighlightColor,
   selected = false,
 }) => {
-  const handleClick = () => {
-    if (onRowClick) onRowClick(rowData)
+  const handleClick = (event) => {
+    if (onRowClick) onRowClick(rowData, event)
   }
   const rowStyle = {}
 

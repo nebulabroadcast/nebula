@@ -1,6 +1,7 @@
 export { default as Table } from './table'
 export { default as Dialog } from './Dialog'
 export { default as Dropdown } from './Dropdown'
+export { default as ErrorBanner } from './ErrorBanner'
 export { default as Loader } from './Loader'
 export { default as Progress } from './Progress'
 export { default as Select } from './Select'
