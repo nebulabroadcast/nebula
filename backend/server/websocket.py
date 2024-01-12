@@ -120,6 +120,7 @@ class Messaging(BackgroundTask):
                     ignore_subscribe_messages=True,
                     timeout=2,
                 )
+                message: dict[str, Any]
                 if raw_message is None:
                     await asyncio.sleep(0.01)
                     if time.time() - last_msg > 3:
@@ -129,7 +130,7 @@ class Messaging(BackgroundTask):
                         continue
                 else:
                     data = json_loads(raw_message["data"])
-                    message: dict[str, Any] = {
+                    message = {
                         "timestamp": data[0],
                         "site": data[1],
                         "host": data[2],
@@ -137,8 +138,10 @@ class Messaging(BackgroundTask):
                         "data": data[4],
                     }
 
-                if message["topic"] == "log" and message["data"].get("level", 0) > 3:
-                    self.handle_error_log()
+                if message["topic"] == "log":
+                    assert isinstance(message["data"], dict)
+                    if message["data"].get("level", 0) > 3:
+                        self.handle_error_log()
 
                 clients = list(self.clients.values())
                 for client in clients:
