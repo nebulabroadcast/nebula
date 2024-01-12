@@ -29,13 +29,13 @@ class JobsRequestModel(ResponseModel):
         None,
         title="Job IDs",
         description="Return only the jobs with the given IDs",
-        example=42,
+        example=[42],
     )
     asset_ids: list[int] | None = Field(
         None,
         title="Asset IDs",
         description="Return jobs of asset with the given IDs",
-        example=69,
+        example=[69],
     )
     search_query: str | None = Field(
         None,
@@ -56,7 +56,7 @@ class JobsRequestModel(ResponseModel):
         None,
         title="Priority",
         descriprion="Set priority of job with given id. "
-        "First value is job id, second is priority",
+        "First value is the job id, second is the priority",
         example=[42, 3],
     )
 
@@ -192,8 +192,7 @@ class JobsRequest(APIRequest):
         self,
         request: JobsRequestModel,
         user: CurrentUser,
-    ) -> JobsResponseModel:
-
+    ) -> JobsResponseModel | Response:
         if request.abort:
             await abort_job(request.abort, user)
 
