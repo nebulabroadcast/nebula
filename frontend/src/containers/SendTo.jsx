@@ -4,7 +4,6 @@ import { useSelector } from 'react-redux'
 import { toast } from 'react-toastify'
 import { Dialog, Button, ErrorBanner } from '/src/components'
 
-
 const SendToDialog = ({ onHide }) => {
   const [sendToOptions, setSendToOptions] = useState(null)
   const selectedAssets = useSelector((state) => state.context.selectedAssets)
@@ -32,8 +31,7 @@ const SendToDialog = ({ onHide }) => {
   }
 
   const body = useMemo(() => {
-    if (!sendToOptions) 
-      return null
+    if (!sendToOptions) return null
     if (sendToOptions.length === 0) {
       return (
         <ErrorBanner>
@@ -61,8 +59,10 @@ const SendToDialog = ({ onHide }) => {
     return <Button label="Cancel" onClick={onHide} icon="close" />
   }, [sendToOptions])
 
-
-  const what = (selectedAssets.length === 1) ? 'the asset' : `${selectedAssets.length} assets`
+  const what =
+    selectedAssets.length === 1
+      ? 'the asset'
+      : `${selectedAssets.length} assets`
 
   return (
     <Dialog

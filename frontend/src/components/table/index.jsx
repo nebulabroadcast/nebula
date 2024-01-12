@@ -72,7 +72,12 @@ const Table = ({
   }
 
   return (
-    <TableWrapper className={className} style={style} onScroll={handleScroll} onKeyDown={handleKeyDown}>
+    <TableWrapper
+      className={className}
+      style={style}
+      onScroll={handleScroll}
+      onKeyDown={handleKeyDown}
+    >
       {loading && (
         <div className="contained center">
           <Loader />

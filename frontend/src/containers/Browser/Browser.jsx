@@ -11,10 +11,13 @@ import {
 
 import { useLocalStorage } from '/src/hooks'
 import BrowserNav from './BrowserNav'
-import { getColumnWidth, getFormatter, formatRowHighlightColor } from './Formatting.jsx'
+import {
+  getColumnWidth,
+  getFormatter,
+  formatRowHighlightColor,
+} from './Formatting.jsx'
 
 const ROWS_PER_PAGE = 200
-
 
 const Pagination = ({ page, setPage, hasMore }) => {
   if (page > 1 || hasMore)
@@ -98,40 +101,36 @@ const BrowserTable = () => {
     loadData()
   }, [currentView, searchQuery, browserRefresh, sortBy, sortDirection, page])
 
-
   const onRowClick = (rowData, event) => {
-    let newSelectedAssets = [];
+    let newSelectedAssets = []
     if (event.ctrlKey) {
       if (selectedAssets.includes(rowData.id)) {
-        newSelectedAssets = selectedAssets.filter(obj => obj !== rowData.id);
+        newSelectedAssets = selectedAssets.filter((obj) => obj !== rowData.id)
       } else {
-        newSelectedAssets = [...selectedAssets, rowData.id];
+        newSelectedAssets = [...selectedAssets, rowData.id]
       }
     } else if (event.shiftKey) {
-
-      const clickedIndex = data.findIndex((row) => row.id === rowData.id);
-      const focusedIndex = data.findIndex((row) => row.id === focusedAsset) ||
+      const clickedIndex = data.findIndex((row) => row.id === rowData.id)
+      const focusedIndex =
+        data.findIndex((row) => row.id === focusedAsset) ||
         data.findIndex((row) => selectedAssets.includes(row.id)) ||
         clickedIndex ||
-        0;
+        0
 
-      
-      const min = Math.min(clickedIndex, focusedIndex);
-      const max = Math.max(clickedIndex, focusedIndex);
+      const min = Math.min(clickedIndex, focusedIndex)
+      const max = Math.max(clickedIndex, focusedIndex)
 
       // Get the ids of the rows in the range
-      const rangeIds = data.slice(min, max + 1).map(row => row.id);
+      const rangeIds = data.slice(min, max + 1).map((row) => row.id)
 
-      newSelectedAssets = [...new Set([...selectedAssets, ...rangeIds])];
-
+      newSelectedAssets = [...new Set([...selectedAssets, ...rangeIds])]
     } else {
-      newSelectedAssets = [rowData.id];
+      newSelectedAssets = [rowData.id]
     }
 
     dispatch(setSelectedAssets(newSelectedAssets))
     dispatch(setFocusedAsset(rowData.id))
   }
-
 
   const focusNext = (offset) => {
     if (!focusedAsset) return
@@ -143,7 +142,6 @@ const BrowserTable = () => {
     }
   }
 
-
   const onKeyDown = (e) => {
     if (e.key === 'ArrowDown') {
       focusNext(1)
@@ -154,7 +152,6 @@ const BrowserTable = () => {
       e.preventDefault()
     }
   }
-
 
   return (
     <>

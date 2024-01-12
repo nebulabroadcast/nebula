@@ -124,5 +124,4 @@ const getFormatter = (key) => {
   } // end switch key
 } // end getFormatter
 
-
 export { getColumnWidth, getFormatter, formatRowHighlightColor }

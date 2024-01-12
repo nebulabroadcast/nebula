@@ -59,14 +59,13 @@ const AssetEditorNav = ({
 
   // Actions
 
-
   const setSelectionStatus = (status) => {
     const operations = selectedAssets.map((id) => ({
       id,
       data: { status },
     }))
     nebula
-      .request('ops', {operations})
+      .request('ops', { operations })
       .then(() => {
         toast.success('Request accepted')
         dispatch(reloadBrowser())

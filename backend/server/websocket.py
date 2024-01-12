@@ -129,7 +129,7 @@ class Messaging(BackgroundTask):
                         continue
                 else:
                     data = json_loads(raw_message["data"])
-                    message = {
+                    message: dict[str, Any] = {
                         "timestamp": data[0],
                         "site": data[1],
                         "host": data[2],
