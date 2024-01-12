@@ -91,7 +91,8 @@ class User(BaseObject):
     async def login(cls, username: str, password: str) -> "User":
         """Return a User instance based on username and password."""
 
-        raise LoginFailedException("Password cannot be empty")
+        if not password:
+            raise LoginFailedException("Password cannot be empty")
         passhash = hash_password(password)
         try:
             res = await db.fetch(
