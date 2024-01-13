@@ -1,12 +1,15 @@
 import nebula from '/src/nebula'
 import { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
+import { toast } from 'react-toastify'
 
 import { Table, Navbar, Button, Spacer } from '/src/components'
 import {
   setCurrentView,
   setSelectedAssets,
   setFocusedAsset,
+  reloadBrowser,
+  showSendToDialog,
 } from '/src/actions'
 
 import { useLocalStorage } from '/src/hooks'
@@ -16,6 +19,8 @@ import {
   getFormatter,
   formatRowHighlightColor,
 } from './Formatting.jsx'
+
+
 
 const ROWS_PER_PAGE = 200
 
@@ -153,6 +158,38 @@ const BrowserTable = () => {
     }
   }
 
+
+  const setSelectionStatus = (status) => {
+    const operations = selectedAssets.map((id) => ({
+      id,
+      data: { status },
+    }))
+    nebula
+      .request('ops', { operations })
+      .then(() => {
+        toast.success('Status updated')
+        dispatch(reloadBrowser())
+      })
+      .catch((error) => {
+        console.error(error)
+        toast.error(error.response?.detail)
+      })
+  }
+
+  const contextMenu = () => {
+    const items = [
+      {
+        label: 'Send to...',
+        onClick: () => dispatch(showSendToDialog()) 
+      },
+      {
+        label: 'Reset',
+        onClick: () => setSelectionStatus(5)
+      }
+    ]
+    return items
+  }
+
   return (
     <>
       <section className="grow">
@@ -168,6 +205,7 @@ const BrowserTable = () => {
           loading={loading}
           sortBy={sortBy}
           sortDirection={sortDirection}
+          contextMenu={contextMenu}
           onSort={(sortBy, sortDirection) => {
             setSortBy(sortBy)
             setSortDirection(sortDirection)

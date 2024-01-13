@@ -3,7 +3,13 @@ import nebula from '/src/nebula'
 import { toast } from 'react-toastify'
 import { useSelector, useDispatch } from 'react-redux'
 import { useState, useMemo } from 'react'
-import { setCurrentViewId, setSearchQuery, reloadBrowser } from '/src/actions'
+import { 
+  setCurrentViewId, 
+  setSearchQuery, 
+  reloadBrowser, 
+  showSendToDialog 
+} from '/src/actions'
+
 import {
   Navbar,
   Button,
@@ -15,7 +21,6 @@ import {
 } from '/src/components'
 
 import { UploadButton } from '/src/containers/Upload'
-import { SendToDialog } from '/src/containers/SendTo'
 
 import MetadataDetail from './MetadataDetail'
 import ContextActionResult from './ContextAction'
@@ -35,10 +40,7 @@ const AssetEditorNav = ({
   enabledActions,
 }) => {
   const [detailsVisible, setDetailsVisible] = useState(false)
-  const [sendToVisible, setSendToVisible] = useState(false)
   const [contextActionResult, setContextActionResult] = useState(null)
-  const selectedAssets = useSelector((state) => state.context.selectedAssets)
-
   const dispatch = useDispatch()
 
   const currentFolder = useMemo(() => {
@@ -58,22 +60,6 @@ const AssetEditorNav = ({
   }, [])
 
   // Actions
-
-  const setSelectionStatus = (status) => {
-    const operations = selectedAssets.map((id) => ({
-      id,
-      data: { status },
-    }))
-    nebula
-      .request('ops', { operations })
-      .then(() => {
-        toast.success('Request accepted')
-        dispatch(reloadBrowser())
-      })
-      .catch((error) => {
-        toast.error(error.response.detail)
-      })
-  }
 
   const scopedEndpoints = useMemo(() => {
     const result = []
@@ -114,16 +100,17 @@ const AssetEditorNav = ({
     const result = [
       {
         label: 'Send to...',
-        onClick: () => setSendToVisible(true),
+        onClick: () => dispatch(showSendToDialog({ ids: [assetData.id] })),
       },
-      {
-        label: 'Reset',
-        disabled: assetData.status !== 1,
-        onClick: () => {
-          //setMeta('status', 5, true)
-          setSelectionStatus(5)
-        },
-      },
+      // Moved to the browser context menu
+      // {
+      //   label: 'Reset',
+      //   disabled: assetData.status !== 1,
+      //   onClick: () => {
+      //     //setMeta('status', 5, true)
+      //     setSelectionStatus(5)
+      //   },
+      // },
       ...scopedEndpoints,
       ...linkOptions,
     ]
@@ -146,13 +133,6 @@ const AssetEditorNav = ({
         >
           <MetadataDetail assetData={assetData} />
         </Dialog>
-      )}
-
-      {sendToVisible && (
-        <SendToDialog
-          assets={[assetData.id]}
-          onHide={() => setSendToVisible(false)}
-        />
       )}
 
       {contextActionResult && (

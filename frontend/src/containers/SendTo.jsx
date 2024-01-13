@@ -1,12 +1,12 @@
 import nebula from '/src/nebula'
 import { useState, useEffect, useMemo } from 'react'
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 import { toast } from 'react-toastify'
 import { Dialog, Button, ErrorBanner } from '/src/components'
+import { hideSendToDialog } from '/src/actions'
 
-const SendToDialog = ({ onHide }) => {
+const SendToDialogBody = ({selectedAssets, onHide}) => {
   const [sendToOptions, setSendToOptions] = useState(null)
-  const selectedAssets = useSelector((state) => state.context.selectedAssets)
 
   const loadOptions = () => {
     nebula.request('actions', { ids: selectedAssets }).then((response) => {
@@ -76,4 +76,19 @@ const SendToDialog = ({ onHide }) => {
   )
 }
 
-export { SendToDialog }
+
+const SendToDialog = () => {
+  const dialogVisible = useSelector((state) => state.context.sendToDialogVisible)
+  const selectedAssets = useSelector((state) => state.context.selectedAssets)
+  const forcedIds = useSelector((state) => state.context.sendToIds)
+  const dispatch = useDispatch()
+
+  const ids = forcedIds || selectedAssets
+
+  const onHide = () => {
+    dispatch(hideSendToDialog())
+  }
+  return dialogVisible && <SendToDialogBody onHide={onHide} selectedAssets={ids} />
+}
+
+export default SendToDialog
