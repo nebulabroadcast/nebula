@@ -12,26 +12,31 @@ const ContextMenuWrapper = styled.div`
   box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
   z-index: 1;
 
-    button {
-      background: none;
-      border: none;
-      width: 100%;
-      justify-content: flex-start;
-      border-radius: 0;
-      padding: 20px 10px;
+  hr {
+    margin: 0;
+    border: none;
+    border-top: 2px solid var(--color-surface-03);
+  }
 
-      &:hover {
-        background-color: var(--color-surface-03);
-      }
+  button {
+    background: none;
+    border: none;
+    width: 100%;
+    justify-content: flex-start;
+    border-radius: 0;
+    padding: 20px 10px;
 
-      &:active,
-      &:focus {
-        outline: none !important;
-      }
+    &:hover {
+      background-color: var(--color-surface-03);
+    }
 
-      &:disabled {
-        color: var(--color-text-dim);
-      }
+    &:active,
+    &:focus {
+      outline: none !important;
+    }
+
+    &:disabled {
+      color: var(--color-text-dim);
     }
   }
 `
@@ -86,14 +91,18 @@ const ContextMenu = ({ target, options }) => {
       }}
     >
       {options().map((option, idx) => (
+        <>
+        {option.separator && <hr/>}
         <Button
           key={idx}
           label={option.label}
+          icon={option.icon}
           onClick={() => {
             setContextData({ ...contextData, visible: false })
             option.onClick && option.onClick();
           }}
         />
+        </>
       ))}
     </ContextMenuWrapper>
   );

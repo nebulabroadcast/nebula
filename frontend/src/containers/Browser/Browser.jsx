@@ -188,18 +188,23 @@ const BrowserTable = () => {
     const items = [
       {
         label: 'Send to...',
+        icon: 'send',
         onClick: () => dispatch(showSendToDialog()) 
       },
       {
         label: 'Reset',
+        icon: 'undo',
         onClick: () => setSelectionStatus(5,  "Do you want to reload selected assets metadata?"),
       },
       {
         label: 'Archive',
+        separator: true,
+        icon: 'archive',
         onClick: () => setSelectionStatus(4,  "Do you want to move selected assets to archive?"),
       },
       {
         label: 'Trash',
+        icon: 'delete',
         onClick: () => setSelectionStatus(3,  "Do you want to move selected assets to trash?"),
       }
     ]
