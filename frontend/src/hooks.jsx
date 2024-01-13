@@ -1,37 +1,37 @@
 import { useState } from 'react'
 import styled from 'styled-components'
 
-import { Button, Dialog } from '/src/components';
+import { Button, Dialog } from '/src/components'
 
 const Question = styled.div`
   padding: 20px;
 `
 
-
 const useConfirm = () => {
-  const [promise, setPromise] = useState(null);
-  const [title, setTitle] = useState('');
-  const [message, setMessage] = useState('');
+  const [promise, setPromise] = useState(null)
+  const [title, setTitle] = useState('')
+  const [message, setMessage] = useState('')
 
-  const confirm = (title, message) => new Promise((resolve, reject) => {
-    setTitle(title);
-    setMessage(message);
-    setPromise({ resolve });
-  });
+  const confirm = (title, message) =>
+    new Promise((resolve, reject) => {
+      setTitle(title)
+      setMessage(message)
+      setPromise({ resolve })
+    })
 
   const handleClose = () => {
-    setPromise(null);
-  };
+    setPromise(null)
+  }
 
   const handleConfirm = () => {
-    promise?.resolve(true);
-    handleClose();
-  };
+    promise?.resolve(true)
+    handleClose()
+  }
 
   const handleCancel = () => {
-    promise?.resolve(false);
-    handleClose();
-  };
+    promise?.resolve(false)
+    handleClose()
+  }
 
   const footer = (
     <>
@@ -41,25 +41,16 @@ const useConfirm = () => {
   )
 
   const ConfirmationDialog = () => {
-    if (!promise)
-      return
+    if (!promise) return
     return (
-      <Dialog 
-        onHide={handleClose} 
-        header={title}
-        footer={footer}
-      >
-        <Question>
-          {message}
-        </Question>
+      <Dialog onHide={handleClose} header={title} footer={footer}>
+        <Question>{message}</Question>
       </Dialog>
     )
   }
-  
+
   return [ConfirmationDialog, confirm]
 }
-
-
 
 const useLocalStorage = (key, initialValue) => {
   const [storedValue, setStoredValue] = useState(() => {

@@ -65,8 +65,7 @@ const contextSlice = createSlice({
     hideSendToDialog: (state, action) => {
       state.sendToIds = undefined
       state.sendToDialogVisible = false
-    }
-
+    },
   },
 })
 

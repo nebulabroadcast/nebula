@@ -1,7 +1,6 @@
-import { useState, useEffect, useRef, useLayoutEffect } from 'react';
+import { useState, useEffect, useRef, useLayoutEffect } from 'react'
 import styled from 'styled-components'
 import Button from './Button'
-
 
 const ContextMenuWrapper = styled.div`
   position: fixed;
@@ -42,24 +41,35 @@ const ContextMenuWrapper = styled.div`
 `
 
 const ContextMenu = ({ target, options }) => {
-  const [contextData, setContextData]= useState({ visible:false, posX: 0, posY: 0});
-  const contextRef= useRef(null);;
+  const [contextData, setContextData] = useState({
+    visible: false,
+    posX: 0,
+    posY: 0,
+  })
+  const contextRef = useRef(null)
 
   useEffect(() => {
-    const contextMenuEventHandler= (event) => {
-      const targetElement= target.current;
-      if(targetElement && targetElement.contains(event.target)){
-        event.preventDefault();
+    const contextMenuEventHandler = (event) => {
+      const targetElement = target.current
+      if (targetElement && targetElement.contains(event.target)) {
+        event.preventDefault()
         setTimeout(() => {
-          setContextData({ visible: true, posX: event.clientX, posY: event.clientY })
+          setContextData({
+            visible: true,
+            posX: event.clientX,
+            posY: event.clientY,
+          })
         }, 0)
-      }else if(contextRef.current && !contextRef.current.contains(event.target)){
+      } else if (
+        contextRef.current &&
+        !contextRef.current.contains(event.target)
+      ) {
         setContextData({ ...contextData, visible: false })
       }
     }
 
-    const offClickHandler= (event) => {
-      if(contextRef.current && !contextRef.current.contains(event.target)){
+    const offClickHandler = (event) => {
+      if (contextRef.current && !contextRef.current.contains(event.target)) {
         setContextData({ ...contextData, visible: false })
       }
     }
@@ -73,39 +83,51 @@ const ContextMenu = ({ target, options }) => {
   }, [contextData, target])
 
   useLayoutEffect(() => {
-    if(contextData.posX + contextRef.current?.offsetWidth > window.innerWidth){
-      setContextData({ ...contextData, posX: contextData.posX - contextRef.current?.offsetWidth})
+    if (
+      contextData.posX + contextRef.current?.offsetWidth >
+      window.innerWidth
+    ) {
+      setContextData({
+        ...contextData,
+        posX: contextData.posX - contextRef.current?.offsetWidth,
+      })
     }
-    if(contextData.posY + contextRef.current?.offsetHeight > window.innerHeight){
-      setContextData({ ...contextData, posY: contextData.posY - contextRef.current?.offsetHeight})
+    if (
+      contextData.posY + contextRef.current?.offsetHeight >
+      window.innerHeight
+    ) {
+      setContextData({
+        ...contextData,
+        posY: contextData.posY - contextRef.current?.offsetHeight,
+      })
     }
   }, [contextData])
 
   return (
-    <ContextMenuWrapper 
-      ref={contextRef} 
-      style={{ 
-        display:`${contextData.visible ? 'block' : 'none'}`, 
-        left: contextData.posX, 
-        top: contextData.posY 
+    <ContextMenuWrapper
+      ref={contextRef}
+      style={{
+        display: `${contextData.visible ? 'block' : 'none'}`,
+        left: contextData.posX,
+        top: contextData.posY,
       }}
     >
       {options().map((option, idx) => (
         <>
-        {option.separator && <hr/>}
-        <Button
-          key={idx}
-          label={option.label}
-          icon={option.icon}
-          onClick={() => {
-            setContextData({ ...contextData, visible: false })
-            option.onClick && option.onClick();
-          }}
-        />
+          {option.separator && <hr />}
+          <Button
+            key={idx}
+            label={option.label}
+            icon={option.icon}
+            onClick={() => {
+              setContextData({ ...contextData, visible: false })
+              option.onClick && option.onClick()
+            }}
+          />
         </>
       ))}
     </ContextMenuWrapper>
-  );
+  )
 }
 
 export default ContextMenu

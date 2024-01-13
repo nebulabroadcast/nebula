@@ -49,16 +49,13 @@ const DataRow = ({
   selected = false,
 }) => {
   const handleClick = (event) => {
-
     if (event.type === 'contextmenu' || event.button === 2) {
       // if we're right-clicking, and the row is already selected,
       // don't change the selection - just show the context menu
-      if (selected)
-        return
+      if (selected) return
     }
 
-    if (onRowClick)
-      onRowClick(rowData, event)
+    if (onRowClick) onRowClick(rowData, event)
   }
   const rowStyle = {}
 
@@ -99,7 +96,7 @@ const DataRow = ({
       className={selected ? 'selected' : ''}
       style={rowStyle}
     >
-      { rowContent}
+      {rowContent}
     </tr>
   )
 }

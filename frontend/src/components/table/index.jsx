@@ -61,7 +61,7 @@ const Table = ({
         ))}
       </tbody>
     )
-  }, [columns, data, selection, keyField, rowHighlightColor ])
+  }, [columns, data, selection, keyField, rowHighlightColor])
 
   const handleScroll = (event) => {
     if (!onLoadMore) return

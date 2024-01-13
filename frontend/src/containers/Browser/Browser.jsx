@@ -20,8 +20,6 @@ import {
   formatRowHighlightColor,
 } from './Formatting.jsx'
 
-
-
 const ROWS_PER_PAGE = 200
 
 const Pagination = ({ page, setPage, hasMore }) => {
@@ -64,7 +62,6 @@ const BrowserTable = () => {
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(false)
   const [ConfirmDialog, confirm] = useConfirm()
-
 
   const loadData = () => {
     setLoading(true)
@@ -160,11 +157,9 @@ const BrowserTable = () => {
     }
   }
 
-
   const setSelectionStatus = async (status, question) => {
-
     if (question) {
-      const ans = await confirm("Are you sure?", question)
+      const ans = await confirm('Are you sure?', question)
       if (!ans) return
     }
 
@@ -189,24 +184,36 @@ const BrowserTable = () => {
       {
         label: 'Send to...',
         icon: 'send',
-        onClick: () => dispatch(showSendToDialog()) 
+        onClick: () => dispatch(showSendToDialog()),
       },
       {
         label: 'Reset',
         icon: 'undo',
-        onClick: () => setSelectionStatus(5,  "Do you want to reload selected assets metadata?"),
+        onClick: () =>
+          setSelectionStatus(
+            5,
+            'Do you want to reload selected assets metadata?'
+          ),
       },
       {
         label: 'Archive',
         separator: true,
         icon: 'archive',
-        onClick: () => setSelectionStatus(4,  "Do you want to move selected assets to archive?"),
+        onClick: () =>
+          setSelectionStatus(
+            4,
+            'Do you want to move selected assets to archive?'
+          ),
       },
       {
         label: 'Trash',
         icon: 'delete',
-        onClick: () => setSelectionStatus(3,  "Do you want to move selected assets to trash?"),
-      }
+        onClick: () =>
+          setSelectionStatus(
+            3,
+            'Do you want to move selected assets to trash?'
+          ),
+      },
     ]
     return items
   }

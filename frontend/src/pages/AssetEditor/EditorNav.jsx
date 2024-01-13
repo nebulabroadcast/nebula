@@ -1,13 +1,11 @@
 import nebula from '/src/nebula'
 
-import { toast } from 'react-toastify'
-import { useSelector, useDispatch } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { useState, useMemo } from 'react'
-import { 
-  setCurrentViewId, 
-  setSearchQuery, 
-  reloadBrowser, 
-  showSendToDialog 
+import {
+  setCurrentViewId,
+  setSearchQuery,
+  showSendToDialog,
 } from '/src/actions'
 
 import {
@@ -102,18 +100,12 @@ const AssetEditorNav = ({
         label: 'Send to...',
         onClick: () => dispatch(showSendToDialog({ ids: [assetData.id] })),
       },
-      // Moved to the browser context menu
-      // {
-      //   label: 'Reset',
-      //   disabled: assetData.status !== 1,
-      //   onClick: () => {
-      //     //setMeta('status', 5, true)
-      //     setSelectionStatus(5)
-      //   },
-      // },
       ...scopedEndpoints,
       ...linkOptions,
     ]
+    if (result.length > 1) {
+      result[1].separator = true
+    }
     return result
   }, [scopedEndpoints, linkOptions])
 
@@ -158,7 +150,7 @@ const AssetEditorNav = ({
         value={assetData?.duration}
         fps={fps}
         onChange={(val) => setMeta('duration', val)}
-        title="Duration"
+        title="Asset duration"
         readOnly={assetData.status || !enabledActions.edit}
       />
 
@@ -183,7 +175,7 @@ const AssetEditorNav = ({
         <>
           <Button
             icon="manage_search"
-            title="Details"
+            title="Show asset details"
             onClick={() => setDetailsVisible(true)}
           />
           <Dropdown
@@ -204,7 +196,7 @@ const AssetEditorNav = ({
           icon="visibility"
           onClick={() => setPreviewVisible(!previewVisible)}
           active={previewVisible}
-          title="Preview"
+          title="Toggle video preview"
         />
       )}
 

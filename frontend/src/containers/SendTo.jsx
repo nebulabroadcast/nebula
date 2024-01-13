@@ -5,7 +5,7 @@ import { toast } from 'react-toastify'
 import { Dialog, Button, ErrorBanner } from '/src/components'
 import { hideSendToDialog } from '/src/actions'
 
-const SendToDialogBody = ({selectedAssets, onHide}) => {
+const SendToDialogBody = ({ selectedAssets, onHide }) => {
   const [sendToOptions, setSendToOptions] = useState(null)
 
   const loadOptions = () => {
@@ -76,9 +76,10 @@ const SendToDialogBody = ({selectedAssets, onHide}) => {
   )
 }
 
-
 const SendToDialog = () => {
-  const dialogVisible = useSelector((state) => state.context.sendToDialogVisible)
+  const dialogVisible = useSelector(
+    (state) => state.context.sendToDialogVisible
+  )
   const selectedAssets = useSelector((state) => state.context.selectedAssets)
   const forcedIds = useSelector((state) => state.context.sendToIds)
   const dispatch = useDispatch()
@@ -88,7 +89,9 @@ const SendToDialog = () => {
   const onHide = () => {
     dispatch(hideSendToDialog())
   }
-  return dialogVisible && <SendToDialogBody onHide={onHide} selectedAssets={ids} />
+  return (
+    dialogVisible && <SendToDialogBody onHide={onHide} selectedAssets={ids} />
+  )
 }
 
 export default SendToDialog

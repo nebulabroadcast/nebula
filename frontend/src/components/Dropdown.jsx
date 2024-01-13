@@ -86,12 +86,12 @@ const Dropdown = ({
         {options &&
           options.map((option, idx) => (
             <>
-            {option.separator && <hr/>}
-            <Button
-              key={idx}
-              {...option}
-              disabled={option.disabled || value === option.value}
-            />
+              {option.separator && <hr />}
+              <Button
+                key={idx}
+                {...option}
+                disabled={option.disabled || value === option.value}
+              />
             </>
           ))}
       </div>
