@@ -56,6 +56,16 @@ const contextSlice = createSlice({
       state.pageIcon = action.payload.icon
       window.document.title = `${action.payload.title} | NEBULA`
     },
+
+    showSendToDialog: (state, action) => {
+      state.sendToIds = action.payload?.ids
+      state.sendToDialogVisible = true
+    },
+
+    hideSendToDialog: (state, action) => {
+      state.sendToIds = undefined
+      state.sendToDialogVisible = false
+    },
   },
 })
 
@@ -67,6 +77,8 @@ export const {
   setSelectedAssets,
   setFocusedAsset,
   setPageTitle,
+  showSendToDialog,
+  hideSendToDialog,
 } = contextSlice.actions
 
 export default contextSlice.reducer

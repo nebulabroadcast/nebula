@@ -8,6 +8,7 @@ import { useLocalStorage } from '/src/hooks'
 import { setFocusedAsset, setSelectedAssets } from '/src/actions'
 import Browser from '/src/containers/Browser'
 import AssetEditor from '/src/pages/AssetEditor'
+import SendToDialog from '/src/containers/SendTo'
 
 const MAMContainer = styled.div`
   flex-grow: 1;
@@ -84,6 +85,7 @@ const MAMPage = () => {
         <Browser />
         {moduleComponent}
       </Splitter>
+      <SendToDialog />
     </MAMContainer>
   )
 }

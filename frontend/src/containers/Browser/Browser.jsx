@@ -1,15 +1,18 @@
 import nebula from '/src/nebula'
 import { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
+import { toast } from 'react-toastify'
 
 import { Table, Navbar, Button, Spacer } from '/src/components'
 import {
   setCurrentView,
   setSelectedAssets,
   setFocusedAsset,
+  reloadBrowser,
+  showSendToDialog,
 } from '/src/actions'
 
-import { useLocalStorage } from '/src/hooks'
+import { useLocalStorage, useConfirm } from '/src/hooks'
 import BrowserNav from './BrowserNav'
 import {
   getColumnWidth,
@@ -58,6 +61,7 @@ const BrowserTable = () => {
   )
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(false)
+  const [ConfirmDialog, confirm] = useConfirm()
 
   const loadData = () => {
     setLoading(true)
@@ -153,6 +157,67 @@ const BrowserTable = () => {
     }
   }
 
+  const setSelectionStatus = async (status, question) => {
+    if (question) {
+      const ans = await confirm('Are you sure?', question)
+      if (!ans) return
+    }
+
+    const operations = selectedAssets.map((id) => ({
+      id,
+      data: { status },
+    }))
+    nebula
+      .request('ops', { operations })
+      .then(() => {
+        toast.success('Status updated')
+        dispatch(reloadBrowser())
+      })
+      .catch((error) => {
+        console.error(error)
+        toast.error(error.response?.detail)
+      })
+  }
+
+  const contextMenu = () => {
+    const items = [
+      {
+        label: 'Send to...',
+        icon: 'send',
+        onClick: () => dispatch(showSendToDialog()),
+      },
+      {
+        label: 'Reset',
+        icon: 'undo',
+        onClick: () =>
+          setSelectionStatus(
+            5,
+            'Do you want to reload selected assets metadata?'
+          ),
+      },
+      {
+        label: 'Archive',
+        separator: true,
+        icon: 'archive',
+        onClick: () =>
+          setSelectionStatus(
+            4,
+            'Do you want to move selected assets to archive?'
+          ),
+      },
+      {
+        label: 'Trash',
+        icon: 'delete',
+        onClick: () =>
+          setSelectionStatus(
+            3,
+            'Do you want to move selected assets to trash?'
+          ),
+      },
+    ]
+    return items
+  }
+
   return (
     <>
       <section className="grow">
@@ -168,6 +233,7 @@ const BrowserTable = () => {
           loading={loading}
           sortBy={sortBy}
           sortDirection={sortDirection}
+          contextMenu={contextMenu}
           onSort={(sortBy, sortDirection) => {
             setSortBy(sortBy)
             setSortDirection(sortDirection)
@@ -175,6 +241,7 @@ const BrowserTable = () => {
         />
       </section>
       <Pagination page={page} setPage={setPage} hasMore={hasMore} />
+      <ConfirmDialog />
     </>
   )
 }

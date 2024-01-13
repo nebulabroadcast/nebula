@@ -1,8 +1,9 @@
-import { useMemo } from 'react'
+import { useMemo, useRef } from 'react'
 
 import Loader from '../Loader'
 import TableWrapper from './container'
 import { HeaderCell, DataRow } from './cells'
+import ContextMenu from '../ContextMenu'
 
 const Table = ({
   data,
@@ -18,8 +19,10 @@ const Table = ({
   sortDirection,
   onSort,
   onLoadMore,
+  contextMenu,
   loading = false,
 }) => {
+  const tableRef = useRef(null)
   const head = useMemo(() => {
     return (
       <thead>
@@ -83,10 +86,11 @@ const Table = ({
           <Loader />
         </div>
       )}
-      <table onKeyDown={handleKeyDown} tabIndex={0}>
+      <table onKeyDown={handleKeyDown} tabIndex={0} ref={tableRef}>
         {head}
         {body}
       </table>
+      {contextMenu && <ContextMenu target={tableRef} options={contextMenu} />}
     </TableWrapper>
   )
 }
