@@ -50,6 +50,9 @@ const DialogWindow = styled.div`
   footer {
     border-top: 1px solid var(--color-surface-04);
     justify-content: flex-end;
+    button {
+      min-width: 100px !important;
+    }
   }
 `
 

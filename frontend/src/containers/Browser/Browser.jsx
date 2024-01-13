@@ -12,7 +12,7 @@ import {
   showSendToDialog,
 } from '/src/actions'
 
-import { useLocalStorage } from '/src/hooks'
+import { useLocalStorage, useConfirm } from '/src/hooks'
 import BrowserNav from './BrowserNav'
 import {
   getColumnWidth,
@@ -63,6 +63,8 @@ const BrowserTable = () => {
   )
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(false)
+  const [ConfirmDialog, confirm] = useConfirm()
+
 
   const loadData = () => {
     setLoading(true)
@@ -159,7 +161,13 @@ const BrowserTable = () => {
   }
 
 
-  const setSelectionStatus = (status) => {
+  const setSelectionStatus = async (status, question) => {
+
+    if (question) {
+      const ans = await confirm("Are you sure?", question)
+      if (!ans) return
+    }
+
     const operations = selectedAssets.map((id) => ({
       id,
       data: { status },
@@ -184,7 +192,15 @@ const BrowserTable = () => {
       },
       {
         label: 'Reset',
-        onClick: () => setSelectionStatus(5)
+        onClick: () => setSelectionStatus(5,  "Do you want to reload selected assets metadata?"),
+      },
+      {
+        label: 'Archive',
+        onClick: () => setSelectionStatus(4,  "Do you want to move selected assets to archive?"),
+      },
+      {
+        label: 'Trash',
+        onClick: () => setSelectionStatus(3,  "Do you want to move selected assets to trash?"),
       }
     ]
     return items
@@ -213,6 +229,7 @@ const BrowserTable = () => {
         />
       </section>
       <Pagination page={page} setPage={setPage} hasMore={hasMore} />
+      <ConfirmDialog />
     </>
   )
 }

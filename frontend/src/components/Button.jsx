@@ -63,13 +63,13 @@ const Button = forwardRef(
 
     return (
       <BaseButton {...props} className={classes.join(' ')} ref={ref}>
-        {iconOnRight && label}
+        {label && iconOnRight && <span>{label}</span>}
         {icon && (
           <span className="icon material-symbols-outlined" style={iconStyle}>
             {icon}
           </span>
         )}
-        {!iconOnRight && label}
+        {!iconOnRight && label && <span>{label}</span>}
       </BaseButton>
     )
   }
