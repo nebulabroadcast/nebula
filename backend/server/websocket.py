@@ -161,12 +161,15 @@ class Messaging(BackgroundTask):
         """When an error log is received, we want to keep error rate"""
         now = time.time()
         # delete timestamps older than 5 minutes from the list
-        self.error_rate_data = [t for t in self.error_rate_data if now - t < 300]
+        if len(self.error_rate_data) > 100:
+            self.error_rate_data = [t for t in self.error_rate_data if now - t < 300]
         self.error_rate_data.append(now)
 
     @property
     def error_rate(self) -> float:
         """Returns the error rate in the last 5 minutes"""
+        now = time.time()
+        self.error_rate_data = [t for t in self.error_rate_data if now - t < 300]
         return len(self.error_rate_data)
 
 
