@@ -114,6 +114,7 @@ const ServicesPage = () => {
     { name: 'id', title: '#', width: 1 },
     { name: 'name', title: 'Name' },
     { name: 'type', title: 'Type', width: 200 },
+    { name: 'hostname', title: 'Hostname', width: 200 },
     { name: 'status', title: 'Status', width: 200, formatter: formatStatus },
     {
       name: 'last_seen',
