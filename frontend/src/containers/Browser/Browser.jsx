@@ -1,5 +1,5 @@
 import nebula from '/src/nebula'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { toast } from 'react-toastify'
 
@@ -8,7 +8,7 @@ import {
   setCurrentView,
   setSelectedAssets,
   setFocusedAsset,
-  reloadBrowser,
+  //reloadBrowser,
   showSendToDialog,
 } from '/src/actions'
 
@@ -62,9 +62,13 @@ const BrowserTable = () => {
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(false)
   const [ConfirmDialog, confirm] = useConfirm()
+  const dataRef = useRef(data)
+
+  useEffect(() => {
+    dataRef.current = data;
+  }, [data])
 
   const loadData = () => {
-    setLoading(true)
     nebula
       .request('browse', {
         view: currentView,
@@ -95,6 +99,26 @@ const BrowserTable = () => {
       .finally(() => setLoading(false))
   }
 
+  const handlePubSub = useCallback((topic, message) => {
+    if (topic !== 'objects_changed') return
+    if (message.object_type !== 'asset') return
+    let changed = false
+    for (const obj of message.objects) {
+      if (dataRef.current.find((row) => row.id === obj)) {
+        console.log('Browser: object changed, reloading', obj);
+        changed = true;
+        break;
+      }
+    }
+    if (changed)
+      loadData()
+  }, [loadData])
+
+  useEffect(() => {
+    const token = PubSub.subscribe('objects_changed', handlePubSub)
+    return () => PubSub.unsubscribe(token)
+  }, [])
+
   useEffect(() => {
     if (!currentView) {
       if (nebula.settings.views.length) {
@@ -102,6 +126,7 @@ const BrowserTable = () => {
       }
       return
     }
+    setLoading(true) // show loading indicator only if the user initiated the refresh
     loadData()
   }, [currentView, searchQuery, browserRefresh, sortBy, sortDirection, page])
 
@@ -171,7 +196,7 @@ const BrowserTable = () => {
       .request('ops', { operations })
       .then(() => {
         toast.success('Status updated')
-        dispatch(reloadBrowser())
+        //dispatch(reloadBrowser())
       })
       .catch((error) => {
         console.error(error)

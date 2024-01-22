@@ -186,7 +186,7 @@ const AssetEditor = () => {
         nebula
           .request('set', { id: assetData.id, data: assetData })
           .then(() => {
-            dispatch(reloadBrowser())
+            assetData.id || dispatch(reloadBrowser())
           })
           .catch((error) => {
             toast.error(
@@ -256,8 +256,9 @@ const AssetEditor = () => {
     nebula
       .request('set', { id: assetData.id, data: payload || assetData })
       .then((response) => {
+        //reload browser if it's a new asset
+        assetData.id || dispatch(reloadBrowser())
         loadAsset(response.data.id)
-        dispatch(reloadBrowser())
       })
       .catch((error) => {
         toast.error(
