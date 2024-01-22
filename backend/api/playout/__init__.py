@@ -63,6 +63,6 @@ class Request(APIRequest):
             ) from e
 
         if not response:
-            raise nebula.NebulaException(data["message"])
+            raise nebula.NebulaException(data.get("message", "Unknown error"))
 
         return PlayoutResponseModel(plugins=data.get("plugins"))
