@@ -85,14 +85,13 @@ const Dropdown = ({
       <div className="dropdown-content" style={contentStyle}>
         {options &&
           options.map((option, idx) => (
-            <>
+            <span key={idx}>
               {option.separator && <hr />}
               <Button
-                key={idx}
                 {...option}
                 disabled={option.disabled || value === option.value}
               />
-            </>
+            </span>
           ))}
       </div>
     </DropdownContainer>

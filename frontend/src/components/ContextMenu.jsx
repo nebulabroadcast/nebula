@@ -113,10 +113,9 @@ const ContextMenu = ({ target, options }) => {
       }}
     >
       {options().map((option, idx) => (
-        <>
+        <span key={idx}>
           {option.separator && <hr />}
           <Button
-            key={idx}
             label={option.label}
             icon={option.icon}
             onClick={() => {
@@ -124,7 +123,7 @@ const ContextMenu = ({ target, options }) => {
               option.onClick && option.onClick()
             }}
           />
-        </>
+        </span>
       ))}
     </ContextMenuWrapper>
   )

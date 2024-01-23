@@ -242,7 +242,7 @@ def build_query(
 
     query = f"""
         SELECT meta FROM assets {conds}
-        ORDER BY {order_by} {request.order_dir}
+        ORDER BY {order_by} {request.order_dir}, id DESC
         LIMIT {request.limit}
         OFFSET {request.offset}
     """
