@@ -248,7 +248,6 @@ const AssetEditor = () => {
 
   const onSave = (payload) => {
     if (!enabledActions.save && !payload) {
-      console.log('Save disabled')
       return
     }
     setLoading(true)

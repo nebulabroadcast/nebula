@@ -2,13 +2,13 @@ import nebula from '/src/nebula'
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { toast } from 'react-toastify'
+import { debounce } from 'lodash'
 
 import { Table, Navbar, Button, Spacer } from '/src/components'
 import {
   setCurrentView,
   setSelectedAssets,
   setFocusedAsset,
-  //reloadBrowser,
   showSendToDialog,
 } from '/src/actions'
 
@@ -99,19 +99,21 @@ const BrowserTable = () => {
       .finally(() => setLoading(false))
   }
 
+  const debouncingLoadData = useCallback(debounce(loadData, 100), [loadData])
+
   const handlePubSub = useCallback((topic, message) => {
     if (topic !== 'objects_changed') return
     if (message.object_type !== 'asset') return
     let changed = false
     for (const obj of message.objects) {
       if (dataRef.current.find((row) => row.id === obj)) {
-        console.log('Browser: object changed, reloading', obj);
         changed = true;
         break;
       }
     }
-    if (changed)
-      loadData()
+    if (changed){
+      debouncingLoadData()
+    }
   }, [loadData])
 
   useEffect(() => {
