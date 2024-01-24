@@ -118,6 +118,8 @@ async def catchall_exception_handler(
 @app.websocket("/ws")
 async def ws_endpoint(websocket: WebSocket) -> None:
     client = await messaging.join(websocket)
+    if client is None:
+        return
     try:
         while True:
             message = await client.receive()
@@ -125,15 +127,11 @@ async def ws_endpoint(websocket: WebSocket) -> None:
                 continue
 
             if message["topic"] == "auth":
-                await client.authorize(
-                    message.get("token"),
-                    topics=message.get("subscribe", []),
-                )
-                # if client.user_name:
-                #     nebula.log.trace(f"{client.user_name} connected")
+                token = message.get("token")
+                subscribe = message.get("subscribe", [])
+                if token:
+                    await client.authorize(token, subscribe)
     except WebSocketDisconnect:
-        # if client.user_name:
-        #     nebula.log.trace(f"{client.user_name} disconnected")
         with contextlib.suppress(KeyError):
             del messaging.clients[client.id]
 
