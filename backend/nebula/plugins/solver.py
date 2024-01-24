@@ -210,14 +210,14 @@ class SolverPlugin:
                 item["position"] = i
                 await item.save(notify=False)
 
-        if self.bin.id not in self.affected_bins:
+        if self.bin.id and self.bin.id not in self.affected_bins:
             self.affected_bins.append(self.bin.id)
 
         # save event in case solver updated its metadata
         await self.event.save()
 
         # another paceholder was created, so we need to solve it
-        if self._solve_next:
+        if self._solve_next and self._solve_next.id:
             await self(self._solve_next.id)
             return
 

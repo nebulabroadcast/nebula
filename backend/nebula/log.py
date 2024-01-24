@@ -77,10 +77,12 @@ log = Logger()
 # the same format, log level and consumers as the primary
 # Nebula logger. This is useful for 3rd party libraries.
 
+
 class CustomHandler(logging.Handler):
     def emit(self, record):
         log_message = self.format(record)
-        log(LogLevel(record.levelno // 10), log_message)
+        name = record.name
+        log(LogLevel(record.levelno // 10), log_message, user=name)
 
 
 root_logger = logging.getLogger()

@@ -1,11 +1,12 @@
 import json
 import os
+from typing import Any
 
 
 async def setup_metatypes(meta_types, db):
     languages = ["en", "cs"]
 
-    aliases = {}
+    aliases: dict[str, dict[str, Any]] = {}
     for lang in languages:
         aliases[lang] = {}
         trans_table_fname = os.path.join("schema", f"meta-aliases-{lang}.json")

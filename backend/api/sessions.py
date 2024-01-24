@@ -14,7 +14,6 @@ class SessionsRequest(RequestModel):
 class Sessions(APIRequest):
     name = "sessions"
     title = "List sessions"
-    response_model = list[SessionModel]
 
     async def handle(
         self,
@@ -48,13 +47,13 @@ class InvalidateSessionRequest(RequestModel):
 class InvalidateSession(APIRequest):
     name = "invalidate_session"
     title = "Invalidate session"
-    responses = [204, 201]
+    responses = [204]
 
     async def handle(
         self,
         payload: InvalidateSessionRequest,
         user: CurrentUser,
-    ) -> None:
+    ) -> Response:
         """Create or update an object."""
 
         session = await Session.check(payload.token)

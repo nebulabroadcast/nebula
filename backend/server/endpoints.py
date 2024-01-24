@@ -1,8 +1,10 @@
+import inspect
 import os
 from typing import Generator
 
 import fastapi
 from nxtools import slugify
+from pydantic import BaseModel
 
 import nebula
 from nebula.common import classes_from_module, import_module
@@ -47,6 +49,7 @@ def find_api_endpoints() -> Generator[APIRequest, None, None]:
                 module = import_module(module_name, module_path)
             except ImportError:
                 nebula.log.traceback(f"Failed to load endpoint {module_name}")
+                continue
 
             # Find API endpoints in module and yield them
 
@@ -70,16 +73,34 @@ def install_endpoints(app: fastapi.FastAPI):
             nebula.log.warn(f"Duplicate endpoint name {endpoint.name}")
             continue
 
+        if not hasattr(endpoint, "handle"):
+            nebula.log.warn(f"Endpoint {endpoint.name} doesn't have a handle method")
+            continue
+
+        if not callable(endpoint.handle):  # type: ignore
+            nebula.log.warn(f"Endpoint {endpoint.name} handle is not callable")
+            continue
+
+        # use inspect to get the return type of the handle method
+        # this is used to determine the response model
+
+        sig = inspect.signature(endpoint.handle)  # type: ignore
+        if sig.return_annotation is not inspect.Signature.empty:
+            response_model = sig.return_annotation
+        else:
+            response_model = None
+
+        #
+        # Set the endpoint path and name
+        #
+
         endpoint_names.add(endpoint.name)
         route = endpoint.path or f"/api/{endpoint.name}"
         nebula.log.trace("Adding endpoint", route)
 
         additional_params = {}
 
-        if endpoint.response_model is None:
-            additional_params["response_class"] = fastapi.Response
-        else:
-            additional_params["response_model"] = endpoint.response_model
+        if isinstance(response_model, BaseModel):
             additional_params["response_model_exclude_none"] = endpoint.exclude_none
 
         if isinstance(endpoint.__doc__, str):

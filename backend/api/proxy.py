@@ -7,8 +7,10 @@ import nebula
 from server.dependencies import CurrentUser
 from server.request import APIRequest
 
+
 class ProxyResponse(Response):
     content_type = "video/mp4"
+
 
 async def get_bytes_range(file_name: str, start: int, end: int) -> bytes:
     """Get a range of bytes from a file"""
@@ -40,7 +42,9 @@ def _get_range_header(range_header: str, file_size: int) -> tuple[int, int]:
     return start, end
 
 
-async def range_requests_response(request: Request, file_path: str, content_type: str) -> ProxyResponse:
+async def range_requests_response(
+    request: Request, file_path: str, content_type: str
+) -> ProxyResponse:
     """Returns StreamingResponse using Range Requests of a given file"""
 
     file_size = os.stat(file_path).st_size
@@ -76,8 +80,6 @@ async def range_requests_response(request: Request, file_path: str, content_type
         headers=headers,
         status_code=status_code,
     )
-
-
 
 
 class ServeProxy(APIRequest):
@@ -116,6 +118,6 @@ class ServeProxy(APIRequest):
 
         try:
             return await range_requests_response(request, video_path, "video/mp4")
-        except Exception:
+        except Exception as e:
             nebula.log.traceback("Error serving proxy")
-            raise nebula.NebulaException("Error serving proxy")
+            raise nebula.NebulaException("Error serving proxy") from e

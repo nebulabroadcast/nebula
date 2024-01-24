@@ -134,7 +134,10 @@ class LogoutRequest(APIRequest):
 class SetPassword(APIRequest):
     """Set a new password for the current (or a given) user.
 
-    In order to set a password for another user, the current user must be an admin.
+    Normal users can only change their own password.
+
+    In order to set a password for another user,
+    the current user must be an admin, otherwise a 403 error is returned.
     """
 
     name: str = "password"
@@ -147,7 +150,7 @@ class SetPassword(APIRequest):
     ):
         if request.login:
             if not user.is_admin:
-                raise nebula.UnauthorizedException(
+                raise nebula.ForbiddenException(
                     "Only admin can change other user's password"
                 )
             query = "SELECT meta FROM users WHERE login = $1"

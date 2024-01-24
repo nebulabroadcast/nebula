@@ -7,9 +7,16 @@ from server.session import Session
 from server.utils import parse_access_token
 
 
-async def access_token(authorization: str = Header(None)) -> str | None:
-    """Parse and return an access token provided in the request headers."""
-    access_token = parse_access_token(authorization)
+async def access_token(
+    authorization: str | None = Header(None),
+    token: str | None = Query(None),
+) -> str | None:
+    """Parse and return an access token.
+
+    Access token may be provided either in the Authorization header
+    or in the query parameters.
+    """
+    access_token = token or parse_access_token(authorization or "")
     if not access_token:
         return None
     return access_token
@@ -35,18 +42,6 @@ async def request_initiator(x_client_id: str | None = Header(None)) -> str | Non
 
 
 RequestInitiator = Annotated[str, Depends(request_initiator)]
-
-
-async def current_user_query(token: str = Query(None)) -> nebula.User:
-    if token is None:
-        raise nebula.UnauthorizedException("No access token provided")
-    session = await Session.check(token, None)
-    if session is None:
-        raise nebula.UnauthorizedException("Invalid access token")
-    return nebula.User(meta=session.user)
-
-
-CurrentUserInQuery = Annotated[nebula.User, Depends(current_user_query)]
 
 
 async def current_user(

@@ -23,7 +23,7 @@ from setup.defaults.services import SERVICES
 from setup.defaults.views import VIEWS
 from setup.metatypes import setup_metatypes
 
-TEMPLATE = {
+TEMPLATE: dict[str, Any] = {
     "actions": ACTIONS,
     "channels": CHANNELS,
     "folders": FOLDERS,
@@ -53,6 +53,7 @@ def load_overrides():
             log.info(f"Found overrides for {key}")
 
             if isinstance(override, dict) and isinstance(TEMPLATE[key], dict):
+                assert hasattr(TEMPLATE[key], "update")
                 TEMPLATE[key].update(override)
             elif isinstance(override, list) and isinstance(TEMPLATE[key], list):
                 TEMPLATE[key] = override
@@ -61,7 +62,6 @@ def load_overrides():
 
 
 async def setup_settings(db):
-
     load_overrides()
 
     log.info("Applying system settings")
@@ -147,7 +147,7 @@ async def setup_settings(db):
     # Setup classifications
 
     used_urns = set()
-    for _meta_type, mset in TEMPLATE["meta_types"].items():
+    for mset in TEMPLATE["meta_types"].values():
         if mset.get("cs"):
             used_urns.add(mset["cs"])
 
