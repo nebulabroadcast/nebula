@@ -46,7 +46,7 @@ class ServicesResponseModel(ResponseModel):
 
 
 class Request(APIRequest):
-    """Get a list of objects"""
+    """List and control installed services."""
 
     name: str = "services"
     title: str = "Service control"
@@ -57,8 +57,6 @@ class Request(APIRequest):
         request: ServiceRequestModel,
         user: CurrentUser,
     ) -> ServicesResponseModel:
-        """List and control installed services."""
-
         if request.stop:
             nebula.log.info(f"Stopping service {request.stop}", user=user.name)
             await nebula.db.execute(

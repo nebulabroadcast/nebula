@@ -53,7 +53,7 @@ class SolveRequestModel(RequestModel):
 
 
 class Request(APIRequest):
-    """Browse the assets database."""
+    """Solve a rundown placeholder"""
 
     name: str = "solve"
     responses: list[int] = [200]
@@ -63,6 +63,8 @@ class Request(APIRequest):
         request: SolveRequestModel,
         user: CurrentUser,
     ) -> Response:
+        # TODO: check permissions
+        assert user is not None
 
         solver = get_solver(request.solver)
 
