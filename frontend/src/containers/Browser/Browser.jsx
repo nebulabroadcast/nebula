@@ -1,141 +1,26 @@
 import nebula from '/src/nebula'
-import styled from 'styled-components'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { Timecode } from '@wfoxall/timeframe'
+import { toast } from 'react-toastify'
+import { debounce } from 'lodash'
 
-import { Table, Timestamp, Navbar, Button, Spacer } from '/src/components'
+import { Table, Navbar, Button, Spacer } from '/src/components'
 import {
   setCurrentView,
   setSelectedAssets,
   setFocusedAsset,
+  showSendToDialog,
 } from '/src/actions'
 
-import { useLocalStorage } from '/src/hooks'
+import { useLocalStorage, useConfirm } from '/src/hooks'
 import BrowserNav from './BrowserNav'
+import {
+  getColumnWidth,
+  getFormatter,
+  formatRowHighlightColor,
+} from './Formatting.jsx'
 
 const ROWS_PER_PAGE = 200
-
-const QCState = styled.div`
-  display: inline-block;
-  &::before {
-    content: '⚑';
-  }
-
-  &.qc-state-3 {
-    color: var(--color-red);
-  }
-
-  &.qc-state-4 {
-    color: var(--color-green);
-  }
-`
-
-const formatRowHighlightColor = (rowData) => {
-  switch (rowData['status']) {
-    case 0:
-      return 'var(--color-red)'
-    case 2:
-      return 'var(--color-yellow)' // creating
-    case 3:
-      return 'var(--color-violet)' // trashed
-    case 4:
-      return 'var(--color-blue)' // archived
-    case 5:
-      return 'var(--color-yellow)' // reset
-    case 6:
-      return 'var(--color-red)' // corrupted
-    case 11:
-      return 'var(--color-yellow)' // retrieving
-    default:
-      return 'transparent'
-  }
-}
-
-// Column width
-
-const getColumnWidth = (key) => {
-  if (!['title', 'subtitle', 'description'].includes(key)) return '1px'
-}
-
-// Field formatters
-
-const getFormatter = (key) => {
-  if (['title', 'subtitle', 'description'].includes(key))
-    return (rowData, key) => <td>{rowData[key]}</td>
-
-  switch (key) {
-    case 'qc/state':
-      return (rowData, key) => (
-        <td>
-          <QCState className={`qc-state-${rowData[key]}`} />
-        </td>
-      )
-
-    case 'id_folder':
-      return (rowData, key) => {
-        const folder = nebula.settings.folders.find(
-          (f) => f.id === rowData[key]
-        )
-        return <td style={{ color: folder?.color }}>{folder?.name}</td>
-      }
-
-    case 'duration':
-      return (rowData, key) => {
-        const fps = rowData['video/fps_f'] || 25
-        const duration = rowData[key] || 0
-        const timecode = new Timecode(duration * fps, fps)
-        return <td>{timecode.toString().substring(0, 11)}</td>
-      }
-
-    case 'created_by':
-      return (rowData, key) => {
-        return <td>{nebula.getUserName(rowData[key])}</td>
-      }
-
-    case 'updated_by':
-      return (rowData, key) => {
-        return <td>{nebula.getUserName(rowData[key])}</td>
-      }
-
-    default:
-      const metaType = nebula.metaType(key)
-      switch (metaType.type) {
-        case 'boolean':
-          return (rowData, key) => <td>{rowData[key] ? '✓' : ''}</td>
-
-        case 'datetime':
-          return (rowData, key) => (
-            <td>
-              <Timestamp timestamp={rowData[key]} mode={metaType.mode} />{' '}
-            </td>
-          )
-
-        case 'select':
-          return (rowData, key) => {
-            if (!metaType.cs) return <td>{rowData[key]}</td>
-
-            const option = nebula
-              .csOptions(metaType.cs)
-              .find((opt) => opt.value === rowData[key])
-
-            return <td>{option?.title}</td>
-          }
-
-        case 'list':
-          return (rowData, key) => {
-            if (!metaType.cs) return <td>{rowData[key].join(', ')}</td>
-            const options = nebula
-              .csOptions(metaType.cs)
-              .filter((opt) => rowData[key].includes(opt.value))
-            return <td>{options.map((opt) => opt.title).join(', ')}</td>
-          }
-
-        default:
-          return (rowData, key) => <td>{rowData[key]}</td>
-      } // switch metaType
-  } // end switch key
-} // end getFormatter
 
 const Pagination = ({ page, setPage, hasMore }) => {
   if (page > 1 || hasMore)
@@ -161,6 +46,7 @@ const BrowserTable = () => {
   const currentView = useSelector((state) => state.context.currentView?.id)
   const searchQuery = useSelector((state) => state.context.searchQuery)
   const selectedAssets = useSelector((state) => state.context.selectedAssets)
+  const focusedAsset = useSelector((state) => state.context.focusedAsset)
   const browserRefresh = useSelector((state) => state.context.browserRefresh)
 
   const dispatch = useDispatch()
@@ -175,9 +61,14 @@ const BrowserTable = () => {
   )
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(false)
+  const [ConfirmDialog, confirm] = useConfirm()
+  const dataRef = useRef(data)
+
+  useEffect(() => {
+    dataRef.current = data;
+  }, [data])
 
   const loadData = () => {
-    setLoading(true)
     nebula
       .request('browse', {
         view: currentView,
@@ -208,6 +99,28 @@ const BrowserTable = () => {
       .finally(() => setLoading(false))
   }
 
+  const debouncingLoadData = useCallback(debounce(loadData, 100), [loadData])
+
+  const handlePubSub = useCallback((topic, message) => {
+    if (topic !== 'objects_changed') return
+    if (message.object_type !== 'asset') return
+    let changed = false
+    for (const obj of message.objects) {
+      if (dataRef.current.find((row) => row.id === obj)) {
+        changed = true;
+        break;
+      }
+    }
+    if (changed){
+      debouncingLoadData()
+    }
+  }, [loadData])
+
+  useEffect(() => {
+    const token = PubSub.subscribe('objects_changed', handlePubSub)
+    return () => PubSub.unsubscribe(token)
+  }, [])
+
   useEffect(() => {
     if (!currentView) {
       if (nebula.settings.views.length) {
@@ -215,12 +128,121 @@ const BrowserTable = () => {
       }
       return
     }
+    setLoading(true) // show loading indicator only if the user initiated the refresh
     loadData()
   }, [currentView, searchQuery, browserRefresh, sortBy, sortDirection, page])
 
-  const onRowClick = (rowData) => {
-    dispatch(setSelectedAssets([rowData.id]))
+  const onRowClick = (rowData, event) => {
+    let newSelectedAssets = []
+    if (event.ctrlKey) {
+      if (selectedAssets.includes(rowData.id)) {
+        newSelectedAssets = selectedAssets.filter((obj) => obj !== rowData.id)
+      } else {
+        newSelectedAssets = [...selectedAssets, rowData.id]
+      }
+    } else if (event.shiftKey) {
+      const clickedIndex = data.findIndex((row) => row.id === rowData.id)
+      const focusedIndex =
+        data.findIndex((row) => row.id === focusedAsset) ||
+        data.findIndex((row) => selectedAssets.includes(row.id)) ||
+        clickedIndex ||
+        0
+
+      const min = Math.min(clickedIndex, focusedIndex)
+      const max = Math.max(clickedIndex, focusedIndex)
+
+      // Get the ids of the rows in the range
+      const rangeIds = data.slice(min, max + 1).map((row) => row.id)
+
+      newSelectedAssets = [...new Set([...selectedAssets, ...rangeIds])]
+    } else {
+      newSelectedAssets = [rowData.id]
+    }
+
+    dispatch(setSelectedAssets(newSelectedAssets))
     dispatch(setFocusedAsset(rowData.id))
+  }
+
+  const focusNext = (offset) => {
+    if (!focusedAsset) return
+    const nextIndex = data.findIndex((row) => row.id === focusedAsset) + offset
+    if (nextIndex < data.length) {
+      const nextRow = data[nextIndex]
+      dispatch(setSelectedAssets([nextRow.id]))
+      dispatch(setFocusedAsset(nextRow.id))
+    }
+  }
+
+  const onKeyDown = (e) => {
+    if (e.key === 'ArrowDown') {
+      focusNext(1)
+      e.preventDefault()
+    }
+    if (e.key === 'ArrowUp') {
+      focusNext(-1)
+      e.preventDefault()
+    }
+  }
+
+  const setSelectionStatus = async (status, question) => {
+    if (question) {
+      const ans = await confirm('Are you sure?', question)
+      if (!ans) return
+    }
+
+    const operations = selectedAssets.map((id) => ({
+      id,
+      data: { status },
+    }))
+    nebula
+      .request('ops', { operations })
+      .then(() => {
+        toast.success('Status updated')
+        //dispatch(reloadBrowser())
+      })
+      .catch((error) => {
+        console.error(error)
+        toast.error(error.response?.detail)
+      })
+  }
+
+  const contextMenu = () => {
+    const items = [
+      {
+        label: 'Send to...',
+        icon: 'send',
+        onClick: () => dispatch(showSendToDialog()),
+      },
+      {
+        label: 'Reset',
+        icon: 'undo',
+        onClick: () =>
+          setSelectionStatus(
+            5,
+            'Do you want to reload selected assets metadata?'
+          ),
+      },
+      {
+        label: 'Archive',
+        separator: true,
+        icon: 'archive',
+        onClick: () =>
+          setSelectionStatus(
+            4,
+            'Do you want to move selected assets to archive?'
+          ),
+      },
+      {
+        label: 'Trash',
+        icon: 'delete',
+        onClick: () =>
+          setSelectionStatus(
+            3,
+            'Do you want to move selected assets to trash?'
+          ),
+      },
+    ]
+    return items
   }
 
   return (
@@ -233,10 +255,12 @@ const BrowserTable = () => {
           keyField="id"
           selection={selectedAssets}
           onRowClick={onRowClick}
+          onKeyDown={onKeyDown}
           rowHighlightColor={formatRowHighlightColor}
           loading={loading}
           sortBy={sortBy}
           sortDirection={sortDirection}
+          contextMenu={contextMenu}
           onSort={(sortBy, sortDirection) => {
             setSortBy(sortBy)
             setSortDirection(sortDirection)
@@ -244,6 +268,7 @@ const BrowserTable = () => {
         />
       </section>
       <Pagination page={page} setPage={setPage} hasMore={hasMore} />
+      <ConfirmDialog />
     </>
   )
 }

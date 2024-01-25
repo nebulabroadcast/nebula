@@ -154,6 +154,7 @@ const JobsPage = () => {
   ]
 
   const handlePubSub = (topic, message) => {
+    if (topic !== 'job_progress') return
     setJobs((prevData) => {
       const newData = [...prevData]
       const index = newData.findIndex((job) => job.id === message.id)

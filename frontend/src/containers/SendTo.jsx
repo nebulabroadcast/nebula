@@ -1,24 +1,26 @@
 import nebula from '/src/nebula'
 import { useState, useEffect, useMemo } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
 import { toast } from 'react-toastify'
-import { Dialog, Button } from '/src/components'
+import { Dialog, Button, ErrorBanner } from '/src/components'
+import { hideSendToDialog } from '/src/actions'
 
-const SendToDialog = ({ assets, onHide }) => {
-  const [sendToOptions, setSendToOptions] = useState([])
+const SendToDialogBody = ({ selectedAssets, onHide }) => {
+  const [sendToOptions, setSendToOptions] = useState(null)
 
   const loadOptions = () => {
-    nebula.request('actions', { ids: assets }).then((response) => {
+    nebula.request('actions', { ids: selectedAssets }).then((response) => {
       setSendToOptions(response.data.actions)
     })
   }
 
   useEffect(() => {
     loadOptions()
-  }, [assets])
+  }, [selectedAssets])
 
   const onSend = (action) => {
     nebula
-      .request('send', { ids: assets, id_action: action })
+      .request('send', { ids: selectedAssets, id_action: action })
       .then(() => {
         toast.success('Job request accepted')
         onHide()
@@ -29,7 +31,14 @@ const SendToDialog = ({ assets, onHide }) => {
   }
 
   const body = useMemo(() => {
-    if (sendToOptions.length === 0) return null
+    if (!sendToOptions) return null
+    if (sendToOptions.length === 0) {
+      return (
+        <ErrorBanner>
+          No actions available for the current selection
+        </ErrorBanner>
+      )
+    }
     return (
       <>
         {sendToOptions.map((option) => {
@@ -46,15 +55,20 @@ const SendToDialog = ({ assets, onHide }) => {
   }, [sendToOptions])
 
   const footer = useMemo(() => {
-    if (sendToOptions.length === 0) return null
+    if (!sendToOptions?.length) return null
     return <Button label="Cancel" onClick={onHide} icon="close" />
   }, [sendToOptions])
+
+  const what =
+    selectedAssets.length === 1
+      ? 'the asset'
+      : `${selectedAssets.length} assets`
 
   return (
     <Dialog
       onHide={onHide}
       style={{ width: 600 }}
-      header="Send to..."
+      header={`Send ${what} to...`}
       footer={footer}
     >
       {body}
@@ -62,4 +76,22 @@ const SendToDialog = ({ assets, onHide }) => {
   )
 }
 
-export { SendToDialog }
+const SendToDialog = () => {
+  const dialogVisible = useSelector(
+    (state) => state.context.sendToDialogVisible
+  )
+  const selectedAssets = useSelector((state) => state.context.selectedAssets)
+  const forcedIds = useSelector((state) => state.context.sendToIds)
+  const dispatch = useDispatch()
+
+  const ids = forcedIds || selectedAssets
+
+  const onHide = () => {
+    dispatch(hideSendToDialog())
+  }
+  return (
+    dialogVisible && <SendToDialogBody onHide={onHide} selectedAssets={ids} />
+  )
+}
+
+export default SendToDialog

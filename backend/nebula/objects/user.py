@@ -47,6 +47,12 @@ class User(BaseObject):
         "login",
         "password",
     ]
+    defaults: dict[str, Any] = {
+        # In the database, password is not nullable,
+        # but we want to be able to create users without password
+        # (e.g. with OAuth or API key)
+        "password": "",
+    }
 
     @property
     def language(self):
@@ -85,6 +91,8 @@ class User(BaseObject):
     async def login(cls, username: str, password: str) -> "User":
         """Return a User instance based on username and password."""
 
+        if not password:
+            raise LoginFailedException("Password cannot be empty")
         passhash = hash_password(password)
         try:
             res = await db.fetch(

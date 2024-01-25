@@ -13,6 +13,7 @@ class ServiceItemModel(RequestModel):
     id: int = Field(..., title="Service ID")
     name: str = Field(..., title="Service name")
     type: str = Field(..., title="Service type")
+    hostname: str = Field(..., title="Hostname")
     status: ServiceState = Field(
         ...,
         title="Service status",
@@ -84,6 +85,7 @@ class Request(APIRequest):
                 id,
                 title,
                 service_type,
+                host,
                 state,
                 autostart,
                 last_seen
@@ -98,6 +100,7 @@ class Request(APIRequest):
                     id=row["id"],
                     name=row["title"],
                     type=row["service_type"],
+                    hostname=row["host"],
                     status=row["state"],
                     autostart=row["autostart"],
                     last_seen=time.time() - row["last_seen"],

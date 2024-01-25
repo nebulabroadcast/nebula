@@ -58,6 +58,8 @@ class ActionsRequest(APIRequest):
 
             if allow_if_elm := action_settings.findall("allow_if"):
                 allow_if_cond = allow_if_elm[0].text
+                if not allow_if_cond:
+                    continue
 
                 for id_asset in request.ids:
                     asset = await nebula.Asset.load(id_asset)

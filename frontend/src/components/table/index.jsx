@@ -1,8 +1,9 @@
-import { useMemo } from 'react'
+import { useMemo, useRef } from 'react'
 
 import Loader from '../Loader'
 import TableWrapper from './container'
 import { HeaderCell, DataRow } from './cells'
+import ContextMenu from '../ContextMenu'
 
 const Table = ({
   data,
@@ -11,14 +12,17 @@ const Table = ({
   style,
   keyField,
   onRowClick,
+  onKeyDown,
   selection,
   rowHighlightColor,
   sortBy,
   sortDirection,
   onSort,
   onLoadMore,
+  contextMenu,
   loading = false,
 }) => {
+  const tableRef = useRef(null)
   const head = useMemo(() => {
     return (
       <thead>
@@ -35,6 +39,12 @@ const Table = ({
       </thead>
     )
   }, [columns, sortBy, sortDirection, onSort])
+
+  const handleKeyDown = (event) => {
+    if (onKeyDown) {
+      onKeyDown(event)
+    }
+  }
 
   const body = useMemo(() => {
     return (
@@ -65,16 +75,22 @@ const Table = ({
   }
 
   return (
-    <TableWrapper className={className} style={style} onScroll={handleScroll}>
+    <TableWrapper
+      className={className}
+      style={style}
+      onScroll={handleScroll}
+      onKeyDown={handleKeyDown}
+    >
       {loading && (
         <div className="contained center">
           <Loader />
         </div>
       )}
-      <table>
+      <table onKeyDown={handleKeyDown} tabIndex={0} ref={tableRef}>
         {head}
         {body}
       </table>
+      {contextMenu && <ContextMenu target={tableRef} options={contextMenu} />}
     </TableWrapper>
   )
 }

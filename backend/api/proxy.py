@@ -16,13 +16,21 @@ async def send_bytes_range_requests(file_name: str, start: int, end: int):
     """
     CHUNK_SIZE = 1024 * 8
 
-    async with aiofiles.open(file_name, mode="rb") as f:
-        await f.seek(start)
-        chs = await f.tell()
-        while (pos := chs) <= end:
-            read_size = min(CHUNK_SIZE, end + 1 - pos)
-            data = await f.read(read_size)
-            yield data
+    sent_bytes = 0
+    try:
+        async with aiofiles.open(file_name, mode="rb") as f:
+            await f.seek(start)
+            pos = start
+            while pos < end:
+                read_size = min(CHUNK_SIZE, end - pos + 1)
+                data = await f.read(read_size)
+                yield data
+                pos += len(data)
+                sent_bytes += len(data)
+    finally:
+        nebula.log.trace(
+            f"Finished sending file {start}-{end}. Sent {sent_bytes} bytes. Expected {end-start+1} bytes"
+        )
 
 
 def _get_range_header(range_header: str, file_size: int) -> tuple[int, int]:

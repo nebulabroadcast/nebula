@@ -153,7 +153,7 @@ def install_frontend_plugins(app: FastAPI):
         if not os.path.isdir(plugin_path):
             continue
 
-        nebula.log.debug(f"Mounting frontend plugin {plugin_name}: {plugin_path}")
+        nebula.log.trace(f"Mounting frontend plugin {plugin_name}: {plugin_path}")
         app.mount(
             f"/plugins/{plugin_name}",
             StaticFiles(directory=plugin_path, html=True),

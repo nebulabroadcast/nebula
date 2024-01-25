@@ -82,8 +82,11 @@ class Client:
 
 
 class Messaging(BackgroundTask):
+    error_rate_data: list[float] = []
+
     def initialize(self) -> None:
         self.clients: dict[str, Client] = {}
+        self.error_rate_data = []
 
     async def join(self, websocket: WebSocket):
         if not self.is_running:
@@ -117,6 +120,7 @@ class Messaging(BackgroundTask):
                     ignore_subscribe_messages=True,
                     timeout=2,
                 )
+                message: dict[str, Any]
                 if raw_message is None:
                     await asyncio.sleep(0.01)
                     if time.time() - last_msg > 3:
@@ -134,6 +138,11 @@ class Messaging(BackgroundTask):
                         "data": data[4],
                     }
 
+                if message["topic"] == "log":
+                    assert isinstance(message["data"], dict)
+                    if message["data"].get("level", 0) > 3:
+                        self.handle_error_log()
+
                 clients = list(self.clients.values())
                 for client in clients:
                     for topic in client.topics:
@@ -147,6 +156,21 @@ class Messaging(BackgroundTask):
                 await asyncio.sleep(0.5)
 
         nebula.log.warn("Stopping redis2ws")
+
+    def handle_error_log(self):
+        """When an error log is received, we want to keep error rate"""
+        now = time.time()
+        # delete timestamps older than 5 minutes from the list
+        if len(self.error_rate_data) > 100:
+            self.error_rate_data = [t for t in self.error_rate_data if now - t < 300]
+        self.error_rate_data.append(now)
+
+    @property
+    def error_rate(self) -> float:
+        """Returns the error rate in the last 5 minutes"""
+        now = time.time()
+        self.error_rate_data = [t for t in self.error_rate_data if now - t < 300]
+        return len(self.error_rate_data)
 
 
 messaging = Messaging()

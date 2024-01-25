@@ -52,6 +52,13 @@ class NebulaConfig(BaseModel):
         "after too many failed login attempts",
     )
 
+    log_level: Literal[
+        "trace", "debug", "info", "success", "warning", "error", "critical"
+    ] = Field(
+        "debug",
+        description="Logging level",
+    )
+
 
 def load_config() -> NebulaConfig:
     prefix = "NEBULA_"
