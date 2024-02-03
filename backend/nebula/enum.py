@@ -2,16 +2,42 @@ import enum
 
 
 class ObjectStatus(enum.IntEnum):
+    """Object status enumeration.
+
+    This enumeration is used to indicate the status of an object.
+    Objects can be in one of the following states:
+
+    - OFFLINE: Object is in the database, but not available on the filesystem.
+    - ONLINE: Object is in the database and available on the filesystem.
+    - CREATING: Media file exists, but was changed recently, so its metadata
+        is being updated.
+    - TRASHED: Object has been marked as deleted, but is still available on
+        the filesystem. It will be deleted permanently after some time.
+    - ARCHIVED: Object has been marked as archived, but is still available on
+        the filesystem. It will be deleted permanently after some time.
+    - RESET: User has requested to reset the metadata of the object,
+        this triggers a re-scan of the media file metadata.
+    - CORRUPTED: Object is corrupted, and cannot be used.
+    - REMOTE: Object is not available on the filesystem, but is available one
+        a remote storage (typically a playout item which media file is on a
+        production storage, but it hasn't been copied to the playout storage yet).
+    - UNKNOWN: Object status is unknown.
+    - AIRED: Only for items. Item has been broadcasted.
+    - ONAIR: Only for items. Item is currently being broadcasted.
+    - RETRIEVING: Asset is marked for retrieval from a remote/archive storage.
+
+    """
+
     OFFLINE = 0
     ONLINE = 1
-    CREATING = 2  # File exists, but was changed recently.
-    TRASHED = 3  # File has been moved to trash location.
-    ARCHIVED = 4  # File has been moved to archive location.
-    RESET = 5  # Reset metadata action has been invoked.
+    CREATING = 2
+    TRASHED = 3
+    ARCHIVED = 4
+    RESET = 5
     CORRUPTED = 6
     REMOTE = 7
     UNKNOWN = 8
-    AIRED = 9  # Auxiliary value.
+    AIRED = 9
     ONAIR = 10
     RETRIEVING = 11
 

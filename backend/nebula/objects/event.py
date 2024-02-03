@@ -17,4 +17,7 @@ class Event(BaseObject):
     }
 
     async def delete_children(self):
+        assert self.connection is not None
+        assert hasattr(self.connection, "execute")
+        assert self.id
         await self.connection.execute("DELETE FROM bins WHERE id_magic = $1", self.id)

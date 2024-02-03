@@ -1,7 +1,6 @@
 import time
 from typing import Literal
 
-from fastapi import Response
 from nxtools import slugify
 from pydantic import Field
 
@@ -95,7 +94,7 @@ class JobsItemModel(RequestModel):
 
 
 class JobsResponseModel(ResponseModel):
-    jobs: list[JobsItemModel] = Field(default_factory=list)
+    jobs: list[JobsItemModel] | None = Field(default=None)
 
 
 async def can_user_control_job(user: nebula.User, id_job: int) -> bool:
@@ -192,7 +191,7 @@ class JobsRequest(APIRequest):
         self,
         request: JobsRequestModel,
         user: CurrentUser,
-    ) -> JobsResponseModel | Response:
+    ) -> JobsResponseModel:
         if request.abort:
             await abort_job(request.abort, user)
 
@@ -227,7 +226,7 @@ class JobsRequest(APIRequest):
             # failed
             conds.append("j.status IN (3)")
         elif request.view is None:
-            return Response(status_code=204)
+            return JobsResponseModel()
 
         if request.asset_ids is not None:
             ids = ",".join([str(id) for id in request.asset_ids])

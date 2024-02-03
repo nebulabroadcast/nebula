@@ -10,15 +10,7 @@ import nebula
 from nebula.common import create_hash, json_dumps, json_loads
 from nebula.exceptions import LoginFailedException
 from server.clientinfo import ClientInfo, get_client_info, get_real_ip
-
-
-def is_local_ip(ip: str) -> bool:
-    return (
-        ip.startswith("127.")
-        or ip.startswith("10.")
-        or ip.startswith("192.168.")
-        or ip.startswith("172.")
-    )
+from server.utils import is_internal_ip
 
 
 class SessionModel(BaseModel):
@@ -65,7 +57,7 @@ class Session:
                 await nebula.redis.set(cls.ns, token, session.json())
             else:
                 real_ip = get_real_ip(request)
-                if not is_local_ip(real_ip) and session.client_info.ip != real_ip:
+                if not is_internal_ip(real_ip) and session.client_info.ip != real_ip:
                     nebula.log.warning(
                         "Session IP mismatch. "
                         f"Stored: {session.client_info.ip}, current: {real_ip}"
@@ -94,7 +86,7 @@ class Session:
 
         client_info = get_client_info(request) if request else None
         if client_info:
-            if user["local_network_only"] and not is_local_ip(client_info.ip):
+            if user["local_network_only"] and not is_internal_ip(client_info.ip):
                 raise LoginFailedException("You can only log in from local network")
 
         token = create_hash()
@@ -142,7 +134,8 @@ class Session:
         from the database.
         """
 
-        async for _session_id, data in nebula.redis.iterate(cls.ns):
+        async for _, data in nebula.redis.iterate(cls.ns):
+            assert isinstance(data, str)
             session = SessionModel(**json_loads(data))
             if cls.is_expired(session):
                 nebula.log.info(

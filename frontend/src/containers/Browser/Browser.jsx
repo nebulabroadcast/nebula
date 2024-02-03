@@ -65,7 +65,7 @@ const BrowserTable = () => {
   const dataRef = useRef(data)
 
   useEffect(() => {
-    dataRef.current = data;
+    dataRef.current = data
   }, [data])
 
   const loadData = () => {
@@ -101,20 +101,23 @@ const BrowserTable = () => {
 
   const debouncingLoadData = useCallback(debounce(loadData, 100), [loadData])
 
-  const handlePubSub = useCallback((topic, message) => {
-    if (topic !== 'objects_changed') return
-    if (message.object_type !== 'asset') return
-    let changed = false
-    for (const obj of message.objects) {
-      if (dataRef.current.find((row) => row.id === obj)) {
-        changed = true;
-        break;
+  const handlePubSub = useCallback(
+    (topic, message) => {
+      if (topic !== 'objects_changed') return
+      if (message.object_type !== 'asset') return
+      let changed = false
+      for (const obj of message.objects) {
+        if (dataRef.current.find((row) => row.id === obj)) {
+          changed = true
+          break
+        }
       }
-    }
-    if (changed){
-      debouncingLoadData()
-    }
-  }, [loadData])
+      if (changed) {
+        debouncingLoadData()
+      }
+    },
+    [loadData]
+  )
 
   useEffect(() => {
     const token = PubSub.subscribe('objects_changed', handlePubSub)

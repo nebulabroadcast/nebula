@@ -1,5 +1,7 @@
 #!/bin/bash
 
+SERVER_TYPE=${NEBULA_SERVER_TYPE:-gunicorn}
+
 if [ $# -ne 1 ]; then
   echo "Error: a single argument is required"
   exit 1
@@ -12,21 +14,45 @@ function start_server () {
 
   # Run setup to make sure database is up to date
   python -m setup
+
   
-  # Start gunicorn
-  exec gunicorn \
-    -k uvicorn.workers.UvicornWorker \
-    --log-level warning \
-    -b :80 \
-    server.server:app
+  if [ $SERVER_TYPE = "gunicorn" ]; then
+    exec gunicorn \
+      -k uvicorn.workers.UvicornWorker \
+      --log-level warning \
+      -b :80 \
+      server.server:app
+  elif [ $SERVER_TYPE = "granian" ]; then
+    exec granian \
+      --interface asgi \
+      --log-level warning \
+      --host 0.0.0.0 \
+      --port 80 \
+      server.server:app
+  else
+    echo ""
+    echo "Error: invalid server type '$SERVER_TYPE'. Expected 'gunicorn' or 'granian'"
+    echo ""
+    exit 1
+  fi
 }
+
+
+function get_server_pid () {
+  if [ $SERVER_TYPE = "gunicorn" ]; then
+    pid=$(ps aux | grep 'gunicorn' | awk '{print $2}')
+  elif [ $SERVER_TYPE = "granian" ]; then
+    pid=$(ps aux | grep 'granian' | awk '{print $2}')
+  fi
+  echo $pid
+}
+
 
 function stop_server () {
   echo ""
   echo "SIGTERM signal received. Shutting down..."
   echo ""
-  pid=$(ps aux | grep 'gunicorn' | awk '{print $2}')
-  kill -TERM $pid 2> /dev/null
+  kill -TERM $(get_server_pid) 2> /dev/null
   exit 0
 }
 
@@ -34,12 +60,12 @@ function reload_server () {
   echo ""
   echo "Reloading the server..."
   echo ""
-  pid=$(ps aux | grep 'gunicorn' | awk '{print $2}')
-  kill -HUP $pid 2> /dev/null
+  kill -HUP $(get_server_pid) 2> /dev/null
   exit 0
 }
 
 trap stop_server SIGTERM SIGINT
+trap reload_server SIGHUP
 
 
 if [ $1 = "start" ]; then

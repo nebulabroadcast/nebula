@@ -38,12 +38,6 @@ class Client:
             self.topics = [*topics, *ALWAYS_SUBSCRIBE] if "*" not in topics else ["*"]
             self.authorized = True
             self.user = nebula.User(meta=session_data.user)
-            # logging.info(
-            #     "Authorized connection",
-            #     session_data.user["login"],
-            #     "topics:",
-            #     self.topics,
-            # )
             return True
         return False
 
@@ -59,7 +53,7 @@ class Client:
         except Exception as e:
             nebula.log.trace("WS: Error sending message", e)
 
-    async def receive(self):
+    async def receive(self) -> dict[str, Any] | None:
         data = await self.sock.receive_text()
         try:
             message = json_loads(data)
@@ -88,10 +82,10 @@ class Messaging(BackgroundTask):
         self.clients: dict[str, Client] = {}
         self.error_rate_data = []
 
-    async def join(self, websocket: WebSocket):
+    async def join(self, websocket: WebSocket) -> Client | None:
         if not self.is_running:
             await websocket.close()
-            return
+            return None
         await websocket.accept()
         client = Client(websocket)
         self.clients[client.id] = client

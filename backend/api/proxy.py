@@ -1,36 +1,26 @@
 import os
 
 import aiofiles
-from fastapi import Header, HTTPException, Request, Response, status
-from fastapi.responses import StreamingResponse
+from fastapi import HTTPException, Request, Response, status
 
 import nebula
-from server.dependencies import CurrentUserInQuery
+from server.dependencies import CurrentUser
 from server.request import APIRequest
 
 
-async def send_bytes_range_requests(file_name: str, start: int, end: int):
-    """Send a file in chunks using Range Requests specification RFC7233
+class ProxyResponse(Response):
+    content_type = "video/mp4"
 
-    `start` and `end` parameters are inclusive due to specification
-    """
-    CHUNK_SIZE = 1024 * 8
 
-    sent_bytes = 0
-    try:
-        async with aiofiles.open(file_name, mode="rb") as f:
-            await f.seek(start)
-            pos = start
-            while pos < end:
-                read_size = min(CHUNK_SIZE, end - pos + 1)
-                data = await f.read(read_size)
-                yield data
-                pos += len(data)
-                sent_bytes += len(data)
-    finally:
-        nebula.log.trace(
-            f"Finished sending file {start}-{end}. Sent {sent_bytes} bytes. Expected {end-start+1} bytes"
-        )
+async def get_bytes_range(file_name: str, start: int, end: int) -> bytes:
+    """Get a range of bytes from a file"""
+
+    async with aiofiles.open(file_name, mode="rb") as f:
+        await f.seek(start)
+        pos = start
+        # read_size = min(CHUNK_SIZE, end - pos + 1)
+        read_size = end - pos + 1
+        return await f.read(read_size)
 
 
 def _get_range_header(range_header: str, file_size: int) -> tuple[int, int]:
@@ -52,10 +42,13 @@ def _get_range_header(range_header: str, file_size: int) -> tuple[int, int]:
     return start, end
 
 
-async def range_requests_response(request: Request, file_path: str, content_type: str):
+async def range_requests_response(
+    request: Request, file_path: str, content_type: str
+) -> ProxyResponse:
     """Returns StreamingResponse using Range Requests of a given file"""
 
     file_size = os.stat(file_path).st_size
+    max_chunk_size = 1024 * 1024  # 2MB
     range_header = request.headers.get("range")
 
     headers = {
@@ -74,20 +67,19 @@ async def range_requests_response(request: Request, file_path: str, content_type
 
     if range_header is not None:
         start, end = _get_range_header(range_header, file_size)
+        end = min(end, start + max_chunk_size - 1)
         size = end - start + 1
         headers["content-length"] = str(size)
         headers["content-range"] = f"bytes {start}-{end}/{file_size}"
         status_code = status.HTTP_206_PARTIAL_CONTENT
 
-    return StreamingResponse(
-        send_bytes_range_requests(file_path, start, end),
+    payload = await get_bytes_range(file_path, start, end)
+
+    return ProxyResponse(
+        content=payload,
         headers=headers,
         status_code=status_code,
     )
-
-
-class ProxyResponse(Response):
-    content_type = "video/mp4"
 
 
 class ServeProxy(APIRequest):
@@ -100,16 +92,15 @@ class ServeProxy(APIRequest):
     name: str = "proxy"
     path: str = "/proxy/{id_asset}"
     title: str = "Serve proxy"
-    response_class = ProxyResponse
     methods = ["GET"]
 
     async def handle(
         self,
         request: Request,
         id_asset: int,
-        user: CurrentUserInQuery,
-        range: str = Header(None),
-    ):
+        user: CurrentUser,
+    ) -> ProxyResponse:
+        assert user
         sys_settings = nebula.settings.system
         proxy_storage_path = nebula.storages[sys_settings.proxy_storage].local_path
         proxy_path_template = os.path.join(proxy_storage_path, sys_settings.proxy_path)
@@ -123,10 +114,10 @@ class ServeProxy(APIRequest):
 
         if not os.path.exists(video_path):
             # maybe return content too? with a placeholder image?
-            return Response(status_code=404, content="Not found")
+            raise nebula.NotFoundException("Proxy not found")
 
         try:
             return await range_requests_response(request, video_path, "video/mp4")
-        except Exception:
+        except Exception as e:
             nebula.log.traceback("Error serving proxy")
-            return Response(status_code=500, content="Internal server error")
+            raise nebula.NebulaException("Error serving proxy") from e

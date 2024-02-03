@@ -24,6 +24,7 @@ user-agents = "^2.2.0"
 httpx = "^0.24.1"
 requests = "^2.31.0"
 gunicorn = "^20.1.0"
+granian = "^1.0.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.0"

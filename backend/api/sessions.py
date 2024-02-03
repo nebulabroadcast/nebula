@@ -16,7 +16,6 @@ class Sessions(APIRequest):
 
     name = "sessions"
     title = "List sessions"
-    response_model = list[SessionModel]
 
     async def handle(
         self,
@@ -55,15 +54,14 @@ class InvalidateSession(APIRequest):
     """
 
     name = "invalidate_session"
-    title = "Invalidate a session"
-    responses = [204, 201]
+    title = "Invalidate session"
+    responses = [204]
 
     async def handle(
         self,
         payload: InvalidateSessionRequest,
         user: CurrentUser,
     ) -> Response:
-
         session = await Session.check(payload.token)
         if session is None:
             raise nebula.NotFoundException("Session not found")

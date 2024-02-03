@@ -1,5 +1,3 @@
-import contextlib
-import ipaddress
 import os
 
 import geoip2
@@ -7,6 +5,8 @@ import geoip2.database
 import user_agents
 from fastapi import Request
 from pydantic import BaseModel, Field
+
+from server.utils import is_internal_ip
 
 
 class LocationInfo(BaseModel):
@@ -29,11 +29,12 @@ class ClientInfo(BaseModel):
 
 
 def get_real_ip(request: Request) -> str:
-    xff = request.headers.get("x-forwarded-for", request.client.host)
+    host_ip = request.client.host if request.client else "127.0.0.1"
+    xff = request.headers.get("x-forwarded-for", host_ip)
     return xff.split(",")[0].strip()
 
 
-def geo_lookup(ip: str):
+def geo_lookup(ip: str) -> LocationInfo | None:
     geoip_db_path = None  # TODO
 
     if geoip_db_path is None:
@@ -48,23 +49,11 @@ def geo_lookup(ip: str):
         except geoip2.errors.AddressNotFoundError:
             return None
 
-        return LocationInfo(
-            country=response.country.name,
-            subdivision=response.subdivisions.most_specific.name,
-            city=response.city.name,
-        )
-    return None
-
-
-def is_internal_ip(ip: str) -> bool:
-    with contextlib.suppress(ValueError):
-        if ipaddress.IPv4Address(ip).is_private:
-            return True
-
-    with contextlib.suppress(ValueError):
-        if ipaddress.IPv6Address(ip).is_private:
-            return True
-    return False
+    return LocationInfo(
+        country=response.country.name,
+        subdivision=response.subdivisions.most_specific.name,
+        city=response.city.name,
+    )
 
 
 def get_ua_data(request) -> AgentInfo | None:
