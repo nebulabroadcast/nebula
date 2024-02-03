@@ -69,7 +69,7 @@ class Request(APIRequest):
             case _:
                 # do not delete bins directly
                 raise nebula.NotImplementedException(
-                    f"Deleting {request.obejct_type} is not implemented"
+                    f"Deleting {request.object_type} is not implemented"
                 )
 
         # Delete simple objects

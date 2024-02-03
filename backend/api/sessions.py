@@ -12,6 +12,8 @@ class SessionsRequest(RequestModel):
 
 
 class Sessions(APIRequest):
+    """List user sessions."""
+
     name = "sessions"
     title = "List sessions"
 
@@ -20,7 +22,6 @@ class Sessions(APIRequest):
         request: SessionsRequest,
         user: CurrentUser,
     ) -> list[SessionModel]:
-        """Create or update an object."""
 
         id_user = request.id_user
 
@@ -45,6 +46,13 @@ class InvalidateSessionRequest(RequestModel):
 
 
 class InvalidateSession(APIRequest):
+    """Invalidate a user session.
+
+    This endpoint is used to invalidate an user session. It can be used
+    to remotely log out a user. If the user is an admin, it can also be
+    used to log out other users.
+    """
+
     name = "invalidate_session"
     title = "Invalidate session"
     responses = [204]
@@ -54,8 +62,6 @@ class InvalidateSession(APIRequest):
         payload: InvalidateSessionRequest,
         user: CurrentUser,
     ) -> Response:
-        """Create or update an object."""
-
         session = await Session.check(payload.token)
         if session is None:
             raise nebula.NotFoundException("Session not found")
