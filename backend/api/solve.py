@@ -3,7 +3,6 @@ from pydantic import Field
 
 from nebula.exceptions import BadRequestException
 from nebula.plugins.library import plugin_library
-
 from server.dependencies import CurrentUser
 from server.models import RequestModel
 from server.request import APIRequest
