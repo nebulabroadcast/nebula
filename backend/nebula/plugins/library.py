@@ -75,7 +75,7 @@ class PluginLibrary:
             if not os.path.isfile(manifest_path):
                 continue
 
-            log.trace("Loading package", {manifest_path})
+            log.trace(f"Loading package {manifest_path}")
 
             try:
                 with open(manifest_path, "rb") as f:
