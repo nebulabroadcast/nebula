@@ -8,9 +8,9 @@ from fastapi.websockets import WebSocket, WebSocketDisconnect
 
 import nebula
 from nebula.exceptions import NebulaException
+from nebula.plugins.frontend import get_frontend_plugins
 from nebula.settings import load_settings
 from server.endpoints import install_endpoints
-from nebula.plugins.frontend import get_frontend_plugins
 from server.storage_monitor import storage_monitor
 from server.websocket import messaging
 

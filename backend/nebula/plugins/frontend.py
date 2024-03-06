@@ -8,6 +8,7 @@ from pydantic import Field
 import nebula
 from server.models import ResponseModel
 
+FrontendScope = Literal["tool", "mam"]
 
 class PluginItemModel(ResponseModel):
     """Plugin item model.
@@ -18,7 +19,7 @@ class PluginItemModel(ResponseModel):
     name: str = Field(..., title="Plugin name")
     title: str = Field(..., title="Plugin title")
     icon: str | None = Field(None, title="Addon icon")
-    scope: Literal["tool", "mam"] = Field("tool", title="Plugin scope")
+    scope: FrontendScope = Field("tool", title="Plugin scope")
     path: str = Field(..., title="Plugin directory")
 
 
