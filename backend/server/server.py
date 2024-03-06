@@ -10,6 +10,7 @@ import nebula
 from nebula.exceptions import NebulaException
 from nebula.settings import load_settings
 from server.endpoints import install_endpoints
+from nebula.plugins.frontend import get_frontend_plugins
 from server.storage_monitor import storage_monitor
 from server.websocket import messaging
 
@@ -142,20 +143,13 @@ async def ws_endpoint(websocket: WebSocket) -> None:
 
 
 def install_frontend_plugins(app: FastAPI):
-    plugin_root = os.path.join(nebula.config.plugin_dir, "frontend")
-    if not os.path.exists(plugin_root):
-        return
-
-    for plugin_name in os.listdir(plugin_root):
-        plugin_path = os.path.join(plugin_root, plugin_name, "dist")
-        if not os.path.isdir(plugin_path):
-            continue
-
-        nebula.log.trace(f"Mounting frontend plugin {plugin_name}: {plugin_path}")
+    for plugin in get_frontend_plugins():
+        nebula.log.trace(f"Mounting frontend plugin {plugin.name}: {plugin.path}")
         app.mount(
-            f"/plugins/{plugin_name}",
-            StaticFiles(directory=plugin_path, html=True),
+            f"/plugins/{plugin.name}",
+            StaticFiles(directory=plugin.path, html=True),
         )
+
 
 
 # TODO: this is a development hack.
