@@ -1,4 +1,5 @@
 import os
+from typing import Any
 
 import tomllib
 
@@ -18,7 +19,7 @@ PLUGIN_TYPES = {
 
 class PluginLibrary:
     def __init__(self):
-        self.plugins = {k: [] for k in PLUGIN_TYPES.keys()}
+        self.plugins: dict[str, Any] = {k: [] for k in PLUGIN_TYPES.keys()}
 
         self.init_legacy_plugins()
         self.init_packages()

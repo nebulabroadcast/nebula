@@ -1,7 +1,7 @@
+from typing import AsyncGenerator
+
 import asyncpg
 import asyncpg.pool
-
-from typing import AsyncGenerator
 
 from nebula.common import json_dumps, json_loads
 from nebula.config import config
