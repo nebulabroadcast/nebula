@@ -19,7 +19,6 @@ class NebulaException(Exception):
         user_name: str | None = None,
         **kwargs,
     ) -> None:
-
         self.kwargs = kwargs
 
         if detail is not None:

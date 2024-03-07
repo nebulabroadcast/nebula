@@ -15,7 +15,6 @@ async def create_new_event(
     pool = await nebula.db.pool()
     async with pool.acquire() as conn:
         async with conn.transaction():
-
             new_bin = nebula.Bin(connection=conn)
             new_event = nebula.Event(connection=conn)
 
@@ -28,7 +27,6 @@ async def create_new_event(
             asset_meta = {}
             position = 0
             if event_data.id_asset:
-
                 asset = await nebula.Asset.load(event_data.id_asset, connection=conn)
 
                 new_event["id_asset"] = event_data.id_asset

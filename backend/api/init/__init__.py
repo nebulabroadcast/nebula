@@ -72,7 +72,6 @@ class Request(APIRequest):
         request: fastapi.Request,
         user: CurrentUserOptional,
     ) -> InitResponseModel:
-
         default_motd = f"Nebula {nebula.__version__} @ {nebula.config.site_name}"
         motd = nebula.config.motd or default_motd
 

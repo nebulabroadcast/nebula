@@ -164,7 +164,6 @@ class SendRequest(APIRequest):
         request: SendRequestModel,
         user: CurrentUser,
     ) -> SendResponseModel:
-
         if not user.can("job_control", request.id_action):
             raise nebula.ForbiddenException()
 

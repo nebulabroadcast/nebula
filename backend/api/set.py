@@ -157,7 +157,6 @@ class OperationsRequest(APIRequest):
         request: OperationsRequestModel,
         user: CurrentUser,
     ) -> OperationsResponseModel:
-
         pool = await nebula.db.pool()
         result = []
         reload_settings = False
@@ -276,7 +275,6 @@ class SetRequest(APIRequest):
         request: OperationModel,
         user: CurrentUser,
     ) -> OperationResponseModel:
-
         operation = OperationsRequest()
         result = await operation.handle(
             OperationsRequestModel(operations=[request]),

@@ -20,7 +20,6 @@ class Request(APIRequest):
         user: CurrentUser,
         initiator: RequestInitiator,
     ) -> SchedulerResponseModel:
-
         if not user.can("scheduler_view", request.id_channel):
             raise nebula.ForbiddenException("You are not allowed to view this channel")
 

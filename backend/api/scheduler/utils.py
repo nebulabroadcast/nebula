@@ -37,7 +37,6 @@ async def delete_events(ids: list[int]) -> list[int]:
     async with pool.acquire() as conn:
         async with conn.transaction():
             for id_event in ids:
-
                 event = await nebula.Event.load(id_event)
                 id_bin = event["id_magic"]
 

@@ -105,7 +105,6 @@ class LoginRequest(APIRequest):
         request: Request,
         payload: LoginRequestModel,
     ) -> LoginResponseModel:
-
         if request is not None:
             await check_failed_login(get_real_ip(request))
 

@@ -141,7 +141,6 @@ async def get_client_settings(lang: LanguageCode):
     for urn, cs in nebula.settings.cs.items():
         csdata = {}
         for value, csitem in cs.items():
-
             als = csitem.aliases.get(lang, csitem.aliases.get("en"))
             if als:
                 csdata[value] = ClientCSItemModel(

@@ -57,7 +57,6 @@ class BaseObject:
     username: str | None = None  # Name of the user operating on the object
 
     def __init__(self, meta: dict[str, Any] | None = None, **kwargs) -> None:
-
         if (conn := kwargs.get("connection")) is not None:
             assert isinstance(conn, (asyncpg.Connection, DB))
             self.connection = conn

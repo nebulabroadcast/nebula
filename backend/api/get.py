@@ -69,7 +69,6 @@ class Request(APIRequest):
         request: GetRequestModel,
         user: CurrentUser,
     ) -> GetResponseModel:
-
         object_type_name = request.object_type.value
         query = f"SELECT meta FROM {object_type_name}s WHERE id = ANY($1)"
 

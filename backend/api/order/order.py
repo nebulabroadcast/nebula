@@ -9,7 +9,6 @@ async def set_rundown_order(
     request: OrderRequestModel,
     user: nebula.User,
 ) -> OrderResponseModel:
-
     if (channel := nebula.settings.get_playout_channel(request.id_channel)) is None:
         raise NotFoundException(f"Channel ID {request.id_channel} not found")
 

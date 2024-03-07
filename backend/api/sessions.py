@@ -22,7 +22,6 @@ class Sessions(APIRequest):
         request: SessionsRequest,
         user: CurrentUser,
     ) -> list[SessionModel]:
-
         id_user = request.id_user
 
         if id_user != user.id and (not user.is_admin):
