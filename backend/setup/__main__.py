@@ -72,9 +72,8 @@ async def main() -> None:
         await create_default_user(db)
 
         pool = await db.pool()
-        async with pool.acquire() as conn:
-            async with conn.transaction():
-                await setup_settings(conn)
+        async with pool.acquire() as conn, conn.transaction():
+            await setup_settings(conn)
 
 
 if __name__ == "__main__":

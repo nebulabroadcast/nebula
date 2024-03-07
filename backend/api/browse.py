@@ -269,7 +269,7 @@ class Request(APIRequest):
             assert isinstance(request.view, int), "View must be an integer"
             view = nebula.settings.get_view(request.view)
             if (view is not None) and (view.columns is not None):
-                    columns = view.columns
+                columns = view.columns
         elif request.columns:
             columns = request.columns
 

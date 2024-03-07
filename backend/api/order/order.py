@@ -74,8 +74,7 @@ async def set_rundown_order(
                 )
                 if not asset:
                     nebula.log.error(
-                        f"Unable to append {obj.type} ID {obj.id}. "
-                        f"Asset not found",
+                        f"Unable to append {obj.type} ID {obj.id}. " f"Asset not found",
                         user=user.name,
                     )
                     continue
@@ -104,11 +103,7 @@ async def set_rundown_order(
                 # since the request is validated by pydantic.
                 continue
 
-            if (
-                (item is None)
-                or item["position"] != pos
-                or item["id_bin"] != id_bin
-            ):
+            if (item is None) or item["position"] != pos or item["id_bin"] != id_bin:
                 item["position"] = pos
                 item["id_bin"] = id_bin
 

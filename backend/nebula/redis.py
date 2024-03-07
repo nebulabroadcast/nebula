@@ -46,6 +46,8 @@ class Redis:
         if not cls.connected:
             await cls.connect()
         value = await cls.get(namespace, key)
+        if not value:
+            raise KeyError(f"Key {namespace}-{key} not found")
         return json_loads(value)
 
     @classmethod
@@ -120,3 +122,11 @@ class Redis:
             key_without_ns = key.decode("ascii").removeprefix(f"{namespace}-")
             payload = await cls.redis_pool.get(key)
             yield key_without_ns, payload
+
+    @classmethod
+    async def iterate_json(cls, namespace: str):
+        """Iterate over stored keys and yield [key, payload] tuples
+        matching given namespace. Payloads are JSON-decoded.
+        """
+        async for key, payload in cls.iterate(namespace):
+            yield key, json_loads(payload)

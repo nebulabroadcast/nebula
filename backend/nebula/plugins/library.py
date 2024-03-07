@@ -32,8 +32,7 @@ class PluginLibrary:
         raise KeyError
 
     def init_legacy_plugins(self):
-        """Old style plugins are separated by types into directories
-        """
+        """Old style plugins are separated by types into directories"""
         for plugin_type_name in self.plugins:
             plugin_type_dir = os.path.join(config.plugin_dir, plugin_type_name)
             if not os.path.isdir(plugin_type_dir):

@@ -32,25 +32,24 @@ async def delete_events(ids: list[int]) -> list[int]:
     """
     deleted_event_ids = []
     pool = await nebula.db.pool()
-    async with pool.acquire() as conn:
-        async with conn.transaction():
-            for id_event in ids:
-                event = await nebula.Event.load(id_event)
-                id_bin = event["id_magic"]
+    async with pool.acquire() as conn, conn.transaction():
+        for id_event in ids:
+            event = await nebula.Event.load(id_event)
+            id_bin = event["id_magic"]
 
-                try:
-                    await nebula.db.execute(
-                        "DELETE FROM items WHERE id_bin = $1",
-                        id_bin,
-                    )
-                except Exception:
-                    nebula.log.error(f"Failed to delete items of {event}")
-                    continue
+            try:
+                await nebula.db.execute(
+                    "DELETE FROM items WHERE id_bin = $1",
+                    id_bin,
+                )
+            except Exception:
+                nebula.log.error(f"Failed to delete items of {event}")
+                continue
 
-                await nebula.db.execute("DELETE FROM bins WHERE id = $1", id_bin)
-                await nebula.db.execute("DELETE FROM events WHERE id = $1", id_event)
+            await nebula.db.execute("DELETE FROM bins WHERE id = $1", id_bin)
+            await nebula.db.execute("DELETE FROM events WHERE id = $1", id_event)
 
-                deleted_event_ids.append(id_event)
+            deleted_event_ids.append(id_event)
     return deleted_event_ids
 
 

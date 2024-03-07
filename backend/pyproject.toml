@@ -36,12 +36,11 @@ line-length = 88
 
 [tool.ruff.format]
 indent-style = "space"
-skip-magic-trailing-comma = false
 line-ending = "auto"
+skip-magic-trailing-comma = false
 docstring-code-format = true
 
 [tool.ruff.lint]
-
 select = [
     "E",     # pycodestyle errors
     "W",     # pycodestyle warnings

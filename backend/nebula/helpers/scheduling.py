@@ -128,11 +128,11 @@ def can_append(asset: nebula.Asset, conditions: "AcceptModel"):
             f"Media type {asset['media_type']} not in {conditions.media_types}"
         )
         return False
-    if conditions.content_types:
-        if asset["content_type"] not in conditions.content_types:
-            nebula.log.warn(
-                f"Content type {asset['content_type']}"
-                " not in {conditions.content_types}"
-            )
-            return False
+    if conditions.content_types and (
+        asset["content_type"] not in conditions.content_types
+    ):
+        nebula.log.warn(
+            f"Content type {asset['content_type']}" " not in {conditions.content_types}"
+        )
+        return False
     return True

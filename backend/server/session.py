@@ -7,7 +7,7 @@ from fastapi import Request
 from pydantic import BaseModel, Field
 
 import nebula
-from nebula.common import create_hash, json_loads
+from nebula.common import create_hash
 from nebula.exceptions import LoginFailedException
 from server.clientinfo import ClientInfo, get_client_info, get_real_ip
 from server.utils import is_internal_ip
@@ -40,11 +40,13 @@ class Session:
         If it's not expired, update the accessed field and extend
         its lifetime.
         """
-        data = await nebula.redis.get(cls.ns, token)
-        if not data:
+
+        try:
+            data = await nebula.redis.get_json(cls.ns, token)
+        except KeyError:
             return None
 
-        session = SessionModel(**json_loads(data))
+        session = SessionModel.model_validate(data)
         if time.time() - session.accessed > cls.ttl:
             # TODO: some logging here?
             await nebula.redis.delete(cls.ns, token)
@@ -84,9 +86,12 @@ class Session:
     ) -> SessionModel:
         """Create a new session for a given user."""
         client_info = get_client_info(request) if request else None
-        if client_info:
-            if user["local_network_only"] and not is_internal_ip(client_info.ip):
-                raise LoginFailedException("You can only log in from local network")
+        if (
+            client_info
+            and user["local_network_only"]
+            and not is_internal_ip(client_info.ip)
+        ):
+            raise LoginFailedException("You can only log in from local network")
 
         token = create_hash()
         session = SessionModel(
@@ -107,12 +112,12 @@ class Session:
         client_info: ClientInfo | None = None,
     ) -> None:
         """Update a session with new user data."""
-        data = await nebula.redis.get(cls.ns, token)
-        if not data:
-            # TODO: shouldn't be silent!
+        try:
+            data = await nebula.redis.get(cls.ns, token)
+        except KeyError:
             return None
 
-        session = SessionModel(**json_loads(data))
+        session = SessionModel.model_validate(data)
         session.user = user.meta
         session.accessed = time.time()
         if client_info is not None:
@@ -132,8 +137,8 @@ class Session:
         Additionally, this function also removes expired sessions
         from the database.
         """
-        async for _, data in nebula.redis.iterate(cls.ns):
-            session = SessionModel(**json_loads(data))
+        async for _, data in nebula.redis.iterate_json(cls.ns):
+            session = SessionModel.model_validate(data)
             if cls.is_expired(session):
                 nebula.log.info(
                     f"Removing expired session for user"
