@@ -10,6 +10,7 @@ from server.models import ResponseModel
 
 FrontendScope = Literal["tool", "mam"]
 
+
 class PluginItemModel(ResponseModel):
     """Plugin item model.
 
@@ -84,4 +85,3 @@ def get_frontend_plugins():
         except Exception:
             nebula.log.traceback(f"Unable to load frontend plugin {plugin_name}")
     return plugins
-

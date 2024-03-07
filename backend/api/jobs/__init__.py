@@ -1,4 +1,4 @@
-__all__ = ['JobsRequest', 'ActionsRequest', 'SendRequest']
+__all__ = ["JobsRequest", "ActionsRequest", "SendRequest"]
 
 from .actions import ActionsRequest
 from .jobs import JobsRequest

@@ -84,7 +84,7 @@ async def get_rundown(request: RundownRequestModel) -> RundownResponseModel:
                 id_bin=id_bin,
                 id_event=id_event,
                 meta=emeta,
-            ) # type: ignore
+            )  # type: ignore
 
             ts_scheduled = row.scheduled_time
             if last_event is None:
