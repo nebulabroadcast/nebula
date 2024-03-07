@@ -24,6 +24,8 @@ class Request(APIRequest):
         if not channel:
             raise nebula.NotFoundException("Channel not found")
 
+        # TODO: Check if user has access to this channel
+
         # For dummy engine, return empty response
         if channel.engine == "dummy":
             return PlayoutResponseModel(plugins=[])

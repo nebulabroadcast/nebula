@@ -15,6 +15,7 @@ class RundownRequestModel(RequestModel):
 
 class RundownRow(ResponseModel):
     id: int = Field(...)
+    row_number: int = Field(...)
     type: Literal["item", "event"] = Field(...)
     id_bin: int = Field(...)
     id_event: int = Field(...)

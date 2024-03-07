@@ -47,7 +47,7 @@ async def get_rundown(request: RundownRequestModel) -> RundownResponseModel:
             i.id ASC
     """
 
-    rows: list[nebula.Event] = []
+    rows: list[RundownRow] = []
 
     last_event = None
     ts_broadcast = ts_scheduled = 0.0
@@ -84,7 +84,7 @@ async def get_rundown(request: RundownRequestModel) -> RundownResponseModel:
                 id_bin=id_bin,
                 id_event=id_event,
                 meta=emeta,
-            )
+            ) # type: ignore
 
             ts_scheduled = row.scheduled_time
             if last_event is None:
