@@ -14,13 +14,13 @@ class GetRequestModel(RequestModel):
         ObjectType.ASSET,
         title="Object type",
         description="Type of objects to get",
-        example=ObjectType.ASSET,
+        examples=[ObjectType.ASSET],
     )
     ids: list[int] = Field(
         default_factory=list,
         title="Object IDs",
         description="List of object IDs to retrieve",
-        example=[1, 2, 3],
+        examples=[[1, 2, 3]],
     )
 
 
@@ -29,10 +29,12 @@ class GetResponseModel(ResponseModel):
         default_factory=list,
         title="Object data",
         description="List of object data",
-        example=[
-            {"id": 1, "title": "First movie"},
-            {"id": 2, "title": "Second movie"},
-            {"id": 3, "title": "Third movie"},
+        examples=[
+            [
+                {"id": 1, "title": "First movie"},
+                {"id": 2, "title": "Second movie"},
+                {"id": 3, "title": "Third movie"},
+            ]
         ],
     )
 

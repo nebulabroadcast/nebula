@@ -68,12 +68,12 @@ class OperationModel(RequestModel):
     id: int | None = Field(
         None,
         description="Object ID. Keep empty to create a new object",
-        example=42069,
+        examples=[42069],
     )
     data: dict[str, Any] = Field(
         ...,
         description="Metadata to be set",
-        example={"title": "Star Trek", "subtitle": "The motion picture"},
+        examples=[{"title": "Star Trek", "subtitle": "The motion picture"}],
     )
 
 
@@ -84,7 +84,7 @@ class OperationResponseModel(ResponseModel):
     id: int | None = Field(
         None,
         title="Object ID",
-        example=42069,
+        examples=[42069],
     )
 
 

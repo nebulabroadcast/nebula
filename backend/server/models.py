@@ -2,8 +2,6 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
-from nebula.common import json_dumps, json_loads
-
 assert Field  # make pyflakes shut up
 
 
@@ -14,15 +12,11 @@ def camelize(src: str) -> str:
 
 
 class RequestModel(BaseModel):
-    class Config:
-        json_loads = json_loads
-        json_dumps = json_dumps
+    pass
 
 
 class ResponseModel(BaseModel):
-    class Config:
-        json_loads = json_loads
-        json_dumps = json_dumps
+    pass
 
 
 class ContextPluginResponseModel(ResponseModel):

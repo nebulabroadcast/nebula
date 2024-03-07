@@ -9,10 +9,10 @@ from server.request import APIRequest
 
 
 class SolveRequestModel(RequestModel):
-    solver: str = Field(..., example="dramatica")
+    solver: str = Field(..., examples=["dramatica"])
     items: list[int] = Field(
         ...,
-        example=[1, 2, 3],
+        examples=[[1, 2, 3]],
         description="List of placeholder item IDs to solve",
     )
 

@@ -8,7 +8,7 @@ from server.session import Session, SessionModel
 
 
 class SessionsRequest(RequestModel):
-    id_user: int = Query(..., example=1)
+    id_user: int = Query(..., examples=[1])
 
 
 class Sessions(APIRequest):

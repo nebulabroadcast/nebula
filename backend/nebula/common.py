@@ -1,25 +1,24 @@
 import hashlib
 import importlib.util
 import inspect
+import json
 import random
 import sys
 import time
 from types import ModuleType
 from typing import Any, TypeVar
 
-import orjson
-
 T = TypeVar("T", bound=type)
 
 
 def json_loads(data: str) -> Any:
     """Load JSON data."""
-    return orjson.loads(data)
+    return json.loads(data)
 
 
 def json_dumps(data: Any, *, default=None) -> str:
     """Dump JSON data."""
-    return orjson.dumps(data, default=default).decode()
+    return json.dumps(data, default=default)
 
 
 def hash_data(data: Any) -> str:

@@ -20,14 +20,14 @@ class LoginRequestModel(RequestModel):
     username: str = Field(
         ...,
         title="Username",
-        example="admin",
-        regex=r"^[a-zA-Z0-9_\-\.]{2,}$",
+        examples=["admin"],
+        pattern=r"^[a-zA-Z0-9_\-\.]{2,}$",
     )
     password: str = Field(
         ...,
         title="Password",
         description="Password in plain text",
-        example="Password.123",
+        examples=["Password.123"],
     )
 
 
@@ -41,8 +41,8 @@ class LoginResponseModel(ResponseModel):
 
 
 class PasswordRequestModel(RequestModel):
-    login: str | None = Field(None, title="Login", example="admin")
-    password: str = Field(..., title="Password", example="Password.123")
+    login: str | None = Field(None, title="Login", examples=["admin"])
+    password: str = Field(..., title="Password", examples=["Password.123"])
 
 
 #

@@ -31,7 +31,7 @@ class SendRequestModel(RequestModel):
     params: dict[str, Any] = Field(
         default_factory=dict,
         title="Additional job parameters (action specific)",
-        example={"bitrate": "4000k"},
+        examples=[{"bitrate": "4000k"}],
     )
     priority: int = Field(3, title="Job priority")
 
