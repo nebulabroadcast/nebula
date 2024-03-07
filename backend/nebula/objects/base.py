@@ -223,7 +223,7 @@ class BaseObject:
     async def delete_children(self) -> None:
         pass
 
-    async def save(self, notify: bool = True, initiator: str = None) -> None:
+    async def save(self, notify: bool = True, initiator: str | None = None) -> None:
         assert self.connection is not None
         if isinstance(self.connection, DB):
             pool = await self.connection.pool()

@@ -23,6 +23,9 @@ class SolverPlugin:
     _next_event: nebula.Event | None = None
     _needed_duration: float | None = None
 
+    def __repr__(self):
+        return f"<Nebula solver plugin: {self.name}>"
+
     async def __call__(self, id_item: int):
         """Solver entrypoint."""
 

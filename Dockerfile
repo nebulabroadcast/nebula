@@ -11,7 +11,7 @@ COPY ./frontend/public /frontend/public
 WORKDIR /frontend
 RUN yarn install && yarn build
 
-FROM python:3.11-bullseye
+FROM python:3.12-bullseye
 ENV PYTHONBUFFERED=1
 
 RUN \

@@ -1,3 +1,5 @@
+from typing import AsyncGenerator
+
 import asyncpg
 import asyncpg.pool
 
@@ -26,25 +28,35 @@ class DB:
         assert self._pool is not None
 
     async def pool(self) -> asyncpg.pool.Pool:
+        """Return the Postgres connection pool. If it doesn't exist, create it."""
         if self._pool is None:
             await self.connect()
         if self._pool is None:
             raise NebulaException("Unable to connect to database")
         return self._pool
 
-    async def execute(self, query: str, *args):
+    async def execute(self, query: str, *args) -> str:
+        """Execute a query and return the status."""
         pool = await self.pool()
         return await pool.execute(query, *args)
 
-    async def executemany(self, query: str, *args):
+    async def executemany(self, query: str, *args) -> list[asyncpg.Record]:
+        """Execute a query multiple times and return the result."""
         pool = await self.pool()
         return await pool.executemany(query, *args)
 
-    async def fetch(self, query: str, *args):
+    async def fetch(self, query: str, *args) -> list[asyncpg.Record]:
+        """Fetch a query and return the result."""
         pool = await self.pool()
         return await pool.fetch(query, *args)
 
-    async def iterate(self, query: str, *args):
+    async def fetchrow(self, query: str, *args) -> asyncpg.Record:
+        """Fetch a query and return the first result."""
+        pool = await self.pool()
+        return await pool.fetchrow(query, *args)
+
+    async def iterate(self, query: str, *args) -> AsyncGenerator[asyncpg.Record, None]:
+        """Iterate over a query and yield the result."""
         pool = await self.pool()
         async with pool.acquire() as conn:
             async with conn.transaction():
