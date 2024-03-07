@@ -14,7 +14,6 @@ class ProxyResponse(Response):
 
 async def get_bytes_range(file_name: str, start: int, end: int) -> bytes:
     """Get a range of bytes from a file"""
-
     async with aiofiles.open(file_name, mode="rb") as f:
         await f.seek(start)
         pos = start
@@ -46,7 +45,6 @@ async def range_requests_response(
     request: Request, file_path: str, content_type: str
 ) -> ProxyResponse:
     """Returns StreamingResponse using Range Requests of a given file"""
-
     file_size = os.stat(file_path).st_size
     max_chunk_size = 1024 * 1024  # 2MB
     range_header = request.headers.get("range")

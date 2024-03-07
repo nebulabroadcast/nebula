@@ -14,7 +14,6 @@ from server.request import APIRequest
 
 def find_api_endpoints() -> list[APIRequest]:
     """Find all built-in API endpoints."""
-
     result = []
     for module_fname in os.listdir("api"):
         module_path = os.path.join("api", module_fname)
@@ -54,7 +53,6 @@ def find_api_endpoints() -> list[APIRequest]:
 
 def install_endpoints(app: fastapi.FastAPI):
     """Register all API endpoints in the router."""
-
     endpoint_names = set()
     for endpoint in find_api_endpoints() + plugin_library.plugins["api"]:
         if endpoint.name in endpoint_names:

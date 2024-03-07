@@ -34,7 +34,6 @@ class Request(APIRequest):
         initiator: RequestInitiator,
     ) -> Response:
         """Delete given objects."""
-
         match request.object_type:
             case ObjectType.ITEM:
                 # TODO: refactor events

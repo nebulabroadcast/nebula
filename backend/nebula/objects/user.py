@@ -90,7 +90,6 @@ class User(BaseObject):
     @classmethod
     async def login(cls, username: str, password: str) -> "User":
         """Return a User instance based on username and password."""
-
         if not password:
             raise LoginFailedException("Password cannot be empty")
         passhash = hash_password(password)
@@ -126,7 +125,6 @@ class User(BaseObject):
         anyval: bool = False,
     ) -> bool:
         """Return True if the user can perform the given action."""
-
         if self["is_admin"]:
             return True
         key = f"can/{action}"

@@ -83,7 +83,6 @@ class Session:
         request: Request | None = None,
     ) -> SessionModel:
         """Create a new session for a given user."""
-
         client_info = get_client_info(request) if request else None
         if client_info:
             if user["local_network_only"] and not is_internal_ip(client_info.ip):
@@ -133,7 +132,6 @@ class Session:
         Additionally, this function also removes expired sessions
         from the database.
         """
-
         async for _, data in nebula.redis.iterate(cls.ns):
             session = SessionModel(**json_loads(data))
             if cls.is_expired(session):

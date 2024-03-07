@@ -1,10 +1,10 @@
-from typing import Any, Literal
+from typing import Literal
 
 from nxtools import slugify
 from pydantic import Field
 
 import nebula
-from nebula.common import sql_list
+from nebula.common import SerializableValue, sql_list
 from nebula.enum import MetaClass
 from nebula.exceptions import NebulaException
 from nebula.metadata.normalize import normalize_meta
@@ -41,7 +41,7 @@ ConditionOperator = Literal[
 
 class ConditionModel(RequestModel):
     key: str = Field(..., examples=["status"])
-    value: Any = Field(None, examples=[1])
+    value: SerializableValue = Field(None, examples=[1])
     operator: ConditionOperator = Field("=", examples=["="])
 
 
@@ -82,7 +82,7 @@ class BrowseRequestModel(RequestModel):
 
 class BrowseResponseModel(ResponseModel):
     columns: list[str] = Field(default_factory=list)
-    data: list[dict[str, Any]] = Field(
+    data: list[dict[str, SerializableValue]] = Field(
         default_factory=list,
         examples=[
             [
@@ -106,7 +106,7 @@ class BrowseResponseModel(ResponseModel):
 #
 
 
-def sanitize_value(value: Any) -> Any:
+def sanitize_value(value: SerializableValue) -> str:
     if isinstance(value, str):
         value = value.replace("'", "''")
     return str(value)
@@ -133,7 +133,7 @@ def build_conditions(conditions: list[ConditionModel]) -> list[str]:
     return cond_list
 
 
-def process_inline_conditions(request: BrowseRequestModel):
+def process_inline_conditions(request: BrowseRequestModel) -> None:
     if request.query:
         query_elements = request.query.split(" ")
         reduced_query = []
@@ -267,8 +267,8 @@ class Request(APIRequest):
         columns: list[str] = ["title", "duration"]
         if request.view is not None and not request.columns:
             assert isinstance(request.view, int), "View must be an integer"
-            if (view := nebula.settings.get_view(request.view)) is not None:
-                if view.columns is not None:
+            view = nebula.settings.get_view(request.view)
+            if (view is not None) and (view.columns is not None):
                     columns = view.columns
         elif request.columns:
             columns = request.columns

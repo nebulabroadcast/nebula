@@ -6,24 +6,28 @@ import random
 import sys
 import time
 from types import ModuleType
-from typing import Any, TypeVar
+from typing import Any, Literal, TypeVar
 
 T = TypeVar("T", bound=type)
 
+SerializableValue = (
+    int | float | str | bool | dict[str, "SerializableValue"] | list | None
+)
 
-def json_loads(data: str | bytes) -> Any:
+
+def json_loads(data: str | bytes) -> SerializableValue:
     """Load JSON data."""
     return json.loads(data)
 
 
-def json_dumps(data: Any, *, default=None) -> str:
+def json_dumps(data: SerializableValue) -> str:
     """Dump JSON data."""
-    return json.dumps(data, default=default)
+    return json.dumps(data)
 
 
-def hash_data(data: Any) -> str:
+def hash_data(data: SerializableValue) -> str:
     """Create a SHA-256 hash from arbitrary (json-serializable) data."""
-    if type(data) in [int, float, bool, dict, list]:
+    if not isinstance(data, str):
         data = json_dumps(data)
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
@@ -33,7 +37,7 @@ def create_hash() -> str:
     return hash_data([time.time(), random.random()])
 
 
-def sql_list(lst: list[Any], t="int"):
+def sql_list(lst: list[Any], t: Literal["int", "str"] = "int") -> str:
     flist = [f"{val}" for val in lst] if t == "int" else [f"'{val}'" for val in lst]
     return f"({','.join(flist)})"
 
@@ -59,4 +63,4 @@ def classes_from_module(superclass: T, module: ModuleType) -> list[T]:
             continue
         if issubclass(obj, superclass):
             classes.append(obj)
-    return classes  # type: ignore
+    return classes  # type: ignore/

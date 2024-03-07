@@ -34,25 +34,42 @@ pytest-asyncio = "^0.20.3"
 [tool.ruff]
 line-length = 88
 
+[tool.ruff.format]
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+docstring-code-format = true
+
 [tool.ruff.lint]
+
 select = [
-    "E",   # pycodestyle errors
-    "W",   # pycodestyle warnings
-    "F",   # pyflakes
-    "I",   # isort
-    "C",   # flake8-comprehensions
-    "B",   # flake8-bugbear
-    "ISC", # flake8-implicit-str-concat
-    "C4",  # flake8-comprehensions
-    # "N",    # pep8-naming
-    # "SIM",  # flake8-simplify
+    "E",     # pycodestyle errors
+    "W",     # pycodestyle warnings
+    "F",     # pyflakes
+    "I",     # isort
+    "C4",    # flake8-comprehensions
+    "B",     # flake8-bugbear
+    "ISC",   # flake8-implicit-str-concat
+    "C4",    # flake8-comprehensions
+    "UP",    # pyupgrade
+    "ASYNC", # flake8-async
+    "SIM",   # flake8-simplify
+    "ISC",   # flake8-implicit-str-concat
+  # "ANN",   # flake8-annotations
+  # "N",     # pep8-naming
+  # "D",     # pydocstyle
+  # "S",     # flake8-bandit
 ]
 
 ignore = [
     "ISC001",
-    "B008",  # do not perform function calls in argument defaults
-    "C901",  # too complex. C'mon - this is a complex project
+    "B008",    # do not perform function calls in argument defaults
+    "C901",    # too complex. C'mon - this is a complex project
+    "ANN101",  # missing type annotation for self
+    "ANN102",  # missing type annotation for cls
 ]
+
+
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

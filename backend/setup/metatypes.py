@@ -3,7 +3,7 @@ import os
 from typing import Any
 
 
-async def setup_metatypes(meta_types, db):
+async def setup_metatypes(meta_types, db) -> None:
     languages = ["en", "cs"]
 
     aliases: dict[str, dict[str, Any]] = {}

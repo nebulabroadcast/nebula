@@ -116,7 +116,7 @@ class ClientSettingsModel(SettingsModel):
 #
 
 
-async def get_client_settings(lang: LanguageCode):
+async def get_client_settings(lang: LanguageCode) -> ClientSettingsModel:
     """Convert server settings to client settings."""
     #
     # Users
@@ -152,6 +152,7 @@ async def get_client_settings(lang: LanguageCode):
                 csdata[value] = ClientCSItemModel(
                     title=value,
                     role=csitem.role,
+                    description=None,
                 )
         client_cs[urn] = csdata
 
@@ -194,9 +195,9 @@ async def get_client_settings(lang: LanguageCode):
     #
 
     return ClientSettingsModel(
-        system=BaseSystemSettings(**nebula.settings.system.dict()),
+        system=BaseSystemSettings(**nebula.settings.system.model_dump()),
         playout_channels=[
-            BasePlayoutChannelSettings(**r.dict())
+            BasePlayoutChannelSettings(**r.model_dump())
             for r in nebula.settings.playout_channels
         ],
         folders=nebula.settings.folders,
@@ -205,4 +206,5 @@ async def get_client_settings(lang: LanguageCode):
         metatypes=client_metatypes,
         users=users,
         filetypes=filetypes,
+        server_url=None,
     )

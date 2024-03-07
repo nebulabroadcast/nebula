@@ -11,7 +11,6 @@ from .models import RundownRequestModel, RundownResponseModel, RundownRow
 
 async def get_rundown(request: RundownRequestModel) -> RundownResponseModel:
     """Get a rundown"""
-
     if not (channel := nebula.settings.get_playout_channel(request.id_channel)):
         raise nebula.BadRequestException(f"No such channel: {request.id_channel}")
 
@@ -122,9 +121,7 @@ async def get_rundown(request: RundownRequestModel) -> RundownResponseModel:
             istatus = airstatus
         elif ameta.get("status") == ObjectStatus.OFFLINE:
             istatus = ObjectStatus.OFFLINE
-        elif pskey not in ameta:
-            istatus = ObjectStatus.REMOTE
-        elif ameta[pskey]["status"] == ObjectStatus.OFFLINE:
+        elif pskey not in ameta or ameta[pskey]["status"] == ObjectStatus.OFFLINE:
             istatus = ObjectStatus.REMOTE
         elif ameta[pskey]["status"] == ObjectStatus.ONLINE:
             istatus = ObjectStatus.ONLINE

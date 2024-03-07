@@ -14,7 +14,7 @@ log.user = "setup"
 
 async def create_schema(db: DB):
     log.info("Creating database schema")
-    with open("schema/schema.sql", "r") as f:
+    with open("schema/schema.sql") as f:
         schema = f.read()
         await db.execute(schema)
 

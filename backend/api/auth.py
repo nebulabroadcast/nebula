@@ -64,7 +64,7 @@ async def check_failed_login(ip_address: str) -> None:
         raise nebula.LoginFailedException("Too many failed login attempts")
 
 
-async def set_failed_login(ip_address: str):
+async def set_failed_login(ip_address: str) -> None:
     ns = "login-failed-ip"
     failed_attempts_str = await nebula.redis.incr(ns, ip_address)
     failed_attempts = int(failed_attempts_str) if failed_attempts_str else 0
@@ -82,7 +82,7 @@ async def set_failed_login(ip_address: str):
         )
 
 
-async def clear_failed_login(ip_address: str):
+async def clear_failed_login(ip_address: str) -> None:
     await nebula.redis.delete("login-failed-ip", ip_address)
 
 
@@ -132,7 +132,7 @@ class LogoutRequest(APIRequest):
     name: str = "logout"
     title: str = "Logout"
 
-    async def handle(self, authorization: str | None = Header(None)):
+    async def handle(self, authorization: str | None = Header(None)) -> None:
         if not authorization:
             raise nebula.UnauthorizedException("No authorization header provided")
 
