@@ -4,6 +4,7 @@ import fastapi
 from pydantic import Field
 
 import nebula
+from nebula.plugins.frontend import PluginItemModel, get_frontend_plugins
 from nebula.settings import load_settings
 from nebula.settings.common import LanguageCode
 from server.context import ScopedEndpoint, server_context
@@ -11,7 +12,6 @@ from server.dependencies import CurrentUserOptional
 from server.models import ResponseModel
 from server.request import APIRequest
 
-from .plugins import PluginItemModel, get_frontend_plugins
 from .settings import ClientSettingsModel, get_client_settings
 
 

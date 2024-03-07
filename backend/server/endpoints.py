@@ -1,6 +1,5 @@
 import inspect
 import os
-from typing import Generator
 
 import fastapi
 from nxtools import slugify
@@ -8,67 +7,56 @@ from pydantic import BaseModel
 
 import nebula
 from nebula.common import classes_from_module, import_module
+from nebula.plugins.library import plugin_library
 from server.context import ScopedEndpoint, server_context
 from server.request import APIRequest
 
 
-def find_api_endpoints() -> Generator[APIRequest, None, None]:
-    """Find all API endpoints.
+def find_api_endpoints() -> list[APIRequest]:
+    """Find all built-in API endpoints."""
 
-    If there is `api` directory in the plugin directory, it will be searched for
-    endpoints too. Default endpoints are in `api` module of the backend.
-    """
+    result = []
+    for module_fname in os.listdir("api"):
+        module_path = os.path.join("api", module_fname)
 
-    API_PATHS = ["api"]
-    if nebula.config.plugin_dir:
-        api_plugin_dir = os.path.join(nebula.config.plugin_dir, "api")
-        if os.path.isdir(api_plugin_dir):
-            API_PATHS.append(api_plugin_dir)
+        # Search for python files with API endpoints
+        # in case of a directory, search for __init__.py
 
-    for root_dir in API_PATHS:
-        if not os.path.isdir(root_dir):
+        if os.path.isdir(module_path):
+            module_path = os.path.join(module_path, "__init__.py")
+            if not os.path.isfile(module_path):
+                continue
+            module_name = module_fname
+        else:
+            module_name = os.path.splitext(module_fname)[0]
+
+        # Import module
+
+        try:
+            module = import_module(module_name, module_path)
+        except ImportError:
+            nebula.log.traceback(f"Failed to load endpoint {module_name}")
             continue
 
-        for module_fname in os.listdir(root_dir):
-            module_path = os.path.join(root_dir, module_fname)
+        # Find API endpoints
 
-            # Search for python files with API endpoints
-            # in case of a directory, search for __init__.py
-
-            if os.path.isdir(module_path):
-                module_path = os.path.join(module_path, "__init__.py")
-                if not os.path.isfile(module_path):
-                    continue
-                module_name = module_fname
+        for endpoint in classes_from_module(APIRequest, module):
+            for key in ["name", "handle"]:
+                if not hasattr(endpoint, key):
+                    nebula.log.error(
+                        f"Endpoint {endpoint.__name__} doesn't have a {key}"
+                    )
+                    break
             else:
-                module_name = os.path.splitext(module_fname)[0]
-
-            # Import module
-
-            try:
-                module = import_module(module_name, module_path)
-            except ImportError:
-                nebula.log.traceback(f"Failed to load endpoint {module_name}")
-                continue
-
-            # Find API endpoints in module and yield them
-
-            for endpoint in classes_from_module(APIRequest, module):
-                for key in ["name", "handle"]:
-                    if not hasattr(endpoint, key):
-                        nebula.log.error(
-                            f"Endpoint {endpoint.__name__} doesn't have a {key}"
-                        )
-                        break
-                else:
-                    yield endpoint()
+                result.append(endpoint())
+    return result
 
 
 def install_endpoints(app: fastapi.FastAPI):
     """Register all API endpoints in the router."""
 
     endpoint_names = set()
-    for endpoint in find_api_endpoints():
+    for endpoint in find_api_endpoints() + plugin_library.plugins["api"]:
         if endpoint.name in endpoint_names:
             nebula.log.warn(f"Duplicate endpoint name {endpoint.name}")
             continue
