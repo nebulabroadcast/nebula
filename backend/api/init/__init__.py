@@ -5,6 +5,7 @@ from pydantic import Field
 
 import nebula
 from nebula.plugins.frontend import PluginItemModel, get_frontend_plugins
+from nebula.settings import load_settings
 from nebula.settings.common import LanguageCode
 from server.context import ScopedEndpoint, server_context
 from server.dependencies import CurrentUserOptional
@@ -78,13 +79,13 @@ class Request(APIRequest):
         # Nebula is not installed. Frontend should display
         # an error message or redirect to the installation page.
         if not nebula.settings.installed:
-            nebula.settings.reload()
+            await load_settings()
             if not nebula.settings.installed:
-                return InitResponseModel(installed=False)
+                return InitResponseModel(installed=False)  # type: ignore
 
         # Not logged in. Only return motd and oauth2 options.
         if user is None:
-            return InitResponseModel(motd=motd)
+            return InitResponseModel(motd=motd)  # type: ignore
 
         # TODO: get preferred user language
         lang: LanguageCode = user.language
@@ -100,4 +101,4 @@ class Request(APIRequest):
             settings=client_settings,
             frontend_plugins=plugins,
             scoped_endpoints=server_context.scoped_endpoints,
-        )
+        )  # type: ignore

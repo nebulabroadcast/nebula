@@ -151,6 +151,7 @@ async def scheduler(
                     new_item["mark_out"] = asset["mark_out"]
                     await new_item.save()
                     ex_bin.items.append(new_item)
+                    assert ex_bin.id is not None, "Bin ID should not be None at this point"
                     affected_bins.append(ex_bin.id)
 
                 # update the event

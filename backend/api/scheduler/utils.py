@@ -70,7 +70,7 @@ async def get_events_in_range(
 
     nebula.log.trace(
         f"Requested events of channel {id_channel} "
-        f"from {format_time(start_time)} to {format_time(end_time)}"
+        f"from {format_time(int(start_time))} to {format_time(int(end_time))}"
     )
 
     result = []
