@@ -7,7 +7,7 @@ from fastapi import Request
 from pydantic import BaseModel, Field
 
 import nebula
-from nebula.common import create_hash, json_dumps, json_loads
+from nebula.common import create_hash, json_loads
 from nebula.exceptions import LoginFailedException
 from server.clientinfo import ClientInfo, get_client_info, get_real_ip
 from server.utils import is_internal_ip
@@ -54,7 +54,7 @@ class Session:
             if not session.client_info:
                 session.client_info = get_client_info(request)
                 session.accessed = time.time()
-                await nebula.redis.set(cls.ns, token, session.json())
+                await nebula.redis.set_json(cls.ns, token, session)
             else:
                 real_ip = get_real_ip(request)
                 if not is_internal_ip(real_ip) and session.client_info.ip != real_ip:
@@ -72,7 +72,7 @@ class Session:
 
         if time.time() - session.created > cls.ttl / 2:
             session.accessed = time.time()
-            await nebula.redis.set(cls.ns, token, json_dumps(session.dict()))
+            await nebula.redis.set_json(cls.ns, token, session)
 
         return session
 
@@ -97,7 +97,7 @@ class Session:
             accessed=time.time(),
             client_info=client_info,
         )
-        await nebula.redis.set(cls.ns, token, session.json())
+        await nebula.redis.set_json(cls.ns, token, session)
         return session
 
     @classmethod
@@ -118,7 +118,7 @@ class Session:
         session.accessed = time.time()
         if client_info is not None:
             session.client_info = client_info
-        await nebula.redis.set(cls.ns, token, session.json())
+        await nebula.redis.set_json(cls.ns, token, session)
 
     @classmethod
     async def delete(cls, token: str) -> None:
@@ -135,7 +135,6 @@ class Session:
         """
 
         async for _, data in nebula.redis.iterate(cls.ns):
-            assert isinstance(data, str)
             session = SessionModel(**json_loads(data))
             if cls.is_expired(session):
                 nebula.log.info(

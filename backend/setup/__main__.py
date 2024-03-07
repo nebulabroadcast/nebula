@@ -64,7 +64,7 @@ async def main() -> None:
     # Check wether we have database deployed
 
     if "--dump" in sys.argv:
-        await dump_settings(db)
+        await dump_settings()
         return
 
     else:

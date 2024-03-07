@@ -11,7 +11,7 @@ from typing import Any, TypeVar
 T = TypeVar("T", bound=type)
 
 
-def json_loads(data: str) -> Any:
+def json_loads(data: str | bytes) -> Any:
     """Load JSON data."""
     return json.loads(data)
 
