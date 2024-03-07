@@ -9,7 +9,7 @@ const TableWrapper = styled.div`
     width: 100%;
     border-collapse: collapse;
 
-    :focus {
+    &:focus, &:focus-visible {
       outline: none;
     }
 
@@ -75,6 +75,11 @@ const TableWrapper = styled.div`
     }
 
     tbody {
+
+      &:focus, &:focus-visible {
+        outline: none;
+      }
+
       td {
         border-bottom: 1px solid var(--color-surface-03);
 
