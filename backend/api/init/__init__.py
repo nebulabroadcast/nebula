@@ -51,6 +51,7 @@ class InitResponseModel(ResponseModel):
         default_factory=list,
         title="OAuth2 options",
     )
+    something: str | None = Field(None)
 
 
 class Request(APIRequest):
@@ -95,6 +96,7 @@ class Request(APIRequest):
         plugins = get_frontend_plugins()
 
         return InitResponseModel(
+            installed=True,
             motd=motd,
             user=user.meta,
             settings=client_settings,

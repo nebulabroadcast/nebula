@@ -145,7 +145,6 @@ async def ws_endpoint(websocket: WebSocket) -> None:
         return
     try:
         while True:
-            nebula.log.trace("WS: Waiting for message")
             message = await client.receive()
             if message is None:
                 continue

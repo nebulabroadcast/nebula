@@ -1,3 +1,4 @@
+import json
 from typing import Any
 
 from pydantic import BaseModel
@@ -48,7 +49,10 @@ class Redis:
         value = await cls.get(namespace, key)
         if not value:
             raise KeyError(f"Key {namespace}-{key} not found")
-        return json_loads(value)
+        try:
+            return json_loads(value)
+        except json.decoder.JSONDecodeError as e:
+            raise ValueError(f"Invalid JSON in {namespace}-{key}") from e
 
     @classmethod
     async def set(cls, namespace: str, key: str, value: str, ttl: int = 0) -> None:
@@ -129,4 +133,7 @@ class Redis:
         matching given namespace. Payloads are JSON-decoded.
         """
         async for key, payload in cls.iterate(namespace):
+            if payload is None:
+                log.warning(f"Redis {namespace}-{key} has no value (JSON expected)")
+                continue
             yield key, json_loads(payload)

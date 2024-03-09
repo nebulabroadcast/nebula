@@ -9,6 +9,7 @@ import nebula
 from nebula.common import classes_from_module, import_module
 from nebula.plugins.library import plugin_library
 from server.context import ScopedEndpoint, server_context
+from server.models import ResponseModel
 from server.request import APIRequest
 
 
@@ -86,8 +87,10 @@ def install_endpoints(app: fastapi.FastAPI):
 
         additional_params = {}
 
-        if isinstance(response_model, BaseModel):
+        if response_model is not None:
             additional_params["response_model_exclude_none"] = endpoint.exclude_none
+            additional_params["response_model_exclude_unset"] = endpoint.exclude_unset
+            print("response_model", response_model, additional_params)
 
         if isinstance(endpoint.__doc__, str):
             docstring = "\n".join([r.strip() for r in endpoint.__doc__.split("\n")])
