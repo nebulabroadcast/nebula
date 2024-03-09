@@ -1,3 +1,4 @@
+import asyncio
 import contextlib
 import os
 from contextlib import asynccontextmanager
@@ -154,6 +155,7 @@ async def ws_endpoint(websocket: WebSocket) -> None:
                 subscribe = message.get("subscribe", [])
                 if token:
                     await client.authorize(token, subscribe)
+            await asyncio.sleep(0.01)
     except WebSocketDisconnect:
         with contextlib.suppress(KeyError):
             del messaging.clients[client.id]
