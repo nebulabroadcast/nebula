@@ -28,7 +28,7 @@ RUN \
   pip install -U pip && \
   pip install poetry && \
   poetry config virtualenvs.create false && \
-  poetry install --no-interaction --no-ansi
+  poetry install --no-interaction --no-ansi --only main
 
 COPY ./backend /backend
 COPY --from=build /frontend/dist/ /frontend

@@ -16,7 +16,7 @@ class DeleteRequestModel(RequestModel):
         ...,
         title="Object IDs",
         description="A list of object IDs to delete",
-        example=[1, 2, 3],
+        examples=[[1, 2, 3]],
     )
 
 
@@ -34,7 +34,6 @@ class Request(APIRequest):
         initiator: RequestInitiator,
     ) -> Response:
         """Delete given objects."""
-
         match request.object_type:
             case ObjectType.ITEM:
                 # TODO: refactor events

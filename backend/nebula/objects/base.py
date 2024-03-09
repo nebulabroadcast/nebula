@@ -57,7 +57,6 @@ class BaseObject:
     username: str | None = None  # Name of the user operating on the object
 
     def __init__(self, meta: dict[str, Any] | None = None, **kwargs) -> None:
-
         if (conn := kwargs.get("connection")) is not None:
             assert isinstance(conn, (asyncpg.Connection, DB))
             self.connection = conn
@@ -194,9 +193,8 @@ class BaseObject:
             raise BadRequestException("Unable to delete unsaved asset")
         if isinstance(self.connection, DB):
             pool = await self.connection.pool()
-            async with pool.acquire() as conn:
-                async with conn.transaction():
-                    await self._delete()
+            async with pool.acquire() as conn, conn.transaction():
+                await self._delete()
         elif (
             self.connection is not None
             and hasattr(self.connection, "is_in_transaction")
@@ -227,9 +225,8 @@ class BaseObject:
         assert self.connection is not None
         if isinstance(self.connection, DB):
             pool = await self.connection.pool()
-            async with pool.acquire() as conn:
-                async with conn.transaction():
-                    await self._save()
+            async with pool.acquire() as conn, conn.transaction():
+                await self._save()
         elif (
             hasattr(self.connection, "is_in_transaction")
             and self.connection.is_in_transaction()

@@ -13,13 +13,13 @@ class ActionsRequestModel(RequestModel):
         ...,
         title="Asset IDs",
         description="List of asset IDs for which to get available actions",
-        example=[1, 2, 3],
+        examples=[[1, 2, 3]],
     )
 
 
 class ActionItemModel(ResponseModel):
-    id: int = Field(..., title="Action ID", example=1)
-    name: str = Field(..., title="Action name", example="proxy")
+    id: int = Field(..., title="Action ID", examples=[1])
+    name: str = Field(..., title="Action name", examples=["proxy"])
 
 
 class ActionsResponseModel(ResponseModel):

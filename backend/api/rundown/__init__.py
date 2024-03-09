@@ -18,7 +18,6 @@ class Request(APIRequest):
         request: RundownRequestModel,
         user: CurrentUser,
     ) -> RundownResponseModel:
-
         if not user.can("rundown_view", request.id_channel):
             raise nebula.ForbiddenException("You are not allowed to view this rundown")
 

@@ -1,22 +1,8 @@
-import { useMemo, useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import styled from 'styled-components'
 
-const Shade = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding-top: 10%;
-  background-color: rgba(0, 0, 0, 0.6);
-  z-index: 500;
-  backdrop-filter: blur(2px);
-`
-
-const DialogWindow = styled.div`
+const StyledDialog = styled.dialog`
+  color: var(--color-text);
   padding: 6px;
   background-color: var(--color-surface-02);
   border-radius: 12px;
@@ -27,10 +13,13 @@ const DialogWindow = styled.div`
   min-height: 150px;
   max-width: 85%;
   max-height: 80%;
-  position: relative;
+  border: none;
 
-  :focus {
-    outline: none;
+  transition: all 0.3s ease;
+
+  &::backdrop {
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(2px);
   }
 
   header,
@@ -63,6 +52,7 @@ const DialogBody = styled.div`
   gap: 6px;
   flex-grow: 1;
   overflow: auto;
+  position: relative;
 `
 
 const Dialog = ({
@@ -79,48 +69,46 @@ const Dialog = ({
   const dialogRef = useRef(null)
 
   useEffect(() => {
-    dialogRef.current.focus()
-  }, [dialogRef.current])
+    // Automatically open the dialog when the component mounts
+    dialogRef.current.showModal()
+    // Focus management is handled by the <dialog> element itself
 
-  const headerComp = useMemo(() => {
-    if (!header) return null
-    return <header style={headerStyle}>{header}</header>
-  }, [header])
+    const handleCancel = (event) => {
+      event.preventDefault()
+      onHide()
+    }
 
-  const footerComp = useMemo(() => {
-    if (!footer) return null
-    return <footer style={footerStyle}>{footer}</footer>
-  }, [footer])
+    // Add event listener for the cancel event (when user attempts to close the dialog)
+    dialogRef.current.addEventListener('cancel', handleCancel)
+
+    return () => {
+      if (dialogRef.current)
+        dialogRef.current.removeEventListener('cancel', handleCancel)
+    }
+  }, [onHide])
 
   const onShadeClick = (event) => {
+    // No need for this with native dialog, but keeping for custom hide logic
     if (event.currentTarget != event.target) return
     if (!onHide) return
     event.preventDefault()
     onHide()
   }
 
-  const onKeyDown = (event) => {
-    if (event.key === 'Escape') onHide()
-  }
-
   return (
-    <Shade
-      className="dialog-shade"
+    <StyledDialog
+      className={className}
+      style={style}
+      ref={dialogRef}
       onClick={onShadeClick}
-      onKeyDown={onKeyDown}
+      onKeyDown={(event) => {
+        if (event.key === 'Escape') onHide()
+      }}
     >
-      <DialogWindow
-        className={className}
-        style={style}
-        onKeyDown={onKeyDown}
-        ref={dialogRef}
-        tabIndex={0}
-      >
-        {headerComp}
-        <DialogBody style={bodyStyle}>{children}</DialogBody>
-        {footerComp}
-      </DialogWindow>
-    </Shade>
+      {header && <header style={headerStyle}>{header}</header>}
+      <DialogBody style={bodyStyle}>{children}</DialogBody>
+      {footer && <footer style={footerStyle}>{footer}</footer>}
+    </StyledDialog>
   )
 }
 

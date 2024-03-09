@@ -28,7 +28,6 @@ class SolverPlugin:
 
     async def __call__(self, id_item: int):
         """Solver entrypoint."""
-
         res = await nebula.db.fetch(
             """
             SELECT
@@ -232,8 +231,7 @@ class SolverPlugin:
     #
 
     async def solve(self):
-        """
-        This method must return a list or yield items
+        """This method must return a list or yield items
         (no need to specify order or bin values) which
         replaces the original placeholder.
         """

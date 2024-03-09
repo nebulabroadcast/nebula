@@ -6,7 +6,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { toast } from 'react-toastify'
 import { isEqual, isEmpty } from 'lodash'
 
-import { useLocalStorage } from '/src/hooks'
+import { useLocalStorage, useConfirm } from '/src/hooks'
 import {
   setPageTitle,
   reloadBrowser,
@@ -67,6 +67,7 @@ const AssetEditor = () => {
   const [assetData, setAssetData] = useState({})
   const [originalData, setOriginalData] = useState({})
   const [loading, setLoading] = useState(false)
+  const [ConfirmDialog, confirm] = useConfirm()
   const [previewVisible, setPreviewVisible] = useLocalStorage(
     'previewVisible',
     false
@@ -175,14 +176,14 @@ const AssetEditor = () => {
   // When another asset is selected,
   // check if there are unsaved changes and ask to save them
 
-  useEffect(() => {
-    if (!focusedAsset) return
+  const switchAsset = async () => {
     if (isChanged) {
-      const confirm = window.confirm(
+      const ans = await confirm(
+        'Unsaved changes',
         'There are unsaved changes. Do you want to save them?'
       )
 
-      if (confirm) {
+      if (ans) {
         nebula
           .request('set', { id: assetData.id, data: assetData })
           .then(() => {
@@ -205,6 +206,11 @@ const AssetEditor = () => {
     } else {
       loadAsset(focusedAsset)
     }
+  }
+
+  useEffect(() => {
+    if (!focusedAsset) return
+    switchAsset()
   }, [focusedAsset])
 
   // Actions
@@ -333,6 +339,7 @@ const AssetEditor = () => {
           )}
         </div>
       ) : null}
+      <ConfirmDialog />
     </div>
   )
 }

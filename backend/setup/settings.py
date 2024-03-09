@@ -68,7 +68,7 @@ async def setup_settings(db):
     settings: dict[str, Any] = {}
 
     # Nebula 5 compat
-    redis_url = urlparse(config.redis)
+    redis_url = urlparse(str(config.redis))
     settings["redis_host"] = redis_url.hostname
     settings["redis_port"] = redis_url.port or 6379
     settings["site_name"] = config.site_name

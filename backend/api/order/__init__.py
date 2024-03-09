@@ -20,7 +20,6 @@ class Request(APIRequest):
         user: CurrentUser,
         initiator: RequestInitiator,
     ) -> OrderResponseModel:
-
         if not user.can("rundown_edit", request.id_channel):
             raise nebula.ForbiddenException("You are not allowed to edit this rundown")
 

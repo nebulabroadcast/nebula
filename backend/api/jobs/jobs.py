@@ -28,13 +28,13 @@ class JobsRequestModel(ResponseModel):
         None,
         title="Job IDs",
         description="Return only the jobs with the given IDs",
-        example=[42],
+        examples=[[42]],
     )
     asset_ids: list[int] | None = Field(
         None,
         title="Asset IDs",
         description="Return jobs of asset with the given IDs",
-        example=[69],
+        examples=[[69]],
     )
     search_query: str | None = Field(
         None,
@@ -54,43 +54,46 @@ class JobsRequestModel(ResponseModel):
     priority: tuple[int, int] | None = Field(
         None,
         title="Priority",
-        descriprion="Set priority of job with given id. "
+        description="Set priority of job with given id. "
         "First value is the job id, second is the priority",
-        example=[42, 3],
+        examples=[[42, 3]],
     )
+
+
+TS_EXAMPLE = f"{int(time.time())}"
 
 
 class JobsItemModel(RequestModel):
     id: int = Field(..., title="Job ID")
     status: JobState = Field(..., title="Job status")
-    progress: int = Field(..., title="Progress", example=24)
-    id_action: int = Field(..., title="Action ID", example=1)
-    id_service: int | None = Field(None, title="Service ID", example=3)
+    progress: int = Field(..., title="Progress", examples=[24])
+    id_action: int = Field(..., title="Action ID", examples=[1])
+    id_service: int | None = Field(None, title="Service ID", examples=[3])
     id_asset: int = Field(..., title="Asset ID")
     id_user: int | None = Field(
         None,
         title="User ID",
         description="ID of the user who started the job",
     )
-    priority: int = Field(3, title="Priority", example=3)
-    message: str = Field(..., title="Status description", example="Encoding 24%")
-    ctime: int | None = Field(None, title="Created at", example=f"{int(time.time())}")
-    stime: int | None = Field(None, title="Started at", example=f"{int(time.time())}")
-    etime: int | None = Field(None, title="Finished at", example=f"{int(time.time())}")
+    priority: int = Field(3, title="Priority", examples=[3])
+    message: str = Field(..., title="Status description", examples=["Encoding 24%"])
+    ctime: int | None = Field(None, title="Created at", examples=[TS_EXAMPLE])
+    stime: int | None = Field(None, title="Started at", examples=[TS_EXAMPLE])
+    etime: int | None = Field(None, title="Finished at", examples=[TS_EXAMPLE])
     asset_name: str | None = Field(
         None,
         title="Asset name",
         description="Asset full title (title + subtitle)",
-        example="Star Trek IV: The voyage home",
+        examples=["Star Trek IV: The voyage home"],
     )
     idec: str | None = Field(
         None,
         title="Primary identifier",
-        example="A123456",
+        examples=["A123456"],
     )
-    action_name: str | None = Field(None, example="proxy")
-    service_name: str | None = Field(None, example="conv01")
-    service_type: str | None = Field(None, example="conv")
+    action_name: str | None = Field(None, examples=["proxy"])
+    service_name: str | None = Field(None, examples=["conv01"])
+    service_type: str | None = Field(None, examples=["conv"])
 
 
 class JobsResponseModel(ResponseModel):

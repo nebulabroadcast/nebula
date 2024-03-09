@@ -20,14 +20,14 @@ class LoginRequestModel(RequestModel):
     username: str = Field(
         ...,
         title="Username",
-        example="admin",
-        regex=r"^[a-zA-Z0-9_\-\.]{2,}$",
+        examples=["admin"],
+        pattern=r"^[a-zA-Z0-9_\-\.]{2,}$",
     )
     password: str = Field(
         ...,
         title="Password",
         description="Password in plain text",
-        example="Password.123",
+        examples=["Password.123"],
     )
 
 
@@ -41,8 +41,8 @@ class LoginResponseModel(ResponseModel):
 
 
 class PasswordRequestModel(RequestModel):
-    login: str | None = Field(None, title="Login", example="admin")
-    password: str = Field(..., title="Password", example="Password.123")
+    login: str | None = Field(None, title="Login", examples=["admin"])
+    password: str = Field(..., title="Password", examples=["Password.123"])
 
 
 #
@@ -64,7 +64,7 @@ async def check_failed_login(ip_address: str) -> None:
         raise nebula.LoginFailedException("Too many failed login attempts")
 
 
-async def set_failed_login(ip_address: str):
+async def set_failed_login(ip_address: str) -> None:
     ns = "login-failed-ip"
     failed_attempts_str = await nebula.redis.incr(ns, ip_address)
     failed_attempts = int(failed_attempts_str) if failed_attempts_str else 0
@@ -82,7 +82,7 @@ async def set_failed_login(ip_address: str):
         )
 
 
-async def clear_failed_login(ip_address: str):
+async def clear_failed_login(ip_address: str) -> None:
     await nebula.redis.delete("login-failed-ip", ip_address)
 
 
@@ -105,7 +105,6 @@ class LoginRequest(APIRequest):
         request: Request,
         payload: LoginRequestModel,
     ) -> LoginResponseModel:
-
         if request is not None:
             await check_failed_login(get_real_ip(request))
 
@@ -133,7 +132,7 @@ class LogoutRequest(APIRequest):
     name: str = "logout"
     title: str = "Logout"
 
-    async def handle(self, authorization: str | None = Header(None)):
+    async def handle(self, authorization: str | None = Header(None)) -> None:
         if not authorization:
             raise nebula.UnauthorizedException("No authorization header provided")
 

@@ -83,7 +83,8 @@ async def get_pending_assets(send_action: int | None) -> list[int]:
 
 def parse_durations(ameta, imeta) -> tuple[float, float, float]:
     """From the given asset and item metadata,
-    return the duration, mark_in and mark_out"""
+    return the duration, mark_in and mark_out
+    """
     a_duration = ameta.get("duration", 0)
     a_mark_in = ameta.get("mark_in", 0)
     a_mark_out = ameta.get("mark_in", 0)
@@ -127,11 +128,11 @@ def can_append(asset: nebula.Asset, conditions: "AcceptModel"):
             f"Media type {asset['media_type']} not in {conditions.media_types}"
         )
         return False
-    if conditions.content_types:
-        if asset["content_type"] not in conditions.content_types:
-            nebula.log.warn(
-                f"Content type {asset['content_type']}"
-                " not in {conditions.content_types}"
-            )
-            return False
+    if conditions.content_types and (
+        asset["content_type"] not in conditions.content_types
+    ):
+        nebula.log.warn(
+            f"Content type {asset['content_type']}" " not in {conditions.content_types}"
+        )
+        return False
     return True

@@ -29,10 +29,10 @@ class ServiceItemModel(RequestModel):
 
 class ServiceRequestModel(RequestModel):
     stop: int | None = Field(
-        None, title="Stop ID", description="ID of service to stop", example=42
+        None, title="Stop ID", description="ID of service to stop", examples=[42]
     )
     start: int | None = Field(
-        None, title="Start ID", description="ID of service to start", example=None
+        None, title="Start ID", description="ID of service to start", examples=[None]
     )
     auto: int | None = Field(
         False,

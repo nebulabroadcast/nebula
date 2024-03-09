@@ -1,8 +1,10 @@
 from typing import Any
 
+from pydantic import BaseModel
 from redis import asyncio as aioredis
 from redis.asyncio.client import PubSub
 
+from nebula.common import json_dumps, json_loads
 from nebula.config import config
 from nebula.log import log
 
@@ -39,6 +41,16 @@ class Redis:
         return value
 
     @classmethod
+    async def get_json(cls, namespace: str, key: str) -> Any:
+        """Get a JSON-serialized value from Redis"""
+        if not cls.connected:
+            await cls.connect()
+        value = await cls.get(namespace, key)
+        if not value:
+            raise KeyError(f"Key {namespace}-{key} not found")
+        return json_loads(value)
+
+    @classmethod
     async def set(cls, namespace: str, key: str, value: str, ttl: int = 0) -> None:
         """Create/update a record in Redis
 
@@ -50,6 +62,17 @@ class Redis:
         if ttl:
             command.extend(["ex", str(ttl)])
         await cls.redis_pool.execute_command(*command)
+
+    @classmethod
+    async def set_json(cls, namespace: str, key: str, value: Any, ttl: int = 0) -> None:
+        """Create/update a record in Redis with JSON-serialized value"""
+        if not cls.connected:
+            await cls.connect()
+        if isinstance(value, BaseModel):
+            payload = value.model_dump_json(exclude_unset=True, exclude_defaults=True)
+        else:
+            payload = json_dumps(value)
+        await cls.set(namespace, key, payload, ttl)
 
     @classmethod
     async def delete(cls, namespace: str, key: str) -> None:
@@ -99,3 +122,11 @@ class Redis:
             key_without_ns = key.decode("ascii").removeprefix(f"{namespace}-")
             payload = await cls.redis_pool.get(key)
             yield key_without_ns, payload
+
+    @classmethod
+    async def iterate_json(cls, namespace: str):
+        """Iterate over stored keys and yield [key, payload] tuples
+        matching given namespace. Payloads are JSON-decoded.
+        """
+        async for key, payload in cls.iterate(namespace):
+            yield key, json_loads(payload)

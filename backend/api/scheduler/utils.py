@@ -10,7 +10,6 @@ async def get_event_at_time(id_channel: int, timestamp: int) -> nebula.Event | N
     Note: This function looks for the EXACT start timestamp, not for the closest event,
     or an ongoing event. This is used in scheduler for replacing existing events.
     """
-
     query = """
         SELECT meta FROM events
         WHERE id_channel = $1 AND start = $2
@@ -31,29 +30,26 @@ async def delete_events(ids: list[int]) -> list[int]:
 
     Returns a list of event IDs that were deleted.
     """
-
     deleted_event_ids = []
     pool = await nebula.db.pool()
-    async with pool.acquire() as conn:
-        async with conn.transaction():
-            for id_event in ids:
+    async with pool.acquire() as conn, conn.transaction():
+        for id_event in ids:
+            event = await nebula.Event.load(id_event)
+            id_bin = event["id_magic"]
 
-                event = await nebula.Event.load(id_event)
-                id_bin = event["id_magic"]
+            try:
+                await nebula.db.execute(
+                    "DELETE FROM items WHERE id_bin = $1",
+                    id_bin,
+                )
+            except Exception:
+                nebula.log.error(f"Failed to delete items of {event}")
+                continue
 
-                try:
-                    await nebula.db.execute(
-                        "DELETE FROM items WHERE id_bin = $1",
-                        id_bin,
-                    )
-                except Exception:
-                    nebula.log.error(f"Failed to delete items of {event}")
-                    continue
+            await nebula.db.execute("DELETE FROM bins WHERE id = $1", id_bin)
+            await nebula.db.execute("DELETE FROM events WHERE id = $1", id_event)
 
-                await nebula.db.execute("DELETE FROM bins WHERE id = $1", id_bin)
-                await nebula.db.execute("DELETE FROM events WHERE id = $1", id_event)
-
-                deleted_event_ids.append(id_event)
+            deleted_event_ids.append(id_event)
     return deleted_event_ids
 
 
@@ -61,7 +57,6 @@ async def get_events_in_range(
     id_channel: int, start_time: float, end_time: float
 ) -> list[nebula.Event]:
     """Return a list of events in the given time range"""
-
     result: list[nebula.Event] = []
 
     if not (start_time and end_time):

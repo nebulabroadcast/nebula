@@ -42,7 +42,8 @@ class Storage:
             return False
         if not os.listdir(self.local_path):
             return False
-        return self.ensure_ident()
+        self.ensure_ident()
+        return True
 
     @property
     def is_writable(self):
@@ -55,22 +56,22 @@ class Storage:
         storage_string = f"{config.site_name}:{self.id}"
         storage_ident_path = os.path.join(self.local_path, ".nebula_root")
 
-        if not (
-            os.path.exists(storage_ident_path)
-            and storage_string
-            in [line.strip() for line in open(storage_ident_path).readlines()]
-        ):
-            try:
-                with open(storage_ident_path, "a") as f:
-                    f.write(storage_string + "\n")
-            except Exception:
-                if self.read_only is None:
-                    log.warning(f"{self} is mounted, but read only")
-                    self.read_only = True
-            else:
-                if self.read_only is None:
-                    log.info(f"{self} is mounted and root is writable")
-        return True
+        if os.path.exists(storage_ident_path):
+            with open(storage_ident_path) as f:
+                storage_strings = [line.strip() for line in f.readlines()]
+                if storage_string in storage_strings:
+                    return
+
+        try:
+            with open(storage_ident_path, "a") as f:
+                f.write(storage_string + "\n")
+        except Exception:
+            if self.read_only is None:
+                log.warning(f"{self} is mounted read only")
+                self.read_only = True
+        else:
+            if self.read_only is None:
+                log.info(f"{self} is mounted and writable")
 
 
 class Storages:

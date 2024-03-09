@@ -24,7 +24,7 @@ class PluginItemModel(ResponseModel):
     path: str = Field(..., title="Plugin directory")
 
 
-@functools.lru_cache()
+@functools.lru_cache
 def get_frontend_plugins():
     """Return a list of frontend plugins.
 
@@ -36,7 +36,6 @@ def get_frontend_plugins():
     Nebula does not provide any frontend plugins by default,
     nor does not build them.
     """
-
     plugin_dirs: list[tuple[str, str]] = []  # (plugin_name, plugin_dir)
     plugins: list[PluginItemModel] = []
 
@@ -73,7 +72,7 @@ def get_frontend_plugins():
         }
 
         if os.path.exists(manifest_path):
-            with open(manifest_path, "r") as f:
+            with open(manifest_path) as f:
                 manifest = json.load(f)
                 for key in ["name", "title", "icon", "scope"]:
                     manifest_key = f"nebula.{key}"

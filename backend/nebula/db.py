@@ -58,11 +58,10 @@ class DB:
     async def iterate(self, query: str, *args) -> AsyncGenerator[asyncpg.Record, None]:
         """Iterate over a query and yield the result."""
         pool = await self.pool()
-        async with pool.acquire() as conn:
-            async with conn.transaction():
-                statement = await conn.prepare(query)
-                async for record in statement.cursor(*args):
-                    yield record
+        async with pool.acquire() as conn, conn.transaction():
+            statement = await conn.prepare(query)
+            async for record in statement.cursor(*args):
+                yield record
 
 
 db = DB()

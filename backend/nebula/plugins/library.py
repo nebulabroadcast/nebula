@@ -19,7 +19,7 @@ PLUGIN_TYPES = {
 
 class PluginLibrary:
     def __init__(self):
-        self.plugins: dict[str, Any] = {k: [] for k in PLUGIN_TYPES.keys()}
+        self.plugins: dict[str, Any] = {k: [] for k in PLUGIN_TYPES}
 
         self.init_legacy_plugins()
         self.init_packages()
@@ -32,9 +32,7 @@ class PluginLibrary:
         raise KeyError
 
     def init_legacy_plugins(self):
-        """
-        Old style plugins are separated by types into directories
-        """
+        """Old style plugins are separated by types into directories"""
         for plugin_type_name in self.plugins:
             plugin_type_dir = os.path.join(config.plugin_dir, plugin_type_name)
             if not os.path.isdir(plugin_type_dir):
@@ -64,8 +62,7 @@ class PluginLibrary:
                     self.plugins[plugin_type_name].append(plugin_class())
 
     def init_packages(self):
-        """
-        New style plugins (git compatible) contains 'package.toml' file
+        """New style plugins (git compatible) contains 'package.toml' file
         in the root. package.toml contains a list of modules available
         in the package
         """
