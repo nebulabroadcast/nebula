@@ -10,15 +10,15 @@ from server.utils import is_internal_ip
 
 
 class LocationInfo(BaseModel):
-    country: str = Field(None, title="Country")
-    subdivision: str = Field(None, title="Subdivision")
-    city: str = Field(None, title="City")
+    country: str | None = Field(None, title="Country")
+    subdivision: str | None = Field(None, title="Subdivision")
+    city: str | None = Field(None, title="City")
 
 
 class AgentInfo(BaseModel):
-    platform: str = Field(None, title="Platform")
-    client: str = Field(None, title="Client")
-    device: str = Field(None, title="Device")
+    platform: str | None = Field(None, title="Platform")
+    client: str | None = Field(None, title="Client")
+    device: str | None = Field(None, title="Device")
 
 
 class ClientInfo(BaseModel):

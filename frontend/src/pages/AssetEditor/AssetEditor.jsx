@@ -175,11 +175,11 @@ const AssetEditor = () => {
 
   // When another asset is selected,
   // check if there are unsaved changes and ask to save them
-  
+
   const switchAsset = async () => {
     if (isChanged) {
       const ans = await confirm(
-        "Unsaved changes",
+        'Unsaved changes',
         'There are unsaved changes. Do you want to save them?'
       )
 

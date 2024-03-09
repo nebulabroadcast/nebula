@@ -162,10 +162,10 @@ async def get_client_settings(lang: LanguageCode) -> ClientSettingsModel:
 
     client_metatypes = {}
     for k, v in nebula.settings.metatypes.items():
-        if als := v.aliases.get(lang, v.aliases.get("en")):
-            title = als.title
-            header = als.header
-            description = als.description
+        if mals := v.aliases.get(lang, v.aliases.get("en")):
+            title = mals.title
+            header = mals.header
+            description = mals.description
         else:
             title = k
             header = None

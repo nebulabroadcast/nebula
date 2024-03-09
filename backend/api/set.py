@@ -78,7 +78,7 @@ class OperationModel(RequestModel):
 
 
 class OperationResponseModel(ResponseModel):
-    object_type: ObjectType = Field("asset", title="Object type")
+    object_type: ObjectType = Field(ObjectType("asset"), title="Object type")
     success: bool = Field(..., title="Success")
     error: str | None = Field(None, title="Error message")
     id: int | None = Field(

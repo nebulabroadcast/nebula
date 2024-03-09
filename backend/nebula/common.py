@@ -13,7 +13,7 @@ T = TypeVar("T", bound=type)
 SerializableValue = int | float | str | bool | dict | list | None
 
 
-def json_loads(data: str | bytes) -> SerializableValue:
+def json_loads(data: str | bytes) -> Any:
     """Load JSON data."""
     return json.loads(data)
 
@@ -61,4 +61,4 @@ def classes_from_module(superclass: T, module: ModuleType) -> list[T]:
             continue
         if issubclass(obj, superclass):
             classes.append(obj)
-    return classes  # type: ignore/
+    return classes  # type: ignore

@@ -98,7 +98,7 @@ class BrowseResponseModel(ResponseModel):
         ],
     )
     order_by: str | None = Field(None)
-    order_dir: OrderDirection = Field(None)
+    order_dir: OrderDirection = Field(...)
 
 
 #

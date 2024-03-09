@@ -123,6 +123,7 @@ class Messaging(BackgroundTask):
                     else:
                         continue
                 else:
+                    data: tuple[float, str, str, str, Any]
                     data = json_loads(raw_message["data"])
                     message = {
                         "timestamp": data[0],

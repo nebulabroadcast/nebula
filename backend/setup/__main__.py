@@ -1,6 +1,7 @@
 import asyncio
 import sys
 
+import aiofiles
 import asyncpg
 
 from nebula.db import DB
@@ -14,8 +15,8 @@ log.user = "setup"
 
 async def create_schema(db: DB):
     log.info("Creating database schema")
-    with open("schema/schema.sql") as f:
-        schema = f.read()
+    async with aiofiles.open("schema/schema.sql") as f:
+        schema = await f.read()
         await db.execute(schema)
 
 
