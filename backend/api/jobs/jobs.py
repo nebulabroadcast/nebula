@@ -66,7 +66,7 @@ TS_EXAMPLE = f"{int(time.time())}"
 class JobsItemModel(RequestModel):
     id: int = Field(..., title="Job ID")
     status: JobState = Field(..., title="Job status")
-    progress: int = Field(..., title="Progress", examples=[24])
+    progress: float = Field(..., title="Progress", examples=[24])
     id_action: int = Field(..., title="Action ID", examples=[1])
     id_service: int | None = Field(None, title="Service ID", examples=[3])
     id_asset: int = Field(..., title="Asset ID")
@@ -77,9 +77,9 @@ class JobsItemModel(RequestModel):
     )
     priority: int = Field(3, title="Priority", examples=[3])
     message: str = Field(..., title="Status description", examples=["Encoding 24%"])
-    ctime: int | None = Field(None, title="Created at", examples=[TS_EXAMPLE])
-    stime: int | None = Field(None, title="Started at", examples=[TS_EXAMPLE])
-    etime: int | None = Field(None, title="Finished at", examples=[TS_EXAMPLE])
+    ctime: float | None = Field(None, title="Created at", examples=[TS_EXAMPLE])
+    stime: float | None = Field(None, title="Started at", examples=[TS_EXAMPLE])
+    etime: float | None = Field(None, title="Finished at", examples=[TS_EXAMPLE])
     asset_name: str | None = Field(
         None,
         title="Asset name",

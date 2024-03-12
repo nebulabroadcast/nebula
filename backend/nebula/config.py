@@ -2,7 +2,7 @@ import os
 from typing import Literal
 
 import dotenv
-from pydantic import BaseModel, Field, PostgresDsn, RedisDsn
+from pydantic import BaseModel, Field
 
 
 class NebulaConfig(BaseModel):
@@ -16,13 +16,13 @@ class NebulaConfig(BaseModel):
         description="Message of the day",
     )
 
-    postgres: PostgresDsn = Field(
-        "postgres://nebula:nebula@postgres/nebula",  # type: ignore
+    postgres: str = Field(
+        "postgres://nebula:nebula@postgres/nebula",
         description="PostgreSQL connection string",
     )
 
-    redis: RedisDsn = Field(
-        "redis://redis",  # type: ignore
+    redis: str = Field(
+        "redis://redis",
         description="Redis connection string",
     )
 
