@@ -1,17 +1,16 @@
-IMAGE_NAME=nebulabroadcast/nebula-server:latest
+IMAGE_NAME=nebulabroadcast/nebula-server:dev
 VERSION=$(shell cd backend && poetry run python -c 'import nebula' --version)
 
 check: check_version
 	cd frontend && yarn format
 
 	cd backend && \
-		poetry run black . && \
-		poetry run ruff --fix . && \
+		poetry run ruff format . && \
+		poetry run ruff check --fix . && \
 		poetry run mypy .
 
 check_version:
-	echo $(VERSION)
-	sed -i "s/^version = \".*\"/version = \"$(VERSION)\"/" backend/pyproject.toml
+	cd backend && poetry version $(VERSION)
 
 build:
 	docker build -t $(IMAGE_NAME) .
