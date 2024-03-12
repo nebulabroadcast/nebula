@@ -48,7 +48,7 @@ class PlayoutPluginSlot(ResponseModel):
 
     @property
     def title(self):
-        return self.opts.get("title", self.name.capitalize())
+        self.name.replace("_", " ").title()
 
 
 class PlayoutPluginManifest(ResponseModel):

@@ -1,6 +1,7 @@
 import asyncio
 import sys
 
+import aiofiles
 import asyncpg
 
 from nebula.db import DB
@@ -14,8 +15,8 @@ log.user = "setup"
 
 async def create_schema(db: DB):
     log.info("Creating database schema")
-    with open("schema/schema.sql", "r") as f:
-        schema = f.read()
+    async with aiofiles.open("schema/schema.sql") as f:
+        schema = await f.read()
         await db.execute(schema)
 
 
@@ -64,7 +65,7 @@ async def main() -> None:
     # Check wether we have database deployed
 
     if "--dump" in sys.argv:
-        await dump_settings(db)
+        await dump_settings()
         return
 
     else:
@@ -72,9 +73,8 @@ async def main() -> None:
         await create_default_user(db)
 
         pool = await db.pool()
-        async with pool.acquire() as conn:
-            async with conn.transaction():
-                await setup_settings(conn)
+        async with pool.acquire() as conn, conn.transaction():
+            await setup_settings(conn)
 
 
 if __name__ == "__main__":

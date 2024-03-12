@@ -34,13 +34,12 @@ def normalize_meta(key: str, value: Any) -> Any:
     Returns the correct value for the given key.
     Raises a ValueError if the value cannot be converted.
     """
-
     # Some keys we need to enforce really hard
     if key in ALWAYS_TO_INT:
         return int(value or 0)
 
     # If there's no matching metatype, just return the value
-    if key not in settings.metatypes.keys():
+    if key not in settings.metatypes:
         assert is_serializable(
             value
         ), f"Value {value} set to unknown key {key} is not supported."

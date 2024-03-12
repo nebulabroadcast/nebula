@@ -231,7 +231,7 @@ const UploadButton = ({ assetData, disabled }) => {
       )}
       <Button
         icon="upload"
-        title="Upload"
+        title="Upload media file"
         onClick={() => setDialogVisible(true)}
         disabled={disabled}
       />

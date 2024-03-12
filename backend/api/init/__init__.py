@@ -4,13 +4,14 @@ import fastapi
 from pydantic import Field
 
 import nebula
+from nebula.plugins.frontend import PluginItemModel, get_frontend_plugins
+from nebula.settings import load_settings
 from nebula.settings.common import LanguageCode
 from server.context import ScopedEndpoint, server_context
 from server.dependencies import CurrentUserOptional
 from server.models import ResponseModel
 from server.request import APIRequest
 
-from .plugins import PluginItemModel, get_frontend_plugins
 from .settings import ClientSettingsModel, get_client_settings
 
 
@@ -50,6 +51,7 @@ class InitResponseModel(ResponseModel):
         default_factory=list,
         title="OAuth2 options",
     )
+    something: str | None = Field(None)
 
 
 class Request(APIRequest):
@@ -71,20 +73,19 @@ class Request(APIRequest):
         request: fastapi.Request,
         user: CurrentUserOptional,
     ) -> InitResponseModel:
-
         default_motd = f"Nebula {nebula.__version__} @ {nebula.config.site_name}"
         motd = nebula.config.motd or default_motd
 
         # Nebula is not installed. Frontend should display
         # an error message or redirect to the installation page.
         if not nebula.settings.installed:
-            nebula.settings.reload()
+            await load_settings()
             if not nebula.settings.installed:
-                return InitResponseModel(installed=False)
+                return InitResponseModel(installed=False)  # type: ignore
 
         # Not logged in. Only return motd and oauth2 options.
         if user is None:
-            return InitResponseModel(motd=motd)
+            return InitResponseModel(motd=motd)  # type: ignore
 
         # TODO: get preferred user language
         lang: LanguageCode = user.language
@@ -95,9 +96,10 @@ class Request(APIRequest):
         plugins = get_frontend_plugins()
 
         return InitResponseModel(
+            installed=True,
             motd=motd,
             user=user.meta,
             settings=client_settings,
             frontend_plugins=plugins,
             scoped_endpoints=server_context.scoped_endpoints,
-        )
+        )  # type: ignore

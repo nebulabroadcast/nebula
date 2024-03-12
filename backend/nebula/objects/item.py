@@ -23,10 +23,9 @@ class Item(BaseObject):
         # item has its own value
         if key in self.meta:
             return super().__getitem__(key)
-        if self._asset:
+        if self._asset and (key not in ["mark_in", "mark_out"]):
             # we have asset loaded, so return its value
-            if key not in ["mark_in", "mark_out"]:
-                return self._asset[key]
+            return self._asset[key]
         # we don't have asset loaded, so return default value
         # TODO: consider raising an exception here
         return super().__getitem__(key)

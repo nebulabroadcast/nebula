@@ -48,8 +48,14 @@ const DataRow = ({
   rowHighlightColor,
   selected = false,
 }) => {
-  const handleClick = () => {
-    if (onRowClick) onRowClick(rowData)
+  const handleClick = (event) => {
+    if (event.type === 'contextmenu' || event.button === 2) {
+      // if we're right-clicking, and the row is already selected,
+      // don't change the selection - just show the context menu
+      if (selected) return
+    }
+
+    if (onRowClick) onRowClick(rowData, event)
   }
   const rowStyle = {}
 
@@ -63,8 +69,10 @@ const DataRow = ({
     rowStyle['--progress'] = rowData.progress + '%'
     rowStyle['--progress-opacity'] = 0.2
   }
+
   //
   // Reder the row
+  //
 
   const rowContent = useMemo(() => {
     return (
@@ -84,6 +92,7 @@ const DataRow = ({
   return (
     <tr
       onClick={handleClick}
+      onContextMenu={handleClick}
       className={selected ? 'selected' : ''}
       style={rowStyle}
     >

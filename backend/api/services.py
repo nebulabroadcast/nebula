@@ -13,6 +13,7 @@ class ServiceItemModel(RequestModel):
     id: int = Field(..., title="Service ID")
     name: str = Field(..., title="Service name")
     type: str = Field(..., title="Service type")
+    hostname: str = Field(..., title="Hostname")
     status: ServiceState = Field(
         ...,
         title="Service status",
@@ -28,10 +29,10 @@ class ServiceItemModel(RequestModel):
 
 class ServiceRequestModel(RequestModel):
     stop: int | None = Field(
-        None, title="Stop ID", description="ID of service to stop", example=42
+        None, title="Stop ID", description="ID of service to stop", examples=[42]
     )
     start: int | None = Field(
-        None, title="Start ID", description="ID of service to start", example=None
+        None, title="Start ID", description="ID of service to start", examples=[None]
     )
     auto: int | None = Field(
         False,
@@ -45,7 +46,7 @@ class ServicesResponseModel(ResponseModel):
 
 
 class Request(APIRequest):
-    """Get a list of objects"""
+    """List and control installed services."""
 
     name: str = "services"
     title: str = "Service control"
@@ -56,8 +57,6 @@ class Request(APIRequest):
         request: ServiceRequestModel,
         user: CurrentUser,
     ) -> ServicesResponseModel:
-        """List and control installed services."""
-
         if request.stop:
             nebula.log.info(f"Stopping service {request.stop}", user=user.name)
             await nebula.db.execute(
@@ -86,6 +85,7 @@ class Request(APIRequest):
                 id,
                 title,
                 service_type,
+                host,
                 state,
                 autostart,
                 last_seen
@@ -100,6 +100,7 @@ class Request(APIRequest):
                     id=row["id"],
                     name=row["title"],
                     type=row["service_type"],
+                    hostname=row["host"],
                     status=row["state"],
                     autostart=row["autostart"],
                     last_seen=time.time() - row["last_seen"],

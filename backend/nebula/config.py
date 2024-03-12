@@ -17,12 +17,12 @@ class NebulaConfig(BaseModel):
     )
 
     postgres: PostgresDsn = Field(
-        "postgres://nebula:nebula@postgres/nebula",
+        "postgres://nebula:nebula@postgres/nebula",  # type: ignore
         description="PostgreSQL connection string",
     )
 
     redis: RedisDsn = Field(
-        "redis://redis",
+        "redis://redis",  # type: ignore
         description="Redis connection string",
     )
 

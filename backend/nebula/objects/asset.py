@@ -74,7 +74,6 @@ class Asset(BaseObject):
         Slug is a title and subtitle converted to a slug.
         In case of virtual assets, returns None.
         """
-
         return slugify(f"{self['title']} {self['subtitle']}")
 
     @property
@@ -83,7 +82,6 @@ class Asset(BaseObject):
 
         Display title is a title with optional subtitle.
         """
-
         separator = settings.system.subtitle_separator
         if not (title := self.get("title")):
             title = f"Asset {self.id}" if self.id else "New asset"
@@ -97,7 +95,6 @@ class Asset(BaseObject):
         """Return duration of the asset in seconds.
         Takes in account mark_in and mark_out.
         """
-
         duration = self["duration"]
         if not duration:
             return 0

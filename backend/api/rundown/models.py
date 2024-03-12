@@ -10,11 +10,12 @@ ItemMode = Literal["lead_in", "lead_out", "placeholder", "live"]
 
 class RundownRequestModel(RequestModel):
     id_channel: int = Field(...)
-    date: str | None = Field(None, regex=r"\d{4}-\d{2}-\d{2}")
+    date: str | None = Field(None, pattern=r"\d{4}-\d{2}-\d{2}")
 
 
 class RundownRow(ResponseModel):
     id: int = Field(...)
+    row_number: int = Field(...)
     type: Literal["item", "event"] = Field(...)
     id_bin: int = Field(...)
     id_event: int = Field(...)

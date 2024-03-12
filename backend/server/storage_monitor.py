@@ -11,7 +11,8 @@ from server.background import BackgroundTask
 
 
 async def exec_mount(cmd: str) -> bool:
-    proc = subprocess.Popen(cmd, shell=True)
+    # TODO: use asyncio.subprocess
+    proc = subprocess.Popen(cmd, shell=True)  # noqa
     while proc.poll() is None:
         await asyncio.sleep(0.1)
     if proc.returncode:
@@ -55,7 +56,7 @@ async def handle_samba_storage(storage: Storage):
 
     if smbopts:
         opts = " -o 'noserverino,{}'".format(
-            ",".join(["{}={}".format(k, smbopts[k]) for k in smbopts])
+            ",".join([f"{k}={smbopts[k]}" for k in smbopts])
         )
     else:
         opts = ""

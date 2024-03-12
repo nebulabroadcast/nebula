@@ -1,4 +1,5 @@
 import enum
+import logging
 import sys
 import traceback
 
@@ -70,3 +71,22 @@ class Logger:
 
 
 log = Logger()
+
+# Add custom logging handler to standard logging module
+# This allows us to use the standard logging module with
+# the same format, log level and consumers as the primary
+# Nebula logger. This is useful for 3rd party libraries.
+
+
+class CustomHandler(logging.Handler):
+    def emit(self, record):
+        log_message = self.format(record)
+        name = record.name
+        log(LogLevel(record.levelno // 10), log_message, user=name)
+
+
+root_logger = logging.getLogger()
+root_logger.setLevel(log.level * 10)
+
+custom_handler = CustomHandler()
+root_logger.addHandler(custom_handler)

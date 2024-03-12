@@ -11,7 +11,7 @@ COPY ./frontend/public /frontend/public
 WORKDIR /frontend
 RUN yarn install && yarn build
 
-FROM python:3.11-bullseye
+FROM python:3.12-bullseye
 ENV PYTHONBUFFERED=1
 
 RUN \
@@ -28,7 +28,7 @@ RUN \
   pip install -U pip && \
   pip install poetry && \
   poetry config virtualenvs.create false && \
-  poetry install --no-interaction --no-ansi
+  poetry install --no-interaction --no-ansi --only main
 
 COPY ./backend /backend
 COPY --from=build /frontend/dist/ /frontend

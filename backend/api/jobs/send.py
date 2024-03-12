@@ -31,7 +31,7 @@ class SendRequestModel(RequestModel):
     params: dict[str, Any] = Field(
         default_factory=dict,
         title="Additional job parameters (action specific)",
-        example={"bitrate": "4000k"},
+        examples=[{"bitrate": "4000k"}],
     )
     priority: int = Field(3, title="Job priority")
 
@@ -57,7 +57,6 @@ async def send_to(
 
     Returns ID of the job created/restarted or None if no job was created.
     """
-
     res = await nebula.db.fetch("SELECT id FROM actions WHERE id = $1", id_action)
     if not res:
         raise nebula.NotFoundException("No such action")
@@ -164,7 +163,6 @@ class SendRequest(APIRequest):
         request: SendRequestModel,
         user: CurrentUser,
     ) -> SendResponseModel:
-
         if not user.can("job_control", request.id_action):
             raise nebula.ForbiddenException()
 

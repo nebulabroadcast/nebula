@@ -22,6 +22,7 @@ const BrowserNav = () => {
     for (const view of nebula.settings.views || []) {
       result.push({
         label: view.name,
+        separator: view.separator,
         onClick: () => dispatch(setCurrentView(view)),
       })
     }

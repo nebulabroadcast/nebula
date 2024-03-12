@@ -8,21 +8,20 @@ from server.session import Session, SessionModel
 
 
 class SessionsRequest(RequestModel):
-    id_user: int = Query(..., example=1)
+    id_user: int = Query(..., examples=[1])
 
 
 class Sessions(APIRequest):
+    """List user sessions."""
+
     name = "sessions"
     title = "List sessions"
-    response_model = list[SessionModel]
 
     async def handle(
         self,
         request: SessionsRequest,
         user: CurrentUser,
     ) -> list[SessionModel]:
-        """Create or update an object."""
-
         id_user = request.id_user
 
         if id_user != user.id and (not user.is_admin):
@@ -46,17 +45,22 @@ class InvalidateSessionRequest(RequestModel):
 
 
 class InvalidateSession(APIRequest):
+    """Invalidate a user session.
+
+    This endpoint is used to invalidate an user session. It can be used
+    to remotely log out a user. If the user is an admin, it can also be
+    used to log out other users.
+    """
+
     name = "invalidate_session"
     title = "Invalidate session"
-    responses = [204, 201]
+    responses = [204]
 
     async def handle(
         self,
         payload: InvalidateSessionRequest,
         user: CurrentUser,
-    ) -> None:
-        """Create or update an object."""
-
+    ) -> Response:
         session = await Session.check(payload.token)
         if session is None:
             raise nebula.NotFoundException("Session not found")

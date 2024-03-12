@@ -1,6 +1,9 @@
+import asyncio
 import contextlib
 import os
+from contextlib import asynccontextmanager
 
+import aiofiles
 from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -8,12 +11,32 @@ from fastapi.websockets import WebSocket, WebSocketDisconnect
 
 import nebula
 from nebula.exceptions import NebulaException
+from nebula.plugins.frontend import get_frontend_plugins
 from nebula.settings import load_settings
 from server.endpoints import install_endpoints
 from server.storage_monitor import storage_monitor
 from server.websocket import messaging
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    _ = app
+    async with aiofiles.open("/var/run/nebula.pid", "w") as f:
+        await f.write(str(os.getpid()))
+    await load_settings()
+    messaging.start()
+    storage_monitor.start()
+    nebula.log.success("Server started")
+
+    yield
+
+    nebula.log.info("Stopping server...")
+    await messaging.shutdown()
+    nebula.log.info("Server stopped", handlers=None)
+
+
 app = FastAPI(
+    lifespan=lifespan,
     docs_url=None,
     redoc_url="/docs",
     title="Nebula API",
@@ -118,6 +141,8 @@ async def catchall_exception_handler(
 @app.websocket("/ws")
 async def ws_endpoint(websocket: WebSocket) -> None:
     client = await messaging.join(websocket)
+    if client is None:
+        return
     try:
         while True:
             message = await client.receive()
@@ -125,15 +150,12 @@ async def ws_endpoint(websocket: WebSocket) -> None:
                 continue
 
             if message["topic"] == "auth":
-                await client.authorize(
-                    message.get("token"),
-                    topics=message.get("subscribe", []),
-                )
-                # if client.user_name:
-                #     nebula.log.trace(f"{client.user_name} connected")
+                token = message.get("token")
+                subscribe = message.get("subscribe", [])
+                if token:
+                    await client.authorize(token, subscribe)
+            await asyncio.sleep(0.01)
     except WebSocketDisconnect:
-        # if client.user_name:
-        #     nebula.log.trace(f"{client.user_name} disconnected")
         with contextlib.suppress(KeyError):
             del messaging.clients[client.id]
 
@@ -144,19 +166,11 @@ async def ws_endpoint(websocket: WebSocket) -> None:
 
 
 def install_frontend_plugins(app: FastAPI):
-    plugin_root = os.path.join(nebula.config.plugin_dir, "frontend")
-    if not os.path.exists(plugin_root):
-        return
-
-    for plugin_name in os.listdir(plugin_root):
-        plugin_path = os.path.join(plugin_root, plugin_name, "dist")
-        if not os.path.isdir(plugin_path):
-            continue
-
-        nebula.log.debug(f"Mounting frontend plugin {plugin_name}: {plugin_path}")
+    for plugin in get_frontend_plugins():
+        nebula.log.trace(f"Mounting frontend plugin {plugin.name}: {plugin.path}")
         app.mount(
-            f"/plugins/{plugin_name}",
-            StaticFiles(directory=plugin_path, html=True),
+            f"/plugins/{plugin.name}",
+            StaticFiles(directory=plugin.path, html=True),
         )
 
 
@@ -174,28 +188,3 @@ def install_frontend(app: FastAPI):
 install_endpoints(app)
 install_frontend_plugins(app)
 install_frontend(app)
-
-
-#
-# Startup event
-#
-
-
-@app.on_event("startup")
-async def startup_event():
-    with open("/var/run/nebula.pid", "w") as f:
-        f.write(str(os.getpid()))
-
-    await load_settings()
-
-    messaging.start()
-    storage_monitor.start()
-    nebula.log.success("Server started")
-
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    nebula.log.info("Stopping server...")
-    await messaging.shutdown()
-
-    nebula.log.info("Server stopped", handlers=None)

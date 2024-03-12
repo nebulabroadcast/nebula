@@ -11,66 +11,63 @@ async def create_new_event(
     event_data: EventData,
 ):
     """Create a new event from the given data."""
-
     pool = await nebula.db.pool()
-    async with pool.acquire() as conn:
-        async with conn.transaction():
+    async with pool.acquire() as conn, conn.transaction():
+        new_bin = nebula.Bin(connection=conn)
+        new_event = nebula.Event(connection=conn)
 
-            new_bin = nebula.Bin(connection=conn)
-            new_event = nebula.Event(connection=conn)
+        await new_bin.save()
 
-            await new_bin.save()
+        new_event["id_magic"] = new_bin.id
+        new_event["id_channel"] = channel.id
+        new_event["start"] = event_data.start
 
-            new_event["id_magic"] = new_bin.id
-            new_event["id_channel"] = channel.id
-            new_event["start"] = event_data.start
+        asset_meta = {}
+        position = 0
+        if event_data.id_asset:
+            asset = await nebula.Asset.load(event_data.id_asset, connection=conn)
 
-            asset_meta = {}
-            position = 0
-            if event_data.id_asset:
+            new_event["id_asset"] = event_data.id_asset
 
-                asset = await nebula.Asset.load(event_data.id_asset, connection=conn)
+            new_item = nebula.Item(connection=conn)
+            new_item["id_asset"] = event_data.id_asset
+            new_item["id_bin"] = new_bin.id
+            new_item["position"] = position
+            new_item["mark_in"] = asset["mark_in"]
+            new_item["mark_out"] = asset["mark_out"]
 
-                new_event["id_asset"] = event_data.id_asset
+            await new_item.save()
+            new_bin["duration"] = asset.duration
+            asset_meta = asset.meta
+            position += 1
 
-                new_item = nebula.Item(connection=conn)
-                new_item["id_asset"] = event_data.id_asset
-                new_item["id_bin"] = new_bin.id
-                new_item["position"] = position
-                new_item["mark_in"] = asset["mark_in"]
-                new_item["mark_out"] = asset["mark_out"]
-
-                await new_item.save()
-                new_bin["duration"] = asset.duration
-                asset_meta = asset.meta
+        if event_data.items:
+            for item_data in event_data.items:
+                if item_data.get("id"):
+                    assert isinstance(item_data["id"], int), "Invalid item ID"
+                    item = await nebula.Item.load(item_data["id"], connection=conn)
+                else:
+                    item = nebula.Item(connection=conn)
+                item.update(item_data)
+                item["id_bin"] = new_bin.id
+                item["position"] = position
+                await item.save()
                 position += 1
 
-            if event_data.items:
-                for item_data in event_data.items:
-                    if item_data.get("id"):
-                        assert isinstance(item_data["id"], int), "Invalid item ID"
-                        item = await nebula.Item.load(item_data["id"], connection=conn)
-                    else:
-                        item = nebula.Item(connection=conn)
-                    item.update(item_data)
-                    item["id_bin"] = new_bin.id
-                    item["position"] = position
-                    await item.save()
-                    position += 1
+        for field in channel.fields:
+            if (value := asset_meta.get(field.name)) is not None:
+                new_event[field.name] = value
 
-            for field in channel.fields:
-                if (value := asset_meta.get(field.name)) is not None:
+            if event_data.meta is not None:
+                value = event_data.meta.get(field.name)
+                if value is not None:
                     new_event[field.name] = value
 
-                if event_data.meta is not None:
-                    if (value := event_data.meta.get(field.name)) is not None:
-                        new_event[field.name] = value
-
-            try:
-                await new_event.save()
-                await new_bin.save()
-            except Exception as e:
-                raise nebula.ConflictException() from e
+        try:
+            await new_event.save()
+            await new_bin.save()
+        except Exception as e:
+            raise nebula.ConflictException() from e
 
 
 async def scheduler(
@@ -78,7 +75,6 @@ async def scheduler(
     editable: bool = True,
 ) -> SchedulerResponseModel:
     """Modify and display channel schedule"""
-
     start_time: float | None = None
     end_time: float | None = None
 
@@ -151,6 +147,9 @@ async def scheduler(
                     new_item["mark_out"] = asset["mark_out"]
                     await new_item.save()
                     ex_bin.items.append(new_item)
+                    assert (
+                        ex_bin.id is not None
+                    ), "Bin ID should not be None at this point"
                     affected_bins.append(ex_bin.id)
 
                 # update the event

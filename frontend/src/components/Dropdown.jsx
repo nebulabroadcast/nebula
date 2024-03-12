@@ -13,13 +13,19 @@ const DropdownContainer = styled.div`
     box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
     z-index: 1;
 
+    hr {
+      margin: 0;
+      border: none;
+      border-top: 2px solid var(--color-surface-03);
+    }
+
     button {
       background: none;
       border: none;
       width: 100%;
       justify-content: flex-start;
       border-radius: 0;
-      padding: 25px 10px;
+      padding: 25px 8px;
 
       &:hover {
         background-color: var(--color-surface-03);
@@ -79,11 +85,13 @@ const Dropdown = ({
       <div className="dropdown-content" style={contentStyle}>
         {options &&
           options.map((option, idx) => (
-            <Button
-              key={idx}
-              {...option}
-              disabled={option.disabled || value === option.value}
-            />
+            <span key={idx}>
+              {option.separator && <hr />}
+              <Button
+                {...option}
+                disabled={option.disabled || value === option.value}
+              />
+            </span>
           ))}
       </div>
     </DropdownContainer>

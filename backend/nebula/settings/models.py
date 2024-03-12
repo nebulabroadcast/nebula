@@ -15,7 +15,7 @@ class CSAlias(SettingsModel):
 
 
 class CSItemModel(SettingsModel):
-    role: CSItemRole | None = Field(None)
+    role: CSItemRole | None = Field(default=None)
     aliases: dict[str, CSAlias] = Field(default_factory=dict)
 
     @classmethod
@@ -53,40 +53,40 @@ class BaseSystemSettings(SettingsModel):
     """
 
     site_name: str = Field(
-        "nebula",
-        regex=r"^[a-zA-Z0-9_]+$",
+        default="nebula",
+        pattern=r"^[a-zA-Z0-9_]+$",
         title="Site name",
         description="A name used as the site (instance) identification",
     )
 
     language: LanguageCode = Field(
-        "en",
+        default="en",
         title="Default language",
-        example="en",
+        examples=["en", "cs"],
     )
 
     ui_asset_create: bool = Field(
-        True,
+        default=True,
         title="Create assets in UI",
         description="Allow creating assets in the UI"
         "(when set to false, assets can only be created via API and watch folders)",
     )
 
     ui_asset_preview: bool = Field(
-        True,
+        default=True,
         title="Preview assets in UI",
         description="Allow previewing low-res proxies of assets in the UI",
     )
 
     ui_asset_upload: bool = Field(
-        False,
+        default=False,
         title="Upload assets in UI",
         description="Allow uploading asset media files in the UI "
         "(when set to false, assets can only be uploaded via API and watch folders)",
     )
 
     subtitle_separator: str = Field(
-        ": ",
+        default=": ",
         title="Subtitle separator",
         description="String used to separate title and subtitle in displayed title",
     )
@@ -99,24 +99,40 @@ class SystemSettings(BaseSystemSettings):
     Contains settings that are used only by the server.
     """
 
-    proxy_storage: int = Field(1, title="Proxy storage", example=1)
-    proxy_path: str = Field(".nx/proxy/{id1000:04d}/{id}.mp4")
-    worker_plugin_storage: int = Field(1)
-    worker_plugin_path: str = Field(".nx/plugins")
-    upload_storage: int | None = Field(None)
-    upload_dir: str | None = Field(None)
-    upload_base_name: str = Field("{id}")
+    proxy_storage: int = Field(default=1, title="Proxy storage", examples=[1])
+    proxy_path: str = Field(default=".nx/proxy/{id1000:04d}/{id}.mp4")
+    worker_plugin_storage: int = Field(default=1)
+    worker_plugin_path: str = Field(default=".nx/plugins")
+    upload_storage: int | None = Field(default=None)
+    upload_dir: str | None = Field(default=None)
+    upload_base_name: str = Field(default="{id}")
 
-    smtp_host: str | None = Field(None, title="SMTP host", example="smtp.example.com")
-    smtp_port: int | None = Field(None, title="SMTP port", example=465)
-    smtp_user: str | None = Field(None, title="SMTP user", example="smtpuser")
-    smtp_pass: str | None = Field(None, title="SMTP password", example="smtppass.1")
+    smtp_host: str | None = Field(
+        default=None,
+        title="SMTP host",
+        examples=["smtp.example.com"],
+    )
+    smtp_port: int | None = Field(
+        default=None,
+        title="SMTP port",
+        examples=[465],
+    )
+    smtp_user: str | None = Field(
+        default=None,
+        title="SMTP user",
+        examples=["smtpuser"],
+    )
+    smtp_pass: str | None = Field(
+        default=None,
+        title="SMTP password",
+        examples=["smtppass.1"],
+    )
 
     mail_from: str | None = Field(
-        "Nebula <noreply@nebulabroadcast.com>",
+        default="Nebula <noreply@nebulabroadcast.com>",
         title="Mail from",
         description="Email address used as the sender",
-        example="Nebula <noreply@example.com>",
+        examples=["Nebula <noreply@example.com>"],
     )
 
 
@@ -126,9 +142,9 @@ class SystemSettings(BaseSystemSettings):
 
 
 class BaseActionSettings(SettingsModel):
-    id: int = Field(..., title="Action ID", example=1)
-    name: str = Field(..., title="Action name", example="proxy")
-    type: str = Field(..., title="Action type", example="conv")
+    id: int = Field(..., title="Action ID", examples=[1])
+    name: str = Field(..., title="Action name", examples=["proxy"])
+    type: str = Field(..., title="Action type", examples=["conv"])
 
 
 class ActionSettings(BaseActionSettings):
@@ -141,16 +157,16 @@ class ActionSettings(BaseActionSettings):
 
 
 class BaseServiceSettings(SettingsModel):
-    id: int = Field(..., title="Service ID", example=1)
-    name: str = Field(..., title="Service name", example="conv01")
-    type: str = Field(..., title="Service type", example="conv")
-    host: str = Field(..., title="Host", example="node01")
-    autostart: bool = Field(True, title="Autostart", example=True)
+    id: int = Field(..., title="Service ID", examples=[1])
+    name: str = Field(..., title="Service name", examples=["conv01"])
+    type: str = Field(..., title="Service type", examples=["conv"])
+    host: str = Field(..., title="Host", examples=["node01"])
+    autostart: bool = Field(True, title="Autostart", examples=[True])
     loop_delay: int = Field(
         5, title="Loop delay", description="Seconds of sleep between runs"
     )
     state: ServiceState = Field(ServiceState.STOPPED)
-    last_seen: int = Field(0, title="Last seen", example=1949155890)
+    last_seen: int = Field(0, title="Last seen", examples=[1949155890])
 
 
 class ServiceSettings(BaseServiceSettings):
@@ -164,14 +180,14 @@ class ServiceSettings(BaseServiceSettings):
 
 
 class BaseStorageSettings(SettingsModel):
-    id: int = Field(..., title="Storage ID", example=1)
-    name: str = Field(..., title="Storage name", name="Production")
+    id: int = Field(..., title="Storage ID", examples=[1])
+    name: str = Field(..., title="Storage name", examples=["Production"])
     protocol: Literal["samba", "local"] = Field(
         ...,
         title="Connection protocol",
-        example="samba",
+        examples=["samba"],
     )
-    path: str = Field(..., title="Path", example="//server/share")
+    path: str = Field(..., title="Path", examples=["//server/share"])
 
 
 class StorageSettings(BaseStorageSettings):
@@ -185,7 +201,7 @@ class StorageSettings(BaseStorageSettings):
 
 class FolderField(SettingsModel):
     name: str = Field(..., title="Field name")
-    section: str | None = Field(None, title="Section")
+    section: str | None = Field(default=None, title="Section")
     mode: str | None = None
     format: str | None = None
     order: str | None = None
@@ -212,11 +228,11 @@ class ViewSettings(SettingsModel):
     id: int = Field(...)
     name: str = Field(...)
     position: int = Field(...)
-    folders: list[int] | None = Field(None)
-    states: list[int] | None = Field(None)
-    columns: list[str] | None = Field(None)
-    conditions: list[str] | None = Field(None)
-    separator: bool = Field(False)
+    folders: list[int] | None = Field(default=None)
+    states: list[int] | None = Field(default=None)
+    columns: list[str] | None = Field(default=None)
+    conditions: list[str] | None = Field(default=None)
+    separator: bool = Field(default=False)
 
 
 DayStart = tuple[int, int]
@@ -224,34 +240,34 @@ DayStart = tuple[int, int]
 
 class AcceptModel(SettingsModel):
     folders: list[int] | None = Field(
-        None,
+        default=None,
         title="Folders",
         description="List of folder IDs",
     )
     content_types: list[ContentType] | None = Field(
+        default_factory=lambda: [ContentType.VIDEO],
         title="Content types",
         description="List of content types that are accepted. "
         "None means all types are accepted.",
-        default_factory=lambda: [ContentType.VIDEO],
     )
     media_types: list[MediaType] | None = Field(
+        default_factory=lambda: [MediaType.FILE],
         title="Media types",
         description="List of media types that are accepted. "
         "None means all types are accepted.",
-        default_factory=lambda: [MediaType.FILE],
     )
 
 
 class BasePlayoutChannelSettings(SettingsModel):
     id: int = Field(...)
     name: str = Field(...)
-    fps: float = Field(25.0)
+    fps: float = Field(default=25.0)
     plugins: list[str] = Field(default_factory=list)
     solvers: list[str] = Field(default_factory=list)
-    day_start: DayStart = Field((7, 0))
+    day_start: DayStart = Field(default=(7, 0))
     rundown_columns: list[str] = Field(default_factory=list)
     fields: list[FolderField] = Field(
-        fields="Fields",
+        title="Fields",
         description="Metadata fields available for the channel events",
         default_factory=lambda: [
             FolderField(name="title"),
@@ -260,7 +276,7 @@ class BasePlayoutChannelSettings(SettingsModel):
             FolderField(name="color"),  # to distinguish events in the scheduler view
         ],
     )
-    send_action: int | None = None
+    send_action: int | None = Field(default=None)
     scheduler_accepts: AcceptModel = Field(default_factory=AcceptModel)
     rundown_accepts: AcceptModel = Field(default_factory=AcceptModel)
 
@@ -285,16 +301,9 @@ class PlayoutChannelSettings(BasePlayoutChannelSettings):
 #
 
 
-def find_id(data: list[SettingsModel], id: int) -> SettingsModel | None:
-    for item in data:
-        if item.id == id:
-            return item
-    return None
-
-
 class ServerSettings(SettingsModel):
     installed: bool = True
-    system: SystemSettings = Field(default_factory=SystemSettings)
+    system: SystemSettings = Field(default_factory=lambda: SystemSettings())
     storages: list[StorageSettings] = Field(default_factory=list)
     folders: list[FolderSettings] = Field(default_factory=list)
     views: list[ViewSettings] = Field(default_factory=list)
@@ -306,13 +315,25 @@ class ServerSettings(SettingsModel):
     playout_channels: list[PlayoutChannelSettings] = Field(default_factory=list)
 
     def get_folder(self, id_folder: int) -> FolderSettings | None:
-        return find_id(self.folders, id_folder)
+        for item in self.folders:
+            if item.id == id_folder:
+                return item
+        return None
 
     def get_view(self, id_view: int) -> ViewSettings | None:
-        return find_id(self.views, id_view)
+        for item in self.views:
+            if item.id == id_view:
+                return item
+        return None
 
     def get_storage(self, id_storage: int) -> StorageSettings | None:
-        return find_id(self.storages, id_storage)
+        for item in self.storages:
+            if item.id == id_storage:
+                return item
+        return None
 
     def get_playout_channel(self, id_channel: int) -> PlayoutChannelSettings | None:
-        return find_id(self.playout_channels, id_channel)
+        for item in self.playout_channels:
+            if item.id == id_channel:
+                return item
+        return None

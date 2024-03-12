@@ -20,14 +20,14 @@ class LoginRequestModel(RequestModel):
     username: str = Field(
         ...,
         title="Username",
-        example="admin",
-        regex=r"^[a-zA-Z0-9_\-\.]{2,}$",
+        examples=["admin"],
+        pattern=r"^[a-zA-Z0-9_\-\.]{2,}$",
     )
     password: str = Field(
         ...,
         title="Password",
         description="Password in plain text",
-        example="Password.123",
+        examples=["Password.123"],
     )
 
 
@@ -41,8 +41,8 @@ class LoginResponseModel(ResponseModel):
 
 
 class PasswordRequestModel(RequestModel):
-    login: str | None = Field(None, title="Login", example="admin")
-    password: str = Field(..., title="Password", example="Password.123")
+    login: str | None = Field(None, title="Login", examples=["admin"])
+    password: str = Field(..., title="Password", examples=["Password.123"])
 
 
 #
@@ -64,27 +64,38 @@ async def check_failed_login(ip_address: str) -> None:
         raise nebula.LoginFailedException("Too many failed login attempts")
 
 
-async def set_failed_login(ip_address: str):
+async def set_failed_login(ip_address: str) -> None:
     ns = "login-failed-ip"
-    failed_attempts = await nebula.redis.incr(ns, ip_address)
+    failed_attempts_str = await nebula.redis.incr(ns, ip_address)
+    failed_attempts = int(failed_attempts_str) if failed_attempts_str else 0
+
     await nebula.redis.expire(
         ns, ip_address, 600
     )  # this is just for the clean-up, it cannot be used to reset the counter
 
     if failed_attempts > nebula.config.max_failed_login_attempts:
+        ban_time = nebula.config.failed_login_ban_time or 0
         await nebula.redis.set(
             "banned-ip-until",
             ip_address,
-            time.time() + nebula.config.failed_login_ban_time,
+            str(time.time() + ban_time),
         )
 
 
-async def clear_failed_login(ip_address: str):
+async def clear_failed_login(ip_address: str) -> None:
     await nebula.redis.delete("login-failed-ip", ip_address)
 
 
 class LoginRequest(APIRequest):
-    """Login using a username and password"""
+    """Login using a username and password
+
+    This request will return an access token that can be used in the
+    Authorization header for the subsequent requests.
+    If the login fails, request will return 401 Unauthorized.
+
+    If the login fails too many (configurable) times,
+    the IP address will be banned for a certain amount of time (configurable).
+    """
 
     name: str = "login"
     response_model = LoginResponseModel
@@ -113,12 +124,15 @@ class LoginRequest(APIRequest):
 
 
 class LogoutRequest(APIRequest):
-    """Log out the current user"""
+    """Log out the current user.
+
+    This request will invalidate the access token used in the Authorization header.
+    """
 
     name: str = "logout"
     title: str = "Logout"
 
-    async def handle(self, authorization: str | None = Header(None)):
+    async def handle(self, authorization: str | None = Header(None)) -> None:
         if not authorization:
             raise nebula.UnauthorizedException("No authorization header provided")
 
@@ -134,7 +148,10 @@ class LogoutRequest(APIRequest):
 class SetPassword(APIRequest):
     """Set a new password for the current (or a given) user.
 
-    In order to set a password for another user, the current user must be an admin.
+    Normal users can only change their own password.
+
+    In order to set a password for another user,
+    the current user must be an admin, otherwise a 403 error is returned.
     """
 
     name: str = "password"
@@ -144,10 +161,10 @@ class SetPassword(APIRequest):
         self,
         request: PasswordRequestModel,
         user: CurrentUser,
-    ):
+    ) -> Response:
         if request.login:
             if not user.is_admin:
-                raise nebula.UnauthorizedException(
+                raise nebula.ForbiddenException(
                     "Only admin can change other user's password"
                 )
             query = "SELECT meta FROM users WHERE login = $1"
