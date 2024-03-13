@@ -40,8 +40,8 @@ jobs:
         with:
           tag: v${{ steps.get_version.outputs.value }}
           name: Nebula ${{ steps.get_version.outputs.value }}
-          body: Nebula version ${{ steps.get_version.outputs.value }}
           allowUpdates: true
-          draft: true
+          draft: false
           prerelease: false
+          generateReleaseNotes: true
 

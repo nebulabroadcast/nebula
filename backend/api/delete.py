@@ -45,6 +45,7 @@ class Request(APIRequest):
 
                 query = "DELETE FROM items WHERE id = ANY($1) RETURNING id, id_bin"
                 affected_bins = set()
+                nebula.log.debug(f"Deleted items: {request.ids}", user=user.name)
                 async for row in nebula.db.iterate(query, request.ids):
                     affected_bins.add(row["id_bin"])
                 await bin_refresh(list(affected_bins), initiator=initiator)
