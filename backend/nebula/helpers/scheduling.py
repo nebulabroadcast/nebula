@@ -42,7 +42,7 @@ async def bin_refresh(
         e.id_magic = ANY($1)
     """
     changed_events = [row["id_event"] async for row in nebula.db.iterate(query, bins)]
-    nebula.log.debug(f"Bins changed {bins}.")
+    nebula.log.trace(f"Bins changed {bins}.", user=username)
     await nebula.msg(
         "objects_changed",
         object_type="bin",
