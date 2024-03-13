@@ -60,6 +60,16 @@ const DropdownContainer = styled.div`
   }
 `
 
+const DropdownOption = ({currentValue, separator, disabled, active, ...props}) => (
+  <span>
+    {separator && <hr />}
+    <Button
+      {...props}
+      disabled={props.disabled || currentValue === props.value}
+    />
+  </span>
+)
+
 const Dropdown = ({
   options,
   label = null,
@@ -85,13 +95,7 @@ const Dropdown = ({
       <div className="dropdown-content" style={contentStyle}>
         {options &&
           options.map((option, idx) => (
-            <span key={idx}>
-              {option.separator && <hr />}
-              <Button
-                {...option}
-                disabled={option.disabled || value === option.value}
-              />
-            </span>
+            <DropdownOption key={idx} currentValue={value} {...option}/>
           ))}
       </div>
     </DropdownContainer>
