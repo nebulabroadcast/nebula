@@ -24,7 +24,7 @@ class Request(APIRequest):
             raise nebula.ForbiddenException("You are not allowed to view this channel")
 
         editable = user.can("scheduler_edit", request.id_channel)
-        result = await scheduler(request, editable)
+        result = await scheduler(request, editable, user=user)
 
         if result.affected_bins:
             await bin_refresh(
