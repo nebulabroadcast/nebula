@@ -28,7 +28,7 @@ async def bin_refresh(
         if user:
             b["updated_by"] = user.id
         # this log message triggers storing bin duration to its meta
-        nebula.log.debug(
+        nebula.log.trace(
             f"New duration of {b} is {s2time(b.duration)} ({len(b.items)} items)",
             user=username,
         )
@@ -42,7 +42,6 @@ async def bin_refresh(
         e.id_magic = ANY($1)
     """
     changed_events = [row["id_event"] async for row in nebula.db.iterate(query, bins)]
-    nebula.log.trace(f"Bins changed {bins}.", user=username)
     await nebula.msg(
         "objects_changed",
         object_type="bin",
