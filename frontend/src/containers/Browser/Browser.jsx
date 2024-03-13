@@ -129,19 +129,19 @@ const BrowserTable = () => {
   //
 
   const handlePubSub = (topic, message) => {
-      if (topic !== 'objects_changed') return
-      if (message.object_type !== 'asset') return
-      let changed = false
-      for (const obj of message.objects) {
-        if (dataRef.current.find((row) => row.id === obj)) {
-          changed = true
-          break
-        }
-      }
-      if (changed) {
-        debouncingLoadData()
+    if (topic !== 'objects_changed') return
+    if (message.object_type !== 'asset') return
+    let changed = false
+    for (const obj of message.objects) {
+      if (dataRef.current.find((row) => row.id === obj)) {
+        changed = true
+        break
       }
     }
+    if (changed) {
+      debouncingLoadData()
+    }
+  }
 
   useEffect(() => {
     const token = PubSub.subscribe('objects_changed', handlePubSub)
