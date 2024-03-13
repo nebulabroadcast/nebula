@@ -257,7 +257,7 @@ const AssetEditor = () => {
       return
     }
     setLoading(true)
-    console.log('Saving...', assetData)
+    // console.log('Saving...', assetData)
     nebula
       .request('set', { id: assetData.id, data: payload || assetData })
       .then((response) => {
