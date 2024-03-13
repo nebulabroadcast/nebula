@@ -68,19 +68,26 @@ const BrowserTable = () => {
     dataRef.current = data
   }, [data])
 
-  const loadData = () => {
+  useEffect(() => {
+    setPage(1)
+  }, [currentView, searchQuery, sortBy, sortDirection])
+
+  const loadData = useCallback(() => {
+    const params = {
+      view: currentView,
+      query: searchQuery || '',
+      limit: ROWS_PER_PAGE + 1,
+      offset: page ? (page - 1) * ROWS_PER_PAGE : 0,
+      order_by: sortBy,
+      order_dir: sortDirection,
+    }
+
     nebula
-      .request('browse', {
-        view: currentView,
-        query: searchQuery || '',
-        limit: ROWS_PER_PAGE + 1,
-        offset: page ? (page - 1) * ROWS_PER_PAGE : 0,
-        order_by: sortBy,
-        order_dir: sortDirection,
-      })
+      .request('browse', params)
       .then((response) => {
         const hasMore = response.data.data.length > ROWS_PER_PAGE
-        setData(response.data.data.slice(0, ROWS_PER_PAGE))
+        const rows = response.data.data.slice(0, ROWS_PER_PAGE)
+        setData(rows)
         if (response.data.order_by !== sortBy) setSortBy(response.data.order_by)
         if (response.data.order_dir !== sortDirection)
           setSortDirection(response.data.order_dir)
@@ -97,9 +104,9 @@ const BrowserTable = () => {
         setHasMore(hasMore)
       })
       .finally(() => setLoading(false))
-  }
+  }, [currentView, searchQuery, sortBy, sortDirection, page])
 
-  const debouncingLoadData = useCallback(debounce(loadData, 100), [loadData])
+  const debouncingLoadData = debounce(loadData, 100)
 
   const handlePubSub = useCallback(
     (topic, message) => {
