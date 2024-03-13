@@ -1,10 +1,12 @@
 import nebula from '/src/nebula'
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { toast } from 'react-toastify'
 import { debounce } from 'lodash'
 
-import { Table, Navbar, Button, Spacer } from '/src/components'
+import { Table } from '/src/components'
+import Pagination from '/src/containers/Pagination'
+
 import {
   setCurrentView,
   setSelectedAssets,
@@ -22,32 +24,11 @@ import {
 
 const ROWS_PER_PAGE = 200
 
-const Pagination = ({ page, setPage, hasMore }) => {
-  if (page > 1 || hasMore)
-    return (
-      <Navbar>
-        <Button
-          icon="keyboard_arrow_left"
-          disabled={page === 1}
-          onClick={() => setPage(page - 1)}
-        />
-        <Spacer>{page}</Spacer>
-        <Button
-          icon="keyboard_arrow_right"
-          disabled={!hasMore}
-          onClick={() => setPage(page + 1)}
-        />
-      </Navbar>
-    )
-  return null
-}
-
 const BrowserTable = () => {
   const currentView = useSelector((state) => state.context.currentView?.id)
   const searchQuery = useSelector((state) => state.context.searchQuery)
   const selectedAssets = useSelector((state) => state.context.selectedAssets)
   const focusedAsset = useSelector((state) => state.context.focusedAsset)
-  const browserRefresh = useSelector((state) => state.context.browserRefresh)
 
   const dispatch = useDispatch()
 
@@ -62,18 +43,34 @@ const BrowserTable = () => {
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(false)
   const [ConfirmDialog, confirm] = useConfirm()
+
   const dataRef = useRef(data)
+  const requestParamsRef = useRef(null)
+
+  //
+  // References
+  //
 
   useEffect(() => {
+    // Save the data to a ref - it is used by the pubsub event handler
+    // to match the changed objects with the current data
     dataRef.current = data
   }, [data])
 
   useEffect(() => {
-    setPage(1)
-  }, [currentView, searchQuery, sortBy, sortDirection])
+    // User changed view or search query
+    if (!currentView) {
+      // No view selected, load the first available view
+      if (nebula.settings.views.length) {
+        dispatch(setCurrentView(nebula.settings.views[0]))
+      }
+      return
+    }
 
-  const loadData = useCallback(() => {
-    const params = {
+    // Save the request params - we will use them to load the data
+    // when objects are changed externally
+
+    requestParamsRef.current = {
       view: currentView,
       query: searchQuery || '',
       limit: ROWS_PER_PAGE + 1,
@@ -82,6 +79,23 @@ const BrowserTable = () => {
       order_dir: sortDirection,
     }
 
+    // show loading indicator only if the user initiated the refresh
+    setLoading(true)
+    loadData()
+  }, [currentView, searchQuery, sortBy, sortDirection, page])
+
+  useEffect(() => {
+    // Reset page when view or search query changes
+    setPage(1)
+  }, [currentView, searchQuery, sortBy, sortDirection])
+
+  //
+  // Data loading
+  //
+
+  const loadData = () => {
+    // Use current value of requestParamsRef to avoid stale data
+    const params = requestParamsRef.current
     nebula
       .request('browse', params)
       .then((response) => {
@@ -104,12 +118,17 @@ const BrowserTable = () => {
         setHasMore(hasMore)
       })
       .finally(() => setLoading(false))
-  }, [currentView, searchQuery, sortBy, sortDirection, page])
+  }
 
+  // Debounce the loadData function to avoid multiple requests
+  // when multiple objects are changed at the same time
   const debouncingLoadData = debounce(loadData, 100)
 
-  const handlePubSub = useCallback(
-    (topic, message) => {
+  //
+  // Subscribe to objects_changed pubsub event
+  //
+
+  const handlePubSub = (topic, message) => {
       if (topic !== 'objects_changed') return
       if (message.object_type !== 'asset') return
       let changed = false
@@ -122,25 +141,16 @@ const BrowserTable = () => {
       if (changed) {
         debouncingLoadData()
       }
-    },
-    [loadData]
-  )
+    }
 
   useEffect(() => {
     const token = PubSub.subscribe('objects_changed', handlePubSub)
     return () => PubSub.unsubscribe(token)
   }, [])
 
-  useEffect(() => {
-    if (!currentView) {
-      if (nebula.settings.views.length) {
-        dispatch(setCurrentView(nebula.settings.views[0]))
-      }
-      return
-    }
-    setLoading(true) // show loading indicator only if the user initiated the refresh
-    loadData()
-  }, [currentView, searchQuery, browserRefresh, sortBy, sortDirection, page])
+  //
+  // User interaction
+  //
 
   const onRowClick = (rowData, event) => {
     let newSelectedAssets = []
@@ -195,6 +205,7 @@ const BrowserTable = () => {
   }
 
   const setSelectionStatus = async (status, question) => {
+    // Change asset status of the selected assets
     if (question) {
       const ans = await confirm('Are you sure?', question)
       if (!ans) return
@@ -216,44 +227,38 @@ const BrowserTable = () => {
       })
   }
 
-  const contextMenu = () => {
-    const items = [
-      {
-        label: 'Send to...',
-        icon: 'send',
-        onClick: () => dispatch(showSendToDialog()),
-      },
-      {
-        label: 'Reset',
-        icon: 'undo',
-        onClick: () =>
-          setSelectionStatus(
-            5,
-            'Do you want to reload selected assets metadata?'
-          ),
-      },
-      {
-        label: 'Archive',
-        separator: true,
-        icon: 'archive',
-        onClick: () =>
-          setSelectionStatus(
-            4,
-            'Do you want to move selected assets to archive?'
-          ),
-      },
-      {
-        label: 'Trash',
-        icon: 'delete',
-        onClick: () =>
-          setSelectionStatus(
-            3,
-            'Do you want to move selected assets to trash?'
-          ),
-      },
-    ]
-    return items
-  }
+  const contextMenu = () => [
+    {
+      label: 'Send to...',
+      icon: 'send',
+      onClick: () => dispatch(showSendToDialog()),
+    },
+    {
+      label: 'Reset',
+      icon: 'undo',
+      onClick: () =>
+        setSelectionStatus(
+          5,
+          'Do you want to reload selected assets metadata?'
+        ),
+    },
+    {
+      label: 'Archive',
+      separator: true,
+      icon: 'archive',
+      onClick: () =>
+        setSelectionStatus(
+          4,
+          'Do you want to move selected assets to archive?'
+        ),
+    },
+    {
+      label: 'Trash',
+      icon: 'delete',
+      onClick: () =>
+        setSelectionStatus(3, 'Do you want to move selected assets to trash?'),
+    },
+  ]
 
   return (
     <>
