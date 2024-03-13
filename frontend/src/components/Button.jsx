@@ -53,7 +53,16 @@ BaseButton.defaultProps = {
 
 const Button = forwardRef(
   (
-    { icon, iconStyle, label, iconOnRight, active, className, tooltip, ...props },
+    {
+      icon,
+      iconStyle,
+      label,
+      iconOnRight,
+      active,
+      className,
+      tooltip,
+      ...props
+    },
     ref
   ) => {
     const classes = className ? [className] : []
@@ -62,7 +71,12 @@ const Button = forwardRef(
     }
 
     return (
-      <BaseButton {...props} className={classes.join(' ')} title={tooltip} ref={ref}>
+      <BaseButton
+        {...props}
+        className={classes.join(' ')}
+        title={tooltip}
+        ref={ref}
+      >
         {label && iconOnRight && <span>{label}</span>}
         {icon && (
           <span className="icon material-symbols-outlined" style={iconStyle}>

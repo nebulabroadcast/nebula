@@ -60,7 +60,13 @@ const DropdownContainer = styled.div`
   }
 `
 
-const DropdownOption = ({currentValue, separator, disabled, active, ...props}) => (
+const DropdownOption = ({
+  currentValue,
+  separator,
+  disabled,
+  active,
+  ...props
+}) => (
   <span>
     {separator && <hr />}
     <Button
@@ -95,7 +101,7 @@ const Dropdown = ({
       <div className="dropdown-content" style={contentStyle}>
         {options &&
           options.map((option, idx) => (
-            <DropdownOption key={idx} currentValue={value} {...option}/>
+            <DropdownOption key={idx} currentValue={value} {...option} />
           ))}
       </div>
     </DropdownContainer>
