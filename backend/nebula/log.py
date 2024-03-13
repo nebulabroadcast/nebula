@@ -31,7 +31,7 @@ class Logger:
 
         lvl = level.name.upper()
         usr = kwargs.get("user") or self.user
-        usr = usr[:self.user_max_length].ljust(self.user_max_length)
+        usr = usr[: self.user_max_length].ljust(self.user_max_length)
         msg = " ".join([str(arg) for arg in args])
 
         print(
