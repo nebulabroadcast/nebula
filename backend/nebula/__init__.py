@@ -27,6 +27,7 @@ __all__ = [
     "ValidationException",
     # Plugins
     "CLIPlugin",
+    "__version__",
 ]
 
 import sys

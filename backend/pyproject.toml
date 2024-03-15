@@ -4,32 +4,49 @@ version = "6.0.5"
 description = "Open source broadcast automation system"
 authors = ["Nebula Broadcast <info@nebulabroadcast.com>"]
 
+[tool.poetry.group.dev.dependencies]
+types-requests = "^2.31.0.20240311"
+types-aiofiles = "^23.2.0.20240311"
+asyncpg-stubs = "^0.29.1"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+#
+# Dependencies
+#
+
 [tool.poetry.dependencies]
 python = "^3.10"
 aiofiles = "^23.2.1"
 asyncpg = "^0.29.0"
+email-validator = "^2.1.1"
 fastapi = "^0.110.0"
+geoip2 = "^4.8.0"
+granian = "^1.1.1"
+gunicorn = "^21.2.0"
+httpx = "^0.27.0"
 mistune = "^3.0.1"
 nxtools = "^1.6"
 pydantic = "^2.6.3"
 python-dotenv = "^1.0.1"
 redis = "^5.0.2"
-rich = "^13.7.1"
-uvicorn = {extras = ["standard"], version = "0.27.1"}
-shortuuid = "^1.0.12"
-email-validator = "^2.1.1"
-geoip2 = "^4.8.0"
-user-agents = "^2.2.0"
-httpx = "^0.27.0"
 requests = "^2.31.0"
-gunicorn = "^21.2.0"
-granian = "^1.1.1"
+rich = "^13.7.1"
+shortuuid = "^1.0.12"
+user-agents = "^2.2.0"
+uvicorn = {extras = ["standard"], version = "0.27.1"}
 
 [tool.poetry.dev-dependencies]
+mypy = "^1.9"
 pytest = "^8.0"
-mypy = "^1.8"
-ruff = "^0.3.1"
 pytest-asyncio = "^0.20.3"
+ruff = "^0.3.1"
+
+#
+# Tools
+#
 
 [tool.ruff]
 line-length = 88
@@ -68,8 +85,19 @@ ignore = [
     "ANN102",  # missing type annotation for cls
 ]
 
+[tool.mypy]
+plugins = [
+  "pydantic.mypy"
+]
 
-
-[build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+#follow_imports = "silent"
+#strict = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+disallow_any_generics = true
+check_untyped_defs = true
+disallow_untyped_defs = true
+no_implicit_reexport = true
+explicit_package_bases = true
+strict_optional = true
+exclude = "tests/|venv/"

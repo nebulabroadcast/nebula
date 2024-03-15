@@ -1,3 +1,5 @@
+from typing import Any
+
 from pydantic import Field
 
 from server.models import RequestModel, ResponseModel
@@ -95,7 +97,7 @@ class SchedulerResponseModel(ResponseModel):
         examples=[[134, 135, 136]],
     )
 
-    events: list[dict] = Field(
+    events: list[dict[str, Any]] = Field(
         default_factory=list,
         title="Events",
         description="List of events",

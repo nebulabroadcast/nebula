@@ -13,14 +13,14 @@ from setup.settings import setup_settings
 log.user = "setup"
 
 
-async def create_schema(db: DB):
+async def create_schema(db: DB) -> None:
     log.info("Creating database schema")
     async with aiofiles.open("schema/schema.sql") as f:
         schema = await f.read()
         await db.execute(schema)
 
 
-async def create_default_user(db: DB):
+async def create_default_user(db: DB) -> None:
     has_user = False
     try:
         result = await db.fetch("SELECT * FROM users")

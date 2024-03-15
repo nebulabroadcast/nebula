@@ -36,7 +36,7 @@ TEMPLATE: dict[str, Any] = {
 }
 
 
-def load_overrides():
+def load_overrides() -> None:
     if not os.path.isdir("/settings"):
         return
     for fname in os.listdir("/settings"):
@@ -61,7 +61,7 @@ def load_overrides():
                 log.error(f"Invalid settings override: {spath}")
 
 
-async def setup_settings(db):
+async def setup_settings(db) -> None:
     load_overrides()
 
     log.info("Applying system settings")
