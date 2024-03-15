@@ -1,20 +1,13 @@
 import os
+import sys
 from typing import Any
-from urllib.parse import urlparse
 
 import httpx
+from pydantic import ValidationError
 
 from nebula.common import import_module
-from nebula.config import config
 from nebula.log import log
-from nebula.settings.models import (
-    ActionSettings,
-    FolderSettings,
-    PlayoutChannelSettings,
-    ServiceSettings,
-    StorageSettings,
-    ViewSettings,
-)
+from nebula.settings.models import SetupServerModel
 from setup.defaults.actions import ACTIONS
 from setup.defaults.channels import CHANNELS
 from setup.defaults.folders import FOLDERS
@@ -31,7 +24,7 @@ TEMPLATE: dict[str, Any] = {
     "views": VIEWS,
     "meta_types": META_TYPES,
     "storages": [],
-    "settings": {},
+    "system": {},
     "cs": [],
 }
 
@@ -62,20 +55,42 @@ def load_overrides():
 
 
 async def setup_settings(db):
+    """Validate and save settings to the database"""
+
+    log.trace("Loading settings overrides")
     load_overrides()
+    log.trace("Validating settings template")
+
+    try:
+        # Apply the settings to the model
+        # This effectively validates the settings.
+
+        # We especially need to be sure that IDs and names
+        # are unique.
+
+        # we are skipping meta types and cs here, as their
+        # models in the template are not compatible with the
+        # SetupServerModel
+
+        settings = SetupServerModel(
+            system=TEMPLATE.pop("system", {}),
+            playout_channels=TEMPLATE.pop("channels", []),
+            folders=TEMPLATE.pop("folders", []),
+            views=TEMPLATE.pop("views", []),
+            actions=TEMPLATE.pop("actions", []),
+            services=TEMPLATE.pop("services", []),
+        )
+    except ValidationError as e:
+        log.error(f"Invalid settings: {e}")
+        sys.exit(1)
+
+    # System settings
+    # Simple key-value pairs with field-level validation
 
     log.info("Applying system settings")
-    settings: dict[str, Any] = {}
-
-    # Nebula 5 compat
-    redis_url = urlparse(str(config.redis))
-    settings["redis_host"] = redis_url.hostname
-    settings["redis_port"] = redis_url.port or 6379
-    settings["site_name"] = config.site_name
-    settings.update(TEMPLATE["settings"])
 
     await db.execute("DELETE FROM settings")
-    for key, value in settings.items():
+    for key, value in settings.system.model_dump(exclude_none=True).items():
         await db.execute(
             """
             INSERT INTO settings (key, value) VALUES ($1, $2)
@@ -84,14 +99,13 @@ async def setup_settings(db):
             key,
             value,
         )
-    log.trace(f"Saved {len(settings)} system settings")
+    log.trace("Saved system settings")
 
     # Setup views
 
     await db.execute("DELETE FROM views")
-    for view in TEMPLATE["views"]:
-        assert isinstance(view, ViewSettings)
-        vdata = view.dict(exclude_none=True)
+    for view in settings.views:
+        vdata = view.model_dump(exclude_none=True)
         vid = vdata.pop("id")
 
         await db.execute(
@@ -108,14 +122,13 @@ async def setup_settings(db):
         coalesce(max(id),0) + 1, false) FROM views;
         """
     )
-    log.trace(f"Saved {len(TEMPLATE['views'])} views")
+    log.trace(f"Saved {len(settings.views)} views")
 
     # Setup folders
 
     folder_ids: list[str] = []
-    for folder in TEMPLATE["folders"]:
-        assert isinstance(folder, FolderSettings)
-        fdata = folder.dict(exclude_none=True)
+    for folder in settings.folders:
+        fdata = folder.model_dump(exclude_none=True)
         fid = fdata.pop("id")
         folder_ids.append(str(fid))
 
@@ -134,51 +147,72 @@ async def setup_settings(db):
         coalesce(max(id),0) + 1, false) FROM folders;
         """
     )
-    log.trace(f"Saved {len(TEMPLATE['folders'])} folders")
+    log.trace(f"Saved {len(settings.folders)} folders")
     # We cannot drop tables first since they are referenced from existing assets
     # So we just try to delete unused and fail if they are still referenced
     await db.execute(f"DELETE FROM folders WHERE id NOT IN ({','.join(folder_ids)})")
 
-    # Setup metatypes
+    # Setup channels
 
-    await setup_metatypes(TEMPLATE["meta_types"], db)
-    log.trace(f"Saved {len(TEMPLATE['meta_types'])} meta types")
+    # We can safely delete all channels, since they are not
+    # hard-referenced from other tables (bins are linked using
+    # id_magic, which is not a foreign key). But keep in mind
+    # that deleting channel will leave orphaned bins, items and
+    # as-run logs in the database.
 
-    # Setup classifications
+    await db.execute("DELETE FROM channels")
+    for channel in settings.playout_channels:  # + other channel types
+        channel_data = channel.model_dump(exclude_none=True)
+        id_channel = channel_data.pop("id", None)
+        await db.execute(
+            """
+            INSERT INTO channels (id, channel_type, settings)
+            VALUES ($1, $2, $3)
+            ON CONFLICT (id) DO UPDATE SET
+            channel_type=$2, settings=$3
+            """,
+            id_channel,
+            0,
+            channel_data,
+        )
+    await db.execute(
+        """
+        SELECT setval(pg_get_serial_sequence('channels', 'id'),
+        coalesce(max(id),0) + 1, false) FROM channels;
+        """
+    )
+    log.trace(f"Saved {len(settings.playout_channels)} playout channels")
 
-    used_urns = set()
-    for mset in TEMPLATE["meta_types"].values():
-        if mset.get("cs"):
-            used_urns.add(mset["cs"])
+    # Setup storages
 
-    classifications = []
-    async with httpx.AsyncClient() as client:
-        response = await client.get("https://cs.nbla.xyz/dump")
-        classifications = response.json()
-
-    classifications.extend(TEMPLATE["cs"])
-
-    for scheme in classifications:
-        name = scheme["cs"]
-        if name not in used_urns:
-            log.trace(f"Skipping unused classification scheme: {name}")
-            continue
-        await db.execute("DELETE FROM cs WHERE cs = $1", name)
-        for value in scheme["data"]:
-            settings = scheme["data"][value]
-            await db.execute(
-                "INSERT INTO cs(cs, value, settings) VALUES ($1, $2, $3)",
-                name,
-                value,
-                settings,
-            )
-    log.trace(f"Saved {len(classifications)} classifications")
+    await db.execute("DELETE FROM storages")
+    for storage in settings.storages:
+        storage_data = storage.model_dump(exclude_none=True)
+        id_storage = storage_data.pop("id", None)
+        await db.execute(
+            """
+            INSERT INTO storages (id, settings) VALUES ($1, $2)
+            ON CONFLICT (id) DO UPDATE SET settings=$2
+            """,
+            id_storage,
+            storage_data,
+        )
+    await db.execute(
+        """
+        SELECT setval(pg_get_serial_sequence('storages', 'id'),
+        coalesce(max(id),0) + 1, false) FROM storages;
+        """
+    )
+    log.trace(f"Saved {len(settings.storages)} storages")
 
     # Setup services
 
+    # Services are soft-referenced from jobs, so we can
+    # delete them safely. Orphaned ID will be left in the
+    # jobs table, but it's not a problem.
+
     await db.execute("DELETE FROM services")
-    for service in TEMPLATE["services"]:
-        assert isinstance(service, ServiceSettings)
+    for service in settings.services:
         await db.execute(
             """
             INSERT INTO services
@@ -201,13 +235,15 @@ async def setup_settings(db):
         coalesce(max(id),0) + 1, false) FROM services;
         """
     )
-    log.trace(f"Saved {len(TEMPLATE['services'])} services")
+    log.trace(f"Saved {len(settings.services)} services")
 
     # Setup actions
 
-    # await db.execute("DELETE FROM actions")
-    for action in TEMPLATE["actions"]:
-        assert isinstance(action, ActionSettings)
+    # we cannot delete actions, since they are referenced from
+    # jobs - updating configuration would delete all jobs as
+    # well, which is not desired. So we just try to upsert them
+
+    for action in settings.actions:
         await db.execute(
             """
             INSERT INTO actions
@@ -227,55 +263,42 @@ async def setup_settings(db):
         coalesce(max(id),0) + 1, false) FROM actions;
         """
     )
-    log.trace(f"Saved {len(TEMPLATE['actions'])} actions")
 
-    # Setup channels
+    log.trace(f"Saved {len(settings.actions)} actions")
 
-    await db.execute("DELETE FROM channels")
-    for channel in TEMPLATE["channels"]:
-        assert isinstance(channel, PlayoutChannelSettings)
-        channel_data = channel.dict()
-        id_channel = channel_data.pop("id", None)
-        await db.execute(
-            """
-            INSERT INTO channels (id, channel_type, settings)
-            VALUES ($1, $2, $3)
-            ON CONFLICT (id) DO UPDATE SET
-            channel_type=$2, settings=$3
-            """,
-            id_channel,
-            0,
-            channel_data,
-        )
-    await db.execute(
-        """
-        SELECT setval(pg_get_serial_sequence('channels', 'id'),
-        coalesce(max(id),0) + 1, false) FROM channels;
-        """
-    )
-    log.trace(f"Saved {len(TEMPLATE['channels'])} channels")
+    # Meta types and classifications need to be processed separately
 
-    # Setup storages
+    # Setup metatypes
 
-    await db.execute("DELETE FROM storages")
-    for storage in TEMPLATE["storages"]:
-        assert isinstance(storage, StorageSettings)
-        storage_data = storage.dict()
-        id_storage = storage_data.pop("id", None)
-        await db.execute(
-            """
-            INSERT INTO storages (id, settings)
-            VALUES ($1, $2)
-            ON CONFLICT (id) DO UPDATE SET
-            settings=$2
-            """,
-            id_storage,
-            storage_data,
-        )
-    await db.execute(
-        """
-        SELECT setval(pg_get_serial_sequence('storages', 'id'),
-        coalesce(max(id),0) + 1, false) FROM storages;
-        """
-    )
-    log.trace(f"Saved {len(TEMPLATE['storages'])} storages")
+    await setup_metatypes(TEMPLATE["meta_types"], db)
+    log.trace(f"Saved {len(TEMPLATE['meta_types'])} meta types")
+
+    # Setup classifications
+
+    used_urns = set()
+    for mset in TEMPLATE["metatypes"].values():
+        if mset.get("cs"):
+            used_urns.add(mset["cs"])
+
+    classifications = []
+    async with httpx.AsyncClient() as client:
+        response = await client.get("https://cs.nbla.xyz/dump")
+        classifications = response.json()
+
+    classifications.extend(TEMPLATE["cs"])
+
+    for scheme in classifications:
+        name = scheme["cs"]
+        if name not in used_urns:
+            log.trace(f"Skipping unused classification scheme: {name}")
+            continue
+        await db.execute("DELETE FROM cs WHERE cs = $1", name)
+        for value in scheme["data"]:
+            cs_settings = scheme["data"][value]
+            await db.execute(
+                "INSERT INTO cs(cs, value, settings) VALUES ($1, $2, $3)",
+                name,
+                value,
+                cs_settings,
+            )
+    log.trace(f"Saved {len(classifications)} classifications")

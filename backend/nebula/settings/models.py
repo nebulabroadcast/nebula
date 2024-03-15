@@ -1,7 +1,8 @@
-from typing import Any, Literal
+from typing import Annotated, Any, Literal, TypeVar
 
-from pydantic import Field
+from pydantic import AfterValidator, Field
 
+from nebula.config import config
 from nebula.enum import ContentType, MediaType, ServiceState
 from nebula.settings.common import LanguageCode, SettingsModel
 from nebula.settings.metatypes import MetaType
@@ -53,7 +54,7 @@ class BaseSystemSettings(SettingsModel):
     """
 
     site_name: str = Field(
-        default="nebula",
+        default=config.site_name,
         pattern=r"^[a-zA-Z0-9_]+$",
         title="Site name",
         description="A name used as the site (instance) identification",
@@ -136,14 +137,17 @@ class SystemSettings(BaseSystemSettings):
     )
 
 
+class BaseListItemModel(SettingsModel):
+    id: int = Field(..., title="ID", examples=[1])
+    name: str = Field(..., title="Name", examples=["Name"])
+
+
 #
 # Action settings
 #
 
 
-class BaseActionSettings(SettingsModel):
-    id: int = Field(..., title="Action ID", examples=[1])
-    name: str = Field(..., title="Action name", examples=["proxy"])
+class BaseActionSettings(BaseListItemModel):
     type: str = Field(..., title="Action type", examples=["conv"])
 
 
@@ -156,9 +160,7 @@ class ActionSettings(BaseActionSettings):
 #
 
 
-class BaseServiceSettings(SettingsModel):
-    id: int = Field(..., title="Service ID", examples=[1])
-    name: str = Field(..., title="Service name", examples=["conv01"])
+class BaseServiceSettings(BaseListItemModel):
     type: str = Field(..., title="Service type", examples=["conv"])
     host: str = Field(..., title="Host", examples=["node01"])
     autostart: bool = Field(True, title="Autostart", examples=[True])
@@ -179,9 +181,7 @@ class ServiceSettings(BaseServiceSettings):
 #
 
 
-class BaseStorageSettings(SettingsModel):
-    id: int = Field(..., title="Storage ID", examples=[1])
-    name: str = Field(..., title="Storage name", examples=["Production"])
+class BaseStorageSettings(BaseListItemModel):
     protocol: Literal["samba", "local"] = Field(
         ...,
         title="Connection protocol",
@@ -224,9 +224,7 @@ class FolderSettings(SettingsModel):
     links: list[FolderLink] = Field(default_factory=list)
 
 
-class ViewSettings(SettingsModel):
-    id: int = Field(...)
-    name: str = Field(...)
+class ViewSettings(BaseListItemModel):
     position: int = Field(...)
     folders: list[int] | None = Field(default=None)
     states: list[int] | None = Field(default=None)
@@ -258,9 +256,7 @@ class AcceptModel(SettingsModel):
     )
 
 
-class BasePlayoutChannelSettings(SettingsModel):
-    id: int = Field(...)
-    name: str = Field(...)
+class BasePlayoutChannelSettings(BaseListItemModel):
     fps: float = Field(default=25.0)
     plugins: list[str] = Field(default_factory=list)
     solvers: list[str] = Field(default_factory=list)
@@ -300,19 +296,47 @@ class PlayoutChannelSettings(BasePlayoutChannelSettings):
 # Server settings
 #
 
+T = TypeVar("T", bound=BaseListItemModel)
+
+
+def unique_item(values: list[T]) -> list[T]:
+    """Check if all items in the list have unique IDs and names."""
+
+    ids = set()
+    names = set()
+
+    for item in values:
+        if item.id in ids:
+            raise ValueError(f"Duplicate ID {item.id}")
+        ids.add(item.id)
+
+        if item.name in names:
+            raise ValueError(f"Duplicate name {item.name}")
+        names.add(item.name)
+
+    return values
+
+
+StorageList = Annotated[list[StorageSettings], AfterValidator(unique_item)]
+FolderList = Annotated[list[FolderSettings], AfterValidator(unique_item)]
+ViewList = Annotated[list[ViewSettings], AfterValidator(unique_item)]
+PlayoutChannelList = Annotated[
+    list[PlayoutChannelSettings], AfterValidator(unique_item)
+]
+
 
 class ServerSettings(SettingsModel):
     installed: bool = True
     system: SystemSettings = Field(default_factory=lambda: SystemSettings())
-    storages: list[StorageSettings] = Field(default_factory=list)
-    folders: list[FolderSettings] = Field(default_factory=list)
-    views: list[ViewSettings] = Field(default_factory=list)
+    storages: StorageList = Field(default_factory=list)
+    folders: FolderList = Field(default_factory=list)
+    views: ViewList = Field(default_factory=list)
     metatypes: dict[str, MetaType] = Field(default_factory=dict)
     cs: dict[str, CSModel] = Field(
         default_factory=dict,
         description="Key is a URN, value is CSModel `{value: CSItemModel}` dict",
     )
-    playout_channels: list[PlayoutChannelSettings] = Field(default_factory=list)
+    playout_channels: PlayoutChannelList = Field(default_factory=list)
 
     def get_folder(self, id_folder: int) -> FolderSettings | None:
         for item in self.folders:
@@ -337,3 +361,14 @@ class ServerSettings(SettingsModel):
             if item.id == id_channel:
                 return item
         return None
+
+
+class SetupServerModel(ServerSettings):
+    """Extended settings model used by setup.
+
+    Normally, actions and services are not part of the settings
+    model, but they are included here to validate the setup template
+    """
+
+    actions: list[ActionSettings] = Field(default_factory=list)
+    services: list[ServiceSettings] = Field(default_factory=list)
