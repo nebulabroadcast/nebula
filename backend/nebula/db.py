@@ -50,7 +50,7 @@ class DB:
         pool = await self.pool()
         return await pool.fetch(query, *args)
 
-    async def fetchrow(self, query: str, *args: Any) -> Any | None:
+    async def fetchrow(self, query: str, *args: Any) -> asyncpg.Record | None:
         """Fetch a query and return the first result."""
         pool = await self.pool()
         return await pool.fetchrow(query, *args)
