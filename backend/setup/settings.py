@@ -276,7 +276,7 @@ async def setup_settings(db):
     # Setup classifications
 
     used_urns = set()
-    for mset in TEMPLATE["metatypes"].values():
+    for mset in TEMPLATE["meta_types"].values():
         if mset.get("cs"):
             used_urns.add(mset["cs"])
 
