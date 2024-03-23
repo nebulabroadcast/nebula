@@ -40,17 +40,17 @@ class DB:
         pool = await self.pool()
         return await pool.execute(query, *args)
 
-    async def executemany(self, query: str, *args) -> list[asyncpg.Record]:
+    async def executemany(self, query: str, *args) -> None:
         """Execute a query multiple times and return the result."""
         pool = await self.pool()
-        return await pool.executemany(query, *args)
+        await pool.executemany(query, *args)
 
     async def fetch(self, query: str, *args) -> list[asyncpg.Record]:
         """Fetch a query and return the result."""
         pool = await self.pool()
         return await pool.fetch(query, *args)
 
-    async def fetchrow(self, query: str, *args) -> asyncpg.Record:
+    async def fetchrow(self, query: str, *args) -> asyncpg.Record | None:
         """Fetch a query and return the first result."""
         pool = await self.pool()
         return await pool.fetchrow(query, *args)
