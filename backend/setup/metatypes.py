@@ -4,9 +4,10 @@ from typing import Any
 import aiofiles
 
 from nebula.common import json_loads
+from nebula.db import DB
 
 
-async def setup_metatypes(meta_types, db) -> None:
+async def setup_metatypes(meta_types: dict[str, Any], db: DB) -> None:
     languages = ["en", "cs"]
 
     aliases: dict[str, dict[str, Any]] = {}

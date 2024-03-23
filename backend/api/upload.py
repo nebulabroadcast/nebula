@@ -27,7 +27,7 @@ class UploadRequest(APIRequest):
         request: Request,
         asset: AssetInPath,
         user: CurrentUser,
-    ):
+    ) -> None:
         assert asset["media_type"] == MediaType.FILE, "Only file assets can be uploaded"
         extension = request.headers.get("X-nebula-extension")
         assert extension, "Missing X-nebula-extension header"

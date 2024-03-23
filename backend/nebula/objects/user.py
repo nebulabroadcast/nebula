@@ -14,9 +14,10 @@ from nebula.exceptions import (
 )
 from nebula.objects.base import BaseObject
 from nebula.settings import settings
+from nebula.settings.common import LanguageCode
 
 
-def hash_password(password: str):
+def hash_password(password: str) -> str:
     if config.password_hashing == "legacy":
         return hashlib.sha256(password.encode("ascii")).hexdigest()
     raise NotImplementedException("Hashing method not available")
@@ -55,17 +56,17 @@ class User(BaseObject):
     }
 
     @property
-    def language(self):
+    def language(self) -> LanguageCode:
         """Return the preferred language of the user."""
         return self["language"] or settings.system.language
 
     @property
-    def name(self):
+    def name(self) -> str:
         return self.meta["login"]
 
     # setter for name
     @name.setter
-    def name(self, value):
+    def name(self, value: str) -> None:
         self.meta["login"] = value
 
     @classmethod
@@ -147,11 +148,11 @@ class User(BaseObject):
         return False
 
     @property
-    def is_admin(self):
+    def is_admin(self) -> bool:
         return self.meta.get("is_admin", False)
 
     @property
-    def is_limited(self):
+    def is_limited(self) -> bool:
         """Is the user limited.
 
         Limited users can view only their own, or explicitly assigned

@@ -10,7 +10,7 @@ async def create_new_event(
     channel: PlayoutChannelSettings,
     event_data: EventData,
     user: nebula.User | None = None,
-):
+) -> None:
     """Create a new event from the given data."""
 
     username = user.name if user else None
@@ -152,7 +152,7 @@ async def scheduler(
                         break
                 else:
                     # no primary asset found, so append it
-                    new_item = nebula.Item(usename=username)
+                    new_item = nebula.Item(username=username)
                     new_item["id_asset"] = event_data.id_asset
                     new_item["id_bin"] = ex_bin.id
                     new_item["position"] = len(ex_bin.items)

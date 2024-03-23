@@ -101,3 +101,13 @@ no_implicit_reexport = true
 explicit_package_bases = true
 strict_optional = true
 exclude = "tests/|venv/"
+
+[[tool.mypy.overrides]]
+module = [
+  "nxtools",
+  "user_agents",
+  "tomllib"
+]
+ignore_errors = true
+follow_imports = "skip"
+ignore_missing_imports = true

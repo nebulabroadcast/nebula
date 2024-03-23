@@ -50,7 +50,7 @@ def find_api_endpoints() -> list[APIRequest]:
     return result
 
 
-def install_endpoints(app: fastapi.FastAPI):
+def install_endpoints(app: fastapi.FastAPI) -> None:
     """Register all API endpoints in the router."""
     endpoint_names = set()
     for endpoint in find_api_endpoints() + plugin_library.plugins["api"]:
@@ -62,14 +62,14 @@ def install_endpoints(app: fastapi.FastAPI):
             nebula.log.warn(f"Endpoint {endpoint.name} doesn't have a handle method")
             continue
 
-        if not callable(endpoint.handle):  # type: ignore
+        if not callable(endpoint.handle):
             nebula.log.warn(f"Endpoint {endpoint.name} handle is not callable")
             continue
 
         # use inspect to get the return type of the handle method
         # this is used to determine the response model
 
-        sig = inspect.signature(endpoint.handle)  # type: ignore
+        sig = inspect.signature(endpoint.handle)
         if sig.return_annotation is not inspect.Signature.empty:
             response_model = sig.return_annotation
         else:
@@ -105,7 +105,7 @@ def install_endpoints(app: fastapi.FastAPI):
 
         app.router.add_api_route(
             route,
-            endpoint.handle,  # type: ignore
+            endpoint.handle,
             name=endpoint.title or endpoint.name,
             operation_id=slugify(endpoint.name, separator="_"),
             methods=endpoint.methods,

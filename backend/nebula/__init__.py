@@ -70,7 +70,7 @@ log.user = "nebula"
 log.level = LogLevel[config.log_level.upper()]
 
 
-def run(entrypoint):
+def run(entrypoint) -> None:  # type: ignore
     """Run a coroutine in the event loop.
 
     This function is used to run the main entrypoint of CLI scripts.
@@ -78,7 +78,7 @@ def run(entrypoint):
     given entrypoint coroutine.
     """
 
-    async def run_async():
+    async def run_async() -> None:
         await load_settings()
         await entrypoint
 
