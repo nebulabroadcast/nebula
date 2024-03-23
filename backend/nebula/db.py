@@ -11,7 +11,7 @@ from nebula.exceptions import NebulaException
 class DB:
     _pool: asyncpg.pool.Pool | None = None  # type: ignore
 
-    async def init_connection(self, conn) -> None: # type: ignore
+    async def init_connection(self, conn) -> None:  # type: ignore
         await conn.set_type_codec(
             "jsonb",
             encoder=json_dumps,
@@ -55,7 +55,9 @@ class DB:
         pool = await self.pool()
         return await pool.fetchrow(query, *args)
 
-    async def iterate(self, query: str, *args: Any) -> AsyncGenerator[asyncpg.Record, None]:
+    async def iterate(
+        self, query: str, *args: Any
+    ) -> AsyncGenerator[asyncpg.Record, None]:
         """Iterate over a query and yield the result."""
         pool = await self.pool()
         async with pool.acquire() as conn, conn.transaction():
