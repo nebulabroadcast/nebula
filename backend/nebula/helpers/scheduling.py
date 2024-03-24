@@ -1,5 +1,5 @@
 import datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from nxtools import datestr2ts, s2time
 
@@ -82,7 +82,9 @@ async def get_pending_assets(send_action: int | None) -> list[int]:
     return pending_assets
 
 
-def parse_durations(ameta, imeta) -> tuple[float, float, float]:
+def parse_durations(
+    ameta: dict[str, Any], imeta: dict[str, Any]
+) -> tuple[float, float, float]:
     """From the given asset and item metadata,
     return the duration, mark_in and mark_out
     """
@@ -120,7 +122,8 @@ def parse_rundown_date(
     return start_time
 
 
-def can_append(asset: nebula.Asset, conditions: "AcceptModel"):
+def can_append(asset: nebula.Asset, conditions: "AcceptModel") -> bool:
+    # TODO: raise an exception instead of returning False?
     if conditions.folders and asset["id_folder"] not in conditions.folders:
         nebula.log.warn(f"Folder {asset['id_folder']} not in {conditions.folders}")
         return False

@@ -16,7 +16,7 @@ class Event(BaseObject):
         "id_magic": None,
     }
 
-    async def delete_children(self):
+    async def delete_children(self) -> None:
         assert self.connection is not None
         assert hasattr(self.connection, "execute")
         assert self.id

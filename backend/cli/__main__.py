@@ -6,7 +6,7 @@ import nebula
 from nebula.plugins.library import plugin_library
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("plugin")
     parser.add_argument("args", nargs=argparse.REMAINDER)

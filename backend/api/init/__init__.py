@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Literal
 
 import fastapi
 from pydantic import Field
@@ -16,14 +16,14 @@ from .settings import ClientSettingsModel, get_client_settings
 
 
 class InitResponseModel(ResponseModel):
-    installed: bool = Field(
+    installed: Literal[True] | None = Field(
         True,
         title="Installed",
         description="Is Nebula installed?",
     )
 
-    motd: str = Field(
-        "",
+    motd: str | None = Field(
+        None,
         title="Message of the day",
         description="Server welcome string (displayed on login page)",
     )
@@ -51,7 +51,6 @@ class InitResponseModel(ResponseModel):
         default_factory=list,
         title="OAuth2 options",
     )
-    something: str | None = Field(None)
 
 
 class Request(APIRequest):
@@ -81,11 +80,11 @@ class Request(APIRequest):
         if not nebula.settings.installed:
             await load_settings()
             if not nebula.settings.installed:
-                return InitResponseModel(installed=False)  # type: ignore
+                return InitResponseModel(installed=False)
 
         # Not logged in. Only return motd and oauth2 options.
         if user is None:
-            return InitResponseModel(motd=motd)  # type: ignore
+            return InitResponseModel(motd=motd)
 
         # TODO: get preferred user language
         lang: LanguageCode = user.language
@@ -102,4 +101,4 @@ class Request(APIRequest):
             settings=client_settings,
             frontend_plugins=plugins,
             scoped_endpoints=server_context.scoped_endpoints,
-        )  # type: ignore
+        )

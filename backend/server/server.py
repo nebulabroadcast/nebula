@@ -19,7 +19,7 @@ from server.websocket import messaging
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI):  # type: ignore
     _ = app
     async with aiofiles.open("/var/run/nebula.pid", "w") as f:
         await f.write(str(os.getpid()))
@@ -32,7 +32,7 @@ async def lifespan(app: FastAPI):
 
     nebula.log.info("Stopping server...")
     await messaging.shutdown()
-    nebula.log.info("Server stopped", handlers=None)
+    nebula.log.info("Server stopped")
 
 
 app = FastAPI(
@@ -59,7 +59,9 @@ app = FastAPI(
 
 
 @app.exception_handler(404)
-async def custom_404_handler(request: Request, _):
+async def custom_404_handler(
+    request: Request, _: Exception
+) -> FileResponse | JSONResponse:
     if request.url.path.startswith("/api"):
         return JSONResponse(
             status_code=404,
@@ -78,6 +80,8 @@ async def custom_404_handler(request: Request, _):
             status_code=200,
             media_type="text/html",
         )
+
+    return JSONResponse(status_code=404, content={"detail": "Resource not found"})
 
 
 @app.exception_handler(NebulaException)
@@ -101,7 +105,9 @@ async def openpype_exception_handler(
 
 
 @app.exception_handler(AssertionError)
-async def assertion_error_handler(request: Request, exc: AssertionError):
+async def assertion_error_handler(
+    request: Request, exc: AssertionError
+) -> JSONResponse:
     nebula.log.error(f"AssertionError: {exc}")
     return JSONResponse(
         status_code=500,
@@ -165,7 +171,7 @@ async def ws_endpoint(websocket: WebSocket) -> None:
 #
 
 
-def install_frontend_plugins(app: FastAPI):
+def install_frontend_plugins(app: FastAPI) -> None:
     for plugin in get_frontend_plugins():
         nebula.log.trace(f"Mounting frontend plugin {plugin.name}: {plugin.path}")
         app.mount(
@@ -180,7 +186,7 @@ if os.path.exists(HLS_DIR):
     app.mount("/hls", StaticFiles(directory=HLS_DIR))
 
 
-def install_frontend(app: FastAPI):
+def install_frontend(app: FastAPI) -> None:
     if nebula.config.frontend_dir and os.path.isdir(nebula.config.frontend_dir):
         app.mount("/", StaticFiles(directory=nebula.config.frontend_dir, html=True))
 

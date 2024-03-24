@@ -6,6 +6,7 @@ import httpx
 from pydantic import ValidationError
 
 from nebula.common import import_module
+from nebula.db import DatabaseConnection
 from nebula.log import log
 from nebula.settings.models import SetupServerModel
 from setup.defaults.actions import ACTIONS
@@ -29,7 +30,7 @@ TEMPLATE: dict[str, Any] = {
 }
 
 
-def load_overrides():
+def load_overrides() -> None:
     if not os.path.isdir("/settings"):
         return
     for fname in os.listdir("/settings"):
@@ -54,7 +55,7 @@ def load_overrides():
                 log.error(f"Invalid settings override: {spath}")
 
 
-async def setup_settings(db):
+async def setup_settings(db: DatabaseConnection) -> None:
     """Validate and save settings to the database"""
 
     log.trace("Loading settings overrides")

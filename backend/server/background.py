@@ -4,18 +4,18 @@ import nebula
 
 
 class BackgroundTask:
-    def __init__(self):
-        self.task: asyncio.Task | None = None
+    def __init__(self) -> None:
+        self.task: asyncio.Task | None = None  # type: ignore
         self.shutting_down = False
         self.initialize()
 
-    def initialize(self):
+    def initialize(self) -> None:
         pass
 
-    def start(self):
+    def start(self) -> None:
         self.task = asyncio.create_task(self._run())
 
-    async def shutdown(self):
+    async def shutdown(self) -> None:
         if self.task:
             self.task.cancel()
 
@@ -23,19 +23,17 @@ class BackgroundTask:
         while self.is_running:
             nebula.log.debug(
                 f"Waiting for {self.__class__.__name__} to stop",
-                handlers=None,
             )
             await asyncio.sleep(0.1)
         nebula.log.debug(
             f"{self.__class__.__name__} stopped",
-            handlers=None,
         )
 
     @property
-    def is_running(self):
-        return self.task and not self.task.done()
+    def is_running(self) -> bool:
+        return bool(self.task and not self.task.done())
 
-    async def _run(self):
+    async def _run(self) -> None:
         try:
             await self.run()
         except asyncio.CancelledError:
@@ -52,12 +50,11 @@ class BackgroundTask:
             nebula.log.info(
                 "Restarting",
                 self.__class__.__name__,
-                handlers=None,
             )
             self.start()
 
-    async def run(self):
+    async def run(self) -> None:
         pass
 
-    async def finalize(self):
+    async def finalize(self) -> None:
         pass

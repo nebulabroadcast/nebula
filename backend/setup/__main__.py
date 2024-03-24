@@ -4,7 +4,7 @@ import sys
 import aiofiles
 import asyncpg
 
-from nebula.db import DB
+from nebula.db import DB, DatabaseConnection
 from nebula.log import log
 from nebula.objects.user import User
 from setup.dump import dump_settings
@@ -13,14 +13,14 @@ from setup.settings import setup_settings
 log.user = "setup"
 
 
-async def create_schema(db: DB):
+async def create_schema(db: DatabaseConnection) -> None:
     log.info("Creating database schema")
     async with aiofiles.open("schema/schema.sql") as f:
         schema = await f.read()
         await db.execute(schema)
 
 
-async def create_default_user(db: DB):
+async def create_default_user(db: DatabaseConnection) -> None:
     has_user = False
     try:
         result = await db.fetch("SELECT * FROM users")

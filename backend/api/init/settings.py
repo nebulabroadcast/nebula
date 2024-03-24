@@ -5,13 +5,12 @@ from pydantic import Field
 import nebula
 from nebula.enum import ContentType
 from nebula.filetypes import FileTypes
-from nebula.settings.common import LanguageCode
+from nebula.settings.common import LanguageCode, SettingsModel
 from nebula.settings.models import (
     BasePlayoutChannelSettings,
     BaseSystemSettings,
     CSItemRole,
     FolderSettings,
-    SettingsModel,
     ViewSettings,
 )
 

@@ -25,7 +25,7 @@ class PluginItemModel(ResponseModel):
 
 
 @functools.lru_cache
-def get_frontend_plugins():
+def get_frontend_plugins() -> list[PluginItemModel]:
     """Return a list of frontend plugins.
 
     Each plugin is scoped to a specific part of the UI.

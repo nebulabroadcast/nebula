@@ -1,5 +1,5 @@
 import json
-from typing import Any
+from typing import Any, AsyncGenerator
 
 from pydantic import BaseModel
 from redis import asyncio as aioredis
@@ -22,11 +22,9 @@ class Redis:
         try:
             await cls.redis_pool.set("CONN", "alive")
         except ConnectionError:
-            log.error(f"Redis {config.redis} connection failed", handlers=None)
+            log.error(f"Redis {config.redis} connection failed")
         except OSError:
-            log.error(
-                f"Redis {config.redis} connection failed (OS error)", handlers=None
-            )
+            log.error(f"Redis {config.redis} connection failed (OS error)")
         else:
             cls.connected = True
             return
@@ -115,7 +113,7 @@ class Redis:
         await cls.redis_pool.publish(cls.channel, message)
 
     @classmethod
-    async def iterate(cls, namespace: str):
+    async def iterate(cls, namespace: str) -> AsyncGenerator[tuple[str, str], None]:
         """Iterate over stored keys and yield [key, payload] tuples
         matching given namespace.
         """
@@ -128,7 +126,9 @@ class Redis:
             yield key_without_ns, payload
 
     @classmethod
-    async def iterate_json(cls, namespace: str):
+    async def iterate_json(
+        cls, namespace: str
+    ) -> AsyncGenerator[tuple[str, Any], None]:
         """Iterate over stored keys and yield [key, payload] tuples
         matching given namespace. Payloads are JSON-decoded.
         """

@@ -7,6 +7,7 @@ import nebula
 from nebula.common import import_module
 from nebula.enum import ObjectType
 from nebula.helpers.scheduling import bin_refresh
+from nebula.objects.base import BaseObject
 from nebula.objects.utils import get_object_class_by_name
 from nebula.settings import load_settings
 from server.dependencies import CurrentUser
@@ -113,9 +114,14 @@ class OperationsResponseModel(ResponseModel):
 #
 
 
-async def can_modify_object(obj, user: nebula.User):
+async def can_modify_object(obj: BaseObject, user: nebula.User) -> None:
+    """Check if user can modify an object.
+
+    Raises ForbiddenException if user is not allowed to modify the object.
+    """
+
     if user.is_admin:
-        return True
+        return
 
     if isinstance(obj, nebula.Asset):
         acl = user.get("can/asset_edit", False)

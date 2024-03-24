@@ -12,7 +12,7 @@ except ModuleNotFoundError:
     has_mistune = False
 
 
-def html2email(html) -> MIMEMultipart:
+def html2email(html: str) -> MIMEMultipart:
     msg = MIMEMultipart("alternative")
     text = "no plaitext version available"
     part1 = MIMEText(text, "plain")
@@ -24,7 +24,7 @@ def html2email(html) -> MIMEMultipart:
     return msg
 
 
-def markdown2email(text) -> MIMEMultipart | MIMEText:
+def markdown2email(text: str) -> MIMEMultipart | MIMEText:
     if has_mistune:
         msg = MIMEMultipart("alternative")
         html = mistune.html(text)
@@ -41,15 +41,16 @@ def send_mail(
     to: str | list[str],
     subject: str,
     body: str | MIMEText | MIMEMultipart,
-    **kwargs,
-):
+    reply_address: str | None = None,
+) -> None:
     addresses: list[str] = []
     if isinstance(to, str):
         addresses.append(to)
     else:
         addresses.extend(to)
 
-    reply_address = kwargs.get("from", nebula.settings.system.mail_from)
+    if reply_address is None:
+        reply_address = nebula.settings.system.mail_from or "nebula@localhost"
 
     msg: MIMEText | MIMEMultipart
     msg = MIMEText(body) if isinstance(body, str) else body
