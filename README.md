@@ -30,7 +30,7 @@ Simple and fast media catalog based on [EBU&nbsp;Core](https://tech.ebu.ch/Metad
 genre, editorial format, atmosphere, rights, relations, and technical metadata,
 while its very fast search engine makes navigation among media files very easy.
 
-Low-res preview allows editorial review, trimming and sub-clips creation.
+The low-resolution preview allows for editorial review, trimming, and the creation of sub-clips.
 
 ![Metadata editor](https://nebulabroadcast.com/static/img/nebula-metadata-editor.webp)
 
@@ -99,9 +99,9 @@ Nebula is under active development and is in production since 2012 with no inten
 and we have a roadmap for several years. We listen to our customers, and we change our priorities in order to meet
 requests from the production.
 
-We do not try to have tons of features noone will ever use - we spent many years sitting next to Nebula operators,
-learning from each other, and we believe that Nebula covers all common tasks in a broadcast environment.
-
+We do not attempt to include numerous features that no one will ever use.
+Instead, we have spent many years working alongside Nebula operators, learning from each other.
+We believe that Nebula covers all common tasks in a broadcast environment.
 
 Legal
 -----

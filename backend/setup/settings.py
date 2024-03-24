@@ -80,10 +80,15 @@ async def setup_settings(db: DatabaseConnection) -> None:
             views=TEMPLATE.pop("views", []),
             actions=TEMPLATE.pop("actions", []),
             services=TEMPLATE.pop("services", []),
+            storages=TEMPLATE.pop("storages", []),
         )
     except ValidationError as e:
         log.error(f"Invalid settings: {e}")
         sys.exit(1)
+
+    # Keep in mind that we are running setup in a transaction,
+    # so we can safely delete all existing settings and recreate
+    # them from scratch (unless there are hard references to them).
 
     # System settings
     # Simple key-value pairs with field-level validation

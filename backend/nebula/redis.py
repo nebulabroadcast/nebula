@@ -114,8 +114,10 @@ class Redis:
 
     @classmethod
     async def iterate(cls, namespace: str) -> AsyncGenerator[tuple[str, str], None]:
-        """Iterate over stored keys and yield [key, payload] tuples
-        matching given namespace.
+        """Iterate over stored keys
+
+        Yield (key, payload) tuples matching given namespace.
+        Namespace prefix is stripped from keys.
         """
         if not cls.connected:
             await cls.connect()
@@ -129,8 +131,13 @@ class Redis:
     async def iterate_json(
         cls, namespace: str
     ) -> AsyncGenerator[tuple[str, Any], None]:
-        """Iterate over stored keys and yield [key, payload] tuples
-        matching given namespace. Payloads are JSON-decoded.
+        """Iterate over stored keys
+
+        Yield (key, payload) tuples matching given namespace.
+        Namespace prefix is stripped from keys.
+
+        This method is same as iterate() but deserializes
+        JSON payloads in the process.
         """
         async for key, payload in cls.iterate(namespace):
             if payload is None:
