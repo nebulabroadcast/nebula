@@ -1,3 +1,5 @@
+__all__ = ["db", "DB", "DatabaseConnection"]
+
 from typing import Any, AsyncGenerator
 
 import asyncpg
@@ -65,5 +67,7 @@ class DB:
             async for record in statement.cursor(*args):
                 yield record
 
+
+DatabaseConnection = asyncpg.pool.PoolConnectionProxy | DB  # type: ignore
 
 db = DB()

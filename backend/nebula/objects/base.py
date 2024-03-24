@@ -4,7 +4,7 @@ from typing import Any, Type, TypeVar
 import asyncpg
 from nxtools import slugify
 
-from nebula.db import DB, db
+from nebula.db import DB, DatabaseConnection, db
 from nebula.enum import ObjectTypeId
 from nebula.exceptions import (
     BadRequestException,
@@ -18,9 +18,6 @@ from nebula.metadata.normalize import normalize_meta
 from nebula.settings import settings
 
 T = TypeVar("T", bound="BaseObject")
-
-
-Connection = asyncpg.pool.PoolConnectionProxy | DB  # type: ignore
 
 
 def create_ft_index(meta: dict[str, Any]) -> dict[str, float]:
@@ -58,13 +55,13 @@ class BaseObject:
     meta: dict[str, Any] = {}
     defaults: dict[str, Any] = {}
     db_columns: list[str] = []
-    connection: Connection | None = None
+    connection: DatabaseConnection | None = None
     username: str | None = None  # Name of the user operating on the object
 
     def __init__(
         self,
         meta: dict[str, Any] | None = None,
-        connection: Connection | None = None,
+        connection: DatabaseConnection | None = None,
         username: str | None = None,
     ) -> None:
         if connection is not None:
@@ -159,7 +156,7 @@ class BaseObject:
     async def load(
         cls: Type[T],
         id: int,
-        connection: Connection | None = None,
+        connection: DatabaseConnection | None = None,
         username: str | None = None,
     ) -> T:
         """Load an object from the database"""
@@ -173,7 +170,7 @@ class BaseObject:
     def from_row(
         cls: Type[T],
         row: asyncpg.Record,
-        connection: Connection | None = None,
+        connection: DatabaseConnection | None = None,
         username: str | None = None,
     ) -> T:
         """Return an object from a database row.
@@ -188,7 +185,7 @@ class BaseObject:
     def from_meta(
         cls: Type[T],
         meta: dict[str, Any],
-        connection: Connection | None = None,
+        connection: DatabaseConnection | None = None,
         username: str | None = None,
     ) -> T:
         """Return an object from a metadata dict.
@@ -202,7 +199,7 @@ class BaseObject:
     def from_untrusted(
         cls: Type[T],
         meta: dict[str, Any],
-        connection: Connection | None = None,
+        connection: DatabaseConnection | None = None,
         username: str | None = None,
     ) -> T:
         """Return an object from a metadata dict.
