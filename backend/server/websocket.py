@@ -41,11 +41,11 @@ class Client:
             return True
         return False
 
-    async def send(self, message: dict[str, Any], auth_only: bool = True):
+    async def send(self, message: dict[str, Any], auth_only: bool = True) -> None:
         if (not self.authorized) and auth_only:
-            return None
+            return
         if not self.is_valid:
-            return None
+            return
         try:
             await self.sock.send_text(json_dumps(message))
         except WebSocketDisconnect:
@@ -91,7 +91,7 @@ class Messaging(BackgroundTask):
         self.clients[client.id] = client
         return client
 
-    async def purge(self):
+    async def purge(self) -> None:
         to_rm = []
         for client_id, client in list(self.clients.items()):
             if not client.is_valid:
@@ -152,7 +152,7 @@ class Messaging(BackgroundTask):
 
         nebula.log.warn("Stopping redis2ws")
 
-    def handle_error_log(self):
+    def handle_error_log(self) -> None:
         """When an error log is received, we want to keep error rate"""
         now = time.time()
         # delete timestamps older than 5 minutes from the list

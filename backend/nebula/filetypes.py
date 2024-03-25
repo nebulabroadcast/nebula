@@ -76,5 +76,5 @@ class FileTypes:
         return [ext for ext, ct in cls.data.items() if ct == content_type]
 
     @classmethod
-    def exts(cls):
+    def exts(cls) -> list[str]:
         return list(cls.data.keys())

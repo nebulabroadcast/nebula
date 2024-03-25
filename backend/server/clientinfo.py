@@ -56,7 +56,7 @@ def geo_lookup(ip: str) -> LocationInfo | None:
     )
 
 
-def get_ua_data(request) -> AgentInfo | None:
+def get_ua_data(request: Request) -> AgentInfo | None:
     if ua_string := request.headers.get("user-agent"):
         if ua_string.startswith("firefly"):
             firefly_version = ua_string.split("/")[1]

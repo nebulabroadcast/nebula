@@ -1,3 +1,5 @@
+from typing import Any
+
 from nebula.log import log as logger
 
 
@@ -17,7 +19,7 @@ class NebulaException(Exception):
         detail: str | None = None,
         log: bool | str = False,
         user_name: str | None = None,
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
         self.kwargs = kwargs
 

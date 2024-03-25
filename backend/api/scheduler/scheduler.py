@@ -9,12 +9,16 @@ from .utils import delete_events, get_event_at_time, get_events_in_range
 async def create_new_event(
     channel: PlayoutChannelSettings,
     event_data: EventData,
-):
+    user: nebula.User | None = None,
+) -> None:
     """Create a new event from the given data."""
+
+    username = user.name if user else None
+
     pool = await nebula.db.pool()
     async with pool.acquire() as conn, conn.transaction():
-        new_bin = nebula.Bin(connection=conn)
-        new_event = nebula.Event(connection=conn)
+        new_bin = nebula.Bin(connection=conn, username=username)
+        new_event = nebula.Event(connection=conn, username=username)
 
         await new_bin.save()
 
@@ -25,11 +29,13 @@ async def create_new_event(
         asset_meta = {}
         position = 0
         if event_data.id_asset:
-            asset = await nebula.Asset.load(event_data.id_asset, connection=conn)
+            asset = await nebula.Asset.load(
+                event_data.id_asset, connection=conn, username=username
+            )
 
             new_event["id_asset"] = event_data.id_asset
 
-            new_item = nebula.Item(connection=conn)
+            new_item = nebula.Item(connection=conn, username=username)
             new_item["id_asset"] = event_data.id_asset
             new_item["id_bin"] = new_bin.id
             new_item["position"] = position
@@ -45,9 +51,11 @@ async def create_new_event(
             for item_data in event_data.items:
                 if item_data.get("id"):
                     assert isinstance(item_data["id"], int), "Invalid item ID"
-                    item = await nebula.Item.load(item_data["id"], connection=conn)
+                    item = await nebula.Item.load(
+                        item_data["id"], connection=conn, username=username
+                    )
                 else:
-                    item = nebula.Item(connection=conn)
+                    item = nebula.Item(connection=conn, username=username)
                 item.update(item_data)
                 item["id_bin"] = new_bin.id
                 item["position"] = position
@@ -73,10 +81,13 @@ async def create_new_event(
 async def scheduler(
     request: SchedulerRequestModel,
     editable: bool = True,
+    user: nebula.User | None = None,
 ) -> SchedulerResponseModel:
     """Modify and display channel schedule"""
     start_time: float | None = None
     end_time: float | None = None
+
+    username = user.name if user else None
 
     if not (channel := nebula.settings.get_playout_channel(request.id_channel)):
         raise nebula.BadRequestException(f"No such channel {request.id_channel}")
@@ -93,7 +104,7 @@ async def scheduler(
     #
 
     if request.delete and editable:
-        deleted_event_ids = await delete_events(request.delete)
+        deleted_event_ids = await delete_events(request.delete, user=user)
         affected_events.extend(deleted_event_ids)
     #
     # Create / update events
@@ -122,11 +133,13 @@ async def scheduler(
                     # Replace event with itself. This is a no-op.
                     continue
 
-                asset = await nebula.Asset.load(event_data.id_asset)
+                asset = await nebula.Asset.load(event_data.id_asset, username=username)
                 assert asset
 
                 # load the existing bin
-                ex_bin = await nebula.Bin.load(event_at_position["id_magic"])
+                ex_bin = await nebula.Bin.load(
+                    event_at_position["id_magic"], username=username
+                )
                 await ex_bin.get_items()
 
                 for item in ex_bin.items:
@@ -139,7 +152,7 @@ async def scheduler(
                         break
                 else:
                     # no primary asset found, so append it
-                    new_item = nebula.Item()
+                    new_item = nebula.Item(username=username)
                     new_item["id_asset"] = event_data.id_asset
                     new_item["id_bin"] = ex_bin.id
                     new_item["position"] = len(ex_bin.items)
@@ -171,7 +184,7 @@ async def scheduler(
 
         elif event_data.id:
             # Update existing event
-            event = await nebula.Event.load(event_data.id)
+            event = await nebula.Event.load(event_data.id, username=username)
             event["start"] = event_data.start
             for field in channel.fields:
                 if event_data.meta and (field.name in event_data.meta):
@@ -181,12 +194,12 @@ async def scheduler(
 
         else:
             # create new event
-            await create_new_event(channel, event_data)
+            await create_new_event(channel, event_data, user=user)
 
     # Return existing events
 
     if (start_time is not None) and (end_time is not None):
-        events = await get_events_in_range(channel.id, start_time, end_time)
+        events = await get_events_in_range(channel.id, start_time, end_time, user=user)
     else:
         events = []
     return SchedulerResponseModel(

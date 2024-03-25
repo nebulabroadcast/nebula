@@ -1,15 +1,16 @@
+from typing import Any
+
 from pydantic import Field
 
 import nebula
 from nebula.enum import ContentType
 from nebula.filetypes import FileTypes
-from nebula.settings.common import LanguageCode
+from nebula.settings.common import LanguageCode, SettingsModel
 from nebula.settings.models import (
     BasePlayoutChannelSettings,
     BaseSystemSettings,
     CSItemRole,
     FolderSettings,
-    SettingsModel,
     ViewSettings,
 )
 
@@ -66,6 +67,7 @@ class ClientMetaTypeModel(SettingsModel):
         title="Filter",
         description="Filter for values in lists",
     )
+    default: Any | None = Field(None, title="Default value")
 
 
 #
@@ -182,6 +184,7 @@ async def get_client_settings(lang: LanguageCode) -> ClientSettingsModel:
             format=v.format,
             order=v.order,
             filter=v.filter,
+            default=v.default,
         )
 
     #

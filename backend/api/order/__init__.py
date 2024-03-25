@@ -24,9 +24,8 @@ class Request(APIRequest):
             raise nebula.ForbiddenException("You are not allowed to edit this rundown")
 
         result = await set_rundown_order(request, user)
+        nebula.log.info(f"Changed order in bins {result.affected_bins}", user=user.name)
 
         # Update bin duration
         await bin_refresh(result.affected_bins, initiator=initiator, user=user)
-        nebula.log.info(f"Changed order in bins {result.affected_bins}", user=user.name)
-
         return result

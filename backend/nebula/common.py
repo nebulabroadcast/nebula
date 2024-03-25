@@ -10,7 +10,7 @@ from typing import Any, Literal, TypeVar
 
 T = TypeVar("T", bound=type)
 
-SerializableValue = int | float | str | bool | dict | list | None
+SerializableValue = int | float | str | bool | dict[str, Any] | list[Any] | None
 
 
 def json_loads(data: str | bytes) -> Any:
