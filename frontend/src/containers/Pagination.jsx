@@ -1,3 +1,5 @@
+import { Navbar, Button, Spacer } from '/src/components'
+
 const Pagination = ({ page, setPage, hasMore }) => {
   if (page > 1 || hasMore)
     return (
