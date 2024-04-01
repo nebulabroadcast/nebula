@@ -47,12 +47,59 @@ const getColumnWidth = (key) => {
 
 // Field formatters
 
+
+const getDefaultFormatter = (key) =>  {
+  const metaType = nebula.metaType(key)
+  switch (metaType.type) {
+    case 'boolean':
+      // eslint-disable-next-line
+      return (rowData, key) => <td>{rowData[key] ? '✓' : ''}</td>
+
+    case 'datetime':
+      // eslint-disable-next-line
+      return (rowData, key) => (
+        <td>
+          <Timestamp timestamp={rowData[key]} mode={metaType.mode} />{' '}
+        </td>
+      )
+
+    case 'select':
+      // eslint-disable-next-line
+      return (rowData, key) => {
+        if (!metaType.cs) return <td>{rowData[key]}</td>
+
+        const option = nebula
+          .csOptions(metaType.cs)
+          .find((opt) => opt.value === rowData[key])
+
+        return <td>{option?.title}</td>
+      }
+
+    case 'list':
+      // eslint-disable-next-line
+      return (rowData, key) => {
+        if (!metaType.cs) return <td>{rowData[key].join(', ')}</td>
+        const options = nebula
+          .csOptions(metaType.cs)
+          .filter((opt) => rowData[key].includes(opt.value))
+        return <td>{options.map((opt) => opt.title).join(', ')}</td>
+      }
+
+    default:
+      // eslint-disable-next-line
+      return (rowData, key) => <td>{rowData[key]}</td>
+  } // switch metaType
+}
+
+
 const getFormatter = (key) => {
   if (['title', 'subtitle', 'description'].includes(key))
+    // eslint-disable-next-line
     return (rowData, key) => <td>{rowData[key]}</td>
 
   switch (key) {
     case 'qc/state':
+      // eslint-disable-next-line
       return (rowData, key) => (
         <td>
           <QCState className={`qc-state-${rowData[key]}`} />
@@ -60,6 +107,7 @@ const getFormatter = (key) => {
       )
 
     case 'id_folder':
+      // eslint-disable-next-line
       return (rowData, key) => {
         const folder = nebula.settings.folders.find(
           (f) => f.id === rowData[key]
@@ -68,6 +116,7 @@ const getFormatter = (key) => {
       }
 
     case 'duration':
+      // eslint-disable-next-line
       return (rowData, key) => {
         const fps = rowData['video/fps_f'] || 25
         const duration = rowData[key] || 0
@@ -76,51 +125,19 @@ const getFormatter = (key) => {
       }
 
     case 'created_by':
+      // eslint-disable-next-line
       return (rowData, key) => {
         return <td>{nebula.getUserName(rowData[key])}</td>
       }
 
     case 'updated_by':
+      // eslint-disable-next-line
       return (rowData, key) => {
         return <td>{nebula.getUserName(rowData[key])}</td>
       }
 
     default:
-      const metaType = nebula.metaType(key)
-      switch (metaType.type) {
-        case 'boolean':
-          return (rowData, key) => <td>{rowData[key] ? '✓' : ''}</td>
-
-        case 'datetime':
-          return (rowData, key) => (
-            <td>
-              <Timestamp timestamp={rowData[key]} mode={metaType.mode} />{' '}
-            </td>
-          )
-
-        case 'select':
-          return (rowData, key) => {
-            if (!metaType.cs) return <td>{rowData[key]}</td>
-
-            const option = nebula
-              .csOptions(metaType.cs)
-              .find((opt) => opt.value === rowData[key])
-
-            return <td>{option?.title}</td>
-          }
-
-        case 'list':
-          return (rowData, key) => {
-            if (!metaType.cs) return <td>{rowData[key].join(', ')}</td>
-            const options = nebula
-              .csOptions(metaType.cs)
-              .filter((opt) => rowData[key].includes(opt.value))
-            return <td>{options.map((opt) => opt.title).join(', ')}</td>
-          }
-
-        default:
-          return (rowData, key) => <td>{rowData[key]}</td>
-      } // switch metaType
+      return getDefaultFormatter(key)
   } // end switch key
 } // end getFormatter
 

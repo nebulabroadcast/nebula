@@ -13,6 +13,7 @@ const useConfirm = () => {
   const [message, setMessage] = useState('')
 
   const confirm = (title, message) =>
+    // eslint-disable-next-line
     new Promise((resolve, reject) => {
       setTitle(title)
       setMessage(message)

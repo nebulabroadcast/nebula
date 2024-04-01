@@ -68,7 +68,7 @@ const Video = ({ src, style, showMarks, marks = {}, setMarks = () => {} }) => {
   const [videoPosition, setVideoPosition] = useState(0)
   const [videoDuration, setVideoDuration] = useState(0)
   const [trackbarPosition, setTrackbarPosition] = useState(0)
-  const [maximize, setMaximize] = useState(false)
+  //const [maximize, setMaximize] = useState(false)
 
   const frameRate = 25
 

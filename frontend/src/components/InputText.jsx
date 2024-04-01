@@ -13,5 +13,6 @@ const InputText = forwardRef(({ value, onChange, tooltip, ...props }, ref) => {
     />
   )
 })
+InputText.displayName = 'InputText'
 
 export default InputText
