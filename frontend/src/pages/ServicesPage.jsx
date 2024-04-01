@@ -77,6 +77,7 @@ const ServicesPage = () => {
     )
   }
 
+  //eslint-disable-next-line
   const formatAction = (rowData, key) => {
     const status = rowData.status
     let b = null
@@ -104,6 +105,7 @@ const ServicesPage = () => {
             label="Kill"
           />
         )
+        break
       default:
         b = <Button disabled={true} label="Please wait..." />
     }
