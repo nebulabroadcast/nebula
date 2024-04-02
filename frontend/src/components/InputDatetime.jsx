@@ -8,12 +8,11 @@ import Dialog from './Dialog'
 import BaseInput from './BaseInput'
 import Button from './Button'
 
-//import "react-datepicker/dist/react-datepicker.css"
-
 import './datepicker.sass'
 
 const timeRegex = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/
 const dateRegex = /^(\d{4})-(\d{2})-(\d{2})$/
+//eslint-disable-next-line
 const allowedDateCharsRegex = /^[\d-\:\ ]*$/
 
 const DateTimeWrapper = styled.div`

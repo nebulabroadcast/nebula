@@ -15,5 +15,6 @@ const InputPassword = forwardRef(
     )
   }
 )
+InputPassword.displayName = 'InputPassword'
 
 export default InputPassword

@@ -25,7 +25,7 @@ TEMPLATE: dict[str, Any] = {
     "views": VIEWS,
     "meta_types": META_TYPES,
     "storages": [],
-    "system": {},
+    "settings": {},
     "cs": [],
 }
 
@@ -74,7 +74,7 @@ async def setup_settings(db: DatabaseConnection) -> None:
         # SetupServerModel
 
         settings = SetupServerModel(
-            system=TEMPLATE.pop("system", {}),
+            system=TEMPLATE.pop("settings", {}),
             playout_channels=TEMPLATE.pop("channels", []),
             folders=TEMPLATE.pop("folders", []),
             views=TEMPLATE.pop("views", []),

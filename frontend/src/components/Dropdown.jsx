@@ -64,14 +64,13 @@ const DropdownOption = ({
   currentValue,
   separator,
   disabled,
-  active,
   ...props
 }) => (
   <span>
     {separator && <hr />}
     <Button
       {...props}
-      disabled={props.disabled || currentValue === props.value}
+      disabled={disabled || currentValue === props.value}
     />
   </span>
 )

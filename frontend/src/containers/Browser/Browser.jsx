@@ -144,7 +144,9 @@ const BrowserTable = () => {
   }
 
   useEffect(() => {
+    // eslint-disable-next-line no-undef
     const token = PubSub.subscribe('objects_changed', handlePubSub)
+    // eslint-disable-next-line no-undef
     return () => PubSub.unsubscribe(token)
   }, [])
 

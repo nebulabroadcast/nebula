@@ -89,6 +89,7 @@ const Button = forwardRef(
   }
 )
 
+Button.displayName = 'Button'
 Button.defaultProps = {
   iconOnRight: false,
   //component: 'button',
