@@ -47,8 +47,7 @@ const getColumnWidth = (key) => {
 
 // Field formatters
 
-
-const getDefaultFormatter = (key) =>  {
+const getDefaultFormatter = (key) => {
   const metaType = nebula.metaType(key)
   switch (metaType.type) {
     case 'boolean':
@@ -90,7 +89,6 @@ const getDefaultFormatter = (key) =>  {
       return (rowData, key) => <td>{rowData[key]}</td>
   } // switch metaType
 }
-
 
 const getFormatter = (key) => {
   if (['title', 'subtitle', 'description'].includes(key))
