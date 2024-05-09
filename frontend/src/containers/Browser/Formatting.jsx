@@ -39,6 +39,18 @@ const formatRowHighlightColor = (rowData) => {
   }
 }
 
+const formatRowHighlightStyle = (rowData) => {
+  switch (rowData['status']) {
+    case 5:
+      return 'dashed'
+    case 6:
+      return 'dashed'
+    default:
+      return 'solid'
+  }
+}
+
+
 // Column width
 
 const getColumnWidth = (key) => {
@@ -139,4 +151,4 @@ const getFormatter = (key) => {
   } // end switch key
 } // end getFormatter
 
-export { getColumnWidth, getFormatter, formatRowHighlightColor }
+export { getColumnWidth, getFormatter, formatRowHighlightColor, formatRowHighlightStyle }

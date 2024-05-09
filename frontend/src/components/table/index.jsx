@@ -15,6 +15,7 @@ const Table = ({
   onKeyDown,
   selection,
   rowHighlightColor,
+  rowHighlightStyle,
   sortBy,
   sortDirection,
   onSort,
@@ -55,6 +56,7 @@ const Table = ({
             columns={columns}
             onRowClick={onRowClick}
             rowHighlightColor={rowHighlightColor}
+            rowHighlightStyle={rowHighlightStyle}
             selected={selection && selection.includes(rowData[keyField])}
             key={keyField ? rowData[keyField] : idx}
           />

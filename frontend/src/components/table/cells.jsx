@@ -46,6 +46,7 @@ const DataRow = ({
   columns,
   onRowClick,
   rowHighlightColor,
+  rowHighlightStyle,
   selected = false,
 }) => {
   const handleClick = (event) => {
@@ -61,8 +62,11 @@ const DataRow = ({
 
   // Left-border highlight color
   let highlightColor = null
+  let highlightStyle = null
   if (rowHighlightColor) highlightColor = rowHighlightColor(rowData)
+  if (rowHighlightStyle) highlightStyle = rowHighlightStyle(rowData)
   if (highlightColor) rowStyle['borderLeftColor'] = highlightColor
+  if (highlightStyle) rowStyle['borderLeftStyle'] = highlightStyle
 
   // Embedded progress bar
   if (rowData.progress && 100 > rowData.progress > 0) {
