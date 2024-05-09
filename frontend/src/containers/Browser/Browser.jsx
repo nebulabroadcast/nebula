@@ -20,6 +20,7 @@ import {
   getColumnWidth,
   getFormatter,
   formatRowHighlightColor,
+  formatRowHighlightStyle,
 } from './Formatting.jsx'
 
 const ROWS_PER_PAGE = 200
@@ -274,6 +275,7 @@ const BrowserTable = () => {
           onRowClick={onRowClick}
           onKeyDown={onKeyDown}
           rowHighlightColor={formatRowHighlightColor}
+          rowHighlightStyle={formatRowHighlightStyle}
           loading={loading}
           sortBy={sortBy}
           sortDirection={sortDirection}
