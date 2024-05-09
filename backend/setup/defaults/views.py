@@ -1,4 +1,13 @@
+from nebula.enum import ObjectStatus
 from nebula.settings.models import ViewSettings
+
+normal_states = [
+    ObjectStatus.OFFLINE,
+    ObjectStatus.ONLINE,
+    ObjectStatus.CREATING,
+    ObjectStatus.RESET,
+    ObjectStatus.CORRUPTED,
+]
 
 VIEWS: list[ViewSettings] = [
     ViewSettings(
@@ -6,7 +15,7 @@ VIEWS: list[ViewSettings] = [
         name="Main",
         position=1,
         folders=[1, 2],
-        states=[0, 1, 2, 5, 11],
+        states=normal_states,
         columns=[
             "qc/state",
             "title",
@@ -22,7 +31,7 @@ VIEWS: list[ViewSettings] = [
         name="Fill",
         position=2,
         folders=[5, 6, 7, 8],
-        states=[0, 1, 2, 5, 11],
+        states=normal_states,
         columns=[
             "qc/state",
             "title",
@@ -37,7 +46,7 @@ VIEWS: list[ViewSettings] = [
         name="Music",
         position=3,
         folders=[4],
-        states=[0, 1, 2, 5, 11],
+        states=normal_states,
         columns=[
             "qc/state",
             "title",
@@ -51,7 +60,7 @@ VIEWS: list[ViewSettings] = [
         name="Stories",
         position=4,
         folders=[3],
-        states=[0, 1, 2, 5, 11],
+        states=normal_states,
         columns=[
             "qc/state",
             "title",
@@ -64,7 +73,7 @@ VIEWS: list[ViewSettings] = [
         name="Commercials",
         position=5,
         folders=[9, 10],
-        states=[0, 1, 2, 5, 11],
+        states=normal_states,
         columns=[
             "qc/state",
             "title",
@@ -90,7 +99,7 @@ VIEWS: list[ViewSettings] = [
         name="Trash",
         separator=True,
         position=50,
-        states=[3],
+        states=[ObjectStatus.TRASHED],
         columns=[
             "title",
             "subtitle",
@@ -103,7 +112,7 @@ VIEWS: list[ViewSettings] = [
         id=51,
         name="Archive",
         position=51,
-        states=[4, 11],
+        states=[ObjectStatus.ARCHIVED, ObjectStatus.RETRIEVING],
         columns=[
             "title",
             "subtitle",
