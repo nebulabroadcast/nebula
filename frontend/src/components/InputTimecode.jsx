@@ -16,7 +16,7 @@ const InputTimecode = ({
 
   useEffect(() => {
     setInvalid(false)
-    if (value === null || value === undefined) {
+    if (value === null || value === undefined || isNaN(value)) {
       setText('')
       return
     }
@@ -70,6 +70,7 @@ const InputTimecode = ({
       onSubmit()
       inputRef.current.blur()
     }
+    e.stopPropagation()
   }
 
   return (

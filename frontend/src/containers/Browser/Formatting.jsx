@@ -50,7 +50,6 @@ const formatRowHighlightStyle = (rowData) => {
   }
 }
 
-
 // Column width
 
 const getColumnWidth = (key) => {
@@ -151,4 +150,9 @@ const getFormatter = (key) => {
   } // end switch key
 } // end getFormatter
 
-export { getColumnWidth, getFormatter, formatRowHighlightColor, formatRowHighlightStyle }
+export {
+  getColumnWidth,
+  getFormatter,
+  formatRowHighlightColor,
+  formatRowHighlightStyle,
+}

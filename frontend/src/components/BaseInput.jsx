@@ -39,9 +39,9 @@ const BaseInput = styled.input`
   }
 
   &.timecode {
-    min-width: 96px;
-    max-width: 96px;
-    padding-right: 14px !important;
+    min-width: 82px;
+    max-width: 82px;
+    padding-right: 10px !important;
     text-align: right;
     font-family: monospace;
   }
