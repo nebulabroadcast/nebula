@@ -70,6 +70,7 @@ const InputTimecode = ({
       onSubmit()
       inputRef.current.blur()
     }
+    e.stopPropagation()
   }
 
   return (

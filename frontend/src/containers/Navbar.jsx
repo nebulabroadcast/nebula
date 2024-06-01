@@ -27,6 +27,7 @@ const BasePageTitle = styled.div`
 const PageTitle = () => {
   const pageTitle = useSelector((state) => state.context.pageTitle)
   const pageIcon = useSelector((state) => state.context.pageIcon)
+
   return (
     <BasePageTitle>
       {pageIcon && (
@@ -50,6 +51,9 @@ const logout = () => {
 
 const NavBar = () => {
   const navigate = useNavigate()
+  const focusedAsset = useSelector((state) => state.context.focusedAsset)
+
+  const mamSuffix = focusedAsset ? `?asset=${focusedAsset}` : ''
 
   const mainMenuOptions = useMemo(() => {
     const result = []
@@ -81,9 +85,9 @@ const NavBar = () => {
   return (
     <Navbar>
       <div className="left">
-        <NavLink to={`/mam/editor`}>Assets</NavLink>
+        <NavLink to={`/mam/editor${mamSuffix}`}>Assets</NavLink>
         {false && nebula.settings.system.ui_asset_preview && (
-          <NavLink to={`/mam/preview`}>Preview</NavLink>
+          <NavLink to={`/mam/preview${mamSuffix}`}>Preview</NavLink>
         )}
         <NavLink to="/jobs">Jobs</NavLink>
         {!nebula.user.is_limited && (

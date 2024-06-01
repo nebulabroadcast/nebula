@@ -8,6 +8,7 @@ import { useLocalStorage } from '/src/hooks'
 import { setFocusedAsset, setSelectedAssets } from '/src/actions'
 import Browser from '/src/containers/Browser'
 import AssetEditor from '/src/pages/AssetEditor'
+// import AssetPreview from '/src/pages/AssetPreview'
 import SendToDialog from '/src/containers/SendTo'
 
 const MAMContainer = styled.div`
@@ -66,6 +67,7 @@ const MAMPage = () => {
 
   const moduleComponent = useMemo(() => {
     if (module == 'editor') return <AssetEditor {...componentProps} />
+    // if (module == 'preview') return <AssetPreview {...componentProps} />
 
     return 'Not implemented'
   }, [module])

@@ -310,29 +310,31 @@ const AssetEditor = () => {
 
       {Object.keys(assetData || {}).length ? (
         <div className="grow row">
-          <section
-            className={`grow column ${isChanged ? 'section-changed' : ''}`}
-            style={{ minWidth: 500 }}
-          >
-            <div
-              className="contained"
-              style={{ overflowY: 'scroll', padding: 10 }}
+          {!previewVisible && (
+            <section
+              className={`grow column ${isChanged ? 'section-changed' : ''}`}
+              style={{ minWidth: 500 }}
             >
-              {loading && (
-                <div className="contained center">
-                  <Loader />
-                </div>
-              )}
-              <EditorForm
-                onSave={onSave}
-                originalData={originalData}
-                assetData={assetData}
-                setAssetData={setAssetData}
-                fields={fields}
-                disabled={!enabledActions.edit}
-              />
-            </div>
-          </section>
+              <div
+                className="contained"
+                style={{ overflowY: 'scroll', padding: 10 }}
+              >
+                {loading && (
+                  <div className="contained center">
+                    <Loader />
+                  </div>
+                )}
+                <EditorForm
+                  onSave={onSave}
+                  originalData={originalData}
+                  assetData={assetData}
+                  setAssetData={setAssetData}
+                  fields={fields}
+                  disabled={!enabledActions.edit}
+                />
+              </div>
+            </section>
+          )}
 
           {previewVisible && (
             <Preview assetData={assetData} setAssetData={setAssetData} />
