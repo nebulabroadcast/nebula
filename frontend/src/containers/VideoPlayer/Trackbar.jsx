@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState, useCallback } from 'react'
-import Canvas from '/src/components/Canvas'
+import {Canvas, Navbar} from '/src/components'
 
 const Trackbar = ({
   videoDuration,
@@ -124,13 +124,15 @@ const Trackbar = ({
   }
 
   return (
+    <Navbar>
     <Canvas
       ref={canvasRef}
-      style={{ minHeight: 42, maxHeight: 42, cursor: 'pointer' }}
+      style={{ minHeight: 42, maxHeight: 42, cursor: 'pointer', flexGrow: 1}}
       onMouseDown={handleMouseDown}
       onClick={handleClick}
       onDraw={drawSlider}
     />
+    </Navbar>
   )
 }
 

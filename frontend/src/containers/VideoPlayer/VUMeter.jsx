@@ -47,8 +47,9 @@ const VUMeter = ({ gainNodes, audioContext }) => {
         canvas.height = canvas.parentElement.clientHeight
       }
 
-      canvas.width = numChannels * (barWidth + spacing)
+      canvas.width = (numChannels * (barWidth + spacing)) + spacing
       canvas.style.width = `${canvas.width}px`
+
       ctx.clearRect(0, 0, canvas.width, canvas.height)
 
       // draw background regardless of audio data
@@ -123,6 +124,7 @@ const VUMeter = ({ gainNodes, audioContext }) => {
   return (
     <Canvas
       ref={canvasRef}
+      style={{ width: gainNodes.length * (barWidth + spacing)}}
       onDraw={() => setRedrawTrigger(redrawTrigger + 1)}
     />
   )

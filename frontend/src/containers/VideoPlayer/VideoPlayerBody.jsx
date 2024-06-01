@@ -73,21 +73,22 @@ const VideoPlayerBody = ({ ...props }) => {
   // Update video dimensions on resize
 
   useEffect(() => {
-    // TODO: probably not necessary
+    // we need this to scale the video overlay
+    // exactly like the video element
+
+    if (!videoRef.current) return
+
     const updateVideoDimensions = () => {
-      if (videoRef.current) {
-        const width = videoRef.current.clientWidth
-        const height = videoRef.current.clientHeight
-        setVideoDimensions({ width, height })
-      }
+      const width = videoRef.current.clientWidth
+      const height = videoRef.current.clientHeight
+      setVideoDimensions({ width, height })
     }
 
-    updateVideoDimensions()
-    window.addEventListener('resize', updateVideoDimensions)
+    const parentElement = videoRef.current.parentElement
+    const resizeObserver = new ResizeObserver(updateVideoDimensions)
+    resizeObserver.observe(parentElement)
 
-    return () => {
-      window.removeEventListener('resize', updateVideoDimensions)
-    }
+    return () => resizeObserver.unobserve(parentElement)
   }, [videoRef])
 
   useEffect(() => {
@@ -167,7 +168,7 @@ const VideoPlayerBody = ({ ...props }) => {
         <InputTimecode value={duration} readOnly={true} />
       </Navbar>
 
-      <Row style={{ flexGrow: 1 }}>
+      <section className="row">
         <VUMeter gainNodes={leftNodes} audioContext={audioContext} />
         <div
           style={{
@@ -199,7 +200,7 @@ const VideoPlayerBody = ({ ...props }) => {
           </div>
         </div>
         <VUMeter gainNodes={rightNodes} audioContext={audioContext} />
-      </Row>
+      </section>
 
       <Trackbar
         videoDuration={duration}
