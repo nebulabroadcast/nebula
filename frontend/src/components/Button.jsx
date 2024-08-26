@@ -2,6 +2,7 @@ import styled from 'styled-components'
 import PropTypes from 'prop-types'
 import defaultTheme from './theme'
 import { forwardRef } from 'react'
+import clsx from 'clsx'
 
 const BaseButton = styled.button`
   border: 0;
@@ -65,15 +66,10 @@ const Button = forwardRef(
     },
     ref
   ) => {
-    const classes = className ? [className] : []
-    if (active) {
-      classes.push('active')
-    }
-
     return (
       <BaseButton
         {...props}
-        className={classes.join(' ')}
+        className={clsx(className, { active })}
         title={tooltip}
         ref={ref}
       >

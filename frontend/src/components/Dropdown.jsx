@@ -1,5 +1,6 @@
 import Button from './Button'
 import styled from 'styled-components'
+import clsx from 'clsx'
 
 const DropdownContainer = styled.div`
   position: relative;
@@ -80,7 +81,7 @@ const Dropdown = ({
   if (align === 'right') contentStyle['right'] = 0
 
   return (
-    <DropdownContainer className={disabled ? 'disabled' : ''}>
+    <DropdownContainer className={clsx({disabled})}>
       <Button
         className="dropbtn"
         style={buttonStyle}
