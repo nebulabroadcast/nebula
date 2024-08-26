@@ -5,6 +5,7 @@ import { useEffect, useState, useMemo } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { toast } from 'react-toastify'
 import { isEqual, isEmpty } from 'lodash'
+import clsx from 'clsx'
 
 import { useLocalStorage, useConfirm } from '/src/hooks'
 import {
@@ -311,7 +312,7 @@ const AssetEditor = () => {
       {Object.keys(assetData || {}).length ? (
         <div className="grow row">
           <section
-            className={`grow column ${isChanged ? 'section-changed' : ''}`}
+            className={clsx('grow', 'column', {"section-changed": isChanged})}
             style={{ minWidth: 500 }}
           >
             <div

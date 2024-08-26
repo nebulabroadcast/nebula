@@ -15,6 +15,7 @@
     "@reduxjs/toolkit": "^1.8.5",
     "@wfoxall/timeframe": "^1.2.0",
     "axios": "^1.6.7",
+    "clsx": "^2.1.1",
     "content-type": "^1.0.5",
     "lodash": "^4.17.21",
     "luxon": "^3.4.4",
