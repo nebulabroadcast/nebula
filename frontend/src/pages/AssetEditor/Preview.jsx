@@ -4,6 +4,7 @@ import styled from 'styled-components'
 import { toast } from 'react-toastify'
 import { useState, useEffect } from 'react'
 import {
+  Dropdown,
   Video,
   Spacer,
   InputText,
@@ -98,6 +99,7 @@ const Preview = ({ assetData, setAssetData }) => {
   const accessToken = nebula.getAccessToken()
   const [selection, setSelection] = useState({})
   const [subclips, setSubclips] = useState([])
+  const [position, setPosition] = useState(0)
 
   useEffect(() => {
     setSelection({})
@@ -127,6 +129,31 @@ const Preview = ({ assetData, setAssetData }) => {
   const videoSrc =
     assetData.id && accessToken && `/proxy/${assetData.id}?token=${accessToken}`
 
+  const posterOptions = [
+    {
+      label: 'Set poster frame',
+      onClick: () => {
+        setAssetData((o) => {
+          return { ...o, poster_frame: position }
+        })
+      },
+    },
+    {
+      label: 'Go to poster frame',
+      onClick: () => {
+        setPosition(assetData.poster_frame)
+      },
+    },
+    {
+      label: 'Clear poster frame',
+      onClick: () => {
+        setAssetData((o) => {
+          return { ...o, poster_frame: null }
+        })
+      },
+    },
+  ]
+
   return (
     <div className="grow column" style={{ minWidth: 300, maxWidth: 600 }}>
       <section className="column">
@@ -134,8 +161,10 @@ const Preview = ({ assetData, setAssetData }) => {
           src={videoSrc}
           style={{ width: '100%' }}
           showMarks={true}
-          marks={selection}
+          marks={{ ...selection, poster_frame: assetData.poster_frame }}
           setMarks={setSelection}
+          position={position}
+          setPosition={setPosition}
         />
       </section>
       <section className="column">
@@ -143,21 +172,21 @@ const Preview = ({ assetData, setAssetData }) => {
           <InputTimecode
             value={assetData.mark_in}
             readOnly={true}
-            title="Content start"
+            tooltip="Content start"
           />
           <InputTimecode
             value={assetData.mark_out}
             readOnly={true}
-            title="Content end"
+            tooltip="Content end"
           />
           <Button
             icon="download"
-            title="Marks from selection"
+            tooltip="Marks from selection"
             onClick={onSetMarks}
           />
           <Button
             icon="upload"
-            title="Marks to selection"
+            tooltip="Marks to selection"
             onClick={() =>
               setSelection({
                 mark_in: assetData.mark_in || null,
@@ -168,7 +197,7 @@ const Preview = ({ assetData, setAssetData }) => {
           <Spacer />
           <Button
             icon="add"
-            label="New subclip"
+            tooltip="New subclip"
             onClick={() => {
               if (!(selection.mark_in && selection.mark_out)) {
                 toast.error('Please select a region first')
@@ -180,6 +209,7 @@ const Preview = ({ assetData, setAssetData }) => {
               ])
             }}
           />
+          <Dropdown icon="image" align="right" options={posterOptions} />
         </RegionRow>
       </section>
 

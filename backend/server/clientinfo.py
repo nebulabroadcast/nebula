@@ -1,5 +1,3 @@
-import contextlib
-import ipaddress
 import os
 
 import geoip2
@@ -8,17 +6,19 @@ import user_agents
 from fastapi import Request
 from pydantic import BaseModel, Field
 
+from server.utils import is_internal_ip
+
 
 class LocationInfo(BaseModel):
-    country: str = Field(None, title="Country")
-    subdivision: str = Field(None, title="Subdivision")
-    city: str = Field(None, title="City")
+    country: str | None = Field(None, title="Country")
+    subdivision: str | None = Field(None, title="Subdivision")
+    city: str | None = Field(None, title="City")
 
 
 class AgentInfo(BaseModel):
-    platform: str = Field(None, title="Platform")
-    client: str = Field(None, title="Client")
-    device: str = Field(None, title="Device")
+    platform: str | None = Field(None, title="Platform")
+    client: str | None = Field(None, title="Client")
+    device: str | None = Field(None, title="Device")
 
 
 class ClientInfo(BaseModel):
@@ -29,10 +29,12 @@ class ClientInfo(BaseModel):
 
 
 def get_real_ip(request: Request) -> str:
-    return request.headers.get("x-forwarded-for", request.client.host)
+    host_ip = request.client.host if request.client else "127.0.0.1"
+    xff = request.headers.get("x-forwarded-for", host_ip)
+    return xff.split(",")[0].strip()
 
 
-def geo_lookup(ip: str):
+def geo_lookup(ip: str) -> LocationInfo | None:
     geoip_db_path = None  # TODO
 
     if geoip_db_path is None:
@@ -47,26 +49,14 @@ def geo_lookup(ip: str):
         except geoip2.errors.AddressNotFoundError:
             return None
 
-        return LocationInfo(
-            country=response.country.name,
-            subdivision=response.subdivisions.most_specific.name,
-            city=response.city.name,
-        )
-    return None
+    return LocationInfo(
+        country=response.country.name,
+        subdivision=response.subdivisions.most_specific.name,
+        city=response.city.name,
+    )
 
 
-def is_internal_ip(ip: str) -> bool:
-    with contextlib.suppress(ValueError):
-        if ipaddress.IPv4Address(ip).is_private:
-            return True
-
-    with contextlib.suppress(ValueError):
-        if ipaddress.IPv6Address(ip).is_private:
-            return True
-    return False
-
-
-def get_ua_data(request) -> AgentInfo | None:
+def get_ua_data(request: Request) -> AgentInfo | None:
     if ua_string := request.headers.get("user-agent"):
         if ua_string.startswith("firefly"):
             firefly_version = ua_string.split("/")[1]

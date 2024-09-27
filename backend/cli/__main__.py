@@ -1,45 +1,12 @@
 import argparse
 import inspect
-import os
 import sys
 
 import nebula
-from nebula.common import classes_from_module, import_module
+from nebula.plugins.library import plugin_library
 
 
-def get_plugin(name: str):
-    plugin_root = os.path.join(nebula.config.plugin_dir, "cli")
-
-    for module_fname in os.listdir(plugin_root):
-        module_path = os.path.join(plugin_root, module_fname)
-
-        if os.path.isdir(module_path):
-            module_path = os.path.join(module_path, "__init__.py")
-            if not os.path.isfile(module_path):
-                continue
-            module_name = module_fname
-        else:
-            module_name = os.path.splitext(module_fname)[0]
-
-        try:
-            plugin_module = import_module(module_name, module_path)
-        except ModuleNotFoundError:
-            nebula.log.error(f"Unable to import module {module_path}")
-            continue
-        except ImportError:
-            nebula.log.traceback(f"Error importing module {name}")
-            continue
-
-        for plugin_class in classes_from_module(
-            nebula.plugins.CLIPlugin, plugin_module
-        ):
-            if plugin_class.name == name:
-                return plugin_class()
-    nebula.log.error(f"Plugin {name} not found")
-    sys.exit(1)
-
-
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("plugin")
     parser.add_argument("args", nargs=argparse.REMAINDER)
@@ -52,7 +19,11 @@ def main():
             k = k.lstrip("-")
             kwargs[k] = v
 
-    plugin = get_plugin(args.plugin)
+    try:
+        plugin = plugin_library.get("cli", args.plugin)
+    except KeyError:
+        nebula.log.critical(f"Plugin {args.plugin} not found")
+        sys.exit(-1)
 
     expected_args = inspect.signature(plugin.main).parameters
     final_kwargs = {}

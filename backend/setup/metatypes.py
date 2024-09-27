@@ -1,15 +1,23 @@
-import json
 import os
+from typing import Any
+
+import aiofiles
+
+from nebula.common import json_loads
+from nebula.db import DatabaseConnection
 
 
-async def setup_metatypes(meta_types, db):
+async def setup_metatypes(meta_types: dict[str, Any], db: DatabaseConnection) -> None:
     languages = ["en", "cs"]
 
-    aliases = {}
+    aliases: dict[str, dict[str, Any]] = {}
     for lang in languages:
         aliases[lang] = {}
         trans_table_fname = os.path.join("schema", f"meta-aliases-{lang}.json")
-        adata = json.load(open(trans_table_fname))
+
+        async with aiofiles.open(trans_table_fname, "r") as f:
+            adata = json_loads(await f.read())
+
         for key, alias, header, description in adata:
             if header is None:
                 header = alias

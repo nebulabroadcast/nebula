@@ -495,6 +495,7 @@ META_TYPES = {
     "duration": {
         "ns": "f",
         "type": T.TIMECODE,
+        "default": 0,
     },
     "start_timecode": {
         "ns": "f",

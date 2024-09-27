@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import useWebSocket, { ReadyState } from 'react-use-websocket'
 import PubSub from '/src/pubsub'
 import { arrayEquals } from '/src/utils'
+import { toast } from 'react-toastify'
 
 const proto = window.location.protocol.replace('http', 'ws')
 const wsAddress = `${proto}//${window.location.host}/ws`

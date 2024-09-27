@@ -2,7 +2,12 @@ import nebula from '/src/nebula'
 
 import { useDispatch } from 'react-redux'
 import { useState, useMemo } from 'react'
-import { setCurrentViewId, setSearchQuery } from '/src/actions'
+import {
+  setCurrentViewId,
+  setSearchQuery,
+  showSendToDialog,
+} from '/src/actions'
+
 import {
   Navbar,
   Button,
@@ -14,7 +19,6 @@ import {
 } from '/src/components'
 
 import { UploadButton } from '/src/containers/Upload'
-import { SendToDialog } from '/src/containers/SendTo'
 
 import MetadataDetail from './MetadataDetail'
 import ContextActionResult from './ContextAction'
@@ -34,9 +38,7 @@ const AssetEditorNav = ({
   enabledActions,
 }) => {
   const [detailsVisible, setDetailsVisible] = useState(false)
-  const [sendToVisible, setSendToVisible] = useState(false)
   const [contextActionResult, setContextActionResult] = useState(null)
-
   const dispatch = useDispatch()
 
   const currentFolder = useMemo(() => {
@@ -96,18 +98,14 @@ const AssetEditorNav = ({
     const result = [
       {
         label: 'Send to...',
-        onClick: () => setSendToVisible(true),
-      },
-      {
-        label: 'Reset',
-        disabled: assetData.status !== 1,
-        onClick: () => {
-          setMeta('status', 5, true)
-        },
+        onClick: () => dispatch(showSendToDialog({ ids: [assetData.id] })),
       },
       ...scopedEndpoints,
       ...linkOptions,
     ]
+    if (result.length > 1) {
+      result[1].separator = true
+    }
     return result
   }, [scopedEndpoints, linkOptions])
 
@@ -127,13 +125,6 @@ const AssetEditorNav = ({
         >
           <MetadataDetail assetData={assetData} />
         </Dialog>
-      )}
-
-      {sendToVisible && (
-        <SendToDialog
-          assets={[assetData.id]}
-          onHide={() => setSendToVisible(false)}
-        />
       )}
 
       {contextActionResult && (
@@ -159,7 +150,7 @@ const AssetEditorNav = ({
         value={assetData?.duration}
         fps={fps}
         onChange={(val) => setMeta('duration', val)}
-        title="Duration"
+        title="Asset duration"
         readOnly={assetData.status || !enabledActions.edit}
       />
 
@@ -184,7 +175,7 @@ const AssetEditorNav = ({
         <>
           <Button
             icon="manage_search"
-            title="Details"
+            title="Show asset details"
             onClick={() => setDetailsVisible(true)}
           />
           <Dropdown
@@ -205,7 +196,7 @@ const AssetEditorNav = ({
           icon="visibility"
           onClick={() => setPreviewVisible(!previewVisible)}
           active={previewVisible}
-          title="Preview"
+          title="Toggle video preview"
         />
       )}
 

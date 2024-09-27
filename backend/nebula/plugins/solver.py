@@ -23,9 +23,11 @@ class SolverPlugin:
     _next_event: nebula.Event | None = None
     _needed_duration: float | None = None
 
-    async def __call__(self, id_item: int):
-        """Solver entrypoint."""
+    def __repr__(self) -> str:
+        return f"<Nebula solver plugin: {self.name}>"
 
+    async def __call__(self, id_item: int) -> None:
+        """Solver entrypoint."""
         res = await nebula.db.fetch(
             """
             SELECT
@@ -179,7 +181,7 @@ class SolverPlugin:
         if new_bin.id and (new_bin.id not in self.affected_bins):
             self.affected_bins.append(new_bin.id)
 
-    async def main(self):
+    async def main(self) -> None:
         nebula.log.info(f"Solving {self.placeholder}", user=self.name)
         try:
             async for new_item in self.solve():
@@ -210,14 +212,14 @@ class SolverPlugin:
                 item["position"] = i
                 await item.save(notify=False)
 
-        if self.bin.id not in self.affected_bins:
+        if self.bin.id and self.bin.id not in self.affected_bins:
             self.affected_bins.append(self.bin.id)
 
         # save event in case solver updated its metadata
         await self.event.save()
 
         # another paceholder was created, so we need to solve it
-        if self._solve_next:
+        if self._solve_next and self._solve_next.id:
             await self(self._solve_next.id)
             return
 
@@ -228,9 +230,8 @@ class SolverPlugin:
     # Solver implementation
     #
 
-    async def solve(self):
-        """
-        This method must return a list or yield items
+    async def solve(self):  # type: ignore
+        """This method must return a list or yield items
         (no need to specify order or bin values) which
         replaces the original placeholder.
         """

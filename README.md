@@ -2,9 +2,9 @@ NEBULA
 ======
 
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/nebulabroadcast/nebula?style=for-the-badge)
-![Maintenance](https://img.shields.io/maintenance/yes/2023?style=for-the-badge)
+![Maintenance](https://img.shields.io/maintenance/yes/2024?style=for-the-badge)
 ![Last commit](https://img.shields.io/github/last-commit/nebulabroadcast/nebula?style=for-the-badge)
-![Python version](https://img.shields.io/badge/python-3.10-blue?style=for-the-badge)
+![Python version](https://img.shields.io/badge/python-3.11-blue?style=for-the-badge)
 
 Nebula is an open source broadcast automation and media asset management system for television, radio and VOD platforms.
 Since 2012 Nebula has proven stable and reliable software in 24/7 broadcast environment 
@@ -30,7 +30,7 @@ Simple and fast media catalog based on [EBU&nbsp;Core](https://tech.ebu.ch/Metad
 genre, editorial format, atmosphere, rights, relations, and technical metadata,
 while its very fast search engine makes navigation among media files very easy.
 
-Low-res preview allows editorial review, trimming and sub-clips creation.
+The low-resolution preview allows for editorial review, trimming, and the creation of sub-clips.
 
 ![Metadata editor](https://nebulabroadcast.com/static/img/nebula-metadata-editor.webp)
 
@@ -99,9 +99,9 @@ Nebula is under active development and is in production since 2012 with no inten
 and we have a roadmap for several years. We listen to our customers, and we change our priorities in order to meet
 requests from the production.
 
-We do not try to have tons of features noone will ever use - we spent many years sitting next to Nebula operators,
-learning from each other, and we believe that Nebula covers all common tasks in a broadcast environment.
-
+We do not attempt to include numerous features that no one will ever use.
+Instead, we have spent many years working alongside Nebula operators, learning from each other.
+We believe that Nebula covers all common tasks in a broadcast environment.
 
 Legal
 -----
@@ -123,7 +123,7 @@ See the GNU General Public License for more details.
 Need help?
 ----------
 
- - Visit our Nebula community group on [Telegram](https://t.me/nebulabroadcast)
+ - Join [Open Source Broadcasting](https://discord.gg/WXaaHYGQ) group on Discord
  - Professional support for Nebula is provided by [Nebula Broadcast](https://nebulabroadcast.com)
  - User documentation is available on [our website](https://nebulabroadcast.com/doc/nebula)
- - Found a bug? Please [create an issue](https://github.com/nebulabroadcast/nebula/issues) in our development repository.
+ - Found a bug? Please [create an issue](https://github.com/nebulabroadcast/nebula/issues)

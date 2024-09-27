@@ -13,6 +13,7 @@ import Scheduler from '/src/pages/Scheduler'
 import Rundown from './Rundown'
 
 import { DndContext } from '@dnd-kit/core'
+import SendToDialog from '/src/containers/SendTo'
 
 const MAMContainer = styled.div`
   flex-grow: 1;
@@ -96,6 +97,7 @@ const MAMPage = () => {
           {moduleComponent}
         </Splitter>
       </DndContext>
+      <SendToDialog />
     </MAMContainer>
   )
 }

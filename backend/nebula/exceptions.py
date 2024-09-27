@@ -1,3 +1,5 @@
+from typing import Any
+
 from nebula.log import log as logger
 
 
@@ -17,9 +19,8 @@ class NebulaException(Exception):
         detail: str | None = None,
         log: bool | str = False,
         user_name: str | None = None,
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
-
         self.kwargs = kwargs
 
         if detail is not None:
@@ -27,7 +28,7 @@ class NebulaException(Exception):
 
         if log is True or self.log:
             logger.error(f"EXCEPTION: {self.status} {self.detail}", user=user_name)
-        elif type(log) is str:
+        elif isinstance(log, str):
             logger.error(f"EXCEPTION: {self.status} {log}", user=user_name)
 
         super().__init__(self.detail)

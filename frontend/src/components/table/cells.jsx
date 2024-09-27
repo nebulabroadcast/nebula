@@ -46,25 +46,37 @@ const DataRow = ({
   columns,
   onRowClick,
   rowHighlightColor,
+  rowHighlightStyle,
   selected = false,
 }) => {
-  const handleClick = () => {
-    if (onRowClick) onRowClick(rowData)
+  const handleClick = (event) => {
+    if (event.type === 'contextmenu' || event.button === 2) {
+      // if we're right-clicking, and the row is already selected,
+      // don't change the selection - just show the context menu
+      if (selected) return
+    }
+
+    if (onRowClick) onRowClick(rowData, event)
   }
   const rowStyle = {}
 
   // Left-border highlight color
   let highlightColor = null
+  let highlightStyle = null
   if (rowHighlightColor) highlightColor = rowHighlightColor(rowData)
+  if (rowHighlightStyle) highlightStyle = rowHighlightStyle(rowData)
   if (highlightColor) rowStyle['borderLeftColor'] = highlightColor
+  if (highlightStyle) rowStyle['borderLeftStyle'] = highlightStyle
 
   // Embedded progress bar
   if (rowData.progress && 100 > rowData.progress > 0) {
     rowStyle['--progress'] = rowData.progress + '%'
     rowStyle['--progress-opacity'] = 0.2
   }
+
   //
   // Reder the row
+  //
 
   const rowContent = useMemo(() => {
     return (
@@ -84,6 +96,7 @@ const DataRow = ({
   return (
     <tr
       onClick={handleClick}
+      onContextMenu={handleClick}
       className={selected ? 'selected' : ''}
       style={rowStyle}
     >

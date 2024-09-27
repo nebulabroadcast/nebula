@@ -1,5 +1,5 @@
 import datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from nxtools import datestr2ts, s2time
 
@@ -19,16 +19,18 @@ async def bin_refresh(
     if not bins:
         return None
 
+    username = user.name if user else None
+
     for id_bin in bins:
         # Resave bin to update duration
-        b = await nebula.Bin.load(id_bin)
+        b = await nebula.Bin.load(id_bin, username=username)
         await b.get_items()
         if user:
             b["updated_by"] = user.id
         # this log message triggers storing bin duration to its meta
-        nebula.log.debug(
+        nebula.log.trace(
             f"New duration of {b} is {s2time(b.duration)} ({len(b.items)} items)",
-            user=user.name if user else None,
+            user=username,
         )
         await b.save(notify=False)
 
@@ -40,7 +42,6 @@ async def bin_refresh(
         e.id_magic = ANY($1)
     """
     changed_events = [row["id_event"] async for row in nebula.db.iterate(query, bins)]
-    nebula.log.debug(f"Bins changed {bins}.")
     await nebula.msg(
         "objects_changed",
         object_type="bin",
@@ -81,9 +82,12 @@ async def get_pending_assets(send_action: int | None) -> list[int]:
     return pending_assets
 
 
-def parse_durations(ameta, imeta) -> tuple[float, float, float]:
+def parse_durations(
+    ameta: dict[str, Any], imeta: dict[str, Any]
+) -> tuple[float, float, float]:
     """From the given asset and item metadata,
-    return the duration, mark_in and mark_out"""
+    return the duration, mark_in and mark_out
+    """
     a_duration = ameta.get("duration", 0)
     a_mark_in = ameta.get("mark_in", 0)
     a_mark_out = ameta.get("mark_in", 0)
@@ -118,7 +122,8 @@ def parse_rundown_date(
     return start_time
 
 
-def can_append(asset: nebula.Asset, conditions: "AcceptModel"):
+def can_append(asset: nebula.Asset, conditions: "AcceptModel") -> bool:
+    # TODO: raise an exception instead of returning False?
     if conditions.folders and asset["id_folder"] not in conditions.folders:
         nebula.log.warn(f"Folder {asset['id_folder']} not in {conditions.folders}")
         return False
@@ -127,11 +132,11 @@ def can_append(asset: nebula.Asset, conditions: "AcceptModel"):
             f"Media type {asset['media_type']} not in {conditions.media_types}"
         )
         return False
-    if conditions.content_types:
-        if asset["content_type"] not in conditions.content_types:
-            nebula.log.warn(
-                f"Content type {asset['content_type']}"
-                " not in {conditions.content_types}"
-            )
-            return False
+    if conditions.content_types and (
+        asset["content_type"] not in conditions.content_types
+    ):
+        nebula.log.warn(
+            f"Content type {asset['content_type']}" " not in {conditions.content_types}"
+        )
+        return False
     return True

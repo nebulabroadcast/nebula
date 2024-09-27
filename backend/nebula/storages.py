@@ -8,25 +8,25 @@ from nebula.settings.models import StorageSettings
 
 
 class Storage:
-    def __init__(self, storage_config):
-        self.id = storage_config.id
-        self.name = storage_config.name
-        self.protocol = storage_config.protocol
-        self.path = storage_config.path
-        self.options = storage_config.options
-        self.read_only = None
-        self.last_mount_attempt = 0
-        self.mount_attempts = 0
+    def __init__(self, storage_settings: StorageSettings) -> None:
+        self.id = storage_settings.id
+        self.name = storage_settings.name
+        self.protocol = storage_settings.protocol
+        self.path = storage_settings.path
+        self.options = storage_settings.options
+        self.read_only: bool | None = None
+        self.last_mount_attempt: float = 0
+        self.mount_attempts: int = 0
 
-    def __str__(self):
+    def __str__(self) -> str:
         res = f"storage {self.id}"
         if self.name:
             res += f" ({self.name})"
         return res
 
     @property
-    def title(self):
-        return self.name.name
+    def title(self) -> str:
+        return self.name
 
     @property
     def local_path(self) -> str:
@@ -42,35 +42,36 @@ class Storage:
             return False
         if not os.listdir(self.local_path):
             return False
-        return self.ensure_ident()
+        self.ensure_ident()
+        return True
 
     @property
-    def is_writable(self):
+    def is_writable(self) -> bool:
         return self.is_mounted and (not self.read_only)
 
-    def __bool__(self):
+    def __bool__(self) -> bool:
         return self.is_mounted
 
-    def ensure_ident(self):
+    def ensure_ident(self) -> None:
         storage_string = f"{config.site_name}:{self.id}"
         storage_ident_path = os.path.join(self.local_path, ".nebula_root")
 
-        if not (
-            os.path.exists(storage_ident_path)
-            and storage_string
-            in [line.strip() for line in open(storage_ident_path).readlines()]
-        ):
-            try:
-                with open(storage_ident_path, "a") as f:
-                    f.write(storage_string + "\n")
-            except Exception:
-                if self.read_only is None:
-                    log.warning(f"{self} is mounted, but read only")
-                    self.read_only = True
-            else:
-                if self.read_only is None:
-                    log.info(f"{self} is mounted and root is writable")
-        return True
+        if os.path.exists(storage_ident_path):
+            with open(storage_ident_path) as f:
+                storage_strings = [line.strip() for line in f.readlines()]
+                if storage_string in storage_strings:
+                    return
+
+        try:
+            with open(storage_ident_path, "a") as f:
+                f.write(storage_string + "\n")
+        except Exception:
+            if self.read_only is None:
+                log.warning(f"{self} is mounted read only")
+                self.read_only = True
+        else:
+            if self.read_only is None:
+                log.info(f"{self} is mounted and writable")
 
 
 class Storages:
@@ -86,9 +87,6 @@ class Storages:
             )
 
         return Storage(storage_config)
-
-    def __iter__(self):
-        return settings.storages.__iter__()
 
 
 storages = Storages()

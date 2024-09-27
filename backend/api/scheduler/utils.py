@@ -10,7 +10,6 @@ async def get_event_at_time(id_channel: int, timestamp: int) -> nebula.Event | N
     Note: This function looks for the EXACT start timestamp, not for the closest event,
     or an ongoing event. This is used in scheduler for replacing existing events.
     """
-
     query = """
         SELECT meta FROM events
         WHERE id_channel = $1 AND start = $2
@@ -22,7 +21,7 @@ async def get_event_at_time(id_channel: int, timestamp: int) -> nebula.Event | N
     return None
 
 
-async def delete_events(ids: list[int]) -> list[int]:
+async def delete_events(ids: list[int], user: nebula.User | None = None) -> list[int]:
     """Delete events from the database.
 
     It also deletes the associated bins and items. Events with
@@ -32,36 +31,39 @@ async def delete_events(ids: list[int]) -> list[int]:
     Returns a list of event IDs that were deleted.
     """
 
+    username = user.name if user else None
+
     deleted_event_ids = []
     pool = await nebula.db.pool()
-    async with pool.acquire() as conn:
-        async with conn.transaction():
-            for id_event in ids:
+    async with pool.acquire() as conn, conn.transaction():
+        for id_event in ids:
+            event = await nebula.Event.load(id_event, username=username)
+            id_bin = event["id_magic"]
 
-                event = await nebula.Event.load(id_event)
-                id_bin = event["id_magic"]
+            try:
+                await nebula.db.execute(
+                    "DELETE FROM items WHERE id_bin = $1",
+                    id_bin,
+                )
+            except Exception:
+                nebula.log.error(f"Failed to delete items of {event}")
+                continue
 
-                try:
-                    await nebula.db.execute(
-                        "DELETE FROM items WHERE id_bin = $1",
-                        id_bin,
-                    )
-                except Exception:
-                    nebula.log.error(f"Failed to delete items of {event}")
-                    continue
+            await nebula.db.execute("DELETE FROM bins WHERE id = $1", id_bin)
+            await nebula.db.execute("DELETE FROM events WHERE id = $1", id_event)
 
-                await nebula.db.execute("DELETE FROM bins WHERE id = $1", id_bin)
-                await nebula.db.execute("DELETE FROM events WHERE id = $1", id_event)
-
-                deleted_event_ids.append(id_event)
+            deleted_event_ids.append(id_event)
     return deleted_event_ids
 
 
 async def get_events_in_range(
-    id_channel: int, start_time: float, end_time: float
+    id_channel: int,
+    start_time: float,
+    end_time: float,
+    user: nebula.User | None = None,
 ) -> list[nebula.Event]:
     """Return a list of events in the given time range"""
-
+    username = user.name if user else None
     result: list[nebula.Event] = []
 
     if not (start_time and end_time):
@@ -70,7 +72,8 @@ async def get_events_in_range(
 
     nebula.log.trace(
         f"Requested events of channel {id_channel} "
-        f"from {format_time(start_time)} to {format_time(end_time)}"
+        f"from {format_time(int(start_time))} to {format_time(int(end_time))}",
+        user=username,
     )
 
     result = []

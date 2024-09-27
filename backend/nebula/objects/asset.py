@@ -29,7 +29,8 @@ class Asset(BaseObject):
 
     @property
     def base_name(self) -> str | None:
-        """Return base name of the asset.
+        """Return base name of the asset file
+
         Base name is a file name without extension and path.
         In case of virtual assets, returns None.
         """
@@ -38,8 +39,25 @@ class Asset(BaseObject):
         return None
 
     @property
+    def path(self) -> str | None:
+        """Return a local path to the file asset.
+
+        Returns None if asset is virtual.
+        """
+        id_storage = self["id_storage"]
+        path = self["path"]
+        if not (id_storage and path):
+            return None
+        storage_path = storages[id_storage].local_path
+        full_path = os.path.join(storage_path, path)
+        return full_path
+
+    @property
     def local_path(self) -> str | None:
-        """Return a local path to the file asset."""
+        """Return a local path to the file asset.
+
+        Returns None if asset is virtual or file does not exist.
+        """
         id_storage = self["id_storage"]
         path = self["path"]
         if not (id_storage and path):
@@ -56,7 +74,6 @@ class Asset(BaseObject):
         Slug is a title and subtitle converted to a slug.
         In case of virtual assets, returns None.
         """
-
         return slugify(f"{self['title']} {self['subtitle']}")
 
     @property
@@ -65,7 +82,6 @@ class Asset(BaseObject):
 
         Display title is a title with optional subtitle.
         """
-
         separator = settings.system.subtitle_separator
         if not (title := self.get("title")):
             title = f"Asset {self.id}" if self.id else "New asset"
@@ -79,7 +95,6 @@ class Asset(BaseObject):
         """Return duration of the asset in seconds.
         Takes in account mark_in and mark_out.
         """
-
         duration = self["duration"]
         if not duration:
             return 0

@@ -5,8 +5,9 @@ import { useEffect, useState, useMemo } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { toast } from 'react-toastify'
 import { isEqual, isEmpty } from 'lodash'
+import clsx from 'clsx'
 
-import { useLocalStorage } from '/src/hooks'
+import { useLocalStorage, useConfirm } from '/src/hooks'
 import {
   setPageTitle,
   reloadBrowser,
@@ -67,6 +68,7 @@ const AssetEditor = () => {
   const [assetData, setAssetData] = useState({})
   const [originalData, setOriginalData] = useState({})
   const [loading, setLoading] = useState(false)
+  const [ConfirmDialog, confirm] = useConfirm()
   const [previewVisible, setPreviewVisible] = useLocalStorage(
     'previewVisible',
     false
@@ -175,18 +177,18 @@ const AssetEditor = () => {
   // When another asset is selected,
   // check if there are unsaved changes and ask to save them
 
-  useEffect(() => {
-    if (!focusedAsset) return
+  const switchAsset = async () => {
     if (isChanged) {
-      const confirm = window.confirm(
+      const ans = await confirm(
+        'Unsaved changes',
         'There are unsaved changes. Do you want to save them?'
       )
 
-      if (confirm) {
+      if (ans) {
         nebula
           .request('set', { id: assetData.id, data: assetData })
           .then(() => {
-            dispatch(reloadBrowser())
+            assetData.id || dispatch(reloadBrowser())
           })
           .catch((error) => {
             toast.error(
@@ -205,6 +207,11 @@ const AssetEditor = () => {
     } else {
       loadAsset(focusedAsset)
     }
+  }
+
+  useEffect(() => {
+    if (!focusedAsset) return
+    switchAsset()
   }, [focusedAsset])
 
   // Actions
@@ -248,16 +255,16 @@ const AssetEditor = () => {
 
   const onSave = (payload) => {
     if (!enabledActions.save && !payload) {
-      console.log('Save disabled')
       return
     }
     setLoading(true)
-    console.log('Saving...', assetData)
+    // console.log('Saving...', assetData)
     nebula
       .request('set', { id: assetData.id, data: payload || assetData })
       .then((response) => {
+        //reload browser if it's a new asset
+        assetData.id || dispatch(reloadBrowser())
         loadAsset(response.data.id)
-        dispatch(reloadBrowser())
       })
       .catch((error) => {
         toast.error(
@@ -305,7 +312,7 @@ const AssetEditor = () => {
       {Object.keys(assetData || {}).length ? (
         <div className="grow row">
           <section
-            className={`grow column ${isChanged ? 'section-changed' : ''}`}
+            className={clsx('grow', 'column', {"section-changed": isChanged})}
             style={{ minWidth: 500 }}
           >
             <div
@@ -333,6 +340,7 @@ const AssetEditor = () => {
           )}
         </div>
       ) : null}
+      <ConfirmDialog />
     </div>
   )
 }

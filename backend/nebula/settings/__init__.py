@@ -85,15 +85,18 @@ async def get_server_settings() -> ServerSettings:
     return ServerSettings(**result)
 
 
-async def load_settings():
+async def load_settings() -> None:
     """Load settings from database.
 
     This function is called on application startup.
     Either in nebula.server on_init handler or by nebula.run
     """
-
     log.trace("Loading settings")
     new_settings = await get_server_settings()
-    for key in new_settings.dict():
-        if key in settings.dict():
+
+    new_settings_dict = new_settings.model_dump()
+    old_settings_dict = settings.model_dump()
+
+    for key in new_settings_dict:
+        if key in old_settings_dict:
             setattr(settings, key, getattr(new_settings, key))

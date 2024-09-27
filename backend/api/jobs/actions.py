@@ -13,13 +13,13 @@ class ActionsRequestModel(RequestModel):
         ...,
         title="Asset IDs",
         description="List of asset IDs for which to get available actions",
-        example=[1, 2, 3],
+        examples=[[1, 2, 3]],
     )
 
 
 class ActionItemModel(ResponseModel):
-    id: int = Field(..., title="Action ID", example=1)
-    name: str = Field(..., title="Action name", example="proxy")
+    id: int = Field(..., title="Action ID", examples=[1])
+    name: str = Field(..., title="Action name", examples=["proxy"])
 
 
 class ActionsResponseModel(ResponseModel):
@@ -58,6 +58,8 @@ class ActionsRequest(APIRequest):
 
             if allow_if_elm := action_settings.findall("allow_if"):
                 allow_if_cond = allow_if_elm[0].text
+                if not allow_if_cond:
+                    continue
 
                 for id_asset in request.ids:
                     asset = await nebula.Asset.load(id_asset)

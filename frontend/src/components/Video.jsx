@@ -20,16 +20,31 @@ const Trackbar = styled.input`
   flex-grow: 1;
   appearance: none;
   height: var(--input-height);
-  outline: none;
   padding: 0;
+  margin: 0;
   outline: 1px solid var(--color-surface-04);
+  border-radius: 4px;
 
   &::-webkit-slider-thumb {
+    padding: 0;
+    margin: 0;
     appearance: none;
-    width: 5px;
+    width: 4px;
     height: 25px;
     background-color: #d4d4d4;
     cursor: pointer;
+  }
+
+  &:before {
+    content: '';
+    position: absolute;
+    display: ${(props) => (props.posterFrame ? 'block' : 'none')};
+    height: 4px;
+    bottom: 0;
+    width: 2px;
+    border: 0;
+    left: ${(props) => props.posterFrame}%;
+    background: var(--color-yellow);
   }
 
   /* highlight the specified range using the highlightStart and highlightEnd props */
@@ -60,7 +75,15 @@ const PlayoutControls = styled.div`
   justify-content: center;
 `
 
-const Video = ({ src, style, showMarks, marks = {}, setMarks = () => {} }) => {
+const Video = ({
+  src,
+  style,
+  showMarks,
+  position,
+  setPosition,
+  marks = {},
+  setMarks = () => {},
+}) => {
   const videoRef = useRef(null)
   const sliderRef = useRef(null)
   const playButtonRef = useRef(null)
@@ -68,7 +91,7 @@ const Video = ({ src, style, showMarks, marks = {}, setMarks = () => {} }) => {
   const [videoPosition, setVideoPosition] = useState(0)
   const [videoDuration, setVideoDuration] = useState(0)
   const [trackbarPosition, setTrackbarPosition] = useState(0)
-  const [maximize, setMaximize] = useState(false)
+  //const [maximize, setMaximize] = useState(false)
 
   const frameRate = 25
 
@@ -76,6 +99,17 @@ const Video = ({ src, style, showMarks, marks = {}, setMarks = () => {} }) => {
     setVideoPosition(0)
     setVideoDuration(0)
   }, [src])
+
+  useEffect(() => {
+    if (position !== undefined) {
+      videoRef.current.currentTime = position
+    }
+  }, [position])
+
+  useEffect(() => {
+    if (!setPosition) return
+    setPosition(videoPosition)
+  }, [videoPosition])
 
   const handleFinishSlider = useCallback(() => {
     if (playButtonRef.current) {
@@ -261,17 +295,28 @@ const Video = ({ src, style, showMarks, marks = {}, setMarks = () => {} }) => {
             videoRef.current.currentTime = value
           }}
         />
-        <Trackbar
-          value={trackbarPosition}
-          onInput={onSeek}
-          highlightStart={((marks.mark_in || 0) / videoDuration) * 100}
-          highlightEnd={
-            ((marks.mark_out || videoDuration) / videoDuration) * 100
-          }
-          ref={sliderRef}
-          onMouseLeave={handleFinishSlider}
-          onMouseUp={handleFinishSlider}
-        />
+        <div
+          style={{
+            flexGrow: 1,
+            position: 'relative',
+            display: 'flex',
+            padding: 0,
+            margin: 0,
+          }}
+        >
+          <Trackbar
+            value={trackbarPosition}
+            onInput={onSeek}
+            highlightStart={((marks.mark_in || 0) / videoDuration) * 100}
+            highlightEnd={
+              ((marks.mark_out || videoDuration) / videoDuration) * 100
+            }
+            posterFrame={((marks.poster_frame || 0) / videoDuration) * 100}
+            ref={sliderRef}
+            onMouseLeave={handleFinishSlider}
+            onMouseUp={handleFinishSlider}
+          />
+        </div>
         <InputTimecode value={videoDuration} readOnly={true} title="Duration" />
       </PlayoutControls>
 
@@ -280,42 +325,52 @@ const Video = ({ src, style, showMarks, marks = {}, setMarks = () => {} }) => {
           <>
             <Button
               icon="line_start_diamond"
-              title="Mark in"
+              tooltip="Mark in"
               onClick={() => onMarkIn(videoRef.current.currentTime)}
             />
             <Button
               icon="first_page"
-              title="Go to mark in"
+              tooltip="Go to mark in"
               onClick={onGoToIn}
             />
           </>
         )}
         <Button
           icon="keyboard_double_arrow_left"
+          tooltip="Back 5 frames"
           onClick={() => frameStep(-5)}
         />
-        <Button icon="chevron_left" onClick={() => frameStep(-1)} />
+        <Button
+          icon="chevron_left"
+          tooltip="Back 1 frame"
+          onClick={() => frameStep(-1)}
+        />
         <Button
           icon={playButtonIcon}
-          title="Play/Pause"
+          tooltip="Play/Pause"
           onClick={onPlay}
           ref={playButtonRef}
         />
-        <Button icon="chevron_right" onClick={() => frameStep(1)} />
+        <Button
+          icon="chevron_right"
+          tooltip="Forward 1 frame"
+          onClick={() => frameStep(1)}
+        />
         <Button
           icon="keyboard_double_arrow_right"
+          tooltip="Forward 5 frames"
           onClick={() => frameStep(5)}
         />
         {showMarks && (
           <>
             <Button
               icon="last_page"
-              title="Go to mark out"
+              tooltip="Go to mark out"
               onClick={onGoToOut}
             />
             <Button
               icon="line_end_diamond"
-              title="Mark out"
+              tooltip="Mark out"
               onClick={() => onMarkOut(videoRef.current.currentTime)}
             />
           </>

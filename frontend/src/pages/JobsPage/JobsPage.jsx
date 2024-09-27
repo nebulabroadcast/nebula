@@ -55,6 +55,7 @@ const JobsPage = () => {
     nebula.request('jobs', { abort: id }).then(() => loadJobs())
   }
 
+  // eslint-disable-next-line
   const formatAction = (rowData, key) => {
     if ([0, 1, 5].includes(rowData['status']))
       return (
@@ -154,6 +155,7 @@ const JobsPage = () => {
   ]
 
   const handlePubSub = (topic, message) => {
+    if (topic !== 'job_progress') return
     setJobs((prevData) => {
       const newData = [...prevData]
       const index = newData.findIndex((job) => job.id === message.id)
@@ -167,7 +169,9 @@ const JobsPage = () => {
   } // handlePubSub
 
   useEffect(() => {
+    // eslint-disable-next-line no-undef
     const token = PubSub.subscribe('job_progress', handlePubSub)
+    // eslint-disable-next-line no-undef
     return () => PubSub.unsubscribe(token)
   }, [])
 

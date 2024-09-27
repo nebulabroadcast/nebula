@@ -16,7 +16,7 @@ class DeleteRequestModel(RequestModel):
         ...,
         title="Object IDs",
         description="A list of object IDs to delete",
-        example=[1, 2, 3],
+        examples=[[1, 2, 3]],
     )
 
 
@@ -34,7 +34,6 @@ class Request(APIRequest):
         initiator: RequestInitiator,
     ) -> Response:
         """Delete given objects."""
-
         match request.object_type:
             case ObjectType.ITEM:
                 # TODO: refactor events
@@ -46,6 +45,7 @@ class Request(APIRequest):
 
                 query = "DELETE FROM items WHERE id = ANY($1) RETURNING id, id_bin"
                 affected_bins = set()
+                nebula.log.debug(f"Deleted items: {request.ids}", user=user.name)
                 async for row in nebula.db.iterate(query, request.ids):
                     affected_bins.add(row["id_bin"])
                 await bin_refresh(list(affected_bins), initiator=initiator)
@@ -69,7 +69,7 @@ class Request(APIRequest):
             case _:
                 # do not delete bins directly
                 raise nebula.NotImplementedException(
-                    f"Deleting {request.obejct_type} is not implemented"
+                    f"Deleting {request.object_type} is not implemented"
                 )
 
         # Delete simple objects

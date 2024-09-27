@@ -14,9 +14,10 @@ from nebula.exceptions import (
 )
 from nebula.objects.base import BaseObject
 from nebula.settings import settings
+from nebula.settings.common import LanguageCode
 
 
-def hash_password(password: str):
+def hash_password(password: str) -> str:
     if config.password_hashing == "legacy":
         return hashlib.sha256(password.encode("ascii")).hexdigest()
     raise NotImplementedException("Hashing method not available")
@@ -47,19 +48,25 @@ class User(BaseObject):
         "login",
         "password",
     ]
+    defaults: dict[str, Any] = {
+        # In the database, password is not nullable,
+        # but we want to be able to create users without password
+        # (e.g. with OAuth or API key)
+        "password": "",
+    }
 
     @property
-    def language(self):
+    def language(self) -> LanguageCode:
         """Return the preferred language of the user."""
         return self["language"] or settings.system.language
 
     @property
-    def name(self):
+    def name(self) -> str:
         return self.meta["login"]
 
     # setter for name
     @name.setter
-    def name(self, value):
+    def name(self, value: str) -> None:
         self.meta["login"] = value
 
     @classmethod
@@ -84,7 +91,8 @@ class User(BaseObject):
     @classmethod
     async def login(cls, username: str, password: str) -> "User":
         """Return a User instance based on username and password."""
-
+        if not password:
+            raise LoginFailedException("Password cannot be empty")
         passhash = hash_password(password)
         try:
             res = await db.fetch(
@@ -109,6 +117,7 @@ class User(BaseObject):
 
     def set_api_key(self, api_key: str) -> None:
         self.meta["api_key"] = hash_password(api_key)
+        self.meta["api_key_preview"] = api_key[:4] + "*******" + api_key[-4:]
 
     def can(
         self,
@@ -117,7 +126,6 @@ class User(BaseObject):
         anyval: bool = False,
     ) -> bool:
         """Return True if the user can perform the given action."""
-
         if self["is_admin"]:
             return True
         key = f"can/{action}"
@@ -140,11 +148,11 @@ class User(BaseObject):
         return False
 
     @property
-    def is_admin(self):
+    def is_admin(self) -> bool:
         return self.meta.get("is_admin", False)
 
     @property
-    def is_limited(self):
+    def is_limited(self) -> bool:
         """Is the user limited.
 
         Limited users can view only their own, or explicitly assigned

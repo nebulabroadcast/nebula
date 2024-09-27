@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { DateTime } from 'luxon'
 import styled from 'styled-components'
+import clsx from 'clsx'
 
 import DatePicker from 'react-datepicker'
 import Dialog from './Dialog'
@@ -8,12 +9,11 @@ import Dialog from './Dialog'
 import BaseInput from './BaseInput'
 import Button from './Button'
 
-//import "react-datepicker/dist/react-datepicker.css"
-
 import './datepicker.sass'
 
 const timeRegex = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/
 const dateRegex = /^(\d{4})-(\d{2})-(\d{2})$/
+//eslint-disable-next-line
 const allowedDateCharsRegex = /^[\d-\:\ ]*$/
 
 const DateTimeWrapper = styled.div`
@@ -73,7 +73,7 @@ const InputDatetime = ({
   onChange,
   placeholder,
   mode,
-  className = '',
+  className,
 }) => {
   const [time, setTime] = useState()
   const [isFocused, setIsFocused] = useState(false)
@@ -155,7 +155,7 @@ const InputDatetime = ({
         value={time || ''}
         onChange={handleChange}
         style={{ flexGrow: 1 }}
-        className={`${className} ${!isValidTime(time) ? 'error' : ''}`}
+        className={clsx(className, {error: !isValidTime(time)})}
         placeholder={isFocused ? timestampFormat : placeholder}
         title={`Please enter a valid time in the format ${timestampFormat}`}
         onBlur={onSubmit}

@@ -19,7 +19,7 @@ const Scheduler = () => {
     <main className="column">
       <SchedulerNav startTime={startTime} setStartTime={setStartTime} />
       <section className="grow nopad">
-        <Calendar />
+        <Calendar startTime={startTime} />
       </section>
     </main>
   )

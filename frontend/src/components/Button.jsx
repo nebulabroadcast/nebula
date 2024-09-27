@@ -2,6 +2,7 @@ import styled from 'styled-components'
 import PropTypes from 'prop-types'
 import defaultTheme from './theme'
 import { forwardRef } from 'react'
+import clsx from 'clsx'
 
 const BaseButton = styled.button`
   border: 0;
@@ -53,31 +54,41 @@ BaseButton.defaultProps = {
 
 const Button = forwardRef(
   (
-    { icon, iconStyle, label, iconOnRight, active, className, ...props },
+    {
+      icon,
+      iconStyle,
+      label,
+      iconOnRight,
+      active,
+      className,
+      tooltip,
+      ...props
+    },
     ref
   ) => {
-    const classes = className ? [className] : []
-    if (active) {
-      classes.push('active')
-    }
-
     return (
-      <BaseButton {...props} className={classes.join(' ')} ref={ref}>
-        {iconOnRight && label}
+      <BaseButton
+        {...props}
+        className={clsx(className, { active })}
+        title={tooltip}
+        ref={ref}
+      >
+        {label && iconOnRight && <span>{label}</span>}
         {icon && (
           <span className="icon material-symbols-outlined" style={iconStyle}>
             {icon}
           </span>
         )}
-        {!iconOnRight && label}
+        {!iconOnRight && label && <span>{label}</span>}
       </BaseButton>
     )
   }
 )
 
+Button.displayName = 'Button'
 Button.defaultProps = {
   iconOnRight: false,
-  component: 'button',
+  //component: 'button',
 }
 
 Button.propTypes = {
@@ -86,7 +97,7 @@ Button.propTypes = {
   iconOnRight: PropTypes.bool,
   active: PropTypes.bool,
   className: PropTypes.string,
-  component: PropTypes.oneOfType([PropTypes.string, PropTypes.func]),
+  //component: PropTypes.oneOfType([PropTypes.string, PropTypes.func]),
 }
 
 export default Button

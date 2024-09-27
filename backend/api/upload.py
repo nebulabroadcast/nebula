@@ -27,7 +27,7 @@ class UploadRequest(APIRequest):
         request: Request,
         asset: AssetInPath,
         user: CurrentUser,
-    ):
+    ) -> None:
         assert asset["media_type"] == MediaType.FILE, "Only file assets can be uploaded"
         extension = request.headers.get("X-nebula-extension")
         assert extension, "Missing X-nebula-extension header"
@@ -51,8 +51,8 @@ class UploadRequest(APIRequest):
         else:
             direct = True
             storage = nebula.storages[asset["id_storage"]]
-            assert asset.local_path, f"{asset} does not have path set"
-            bname = os.path.splitext(asset.local_path)[0]
+            assert asset.path, f"{asset} does not have path set"
+            bname = os.path.splitext(asset.path)[0]
             target_path = f"{bname}.{extension}"
 
         nebula.log.debug(f"Uploading media file for {asset}", user=user.name)

@@ -7,6 +7,7 @@ import nebula
 from nebula.common import import_module
 from nebula.enum import ObjectType
 from nebula.helpers.scheduling import bin_refresh
+from nebula.objects.base import BaseObject
 from nebula.objects.utils import get_object_class_by_name
 from nebula.settings import load_settings
 from server.dependencies import CurrentUser
@@ -68,23 +69,23 @@ class OperationModel(RequestModel):
     id: int | None = Field(
         None,
         description="Object ID. Keep empty to create a new object",
-        example=42069,
+        examples=[42069],
     )
     data: dict[str, Any] = Field(
         ...,
         description="Metadata to be set",
-        example={"title": "Star Trek", "subtitle": "The motion picture"},
+        examples=[{"title": "Star Trek", "subtitle": "The motion picture"}],
     )
 
 
 class OperationResponseModel(ResponseModel):
-    object_type: ObjectType = Field("asset", title="Object type")
+    object_type: ObjectType = Field(ObjectType("asset"), title="Object type")
     success: bool = Field(..., title="Success")
     error: str | None = Field(None, title="Error message")
     id: int | None = Field(
         None,
         title="Object ID",
-        example=42069,
+        examples=[42069],
     )
 
 
@@ -113,15 +114,20 @@ class OperationsResponseModel(ResponseModel):
 #
 
 
-async def can_modify_object(obj, user: nebula.User):
+async def can_modify_object(obj: BaseObject, user: nebula.User) -> None:
+    """Check if user can modify an object.
+
+    Raises ForbiddenException if user is not allowed to modify the object.
+    """
+
     if user.is_admin:
-        return True
+        return
 
     if isinstance(obj, nebula.Asset):
         acl = user.get("can/asset_edit", False)
         if not acl:
             raise nebula.ForbiddenException("You are not allowed to edit assets")
-        elif type(acl) == list and obj["id_folder"] not in acl:
+        elif isinstance(acl, list) and obj["id_folder"] not in acl:
             raise nebula.ForbiddenException(
                 "You are not allowed to edit assets in this folder"
             )
@@ -130,7 +136,7 @@ async def can_modify_object(obj, user: nebula.User):
         acl = user.get("can/scheduler_edit", False)
         if not acl:
             raise nebula.ForbiddenException("You are not allowed to edit schedule")
-        elif type(acl) == list and obj["id_channel"] not in acl:
+        elif isinstance(acl, list) and obj["id_channel"] not in acl:
             raise nebula.ForbiddenException(
                 "You are not allowed to edit schedule for this channel"
             )
@@ -146,8 +152,10 @@ async def can_modify_object(obj, user: nebula.User):
 
 
 class OperationsRequest(APIRequest):
+    """Create or update multiple objects in one requests."""
+
     name: str = "ops"
-    title: str = "Create / update multiple objects at once"
+    title: str = "Save multiple objects"
     response_model = OperationsResponseModel
 
     async def handle(
@@ -155,8 +163,6 @@ class OperationsRequest(APIRequest):
         request: OperationsRequestModel,
         user: CurrentUser,
     ) -> OperationsResponseModel:
-        """Create or update multiple objects in one requests."""
-
         pool = await nebula.db.pool()
         result = []
         reload_settings = False
@@ -166,80 +172,79 @@ class OperationsRequest(APIRequest):
             error = None
             op_id = operation.id
             try:
-                async with pool.acquire() as conn:
-                    async with conn.transaction():
-                        object_class = get_object_class_by_name(operation.object_type)
+                async with pool.acquire() as conn, conn.transaction():
+                    object_class = get_object_class_by_name(operation.object_type)
 
-                        # Object ACL on which ACL check will be performed
-                        # For new objects, it's just a copy of operation.data
-                        # For existing objects, it's a copy of the existing object
-                        acl_obj: BaseObject
+                    # Object ACL on which ACL check will be performed
+                    # For new objects, it's just a copy of operation.data
+                    # For existing objects, it's a copy of the existing object
+                    acl_obj: BaseObject
 
-                        if operation.id is None:
-                            object = object_class(connection=conn, username=user.name)
-                            operation.data.pop("id", None)
-                            object["created_by"] = user.id
-                            object["updated_by"] = user.id
+                    if operation.id is None:
+                        object = object_class(connection=conn, username=user.name)
+                        operation.data.pop("id", None)
+                        object["created_by"] = user.id
+                        object["updated_by"] = user.id
 
-                            acl_obj = object_class.from_meta(operation.data)
-                        else:
-                            object = await object_class.load(
-                                operation.id,
-                                connection=conn,
-                                username=user.name,
+                        acl_obj = object_class.from_meta(operation.data)
+                    else:
+                        object = await object_class.load(
+                            operation.id,
+                            connection=conn,
+                            username=user.name,
+                        )
+                        object["updated_by"] = user.id
+                        acl_obj = object_class.from_meta({**object.meta})
+
+                    #
+                    # Modyfiing users
+                    #
+
+                    if isinstance(object, nebula.User):
+                        if not (user.is_admin or object.id == user.id):
+                            raise nebula.ForbiddenException(
+                                "Unable to modify other users"
                             )
-                            object["updated_by"] = user.id
-                            acl_obj = object_class.from_meta({**object.meta})
 
-                        #
-                        # Modyfiing users
-                        #
+                        if not user.is_admin:
+                            for key in operation.data:
+                                if key.startswith("can/") or key.startswith("is_"):
+                                    operation.data.pop(key, None)
 
-                        if isinstance(object, nebula.User):
-                            if not (user.is_admin or object.id == user.id):
-                                raise nebula.ForbiddenException(
-                                    "Unable to modify other users"
-                                )
+                        password = operation.data.pop("password", None)
+                        if password:
+                            object.set_password(password)
 
-                            if not user.is_admin:
-                                for key in operation.data:
-                                    if key.startswith("can/") or key.startswith("is_"):
-                                        operation.data.pop(key, None)
+                    #
+                    # ACL
+                    #
 
-                            password = operation.data.pop("password", None)
-                            if password:
-                                object.set_password(password)
+                    await can_modify_object(acl_obj, user)
 
-                        #
-                        # ACL
-                        #
+                    #
+                    # Run validator
+                    #
 
-                        await can_modify_object(acl_obj, user)
-
-                        #
-                        # Run validator
-                        #
-
-                        if validator := Validator.for_object(operation.object_type):
-                            try:
-                                await validator(
-                                    object,
-                                    operation.data,
-                                    connection=conn,
-                                    user=user,
-                                )
-                            except nebula.RequestSettingsReload:
-                                reload_settings = True
-                        else:
-                            object.update(operation.data)
-                        await object.save()
-                        if (
-                            isinstance(object, nebula.Item)
-                            and object["id_bin"]
-                            and object["id_bin"] not in affected_bins
-                        ):
-                            affected_bins.append(object["id_bin"])
-                        op_id = object.id
+                    if validator := Validator.for_object(operation.object_type):
+                        try:
+                            await validator(
+                                object,
+                                operation.data,
+                                connection=conn,
+                                user=user,
+                            )
+                        except nebula.RequestSettingsReload:
+                            reload_settings = True
+                    else:
+                        object.update(operation.data)
+                    await object.save()
+                    if (
+                        isinstance(object, nebula.Item)
+                        and object["id_bin"]
+                        and object["id_bin"] not in affected_bins
+                    ):
+                        affected_bins.append(object["id_bin"])
+                    op_id = object.id
             except Exception as e:
                 error = str(e)
                 success = False
@@ -264,8 +269,10 @@ class OperationsRequest(APIRequest):
 
 
 class SetRequest(APIRequest):
+    """Create or update an object."""
+
     name = "set"
-    title = "Create or update an object"
+    title = "Save an object"
     response_model = OperationResponseModel
 
     async def handle(
@@ -273,8 +280,6 @@ class SetRequest(APIRequest):
         request: OperationModel,
         user: CurrentUser,
     ) -> OperationResponseModel:
-        """Create or update an object."""
-
         operation = OperationsRequest()
         result = await operation.handle(
             OperationsRequestModel(operations=[request]),

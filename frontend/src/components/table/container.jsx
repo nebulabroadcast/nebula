@@ -9,6 +9,10 @@ const TableWrapper = styled.div`
     width: 100%;
     border-collapse: collapse;
 
+    &:focus, &:focus-visible {
+      outline: none;
+    }
+
     tr {
       border-left: 2px solid var(--color-surface-02);
     }
@@ -23,6 +27,7 @@ const TableWrapper = styled.div`
       padding: 4px 8px;
       max-width: 300px;
       color: var(--color-text);
+      user-select: none;
     }
 
     th div {
@@ -70,6 +75,11 @@ const TableWrapper = styled.div`
     }
 
     tbody {
+
+      &:focus, &:focus-visible {
+        outline: none;
+      }
+
       td {
         border-bottom: 1px solid var(--color-surface-03);
 
@@ -101,12 +111,16 @@ const TableWrapper = styled.div`
         cursor: pointer;
         background-color: transparent;
         &:hover {
-          background-color: var(--color-surface-04);
+          background-color: var(--color-surface-03);
         }
 
         &.selected {
           background-color: var(--color-surface-05);
           color: var(--color-text-hl);
+
+          &:hover {
+            background-color: var(--color-surface-06);
+          }
         }
 
         &:before {

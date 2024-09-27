@@ -1,5 +1,3 @@
-__version__ = "6.0.2"
-
 __all__ = [
     "config",
     "settings",
@@ -29,9 +27,12 @@ __all__ = [
     "ValidationException",
     # Plugins
     "CLIPlugin",
+    "__version__",
 ]
 
 import sys
+
+from nebula.version import __version__
 
 if "--version" in sys.argv:
     print(__version__)
@@ -53,7 +54,7 @@ from .exceptions import (
     UnauthorizedException,
     ValidationException,
 )
-from .log import log
+from .log import LogLevel, log
 from .messaging import msg
 from .objects.asset import Asset
 from .objects.bin import Bin
@@ -65,8 +66,11 @@ from .redis import Redis as redis
 from .settings import load_settings, settings
 from .storages import Storage, storages
 
+log.user = "nebula"
+log.level = LogLevel[config.log_level.upper()]
 
-def run(entrypoint):
+
+def run(entrypoint) -> None:  # type: ignore
     """Run a coroutine in the event loop.
 
     This function is used to run the main entrypoint of CLI scripts.
@@ -74,7 +78,7 @@ def run(entrypoint):
     given entrypoint coroutine.
     """
 
-    async def run_async():
+    async def run_async() -> None:
         await load_settings()
         await entrypoint
 

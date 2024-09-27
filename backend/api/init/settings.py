@@ -1,15 +1,16 @@
+from typing import Any
+
 from pydantic import Field
 
 import nebula
 from nebula.enum import ContentType
 from nebula.filetypes import FileTypes
-from nebula.settings.common import LanguageCode
+from nebula.settings.common import LanguageCode, SettingsModel
 from nebula.settings.models import (
     BasePlayoutChannelSettings,
     BaseSystemSettings,
     CSItemRole,
     FolderSettings,
-    SettingsModel,
     ViewSettings,
 )
 
@@ -66,6 +67,7 @@ class ClientMetaTypeModel(SettingsModel):
         title="Filter",
         description="Filter for values in lists",
     )
+    default: Any | None = Field(None, title="Default value")
 
 
 #
@@ -116,7 +118,7 @@ class ClientSettingsModel(SettingsModel):
 #
 
 
-async def get_client_settings(lang: LanguageCode):
+async def get_client_settings(lang: LanguageCode) -> ClientSettingsModel:
     """Convert server settings to client settings."""
     #
     # Users
@@ -141,7 +143,6 @@ async def get_client_settings(lang: LanguageCode):
     for urn, cs in nebula.settings.cs.items():
         csdata = {}
         for value, csitem in cs.items():
-
             als = csitem.aliases.get(lang, csitem.aliases.get("en"))
             if als:
                 csdata[value] = ClientCSItemModel(
@@ -153,6 +154,7 @@ async def get_client_settings(lang: LanguageCode):
                 csdata[value] = ClientCSItemModel(
                     title=value,
                     role=csitem.role,
+                    description=None,
                 )
         client_cs[urn] = csdata
 
@@ -162,10 +164,10 @@ async def get_client_settings(lang: LanguageCode):
 
     client_metatypes = {}
     for k, v in nebula.settings.metatypes.items():
-        if als := v.aliases.get(lang, v.aliases.get("en")):
-            title = als.title
-            header = als.header
-            description = als.description
+        if mals := v.aliases.get(lang, v.aliases.get("en")):
+            title = mals.title
+            header = mals.header
+            description = mals.description
         else:
             title = k
             header = None
@@ -182,6 +184,7 @@ async def get_client_settings(lang: LanguageCode):
             format=v.format,
             order=v.order,
             filter=v.filter,
+            default=v.default,
         )
 
     #
@@ -195,9 +198,9 @@ async def get_client_settings(lang: LanguageCode):
     #
 
     return ClientSettingsModel(
-        system=BaseSystemSettings(**nebula.settings.system.dict()),
+        system=BaseSystemSettings(**nebula.settings.system.model_dump()),
         playout_channels=[
-            BasePlayoutChannelSettings(**r.dict())
+            BasePlayoutChannelSettings(**r.model_dump())
             for r in nebula.settings.playout_channels
         ],
         folders=nebula.settings.folders,
@@ -206,4 +209,5 @@ async def get_client_settings(lang: LanguageCode):
         metatypes=client_metatypes,
         users=users,
         filetypes=filetypes,
+        server_url=None,
     )

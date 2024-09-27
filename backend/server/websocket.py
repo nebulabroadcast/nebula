@@ -38,20 +38,14 @@ class Client:
             self.topics = [*topics, *ALWAYS_SUBSCRIBE] if "*" not in topics else ["*"]
             self.authorized = True
             self.user = nebula.User(meta=session_data.user)
-            # logging.info(
-            #     "Authorized connection",
-            #     session_data.user["login"],
-            #     "topics:",
-            #     self.topics,
-            # )
             return True
         return False
 
-    async def send(self, message: dict[str, Any], auth_only: bool = True):
+    async def send(self, message: dict[str, Any], auth_only: bool = True) -> None:
         if (not self.authorized) and auth_only:
-            return None
+            return
         if not self.is_valid:
-            return None
+            return
         try:
             await self.sock.send_text(json_dumps(message))
         except WebSocketDisconnect:
@@ -59,11 +53,11 @@ class Client:
         except Exception as e:
             nebula.log.trace("WS: Error sending message", e)
 
-    async def receive(self):
+    async def receive(self) -> dict[str, Any] | None:
         data = await self.sock.receive_text()
         try:
             message = json_loads(data)
-            assert type(message) is dict
+            assert isinstance(message, dict)
             assert "topic" in message
         except AssertionError:
             return None
@@ -82,19 +76,22 @@ class Client:
 
 
 class Messaging(BackgroundTask):
+    error_rate_data: list[float] = []
+
     def initialize(self) -> None:
         self.clients: dict[str, Client] = {}
+        self.error_rate_data = []
 
-    async def join(self, websocket: WebSocket):
+    async def join(self, websocket: WebSocket) -> Client | None:
         if not self.is_running:
             await websocket.close()
-            return
+            return None
         await websocket.accept()
         client = Client(websocket)
         self.clients[client.id] = client
         return client
 
-    async def purge(self):
+    async def purge(self) -> None:
         to_rm = []
         for client_id, client in list(self.clients.items()):
             if not client.is_valid:
@@ -117,6 +114,7 @@ class Messaging(BackgroundTask):
                     ignore_subscribe_messages=True,
                     timeout=2,
                 )
+                message: dict[str, Any]
                 if raw_message is None:
                     await asyncio.sleep(0.01)
                     if time.time() - last_msg > 3:
@@ -125,6 +123,7 @@ class Messaging(BackgroundTask):
                     else:
                         continue
                 else:
+                    data: tuple[float, str, str, str, Any]
                     data = json_loads(raw_message["data"])
                     message = {
                         "timestamp": data[0],
@@ -133,6 +132,11 @@ class Messaging(BackgroundTask):
                         "topic": data[3],
                         "data": data[4],
                     }
+
+                if message["topic"] == "log":
+                    assert isinstance(message["data"], dict)
+                    if message["data"].get("level", 0) > 3:
+                        self.handle_error_log()
 
                 clients = list(self.clients.values())
                 for client in clients:
@@ -147,6 +151,21 @@ class Messaging(BackgroundTask):
                 await asyncio.sleep(0.5)
 
         nebula.log.warn("Stopping redis2ws")
+
+    def handle_error_log(self) -> None:
+        """When an error log is received, we want to keep error rate"""
+        now = time.time()
+        # delete timestamps older than 5 minutes from the list
+        if len(self.error_rate_data) > 100:
+            self.error_rate_data = [t for t in self.error_rate_data if now - t < 300]
+        self.error_rate_data.append(now)
+
+    @property
+    def error_rate(self) -> float:
+        """Returns the error rate in the last 5 minutes"""
+        now = time.time()
+        self.error_rate_data = [t for t in self.error_rate_data if now - t < 300]
+        return len(self.error_rate_data)
 
 
 messaging = Messaging()

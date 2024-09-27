@@ -58,9 +58,9 @@ def get_cs_titles(urn: str, values: tuple[str], lang: LanguageCode = "en") -> li
             if (csval := schema.get(value)) is None:
                 result.append(str(value))
             else:
-                if (alias := csval.aliases.get(lang)) is not None:
-                    result.append(alias.title)
-                elif (alias := csval.aliases.get("en")) is not None:
+                if (alias := csval.aliases.get(lang)) is not None or (
+                    alias := csval.aliases.get("en")
+                ) is not None:
                     result.append(alias.title)
                 else:
                     result.append(value)
@@ -75,7 +75,6 @@ def make_cs_tree(
     filter: str | None = None,
 ) -> list[dict[str, Any]]:
     """Build a tree of classification scheme values for a given URN."""
-
     if order is None:
         order = "value"
 
@@ -83,7 +82,7 @@ def make_cs_tree(
         return []
     items = [
         {"value": value, "title": get_cs_titles(urn, (value,), lang)[0]}
-        for value, alias in scheme.items()
+        for value, _ in scheme.items()
     ]
     if order == "value":
         items.sort(key=lambda x: x["value"])
@@ -99,7 +98,7 @@ def make_cs_tree(
             parent_id = ""
         parents[parent_id].append(item)
 
-    def build_tree(parents, parent=""):
+    def build_tree(parents: dict[str, Any], parent: str = "") -> list[dict[str, Any]]:
         items = []
         for child in parents.get(parent, []):
             if not child:

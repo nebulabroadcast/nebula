@@ -3,6 +3,7 @@ import contextlib
 import os
 import subprocess
 import time
+from typing import Any
 
 import nebula
 from nebula.settings.models import StorageSettings
@@ -11,7 +12,8 @@ from server.background import BackgroundTask
 
 
 async def exec_mount(cmd: str) -> bool:
-    proc = subprocess.Popen(cmd, shell=True)
+    # TODO: use asyncio.subprocess
+    proc = subprocess.Popen(cmd, shell=True)  # noqa
     while proc.poll() is None:
         await asyncio.sleep(0.1)
     if proc.returncode:
@@ -24,7 +26,7 @@ async def exec_mount(cmd: str) -> bool:
 #     exec_mount(cmd)
 
 
-async def handle_samba_storage(storage: Storage):
+async def handle_samba_storage(storage: Storage) -> None:
     if time.time() - storage.last_mount_attempt < min(storage.mount_attempts * 5, 120):
         return
 
@@ -55,7 +57,7 @@ async def handle_samba_storage(storage: Storage):
 
     if smbopts:
         opts = " -o 'noserverino,{}'".format(
-            ",".join(["{}={}".format(k, smbopts[k]) for k in smbopts])
+            ",".join([f"{k}={smbopts[k]}" for k in smbopts])
         )
     else:
         opts = ""
@@ -75,15 +77,15 @@ async def handle_samba_storage(storage: Storage):
 
 
 class StorageMonitor(BackgroundTask):
-    def initialize(self):
-        self.status = {}
+    def initialize(self) -> None:
+        self.status: dict[int, dict[str, Any]] = {}
 
-    async def run(self):
+    async def run(self) -> None:
         while True:
             await self.main()
             await asyncio.sleep(5)
 
-    async def main(self):
+    async def main(self) -> None:
         async for row in nebula.db.iterate("SELECT id, settings FROM storages"):
             id_storage = row["id"]
             storage_settings = row["settings"]

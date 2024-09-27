@@ -1,28 +1,29 @@
-from typing import Any
+from typing import Any, Literal
 
 import fastapi
 from pydantic import Field
 
 import nebula
+from nebula.plugins.frontend import PluginItemModel, get_frontend_plugins
+from nebula.settings import load_settings
 from nebula.settings.common import LanguageCode
 from server.context import ScopedEndpoint, server_context
 from server.dependencies import CurrentUserOptional
 from server.models import ResponseModel
 from server.request import APIRequest
 
-from .plugins import PluginItemModel, get_frontend_plugins
 from .settings import ClientSettingsModel, get_client_settings
 
 
 class InitResponseModel(ResponseModel):
-    installed: bool = Field(
+    installed: Literal[True] | None = Field(
         True,
         title="Installed",
         description="Is Nebula installed?",
     )
 
-    motd: str = Field(
-        "",
+    motd: str | None = Field(
+        None,
         title="Message of the day",
         description="Server welcome string (displayed on login page)",
     )
@@ -71,14 +72,13 @@ class Request(APIRequest):
         request: fastapi.Request,
         user: CurrentUserOptional,
     ) -> InitResponseModel:
-
         default_motd = f"Nebula {nebula.__version__} @ {nebula.config.site_name}"
         motd = nebula.config.motd or default_motd
 
         # Nebula is not installed. Frontend should display
         # an error message or redirect to the installation page.
         if not nebula.settings.installed:
-            nebula.settings.reload()
+            await load_settings()
             if not nebula.settings.installed:
                 return InitResponseModel(installed=False)
 
@@ -95,6 +95,7 @@ class Request(APIRequest):
         plugins = get_frontend_plugins()
 
         return InitResponseModel(
+            installed=True,
             motd=motd,
             user=user.meta,
             settings=client_settings,

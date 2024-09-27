@@ -7,7 +7,7 @@ const CalendarCanvas = styled.canvas`
   background-color: #24202e;
 `
 
-const Calendar = () => {
+const Calendar = ({ startTime }) => {
   const calendarRef = useRef(null)
   const dayRef = useRef(null)
   const wrapperRef = useRef(null)
@@ -18,8 +18,6 @@ const Calendar = () => {
   const [mousePos, setMousePos] = useState(null)
 
   const clockWidth = 100
-  const offsetHours = 7
-  const offsetMinutes = 0
 
   const pos2time = (x, y) => {
     if (!dayRef.current || !calendarRef.current) {
@@ -27,17 +25,25 @@ const Calendar = () => {
     }
     const dayWidth = dayRef.current.clientWidth
     const hourHeight = calendarRef.current.clientHeight / 24
-    const day = Math.floor(x / dayWidth)
-    let hour = Math.floor(y / hourHeight) + offsetHours
-    let minute =
-      Math.floor(((y % hourHeight) / hourHeight) * 60) + offsetMinutes
+    const dayOfWeek = Math.floor(x / dayWidth)
+
+    let hour = Math.floor(y / hourHeight)
+    let minute = Math.floor(((y % hourHeight) / hourHeight) * 60)
     // round to nearest 5 minutes
     minute = Math.round(minute / 5) * 5
     if (minute >= 60) {
       minute = 0
       hour += 1
     }
-    return { day, hour, minute }
+
+    // Calculate the offset from the startTime
+    const startDate = new Date(startTime)
+    const resultDate = new Date(startDate)
+    resultDate.setDate(startDate.getDate() + dayOfWeek)
+    resultDate.setHours(startDate.getHours() + hour)
+    resultDate.setMinutes(startDate.getMinutes() + minute)
+
+    return resultDate
   }
 
   const drawCalendar = () => {
@@ -60,8 +66,8 @@ const Calendar = () => {
       y += 4
       ctx.font = '14px Arial'
       ctx.fillStyle = '#c0c0c0'
-      const hours = (i + offsetHours).toString().padStart(2, '0')
-      const minutes = offsetMinutes.toString().padStart(2, '0')
+      const hours = i.toString().padStart(2, '0')
+      const minutes = '00'
       const clock = `${hours}:${minutes}`
       ctx.fillText(clock, 14, y)
     }
@@ -100,24 +106,45 @@ const Calendar = () => {
     }
 
     if (currentTime && mousePos) {
-      const { day, hour, minute } = currentTime
       const { x, y } = mousePos
-      const dayName = [
-        'Monday',
-        'Tuesday',
-        'Wednesday',
-        'Thursday',
-        'Friday',
-        'Saturday',
-        'Sunday',
-      ][day - 1]
-      ctx.fillText(`${dayName} ${hour}:${minute}`, x, y)
+      ctx.fillText(currentTime.toLocaleTimeString(), x + 10, y + 50)
     }
   }
 
   useEffect(() => {
-    //drawCalendar()
+    drawCalendar()
   }, [currentTime])
+
+  const onMouseMove = (e) => {
+    if (!calendarRef?.current) {
+      return
+    }
+    const rect = calendarRef.current.getBoundingClientRect()
+    const x = e.clientX - rect.left
+    const y = e.clientY - rect.top
+    const newTime = pos2time(x, y)
+    setMousePos({ x, y })
+
+    if (newTime !== currentTime) {
+      setCurrentTime(newTime)
+    }
+  }
+
+  //
+  // Mouse position within the calendar (Track current time)
+  //
+
+  useEffect(() => {
+    if (!calendarRef.current) return
+    calendarRef.current.addEventListener('mousemove', onMouseMove)
+    return () => {
+      calendarRef.current.removeEventListener('mousemove', onMouseMove)
+    }
+  }, [calendarRef.current])
+
+  //
+  // Handle calendar resizing
+  //
 
   const resizeCanvas = () => {
     const canvas = calendarRef.current
@@ -131,21 +158,6 @@ const Calendar = () => {
     drawCalendar()
   }
 
-  const onMouseMove = (e) => {
-    if (!calendarRef?.current) {
-      return
-    }
-    const rect = calendarRef.current.getBoundingClientRect()
-    const x = e.clientX - rect.left
-    const y = e.clientY - rect.top
-    const newTime = pos2time(x, y)
-    setMousePos({ x, y })
-
-    if (JSON.stringify(newTime) !== JSON.stringify(currentTime)) {
-      setCurrentTime(newTime)
-    }
-  }
-
   useEffect(() => {
     console.log('Zoom', zoom)
     resizeCanvas()
@@ -153,16 +165,18 @@ const Calendar = () => {
 
   useEffect(() => {
     if (!wrapperRef.current) return
-
     const resizeObserver = new ResizeObserver(() => resizeCanvas())
     resizeObserver.observe(wrapperRef.current)
-
     return () => {
       if (wrapperRef.current) {
         resizeObserver.unobserve(wrapperRef.current)
       }
     }
   }, [wrapperRef.current])
+
+  //
+  // Render
+  //
 
   return (
     <CalendarWrapper scrollbarWidth={scrollbarWidth} clockWidth={clockWidth}>

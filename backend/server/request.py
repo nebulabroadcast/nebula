@@ -12,4 +12,5 @@ class APIRequest:
     response_model: Type[ResponseModel] | None = None
     responses: list[int] = [200]
     exclude_none: bool = True
+    exclude_unset: bool = False
     scopes: list[str] | None = None

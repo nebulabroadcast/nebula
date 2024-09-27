@@ -1,10 +1,10 @@
 import time
-from typing import Any
+from typing import Any, Type, TypeVar
 
 import asyncpg
 from nxtools import slugify
 
-from nebula.db import DB, db
+from nebula.db import DB, DatabaseConnection, db
 from nebula.enum import ObjectTypeId
 from nebula.exceptions import (
     BadRequestException,
@@ -17,8 +17,10 @@ from nebula.metadata.format import format_meta
 from nebula.metadata.normalize import normalize_meta
 from nebula.settings import settings
 
+T = TypeVar("T", bound="BaseObject")
 
-def create_ft_index(meta) -> dict[str, float]:
+
+def create_ft_index(meta: dict[str, Any]) -> dict[str, float]:
     ft: dict[str, float] = {}
     if "subclips" in meta:
         weight = 8
@@ -53,18 +55,22 @@ class BaseObject:
     meta: dict[str, Any] = {}
     defaults: dict[str, Any] = {}
     db_columns: list[str] = []
-    connection: asyncpg.Connection | DB | None = None
+    connection: DatabaseConnection | None = None
     username: str | None = None  # Name of the user operating on the object
 
-    def __init__(self, meta: dict[str, Any] | None = None, **kwargs) -> None:
-
-        if (conn := kwargs.get("connection")) is not None:
-            assert isinstance(conn, (asyncpg.Connection, DB))
-            self.connection = conn
+    def __init__(
+        self,
+        meta: dict[str, Any] | None = None,
+        connection: DatabaseConnection | None = None,
+        username: str | None = None,
+    ) -> None:
+        if connection is not None:
+            assert isinstance(connection, (asyncpg.pool.PoolConnectionProxy, DB))
+            self.connection = connection
         else:
             self.connection = db
 
-        self.username = kwargs.get("username")
+        self.username = username
 
         if meta is None:
             meta = {}
@@ -91,7 +97,7 @@ class BaseObject:
             return None
         return int(id)
 
-    def show(self, key: str, **kwargs) -> str:
+    def show(self, key: str, **kwargs: Any) -> str:
         """Return a formated value of a given key"""
         return format_meta(self, key, **kwargs)
 
@@ -147,40 +153,60 @@ class BaseObject:
     #
 
     @classmethod
-    async def load(cls, id: int, **kwargs):
+    async def load(
+        cls: Type[T],
+        id: int,
+        connection: DatabaseConnection | None = None,
+        username: str | None = None,
+    ) -> T:
         """Load an object from the database"""
-        conn = kwargs.get("connection", db)
+        conn = connection or db
         res = await conn.fetch(f"SELECT meta FROM {cls.object_type}s WHERE id = $1", id)
         if not res:
             raise NotFoundException(f"{cls.object_type.capitalize()} ID {id} not found")
-        return cls(meta=res[0]["meta"], **kwargs)
+        return cls(meta=res[0]["meta"], connection=connection, username=username)
 
     @classmethod
-    def from_row(cls, row, **kwargs):
+    def from_row(
+        cls: Type[T],
+        row: asyncpg.Record,
+        connection: DatabaseConnection | None = None,
+        username: str | None = None,
+    ) -> T:
         """Return an object from a database row.
 
         meta is expected to be one of the column of the row.
         Note that no validation is performed.
         Do not use with untrusted data.
         """
-        return cls(meta=dict(row["meta"]), **kwargs)
+        return cls(meta=dict(row["meta"]), connection=connection, username=username)
 
     @classmethod
-    def from_meta(cls, meta: dict[str, Any], **kwargs):
+    def from_meta(
+        cls: Type[T],
+        meta: dict[str, Any],
+        connection: DatabaseConnection | None = None,
+        username: str | None = None,
+    ) -> T:
         """Return an object from a metadata dict.
 
         Note that no validation is performed.
         Do not use with untrusted data.
         """
-        return cls(meta=meta, **kwargs)
+        return cls(meta=meta, connection=connection, username=username)
 
     @classmethod
-    def from_untrusted(cls, meta: dict[str, Any], **kwargs):
+    def from_untrusted(
+        cls: Type[T],
+        meta: dict[str, Any],
+        connection: DatabaseConnection | None = None,
+        username: str | None = None,
+    ) -> T:
         """Return an object from a metadata dict.
 
         Values are normalized and validated.
         """
-        res = cls(**kwargs)
+        res = cls(connection=connection, username=username)
         for key, value in meta.items():
             res[key] = value
         return res
@@ -194,9 +220,8 @@ class BaseObject:
             raise BadRequestException("Unable to delete unsaved asset")
         if isinstance(self.connection, DB):
             pool = await self.connection.pool()
-            async with pool.acquire() as conn:
-                async with conn.transaction():
-                    await self._delete()
+            async with pool.acquire() as conn, conn.transaction():
+                await self._delete()
         elif (
             self.connection is not None
             and hasattr(self.connection, "is_in_transaction")
@@ -223,13 +248,12 @@ class BaseObject:
     async def delete_children(self) -> None:
         pass
 
-    async def save(self, notify: bool = True, initiator: str = None) -> None:
+    async def save(self, notify: bool = True, initiator: str | None = None) -> None:
         assert self.connection is not None
         if isinstance(self.connection, DB):
             pool = await self.connection.pool()
-            async with pool.acquire() as conn:
-                async with conn.transaction():
-                    await self._save()
+            async with pool.acquire() as conn, conn.transaction():
+                await self._save()
         elif (
             hasattr(self.connection, "is_in_transaction")
             and self.connection.is_in_transaction()
