@@ -147,6 +147,7 @@ const Calendar = () => {
   }
 
   useEffect(() => {
+    console.log('Zoom', zoom)
     resizeCanvas()
   }, [zoom])
 
