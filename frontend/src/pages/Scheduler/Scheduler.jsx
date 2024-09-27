@@ -11,6 +11,7 @@ const Scheduler = () => {
   const [startTime, setStartTime] = useState(getWeekStart())
 
   useEffect(() => {
+    console.log('Week start time changed', startTime)
     const pageTitle = createTitle(startTime)
     dispatch(setPageTitle({ title: pageTitle }))
   }, [startTime])

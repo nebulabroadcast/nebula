@@ -107,7 +107,11 @@ const Calendar = ({ startTime }) => {
 
     if (currentTime && mousePos) {
       const { x, y } = mousePos
-      ctx.fillText(currentTime.toLocaleTimeString(), x + 10, y + 50)
+      ctx.fillText(
+        `${Math.round(x)}:${Math.round(y)} ${currentTime.toLocaleString()}`,
+        x + 10,
+        y + 50
+      )
     }
   }
 
@@ -138,6 +142,7 @@ const Calendar = ({ startTime }) => {
     if (!calendarRef.current) return
     calendarRef.current.addEventListener('mousemove', onMouseMove)
     return () => {
+      if (!calendarRef.current) return
       calendarRef.current.removeEventListener('mousemove', onMouseMove)
     }
   }, [calendarRef.current])
