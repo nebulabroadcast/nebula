@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Timecode } from '@wfoxall/timeframe'
 import BaseInput from './BaseInput'
+import clsx from 'clsx'
 
 const InputTimecode = ({
   value = null,
@@ -77,7 +78,7 @@ const InputTimecode = ({
     <BaseInput
       type="text"
       ref={inputRef}
-      className={`timecode ${className} ${invalid ? 'error' : ''}`}
+      className={clsx('timecode', className, {error: invalid})}
       value={text}
       onChange={onChangeHandler}
       onKeyDown={onKeyDown}

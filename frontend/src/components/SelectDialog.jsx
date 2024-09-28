@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
+import clsx from 'clsx'
 
 import Dialog from './Dialog'
 import InputText from './InputText'
@@ -32,12 +33,12 @@ BaseOption.defaultProps = {
 }
 
 const Option = ({ option, selected, onClick }) => {
-  const classes = []
-  if (selected) classes.push('selected')
-  if (option.role === 'label') classes.push('label')
   return (
     <BaseOption
-      className={classes.join(' ')}
+      className={{
+        selected,
+        label: option.role === 'label',
+      }}
       style={{ paddingLeft: option.level * 15 }}
       onClick={option.role === 'label' ? undefined : onClick}
       title={option.description}
