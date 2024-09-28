@@ -28,8 +28,8 @@ const defaultTheme = {
   inputPadding: '4px',
   inputBackground: colors.surface04,
   fontSize: '0.9rem',
-  gapSize: '6px',
-  sectionGap: '8px',
+  gapSize: '4px',
+  sectionGap: '6px',
   navBorderRadius: '6px',
 }
 

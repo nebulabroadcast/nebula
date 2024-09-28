@@ -89,7 +89,6 @@ const useLocalStorage = (key, initialValue) => {
   return [storedValue, setValue]
 }
 
-
 const useKeyDown = (key, callback) => {
   const callbackRef = useRef(callback)
 
@@ -113,4 +112,3 @@ const useKeyDown = (key, callback) => {
 }
 
 export { useLocalStorage, useConfirm, useKeyDown }
-
