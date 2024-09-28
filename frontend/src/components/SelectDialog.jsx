@@ -35,10 +35,10 @@ BaseOption.defaultProps = {
 const Option = ({ option, selected, onClick }) => {
   return (
     <BaseOption
-      className={{
-        selected,
-        label: option.role === 'label',
-      }}
+      className={clsx(
+        selected && 'selected',
+        option.role === 'label' && 'label'
+      )}
       style={{ paddingLeft: option.level * 15 }}
       onClick={option.role === 'label' ? undefined : onClick}
       title={option.description}
@@ -84,7 +84,13 @@ function filterHierarchy(array, query, currentSelection) {
   return sortByKey(result, 'value')
 }
 
-const SelectDialog = ({ options, onHide, selectionMode, initialValue }) => {
+const SelectDialog = ({
+  options,
+  onHide,
+  selectionMode,
+  initialValue,
+  title,
+}) => {
   const [filter, setFilter] = useState('')
   const [selection, setSelection] = useState({})
 
@@ -136,20 +142,43 @@ const SelectDialog = ({ options, onHide, selectionMode, initialValue }) => {
   }
 
   const header = (
-    <>
-      <InputText
-        placeholder="Filter"
-        value={filter}
-        onChange={setFilter}
-        ref={filterRef}
-        style={{ flexGrow: 1 }}
-      />
-      <Button
-        onClick={() => setFilter('')}
-        icon="backspace"
-        title="Clear filter"
-      />
-    </>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        flexGrow: 1,
+      }}
+    >
+      {title && (
+        <div style={{ width: '100%' }}>
+          <h3 style={{ padding: 0, marginTop: 0, marginBottom: 10 }}>
+            {title}
+          </h3>
+        </div>
+      )}
+
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 4,
+          flexDirection: 'row',
+        }}
+      >
+        <InputText
+          placeholder="Filter"
+          value={filter}
+          onChange={setFilter}
+          ref={filterRef}
+          style={{ flexGrow: 1 }}
+        />
+        <Button
+          onClick={() => setFilter('')}
+          icon="backspace"
+          title="Clear filter"
+        />
+      </div>
+    </div>
   )
 
   const footer = (

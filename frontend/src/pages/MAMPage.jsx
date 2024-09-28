@@ -11,7 +11,6 @@ import Browser from '/src/containers/Browser'
 import AssetEditor from '/src/pages/AssetEditor'
 import Scheduler from '/src/pages/Scheduler'
 import Rundown from './Rundown'
-
 import { DndContext } from '@dnd-kit/core'
 import SendToDialog from '/src/containers/SendTo'
 
@@ -72,6 +71,7 @@ const MAMPage = () => {
   const moduleComponent = useMemo(() => {
     if (module == 'editor') return <AssetEditor {...componentProps} />
     if (module == 'scheduler') return <Scheduler {...componentProps} />
+    if (module == 'rundown') return <Rundown {...componentProps} />
 
     return 'Not implemented'
   }, [module])

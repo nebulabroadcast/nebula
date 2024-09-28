@@ -81,7 +81,7 @@ const Dropdown = ({
   if (align === 'right') contentStyle['right'] = 0
 
   return (
-    <DropdownContainer className={clsx({disabled})}>
+    <DropdownContainer className={clsx({ disabled })}>
       <Button
         className="dropbtn"
         style={buttonStyle}

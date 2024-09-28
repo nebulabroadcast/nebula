@@ -68,13 +68,7 @@ const CalendarDialog = ({ value, onChange, onClose }) => {
   )
 }
 
-const InputDatetime = ({
-  value,
-  onChange,
-  placeholder,
-  mode,
-  className,
-}) => {
+const InputDatetime = ({ value, onChange, placeholder, mode, className }) => {
   const [time, setTime] = useState()
   const [isFocused, setIsFocused] = useState(false)
   const [showCalendar, setShowCalendar] = useState(false)
@@ -155,7 +149,7 @@ const InputDatetime = ({
         value={time || ''}
         onChange={handleChange}
         style={{ flexGrow: 1 }}
-        className={clsx(className, {error: !isValidTime(time)})}
+        className={clsx(className, { error: !isValidTime(time) })}
         placeholder={isFocused ? timestampFormat : placeholder}
         title={`Please enter a valid time in the format ${timestampFormat}`}
         onBlur={onSubmit}

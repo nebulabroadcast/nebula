@@ -150,7 +150,7 @@ const AssetEditorNav = ({
         value={assetData?.duration}
         fps={fps}
         onChange={(val) => setMeta('duration', val)}
-        title="Asset duration"
+        tooltip="Asset duration"
         readOnly={assetData.status || !enabledActions.edit}
       />
 
@@ -159,13 +159,13 @@ const AssetEditorNav = ({
       <Button
         icon="add"
         onClick={onNewAsset}
-        title="Create new asset"
+        tooltip="Create new asset"
         disabled={!enabledActions.create}
       />
       <Button
         icon="content_copy"
         onClick={onCloneAsset}
-        title="Clone asset"
+        tooltip="Clone asset"
         disabled={!enabledActions.clone}
       />
 
@@ -175,7 +175,7 @@ const AssetEditorNav = ({
         <>
           <Button
             icon="manage_search"
-            title="Show asset details"
+            tooltip="Show asset details"
             onClick={() => setDetailsVisible(true)}
           />
           <Dropdown
@@ -183,6 +183,7 @@ const AssetEditorNav = ({
             align="right"
             options={assetActions}
             disabled={!enabledActions.actions}
+            tooltip="Asset actions"
           />
           <AssigneesButton
             assignees={assetData?.assignees || []}
@@ -196,7 +197,7 @@ const AssetEditorNav = ({
           icon="visibility"
           onClick={() => setPreviewVisible(!previewVisible)}
           active={previewVisible}
-          title="Toggle video preview"
+          tooltip="Toggle video preview"
         />
       )}
 
@@ -205,7 +206,7 @@ const AssetEditorNav = ({
       <Button
         icon="flag"
         style={{ color: 'var(--color-text)' }}
-        title="Revert QC state"
+        tooltip="Revert QC state"
         onClick={() => setMeta('qc/state', 0)}
         className={!(assetData && assetData['qc/state']) ? 'active' : ''}
         disabled={!enabledActions.flag}
@@ -213,7 +214,7 @@ const AssetEditorNav = ({
       <Button
         icon="flag"
         style={{ color: 'var(--color-red)' }}
-        title="Reject asset"
+        tooltip="Reject asset"
         onClick={() => setMeta('qc/state', 3)}
         className={assetData && assetData['qc/state'] === 3 ? 'active' : ''}
         active={assetData && assetData['qc/state'] === 3}
@@ -222,7 +223,7 @@ const AssetEditorNav = ({
       <Button
         icon="flag"
         style={{ color: 'var(--color-green)' }}
-        title="Approve asset"
+        tooltip="Approve asset"
         onClick={() => setMeta('qc/state', 4)}
         className={assetData && assetData['qc/state'] === 4 ? 'active' : ''}
         active={assetData && assetData['qc/state'] === 4}
@@ -236,13 +237,13 @@ const AssetEditorNav = ({
       )}
       <Button
         icon="backspace"
-        title="Discard changes"
+        tooltip="Discard changes"
         onClick={onRevert}
         disabled={!enabledActions.revert}
       />
       <Button
         icon="check"
-        title="Save asset"
+        tooltip="Save asset"
         onClick={() => onSave()}
         disabled={!enabledActions.save}
       />

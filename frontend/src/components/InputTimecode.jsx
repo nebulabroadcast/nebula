@@ -17,7 +17,7 @@ const InputTimecode = ({
 
   useEffect(() => {
     setInvalid(false)
-    if (value === null || value === undefined) {
+    if (value === null || value === undefined || isNaN(value)) {
       setText('')
       return
     }
@@ -71,13 +71,14 @@ const InputTimecode = ({
       onSubmit()
       inputRef.current.blur()
     }
+    e.stopPropagation()
   }
 
   return (
     <BaseInput
       type="text"
       ref={inputRef}
-      className={clsx('timecode', className, {error: invalid})}
+      className={clsx('timecode', className, { error: invalid })}
       value={text}
       onChange={onChangeHandler}
       onKeyDown={onKeyDown}

@@ -19,6 +19,7 @@ const AssigneesButton = ({ assignees, setAssignees }) => {
     <>
       {dialogVisible && (
         <SelectDialog
+          title="Assignees"
           options={options}
           selectionMode="multiple"
           initialValue={assignees}
@@ -30,7 +31,7 @@ const AssigneesButton = ({ assignees, setAssignees }) => {
       )}
       <Button
         icon="person"
-        title="Assignees"
+        tooltip="Assignees"
         onClick={() => setDialogVisible(true)}
         active={assignees?.length > 0}
       />
