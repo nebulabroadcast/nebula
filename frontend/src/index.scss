@@ -65,6 +65,13 @@ html {
   font-family: var(--font-family);
 }
 
+button,
+input {
+  color: var(--color-text);
+  font-size: var(--font-size);
+  font-family: var(--font-family);
+}
+
 #root {
   position: fixed;
   top: 0;
