@@ -16,12 +16,19 @@ const BaseButton = styled.button`
   max-height: ${(props) => props.theme.inputHeight};
   min-width: ${(props) => props.theme.inputHeight} !important;
 
+  user-select: none;
+  user-drag: none;
+
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 12px;
   cursor: pointer;
   white-space: nowrap;
+
+  .icon {
+    font-size: 1.4rem;
+  }
 
   &:focus {
     background: ${(props) => props.theme.colors.surface06};

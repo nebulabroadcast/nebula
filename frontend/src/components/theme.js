@@ -22,10 +22,10 @@ const colors = {
 
 const defaultTheme = {
   colors,
-  inputHeight: '32px',
+  inputHeight: '30px',
   inputBorder: 0,
   inputBorderRadius: '4px',
-  inputPadding: '6px',
+  inputPadding: '4px',
   inputBackground: colors.surface04,
   fontSize: '0.9rem',
   gapSize: '6px',
