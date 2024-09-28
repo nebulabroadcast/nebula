@@ -202,27 +202,31 @@ const VideoPlayerControls = ({
 
   return (
     <Navbar tabIndex={1}>
-      <InputTimecode value={markIn} />
+      <InputTimecode value={markIn} tooltip="Selection start" />
 
       <Button
-        tooltip="Clear Mark In"
+        tooltip="Clear selection start"
         icon="line_start_circle"
         onClick={handleClearMarkIn}
       />
 
-      <Button tooltip="Mark In" icon="line_start" onClick={handleMarkIn} />
+      <Button
+        tooltip="Set selelection start"
+        icon="line_start"
+        onClick={handleMarkIn}
+      />
 
       <div style={{ flex: 1 }} />
 
       <Button
         icon="skip_previous"
-        tooltip="Go to Start"
+        tooltip="Go to the first frame"
         onClick={handleGoToStart}
       />
 
       <Button
-        tooltip="Go to Mark In"
-        icon="arrow_left_alt"
+        tooltip="Go to selection start"
+        icon="first_page"
         onClick={handleGoToMarkIn}
       />
 
@@ -257,24 +261,32 @@ const VideoPlayerControls = ({
       />
 
       <Button
-        tooltip="Go to Mark Out"
-        icon="arrow_right_alt"
+        tooltip="Go to selection end"
+        icon="last_page"
         onClick={handleGoToMarkOut}
       />
 
-      <Button icon="skip_next" tooltip="Go to End" onClick={handleGoToEnd} />
+      <Button
+        icon="skip_next"
+        tooltip="Go to the last frame"
+        onClick={handleGoToEnd}
+      />
 
       <div style={{ flex: 1 }} />
 
-      <Button tooltip="Mark Out" icon="line_end" onClick={handleMarkOut} />
+      <Button
+        tooltip="Set selection end"
+        icon="line_end"
+        onClick={handleMarkOut}
+      />
 
       <Button
-        tooltip="Clear Mark Out"
+        tooltip="Clear selection end"
         icon="line_end_circle"
         onClick={handleClearMarkOut}
       />
 
-      <InputTimecode value={markOut} />
+      <InputTimecode value={markOut} tooltip="Selection end" />
     </Navbar>
   )
 }

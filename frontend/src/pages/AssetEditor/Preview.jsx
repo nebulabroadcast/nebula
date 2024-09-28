@@ -14,7 +14,6 @@ import {
 } from '/src/components'
 import VideoPlayer from '/src/containers/VideoPlayer'
 
-
 const SubclipRow = styled.div`
   display: flex;
   gap: 8px;
@@ -38,9 +37,7 @@ const SubclipContainer = styled.div`
     margin: 0;
     padding: 4px;
   }
-
 `
-
 
 const Subclip = ({
   index,
@@ -76,18 +73,16 @@ const Subclip = ({
   }
 
   const fps = 25
-  const startTC = new Timecode(mark_in*fps, fps)
-  const endTC = new Timecode(mark_out*fps, fps)
+  const startTC = new Timecode(mark_in * fps, fps)
+  const endTC = new Timecode(mark_out * fps, fps)
 
   return (
     <SubclipContainer>
-      <h3>{startTC.toString()} - {endTC.toString()}</h3>
+      <h3>
+        {startTC.toString()} - {endTC.toString()}
+      </h3>
       <SubclipRow>
-        <InputText
-          value={title} 
-          onChange={onTitleChange} 
-          style={{ flex: 1 }}
-        />
+        <InputText value={title} onChange={onTitleChange} style={{ flex: 1 }} />
         <Button
           icon="delete"
           tooltip="Delete subclip"
@@ -95,14 +90,17 @@ const Subclip = ({
         />
         <Button
           icon="download"
-          tooltip="From selection"
+          tooltip="Update subclip from selection"
           onClick={() => onSetMarks(selection)}
         />
         <Button
           icon="upload"
-          tooltip="From selection"
+          tooltip="Select region"
           onClick={() =>
-            setSelection({ mark_in: mark_in || null, mark_out: mark_out || null })
+            setSelection({
+              mark_in: mark_in || null,
+              mark_out: mark_out || null,
+            })
           }
         />
       </SubclipRow>
@@ -169,21 +167,18 @@ const Preview = ({ assetData, setAssetData }) => {
     },
   ]
 
-
   // Actions
-  
+
   const onNewSubclip = useCallback(() => {
-      if (!(selection.mark_in && selection.mark_out)) {
-        toast.error('Please select a region first')
-        return
-      }
-      setSubclips((subclips) => [
-        ...subclips,
-        { title: `SubClip ${subclips.length + 1}`, ...selection },
-      ])
-    }, [selection])
-
-
+    if (!(selection.mark_in && selection.mark_out)) {
+      toast.error('Please select a region first')
+      return
+    }
+    setSubclips((subclips) => [
+      ...subclips,
+      { title: `SubClip ${subclips.length + 1}`, ...selection },
+    ])
+  }, [selection])
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -195,7 +190,6 @@ const Preview = ({ assetData, setAssetData }) => {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [onNewSubclip])
 
-
   // Render
 
   return (
@@ -205,14 +199,12 @@ const Preview = ({ assetData, setAssetData }) => {
           src={videoSrc}
           position={position}
           setPosition={setPosition}
-
           markIn={selection.mark_in}
           markOut={selection.mark_out}
           setMarkIn={(mark_in) => setSelection((s) => ({ ...s, mark_in }))}
           setMarkOut={(mark_out) => setSelection((s) => ({ ...s, mark_out }))}
-
           marks={{
-            poster_frame: assetData.poster_frame 
+            poster_frame: assetData.poster_frame,
           }}
         />
       </div>

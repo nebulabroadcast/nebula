@@ -29,7 +29,12 @@ const GainButton = ({ gainNode, index }) => {
   }
 
   return (
-    <Button label={`A ${index + 1}`} onClick={handleToggle} active={active} />
+    <Button
+      label={`A ${index + 1}`}
+      onClick={handleToggle}
+      active={active}
+      tooltip={`${active ? 'Mute' : 'Unmute'} channel ${index + 1}`}
+    />
   )
 }
 

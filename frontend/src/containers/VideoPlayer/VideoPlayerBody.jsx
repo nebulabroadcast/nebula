@@ -32,7 +32,6 @@ const Video = styled.video`
 `
 
 const VideoPlayerBody = ({ ...props }) => {
-
   const { audioContext, videoRef, gainNodes, numChannels } = useAudioContext()
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
@@ -46,8 +45,6 @@ const VideoPlayerBody = ({ ...props }) => {
 
   const [markIn, setMarkIn] = useState()
   const [markOut, setMarkOut] = useState()
-
-  
 
   // Propagating markIn and markOut to parent component
 
@@ -156,16 +153,20 @@ const VideoPlayerBody = ({ ...props }) => {
       style={{ display: videoRef.current ? 'flex' : 'none' }}
     >
       <Navbar>
-        <InputTimecode value={currentTime} />
+        <InputTimecode value={currentTime} tooltip="Current position" />
         <ChannelSelect gainNodes={gainNodes} />
         <div style={{ flex: 1 }} />
         <Button
-          icon="pageless"
-          title={showOverlay ? 'Hide guides' : 'Show guides'}
+          icon="crop_free"
+          tooltip={showOverlay ? 'Hide guides' : 'Show guides'}
           onClick={() => setShowOverlay(!showOverlay)}
           active={showOverlay}
         />
-        <InputTimecode value={duration} readOnly={true} />
+        <InputTimecode
+          value={duration}
+          readOnly={true}
+          tooltip="Asset duration"
+        />
       </Navbar>
 
       <section className="row">
