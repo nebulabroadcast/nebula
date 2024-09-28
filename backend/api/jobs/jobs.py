@@ -186,8 +186,8 @@ async def set_priority(id_job: int, priority: int, user: nebula.User) -> None:
 class JobsRequest(APIRequest):
     """Get list of jobs, abort or restart them"""
 
-    name: str = "jobs"
-    title: str = "List and control jobs"
+    name = "jobs"
+    title = "List and control jobs"
     response_model = JobsResponseModel
 
     async def handle(

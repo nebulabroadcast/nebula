@@ -10,8 +10,8 @@ from .scheduler import scheduler
 class Request(APIRequest):
     """Modify a channel schedule"""
 
-    name: str = "scheduler"
-    title: str = "Scheduler"
+    name = "scheduler"
+    title = "Scheduler"
     response_model = SchedulerResponseModel
 
     async def handle(

@@ -43,8 +43,8 @@ class UserListResponseModel(ResponseModel):
 class UserListRequest(APIRequest):
     """Get a list of users"""
 
-    name: str = "user_list"
-    title: str = "Get a list of users"
+    name = "user_list"
+    title = "Get user list"
     response_model = UserListResponseModel
 
     async def handle(self, user: CurrentUser) -> UserListResponseModel:
@@ -76,8 +76,8 @@ class UserListRequest(APIRequest):
 class SaveUserRequest(APIRequest):
     """Save user data"""
 
-    name: str = "save_user"
-    title: str = "Save user data"
+    name = "save_user"
+    title = "Save user data"
     responses = [204, 201]
 
     async def handle(self, user: CurrentUser, payload: UserModel) -> Response:

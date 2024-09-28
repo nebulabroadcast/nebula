@@ -9,8 +9,8 @@ from .rundown import get_rundown
 class Request(APIRequest):
     """Get a rundown"""
 
-    name: str = "rundown"
-    title: str = "Get rundown"
+    name = "rundown"
+    title = "Get rundown"
     response_model = RundownResponseModel
 
     async def handle(

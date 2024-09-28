@@ -11,8 +11,8 @@ from .models import PlayoutRequestModel, PlayoutResponseModel
 class Request(APIRequest):
     """Control a playout server"""
 
-    name: str = "playout"
-    title: str = "Playout"
+    name = "playout"
+    title = "Playout"
     response_model = PlayoutResponseModel
 
     def handle(

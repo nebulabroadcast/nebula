@@ -10,8 +10,8 @@ from .order import set_rundown_order
 class Request(APIRequest):
     """Set the order of items of a rundown"""
 
-    name: str = "order"
-    title: str = "Order"
+    name = "order"
+    title = "Order"
     response_model = OrderResponseModel
 
     async def handle(

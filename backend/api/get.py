@@ -62,8 +62,8 @@ def can_access_object(user: nebula.User, meta: dict[str, Any]) -> bool:
 class Request(APIRequest):
     """Get a list of objects"""
 
-    name: str = "get"
-    title: str = "Get objects"
+    name = "get"
+    title = "Get objects"
     response_model = GetResponseModel
 
     async def handle(

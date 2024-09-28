@@ -48,8 +48,8 @@ class ServicesResponseModel(ResponseModel):
 class Request(APIRequest):
     """List and control installed services."""
 
-    name: str = "services"
-    title: str = "Service control"
+    name = "services"
+    title = "Service control"
     response_model = ServicesResponseModel
 
     async def handle(

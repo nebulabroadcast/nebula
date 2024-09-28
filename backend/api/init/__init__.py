@@ -63,8 +63,8 @@ class Request(APIRequest):
     (motd) and OAuth2 options are returned.
     """
 
-    name: str = "init"
-    title: str = "Login"
+    name = "init"
+    title = "Login"
     response_model = InitResponseModel
 
     async def handle(

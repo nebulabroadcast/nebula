@@ -129,8 +129,8 @@ class LogoutRequest(APIRequest):
     This request will invalidate the access token used in the Authorization header.
     """
 
-    name: str = "logout"
-    title: str = "Logout"
+    name = "logout"
+    title = "Logout"
 
     async def handle(self, authorization: str | None = Header(None)) -> None:
         if not authorization:
@@ -154,8 +154,8 @@ class SetPassword(APIRequest):
     the current user must be an admin, otherwise a 403 error is returned.
     """
 
-    name: str = "password"
-    title: str = "Set password"
+    name = "password"
+    title = "Set password"
 
     async def handle(
         self,
