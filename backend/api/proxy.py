@@ -9,14 +9,17 @@ from server.request import APIRequest
 
 MAX_200_SIZE = 1024 * 1024 * 12
 
+
 class ProxyResponse(Response):
     content_type = "video/mp4"
+
 
 def get_file_size(file_name: str) -> int:
     """Get the size of a file"""
     if not os.path.exists(file_name):
         raise nebula.NotFoundException("File not found")
     return os.stat(file_name).st_size
+
 
 async def get_bytes_range(file_name: str, start: int, end: int) -> bytes:
     """Get a range of bytes from a file"""
@@ -41,6 +44,7 @@ def _get_range_header(range_header: str, file_size: int) -> tuple[int, int]:
     Raises:
         HTTPException: If the range is invalid or cannot be parsed.
     """
+
     def _invalid_range() -> HTTPException:
         return HTTPException(
             status.HTTP_416_REQUESTED_RANGE_NOT_SATISFIABLE,
@@ -140,7 +144,6 @@ class ServeProxy(APIRequest):
         id_asset: int,
         user: CurrentUser,
     ) -> ProxyResponse:
-
         sys_settings = nebula.settings.system
         proxy_storage_path = nebula.storages[sys_settings.proxy_storage].local_path
         proxy_path_template = os.path.join(proxy_storage_path, sys_settings.proxy_path)

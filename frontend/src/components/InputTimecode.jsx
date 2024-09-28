@@ -78,7 +78,7 @@ const InputTimecode = ({
     <BaseInput
       type="text"
       ref={inputRef}
-      className={clsx('timecode', className, {error: invalid})}
+      className={clsx('timecode', className, { error: invalid })}
       value={text}
       onChange={onChangeHandler}
       onKeyDown={onKeyDown}
