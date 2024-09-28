@@ -3,7 +3,7 @@ const getWeekStart = () => {
   const dayOfWeek = now.getDay()
   const diff = now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1)
   const weekStart = new Date(now.setDate(diff))
-  weekStart.setHours(0, 0, 0, 0)
+  weekStart.setHours(7, 30, 0, 0)
   return weekStart
 }
 

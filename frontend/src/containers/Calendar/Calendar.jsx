@@ -7,6 +7,8 @@ const CalendarCanvas = styled.canvas`
   background-color: #24202e;
 `
 
+const CLOCK_WIDTH = 100
+
 const Calendar = ({ startTime }) => {
   const calendarRef = useRef(null)
   const dayRef = useRef(null)
@@ -17,101 +19,104 @@ const Calendar = ({ startTime }) => {
   const [currentTime, setCurrentTime] = useState(null)
   const [mousePos, setMousePos] = useState(null)
 
-  const clockWidth = 100
+  // Drawing parameters
+
+  const drawParams = useRef({})
+
+  useEffect(() => {
+    if (!dayRef.current) return
+    drawParams.current.dayWidth = dayRef.current.clientWidth
+  }, [drawParams.current, dayRef.current])
+
+  useEffect(() => {
+    if (!calendarRef.current) return
+    drawParams.current.hourHeight = calendarRef.current.clientHeight / 24
+  }, [drawParams.current, calendarRef.current, zoom])
+
+  //
+  //
+  //
 
   const pos2time = (x, y) => {
-    if (!dayRef.current || !calendarRef.current) {
-      return
-    }
-    const dayWidth = dayRef.current.clientWidth
-    const hourHeight = calendarRef.current.clientHeight / 24
-    const dayOfWeek = Math.floor(x / dayWidth)
-
-    let hour = Math.floor(y / hourHeight)
-    let minute = Math.floor(((y % hourHeight) / hourHeight) * 60)
-    // round to nearest 5 minutes
-    minute = Math.round(minute / 5) * 5
-    if (minute >= 60) {
-      minute = 0
-      hour += 1
-    }
-
-    // Calculate the offset from the startTime
-    const startDate = new Date(startTime)
-    const resultDate = new Date(startDate)
-    resultDate.setDate(startDate.getDate() + dayOfWeek)
-    resultDate.setHours(startDate.getHours() + hour)
-    resultDate.setMinutes(startDate.getMinutes() + minute)
-
+    if (x < CLOCK_WIDTH) return null
+    if (y < 0) return null
+    const _x = x - CLOCK_WIDTH
+    const { dayWidth, hourHeight } = drawParams.current
+    if (!dayRef.current || !calendarRef.current) return null
+    let offsetSeconds = Math.floor((y / hourHeight) * 60 * 60) // vertical offset
+    offsetSeconds += Math.floor(_x / dayWidth) * 24 * 60 * 60 // day offset
+    offsetSeconds = Math.round(offsetSeconds / 300) * 300 // round to 5 minutes
+    const resultDate = new Date(startTime.getTime() + offsetSeconds * 1000)
     return resultDate
   }
 
-  const drawCalendar = () => {
-    if (!dayRef.current || !calendarRef.current) {
-      return
+  const time2pos = (time) => {
+    const { dayWidth, hourHeight } = drawParams.current
+    const offsetSeconds = (time - startTime) / 1000
+    const dayOffset = Math.floor(offsetSeconds / (24 * 60 * 60))
+    const x = CLOCK_WIDTH + dayOffset * dayWidth
+    const y = ((offsetSeconds % (24 * 60 * 60)) / (60 * 60)) * hourHeight
+    return { x, y }
+  }
+
+  const drawMarks = (ctx) => {
+    const { dayWidth, hourHeight } = drawParams.current
+
+    const startHour = startTime.getHours()
+    const startMinute = startTime.getMinutes()
+
+    // get the first time AFTER the start time that
+    // is a multiple of 15 minutes
+
+    const firstTime = new Date(startTime)
+    firstTime.setMinutes(startMinute + ((15 - (startMinute % 15)) % 15))
+    firstTime.setHours(
+      startHour + (startMinute + ((15 - (startMinute % 15)) % 15)) / 60
+    )
+
+    for (let i = 0; i < 24 * 4; i++) {
+      const timeMarker = new Date(firstTime.getTime() + i * 15 * 60000)
+      const { x, y } = time2pos(timeMarker)
+
+      for (let i = 0; i < 7; i++) {
+        const x1 = x + i * dayWidth + 5
+        const x2 = x1 + dayWidth - 5
+        ctx.beginPath()
+        ctx.strokeStyle = '#444'
+        ctx.setLineDash([5, 5])
+        ctx.moveTo(x1, y)
+        ctx.lineTo(x2, y)
+        ctx.stroke()
+        ctx.setLineDash([]) // Reset to solid lines for other drawings
+      }
     }
+  }
 
-    const dayWidth = dayRef.current.clientWidth
-
+  const drawCalendar = () => {
+    if (!dayRef.current || !calendarRef.current) return
     const canvas = calendarRef.current
     const ctx = canvas.getContext('2d')
-
+    const { dayWidth, hourHeight } = drawParams.current
     ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-    for (let i = 0; i < 24; i++) {
-      let y = (ctx.canvas.height / 24) * i
-      if (i === 0) {
-        continue
-      }
-      y += 4
-      ctx.font = '14px Arial'
-      ctx.fillStyle = '#c0c0c0'
-      const hours = i.toString().padStart(2, '0')
-      const minutes = '00'
-      const clock = `${hours}:${minutes}`
-      ctx.fillText(clock, 14, y)
-    }
-
-    for (let i = 0; i < 7; i++) {
-      let x = ((ctx.canvas.width - clockWidth) / 7) * i
-      x += 2
-      x += clockWidth
-
-      for (let j = 0; j < 24; j++) {
-        const hourHeight = ctx.canvas.height / 24
-        const y = hourHeight * j
-
-        if (j > 0) {
-          ctx.beginPath()
-          ctx.strokeStyle = '#d7d4d5'
-          ctx.lineWidth = 1
-          ctx.moveTo(x, y)
-          ctx.lineTo(x + dayWidth - 4, y)
-          ctx.stroke()
-        }
-
-        if (ctx.canvas.height / 24 > 40) {
-          for (let k = 1; k < 4; k++) {
-            const qy = y + (hourHeight / 4) * k
-
-            ctx.beginPath()
-            ctx.strokeStyle = '#646464'
-            ctx.lineWidth = 1
-            ctx.moveTo(x, qy)
-            ctx.lineTo(x + dayWidth - 4, qy)
-            ctx.stroke()
-          }
-        }
-      }
-    }
+    drawMarks(ctx)
 
     if (currentTime && mousePos) {
       const { x, y } = mousePos
+
+      ctx.fillStyle = '#fff'
       ctx.fillText(
         `${Math.round(x)}:${Math.round(y)} ${currentTime.toLocaleString()}`,
         x + 10,
         y + 50
       )
+
+      const timePos = time2pos(currentTime)
+      ctx.strokeStyle = 'red'
+      ctx.beginPath()
+      ctx.moveTo(timePos.x, timePos.y)
+      ctx.lineTo(timePos.x + drawParams.current.dayWidth, timePos.y)
+      ctx.stroke()
     }
   }
 
@@ -160,6 +165,9 @@ const Calendar = ({ startTime }) => {
     const scrollbarWidth = bodyWrapper.offsetWidth - bodyWrapper.clientWidth
     setScrollbarWidth(scrollbarWidth)
 
+    drawParams.current.dayWidth = dayRef.current.clientWidth
+    drawParams.current.hourHeight = calendarRef.current.clientHeight / 24
+
     drawCalendar()
   }
 
@@ -184,7 +192,7 @@ const Calendar = ({ startTime }) => {
   //
 
   return (
-    <CalendarWrapper scrollbarWidth={scrollbarWidth} clockWidth={clockWidth}>
+    <CalendarWrapper scrollbarWidth={scrollbarWidth} clockWidth={CLOCK_WIDTH}>
       <div className="calendar-header">
         <div className="calendar-day" ref={dayRef}>
           Monday
