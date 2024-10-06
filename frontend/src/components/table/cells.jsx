@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useDraggable } from '@dnd-kit/core'
 
 const HeaderCell = ({ name, width, title, sortDirection, onSort }) => {
   let sortArrowElement = null
@@ -49,6 +50,9 @@ const DataRow = ({
   rowHighlightStyle,
   selected = false,
 }) => {
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useDraggable({ id: rowData.id })
+
   const handleClick = (event) => {
     if (event.type === 'contextmenu' || event.button === 2) {
       // if we're right-clicking, and the row is already selected,
@@ -58,7 +62,10 @@ const DataRow = ({
 
     if (onRowClick) onRowClick(rowData, event)
   }
-  const rowStyle = {}
+
+  const rowStyle = {
+    opacity: isDragging ? 0.5 : 1,
+  }
 
   // Left-border highlight color
   let highlightColor = null
@@ -95,8 +102,11 @@ const DataRow = ({
 
   return (
     <tr
+      ref={setNodeRef}
       onClick={handleClick}
       onContextMenu={handleClick}
+      {...attributes}
+      {...listeners}
       className={selected ? 'selected' : ''}
       style={rowStyle}
     >

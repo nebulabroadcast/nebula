@@ -163,3 +163,10 @@ section {
   right: 0;
   bottom: 0;
 }
+
+.no-scroll {
+  overflow: hidden !important;
+  tr {
+    cursor: grabbing !important;
+  }
+}

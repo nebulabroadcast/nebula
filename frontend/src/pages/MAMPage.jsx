@@ -1,4 +1,4 @@
-import { useMemo, useEffect } from 'react'
+import { useMemo, useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { useParams, useSearchParams } from 'react-router-dom'
 import Splitter, { SplitDirection } from '@devbookhq/splitter'
@@ -11,7 +11,13 @@ import Browser from '/src/containers/Browser'
 import AssetEditor from '/src/pages/AssetEditor'
 import Scheduler from '/src/pages/Scheduler'
 import Rundown from './Rundown'
-import { DndContext } from '@dnd-kit/core'
+import {
+  DndContext,
+  DragOverlay,
+  MouseSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core'
 import SendToDialog from '/src/containers/SendTo'
 
 const MAMContainer = styled.div`
@@ -47,6 +53,51 @@ const MAMPage = () => {
     null
   )
 
+  // Drag and drop from the browser
+
+  const [activeId, setActiveId] = useState(null)
+  const [isDragging, setIsDragging] = useState(false)
+
+  const mouseSensor = useSensor(MouseSensor, {
+    // Require the mouse to move by 10 pixels before activating
+    activationConstraint: {
+      distance: 10,
+    },
+  })
+
+  const sensors = useSensors(mouseSensor)
+
+  const setBodyCursor = (cursor) => {
+    document.body.style.setProperty('cursor', cursor, 'important')
+  }
+
+  const onDragStart = (event) => {
+    setIsDragging(true)
+    setActiveId(event.active.id)
+    setBodyCursor('grabbing')
+  }
+
+  const onDragEnd = (event) => {
+    setIsDragging(false)
+    setActiveId(null)
+    const { active, over } = event
+    setBodyCursor('auto')
+    if (over) {
+      console.log(`Dragged ${active.id} to ${over.id}`)
+      // Handle the drop logic here
+    }
+  }
+
+  const onDragCancel = () => {
+    setIsDragging(false)
+    setActiveId(null)
+    setBodyCursor('auto')
+  }
+
+  //
+  // URL handling
+  //
+
   useEffect(() => {
     if (searchParams.get('asset')) {
       const assetId = parseInt(searchParams.get('asset'))
@@ -66,6 +117,10 @@ const MAMPage = () => {
     setSearchParams({ asset: focusedAsset })
   }, [focusedAsset])
 
+  //
+  // MAM Module
+  //
+
   const componentProps = {}
 
   const moduleComponent = useMemo(() => {
@@ -81,21 +136,28 @@ const MAMPage = () => {
     setSplitterSizes(size)
   }
 
-  const onDragEnd = (event) => {
-    console.log(event)
-  }
+  //
+  // Render
+  //
 
   return (
     <MAMContainer>
-      <DndContext onDragEnd={onDragEnd}>
+      <DndContext
+        onDragEnd={onDragEnd}
+        onDragStart={onDragStart}
+        sensors={sensors}
+      >
         <Splitter
           direction={SplitDirection.Horizontal}
           onResizeFinished={onResize}
           initialSizes={splitterSizes}
         >
-          <Browser />
+          <Browser isDragging={isDragging} />
           {moduleComponent}
         </Splitter>
+        {/* <DragOverlay>
+          {activeId ? <DraggableRow id={activeId} /> : null}
+        </DragOverlay> */}
       </DndContext>
       <SendToDialog />
     </MAMContainer>
