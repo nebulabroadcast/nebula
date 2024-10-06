@@ -3,6 +3,7 @@ import { useRef, useEffect, useState } from 'react'
 import CalendarWrapper from './CalendarWrapper'
 import ZoomControl from './ZoomControl'
 import { useDroppable } from '@dnd-kit/core'
+import { drawMarks } from './drawing'
 
 const CalendarCanvas = styled.canvas`
   background-color: #24202e;
@@ -10,7 +11,7 @@ const CalendarCanvas = styled.canvas`
 
 const CLOCK_WIDTH = 40
 
-const Calendar = ({ startTime, draggedAsset }) => {
+const Calendar = ({ startTime, draggedAsset, events }) => {
   const calendarRef = useRef(null)
   const dayRef = useRef(null)
   const wrapperRef = useRef(null)
@@ -23,20 +24,6 @@ const Calendar = ({ startTime, draggedAsset }) => {
   // Drawing parameters
 
   const drawParams = useRef({})
-
-  useEffect(() => {
-    if (!dayRef.current) return
-    drawParams.current.dayWidth = dayRef.current.clientWidth
-  }, [drawParams.current, dayRef.current])
-
-  useEffect(() => {
-    if (!calendarRef.current) return
-    drawParams.current.hourHeight = calendarRef.current.clientHeight / 24
-  }, [drawParams.current, calendarRef.current, zoom])
-
-  //
-  //
-  //
 
   const pos2time = (x, y) => {
     if (x < CLOCK_WIDTH) return null
@@ -60,50 +47,27 @@ const Calendar = ({ startTime, draggedAsset }) => {
     return { x, y }
   }
 
-  const drawMarks = (ctx) => {
-    const { dayWidth, hourHeight } = drawParams.current
+  useEffect(() => {
+    if (!dayRef.current) return
+    drawParams.current.dayWidth = dayRef.current.clientWidth
+    drawParams.current.pos2time = pos2time
+    drawParams.current.time2pos = time2pos
+  }, [drawParams.current, dayRef.current])
 
-    const startHour = startTime.getHours()
-    const startMinute = startTime.getMinutes()
+  useEffect(() => {
+    if (!calendarRef.current) return
+    drawParams.current.hourHeight = calendarRef.current.clientHeight / 24
+    drawParams.current.pos2time = pos2time
+    drawParams.current.time2pos = time2pos
+  }, [drawParams.current, calendarRef.current, zoom])
 
-    const firstTime = new Date(startTime)
-    firstTime.setMinutes(startMinute + ((15 - (startMinute % 15)) % 15))
-    firstTime.setHours(
-      startHour + (startMinute + ((15 - (startMinute % 15)) % 15)) / 60
-    )
+  useEffect(() => {
+    drawParams.current.startTime = startTime
+  }, [drawParams.current, startTime])
 
-    for (let rday = 0; rday < 7; rday++) {
-      for (let rtime = 0; rtime < 24 * 4; rtime++) {
-        const timeMarker = new Date(firstTime.getTime() + rtime * 15 * 60000)
-        const minutes = timeMarker.getMinutes()
-        const { x, y } = time2pos(timeMarker)
-
-        if (hourHeight < 50 && minutes !== 0) {
-          continue
-        }
-
-        const x1 = x + rday * dayWidth + 10
-        const x2 = x1 + dayWidth - 10
-
-        ctx.beginPath()
-        ctx.strokeStyle = '#444'
-        if (minutes === 0) {
-          ctx.setLineDash([1, 0])
-        } else {
-          ctx.setLineDash([5, 5])
-        }
-        ctx.moveTo(x1, y)
-        ctx.lineTo(x2, y)
-        ctx.stroke()
-        ctx.setLineDash([]) // Reset to solid lines for other drawings
-        if (rday === 0 && minutes === 0) {
-          ctx.font = '12px Arial'
-          ctx.fillStyle = '#fff'
-          ctx.fillText(timeMarker.toTimeString().slice(0, 5), 10, y + 4)
-        }
-      }
-    }
-  }
+  //
+  // Draw calendar
+  //
 
   const drawCalendar = () => {
     if (!dayRef.current || !calendarRef.current) return
@@ -112,12 +76,27 @@ const Calendar = ({ startTime, draggedAsset }) => {
     const { dayWidth, hourHeight } = drawParams.current
     ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-    drawMarks(ctx)
+    drawMarks(ctx, drawParams)
+
+    for (const event of events) {
+      const { start, title, duration } = event
+
+      const startPos = time2pos(start * 1000)
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.5)'
+      ctx.fillRect(
+        startPos.x + 10,
+        startPos.y,
+        dayWidth - 10,
+        hourHeight * (event.duration / 3600)
+      )
+
+      ctx.font = '12px Arial'
+      ctx.fillStyle = '#fff'
+      ctx.fillText(title, startPos.x + 15, startPos.y + 15)
+    }
 
     if (currentTime && mousePos && draggedAsset) {
       const { x, y } = mousePos
-      console.log(draggedAsset)
-
       ctx.fillStyle = '#fff'
       ctx.fillText(
         `${Math.round(x)}:${Math.round(y)} ${currentTime.toLocaleString()}: ${
@@ -140,9 +119,13 @@ const Calendar = ({ startTime, draggedAsset }) => {
     }
   }
 
+  //
+  // Event handlers
+  //
+
   useEffect(() => {
     drawCalendar()
-  }, [currentTime])
+  }, [currentTime, events])
 
   const onMouseMove = (e) => {
     if (!calendarRef?.current) {
@@ -165,7 +148,6 @@ const Calendar = ({ startTime, draggedAsset }) => {
   //
 
   const onMouseUp = (e) => {
-    console.log(e)
     if (!calendarRef?.current) return
     if (draggedAsset && currentTime) {
       console.log('Dropped', draggedAsset, currentTime)

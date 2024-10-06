@@ -5,10 +5,28 @@ import { setPageTitle } from '/src/actions'
 import Calendar from '/src/containers/Calendar'
 import SchedulerNav from './SchedulerNav'
 import { getWeekStart, createTitle } from './utils'
+import nebula from '/src/nebula'
+import { DateTime } from 'luxon'
 
 const Scheduler = ({ draggedAsset }) => {
   const dispatch = useDispatch()
   const [startTime, setStartTime] = useState(getWeekStart())
+  const [events, setEvents] = useState([])
+
+  const requestParams = {
+    id_channel: 1,
+    date: DateTime.fromJSDate(startTime).toFormat('yyyy-MM-dd'),
+  }
+
+  const loadEvents = () => {
+    nebula.request('scheduler', requestParams).then((response) => {
+      setEvents(response.data.events)
+    })
+  }
+
+  useEffect(() => {
+    loadEvents()
+  }, [startTime])
 
   useEffect(() => {
     console.log('Week start time changed', startTime)
@@ -20,7 +38,11 @@ const Scheduler = ({ draggedAsset }) => {
     <main className="column">
       <SchedulerNav startTime={startTime} setStartTime={setStartTime} />
       <section className="grow nopad">
-        <Calendar startTime={startTime} draggedAsset={draggedAsset} />
+        <Calendar
+          startTime={startTime}
+          events={events}
+          draggedAsset={draggedAsset}
+        />
       </section>
     </main>
   )
