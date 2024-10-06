@@ -79,8 +79,8 @@ const Calendar = ({ startTime }) => {
       const { x, y } = time2pos(timeMarker)
 
       for (let i = 0; i < 7; i++) {
-        const x1 = x + i * dayWidth + 5
-        const x2 = x1 + dayWidth - 5
+        const x1 = x + i * dayWidth + 10
+        const x2 = x1 + dayWidth - 10
         ctx.beginPath()
         ctx.strokeStyle = '#444'
         ctx.setLineDash([5, 5])
