@@ -55,7 +55,8 @@ const MAMPage = () => {
 
   // Drag and drop from the browser
 
-  const [activeId, setActiveId] = useState(null)
+  // const [activeId, setActiveId] = useState(null)
+  const [draggedAsset, setDraggedAsset] = useState(null)
   const [isDragging, setIsDragging] = useState(false)
 
   const mouseSensor = useSensor(MouseSensor, {
@@ -73,25 +74,27 @@ const MAMPage = () => {
 
   const onDragStart = (event) => {
     setIsDragging(true)
-    setActiveId(event.active.id)
+    // setActiveId(event.active.id)
+    setDraggedAsset(event.active.data.current)
     setBodyCursor('grabbing')
+
+    if (event.active.id === focusedAsset) return
+    dispatch(setFocusedAsset(event.active.id))
+    dispatch(setSelectedAssets([event.active.id]))
   }
 
   const onDragEnd = (event) => {
     setIsDragging(false)
-    setActiveId(null)
+    // setActiveId(null)
+    setDraggedAsset(null)
     const { active, over } = event
     setBodyCursor('auto')
-    if (over) {
-      console.log(`Dragged ${active.id} to ${over.id}`)
-      // Handle the drop logic here
-    }
   }
 
   const onDragCancel = () => {
     setIsDragging(false)
-    setActiveId(null)
-    setBodyCursor('auto')
+    // setActiveId(null)
+    setDraggedAsset(null)
   }
 
   //
@@ -121,7 +124,9 @@ const MAMPage = () => {
   // MAM Module
   //
 
-  const componentProps = {}
+  const componentProps = {
+    draggedAsset,
+  }
 
   const moduleComponent = useMemo(() => {
     if (module == 'editor') return <AssetEditor {...componentProps} />
@@ -129,7 +134,7 @@ const MAMPage = () => {
     if (module == 'rundown') return <Rundown {...componentProps} />
 
     return 'Not implemented'
-  }, [module])
+  }, [module, draggedAsset])
 
   // eslint-disable-next-line no-unused-vars
   const onResize = (gutter, size) => {
@@ -155,9 +160,6 @@ const MAMPage = () => {
           <Browser isDragging={isDragging} />
           {moduleComponent}
         </Splitter>
-        {/* <DragOverlay>
-          {activeId ? <DraggableRow id={activeId} /> : null}
-        </DragOverlay> */}
       </DndContext>
       <SendToDialog />
     </MAMContainer>

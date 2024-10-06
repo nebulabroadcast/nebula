@@ -51,7 +51,15 @@ const DataRow = ({
   selected = false,
 }) => {
   const { attributes, listeners, setNodeRef, transform, isDragging } =
-    useDraggable({ id: rowData.id })
+    useDraggable({
+      id: rowData.id,
+      data: {
+        type: 'asset',
+        duration: rowData.duration,
+        title: rowData.title,
+        subtitle: rowData.subtitle,
+      },
+    })
 
   const handleClick = (event) => {
     if (event.type === 'contextmenu' || event.button === 2) {

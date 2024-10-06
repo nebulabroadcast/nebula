@@ -2,6 +2,7 @@ import styled from 'styled-components'
 import { useRef, useEffect, useState } from 'react'
 import CalendarWrapper from './CalendarWrapper'
 import ZoomControl from './ZoomControl'
+import { useDroppable } from '@dnd-kit/core'
 
 const CalendarCanvas = styled.canvas`
   background-color: #24202e;
@@ -9,7 +10,7 @@ const CalendarCanvas = styled.canvas`
 
 const CLOCK_WIDTH = 40
 
-const Calendar = ({ startTime }) => {
+const Calendar = ({ startTime, draggedAsset }) => {
   const calendarRef = useRef(null)
   const dayRef = useRef(null)
   const wrapperRef = useRef(null)
@@ -65,9 +66,6 @@ const Calendar = ({ startTime }) => {
     const startHour = startTime.getHours()
     const startMinute = startTime.getMinutes()
 
-    // get the first time AFTER the start time that
-    // is a multiple of 15 minutes
-
     const firstTime = new Date(startTime)
     firstTime.setMinutes(startMinute + ((15 - (startMinute % 15)) % 15))
     firstTime.setHours(
@@ -116,22 +114,29 @@ const Calendar = ({ startTime }) => {
 
     drawMarks(ctx)
 
-    if (currentTime && mousePos) {
+    if (currentTime && mousePos && draggedAsset) {
       const { x, y } = mousePos
+      console.log(draggedAsset)
 
       ctx.fillStyle = '#fff'
       ctx.fillText(
-        `${Math.round(x)}:${Math.round(y)} ${currentTime.toLocaleString()}`,
+        `${Math.round(x)}:${Math.round(y)} ${currentTime.toLocaleString()}: ${
+          draggedAsset.title
+        }`,
         x + 10,
         y + 50
       )
 
       const timePos = time2pos(currentTime)
-      ctx.strokeStyle = 'red'
       ctx.beginPath()
-      ctx.moveTo(timePos.x, timePos.y)
-      ctx.lineTo(timePos.x + drawParams.current.dayWidth, timePos.y)
-      ctx.stroke()
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.5)'
+      ctx.rect(
+        timePos.x + 10,
+        timePos.y,
+        dayWidth - 10,
+        hourHeight * (draggedAsset.duration / 3600)
+      )
+      ctx.fill()
     }
   }
 
@@ -143,6 +148,7 @@ const Calendar = ({ startTime }) => {
     if (!calendarRef?.current) {
       return
     }
+
     const rect = calendarRef.current.getBoundingClientRect()
     const x = e.clientX - rect.left
     const y = e.clientY - rect.top
@@ -157,6 +163,14 @@ const Calendar = ({ startTime }) => {
   //
   // Mouse position within the calendar (Track current time)
   //
+
+  const onMouseUp = (e) => {
+    console.log(e)
+    if (!calendarRef?.current) return
+    if (draggedAsset && currentTime) {
+      console.log('Dropped', draggedAsset, currentTime)
+    }
+  }
 
   useEffect(() => {
     if (!calendarRef.current) return
@@ -173,6 +187,7 @@ const Calendar = ({ startTime }) => {
 
   const resizeCanvas = () => {
     const canvas = calendarRef.current
+    if (!canvas?.parentElement) return
     canvas.width = canvas.parentElement.clientWidth
     canvas.height = canvas.parentElement.clientHeight * zoom
 
@@ -221,7 +236,11 @@ const Calendar = ({ startTime }) => {
       </div>
       <div className="calendar-body">
         <div className="calendar-body-wrapper" ref={wrapperRef}>
-          <CalendarCanvas id="calendar" ref={calendarRef} />
+          <CalendarCanvas
+            id="calendar"
+            ref={calendarRef}
+            onMouseUp={onMouseUp}
+          />
         </div>
       </div>
       <div className="calendar-footer">

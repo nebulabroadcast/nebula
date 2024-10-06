@@ -6,7 +6,7 @@ import Calendar from '/src/containers/Calendar'
 import SchedulerNav from './SchedulerNav'
 import { getWeekStart, createTitle } from './utils'
 
-const Scheduler = () => {
+const Scheduler = ({ draggedAsset }) => {
   const dispatch = useDispatch()
   const [startTime, setStartTime] = useState(getWeekStart())
 
@@ -20,7 +20,7 @@ const Scheduler = () => {
     <main className="column">
       <SchedulerNav startTime={startTime} setStartTime={setStartTime} />
       <section className="grow nopad">
-        <Calendar startTime={startTime} />
+        <Calendar startTime={startTime} draggedAsset={draggedAsset} />
       </section>
     </main>
   )
