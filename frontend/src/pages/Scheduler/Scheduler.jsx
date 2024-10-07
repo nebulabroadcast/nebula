@@ -24,6 +24,13 @@ const Scheduler = ({ draggedAsset }) => {
     })
   }
 
+  const setEvent = (event) => {
+    const params = { ...requestParams, events: [event] }
+    nebula.request('scheduler', params).then((response) => {
+      setEvents(response.data.events)
+    })
+  }
+
   useEffect(() => {
     loadEvents()
   }, [startTime])
@@ -41,6 +48,7 @@ const Scheduler = ({ draggedAsset }) => {
         <Calendar
           startTime={startTime}
           events={events}
+          setEvent={setEvent}
           draggedAsset={draggedAsset}
         />
       </section>

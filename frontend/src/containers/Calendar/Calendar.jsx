@@ -11,7 +11,7 @@ const CalendarCanvas = styled.canvas`
 
 const CLOCK_WIDTH = 40
 
-const Calendar = ({ startTime, draggedAsset, events }) => {
+const Calendar = ({ startTime, draggedAsset, events, setEvent }) => {
   const calendarRef = useRef(null)
   const dayRef = useRef(null)
   const wrapperRef = useRef(null)
@@ -20,6 +20,7 @@ const Calendar = ({ startTime, draggedAsset, events }) => {
   const [zoom, setZoom] = useState(1)
   const [currentTime, setCurrentTime] = useState(null)
   const [mousePos, setMousePos] = useState(null)
+  const [draggedEvent, setDraggedEvent] = useState(null)
 
   // Drawing parameters
 
@@ -45,6 +46,17 @@ const Calendar = ({ startTime, draggedAsset, events }) => {
     const x = CLOCK_WIDTH + dayOffset * dayWidth
     const y = ((offsetSeconds % (24 * 60 * 60)) / (60 * 60)) * hourHeight
     return { x, y }
+  }
+
+  const eventAtPos = () => {
+    const currentTs = currentTime.getTime() / 1000
+    for (const event of events) {
+      const { start, duration, title } = event
+      if (currentTs >= start && currentTs <= start + duration) {
+        return event
+      }
+    }
+    return null
   }
 
   useEffect(() => {
@@ -81,6 +93,8 @@ const Calendar = ({ startTime, draggedAsset, events }) => {
     for (const event of events) {
       const { start, title, duration } = event
 
+      if (draggedEvent?.id === event?.id) continue
+
       const startPos = time2pos(start * 1000)
       ctx.fillStyle = 'rgba(255, 255, 255, 0.5)'
       ctx.fillRect(
@@ -95,27 +109,50 @@ const Calendar = ({ startTime, draggedAsset, events }) => {
       ctx.fillText(title, startPos.x + 15, startPos.y + 15)
     }
 
-    if (currentTime && mousePos && draggedAsset) {
+    if (currentTime && mousePos) {
       const { x, y } = mousePos
-      ctx.fillStyle = '#fff'
-      ctx.fillText(
-        `${Math.round(x)}:${Math.round(y)} ${currentTime.toLocaleString()}: ${
-          draggedAsset.title
-        }`,
-        x + 10,
-        y + 50
-      )
 
-      const timePos = time2pos(currentTime)
-      ctx.beginPath()
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.5)'
-      ctx.rect(
-        timePos.x + 10,
-        timePos.y,
-        dayWidth - 10,
-        hourHeight * (draggedAsset.duration / 3600)
-      )
-      ctx.fill()
+      if (draggedAsset) {
+        ctx.fillStyle = '#fff'
+        ctx.fillText(
+          `${Math.round(x)}:${Math.round(y)} ${currentTime.toLocaleString()}: ${
+            draggedAsset.title
+          }`,
+          x + 10,
+          y + 50
+        )
+
+        const timePos = time2pos(currentTime)
+        ctx.beginPath()
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.5)'
+        ctx.rect(
+          timePos.x + 10,
+          timePos.y,
+          dayWidth - 10,
+          hourHeight * (draggedAsset.duration / 3600)
+        )
+        ctx.fill()
+      } else if (draggedEvent) {
+        ctx.fillStyle = '#cff'
+        ctx.fillText(
+          `${Math.round(x)}:${Math.round(y)} ${currentTime.toLocaleString()}: ${
+            draggedEvent.title
+          }`,
+          x + 10,
+          y + 50
+        )
+
+        const timePos = time2pos(currentTime)
+        ctx.beginPath()
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.5)'
+        ctx.rect(
+          timePos.x + 10,
+          timePos.y,
+          dayWidth - 10,
+          hourHeight * (draggedEvent.duration / 3600)
+        )
+        ctx.fill()
+      }
     }
   }
 
@@ -148,9 +185,31 @@ const Calendar = ({ startTime, draggedAsset, events }) => {
   //
 
   const onMouseUp = (e) => {
+    console.log('mouseup', e)
     if (!calendarRef?.current) return
     if (draggedAsset && currentTime) {
       console.log('Dropped', draggedAsset, currentTime)
+      setEvent({
+        id_asset: draggedAsset.id,
+        start: currentTime.getTime() / 1000,
+      })
+    } else if (draggedEvent) {
+      console.log('Dropped event', draggedEvent)
+
+      setEvent({
+        id: draggedEvent.id,
+        start: currentTime.getTime() / 1000,
+      })
+    }
+
+    setDraggedEvent(null)
+  }
+
+  const onMouseDown = (evt) => {
+    const pos = { x: evt.clientX, y: evt.clientY }
+    const event = eventAtPos(pos.x, pos.y)
+    if (event) {
+      setDraggedEvent(event)
     }
   }
 
@@ -222,6 +281,7 @@ const Calendar = ({ startTime, draggedAsset, events }) => {
             id="calendar"
             ref={calendarRef}
             onMouseUp={onMouseUp}
+            onMouseDown={onMouseDown}
           />
         </div>
       </div>

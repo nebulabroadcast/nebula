@@ -54,6 +54,7 @@ const DataRow = ({
     useDraggable({
       id: rowData.id,
       data: {
+        id: rowData.id,
         type: 'asset',
         duration: rowData.duration,
         title: rowData.title,
