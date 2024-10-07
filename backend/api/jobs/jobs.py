@@ -170,6 +170,7 @@ async def abort_job(id_job: int, user: nebula.User) -> None:
         message=message,
     )
 
+
 async def set_priority(id_job: int, priority: int, user: nebula.User) -> None:
     """Set the priority of a job if the user has the necessary permissions"""
     if not await can_user_control_job(user, id_job):
@@ -177,6 +178,7 @@ async def set_priority(id_job: int, priority: int, user: nebula.User) -> None:
     nebula.log.info(f"Setting priority of job {id_job} to {priority}", user=user.name)
     query = "UPDATE jobs SET priority = $1 WHERE id = $2"
     await nebula.db.execute(query, priority, id_job)
+
 
 class JobsRequest(APIRequest):
     """Get list of jobs, abort or restart them"""

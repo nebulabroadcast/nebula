@@ -70,9 +70,7 @@ class Client:
     def is_valid(self) -> bool:
         if self.disconnected:
             return False
-        if not self.authorized and (time.time() - self.created_at > 3):
-            return False
-        return True
+        return not (not self.authorized and time.time() - self.created_at > 3)
 
 
 class Messaging(BackgroundTask):

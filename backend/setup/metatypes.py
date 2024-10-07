@@ -15,7 +15,7 @@ async def setup_metatypes(meta_types: dict[str, Any], db: DatabaseConnection) ->
         aliases[lang] = {}
         trans_table_fname = os.path.join("schema", f"meta-aliases-{lang}.json")
 
-        async with aiofiles.open(trans_table_fname, "r") as f:
+        async with aiofiles.open(trans_table_fname) as f:
             adata = json_loads(await f.read())
 
         for key, alias, header, description in adata:

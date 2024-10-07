@@ -43,9 +43,7 @@ def can_access_object(user: nebula.User, meta: dict[str, Any]) -> bool:
     if user.is_admin or (user.id in meta.get("assignees", [])):
         return True
     elif user.is_limited:
-        if meta.get("created_by") != user.id:
-            return False
-        return True
+        return meta.get("created_by") == user.id
     if id_folder := meta.get("id_folder"):
         # Users can view assets in folders they have access to
         return user.can("asset_view", id_folder)
