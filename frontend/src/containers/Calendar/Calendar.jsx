@@ -1,9 +1,10 @@
 import styled from 'styled-components'
-import { useRef, useEffect, useState } from 'react'
+import { useRef, useEffect, useState, useCallback } from 'react'
 import CalendarWrapper from './CalendarWrapper'
 import ZoomControl from './ZoomControl'
 import { useDroppable } from '@dnd-kit/core'
-import { drawMarks } from './drawing'
+import drawMarks from './drawMarks'
+import drawEvents from './drawEvents'
 
 const CalendarCanvas = styled.canvas`
   background-color: #24202e;
@@ -25,6 +26,11 @@ const Calendar = ({ startTime, draggedAsset, events, setEvent }) => {
   // Drawing parameters
 
   const drawParams = useRef({})
+  const eventsRef = useRef([])
+
+  useEffect(() => {
+    eventsRef.current = events
+  }, [events])
 
   const pos2time = (x, y) => {
     if (x < CLOCK_WIDTH) return null
@@ -49,10 +55,15 @@ const Calendar = ({ startTime, draggedAsset, events, setEvent }) => {
   }
 
   const eventAtPos = () => {
+    if (!currentTime) return null
     const currentTs = currentTime.getTime() / 1000
+    let i = 0
     for (const event of events) {
+      i += 1
       const { start, duration, title } = event
-      if (currentTs >= start && currentTs <= start + duration) {
+      const nextEvent = events[i]
+      const nextStart = nextEvent?.start || start + duration
+      if (currentTs >= start && currentTs <= nextStart) {
         return event
       }
     }
@@ -61,21 +72,14 @@ const Calendar = ({ startTime, draggedAsset, events, setEvent }) => {
 
   useEffect(() => {
     if (!dayRef.current) return
+    if (!startTime) return
+    drawParams.current.hourHeight =
+      (calendarRef.current?.clientHeight || 0) / 24
     drawParams.current.dayWidth = dayRef.current.clientWidth
     drawParams.current.pos2time = pos2time
     drawParams.current.time2pos = time2pos
-  }, [drawParams.current, dayRef.current])
-
-  useEffect(() => {
-    if (!calendarRef.current) return
-    drawParams.current.hourHeight = calendarRef.current.clientHeight / 24
-    drawParams.current.pos2time = pos2time
-    drawParams.current.time2pos = time2pos
-  }, [drawParams.current, calendarRef.current, zoom])
-
-  useEffect(() => {
     drawParams.current.startTime = startTime
-  }, [drawParams.current, startTime])
+  }, [drawParams.current, dayRef.current, zoom, startTime])
 
   //
   // Draw calendar
@@ -89,24 +93,8 @@ const Calendar = ({ startTime, draggedAsset, events, setEvent }) => {
     ctx.clearRect(0, 0, canvas.width, canvas.height)
 
     drawMarks(ctx, drawParams)
-
-    for (const event of events) {
-      const { start, title, duration } = event
-
-      if (draggedEvent?.id === event?.id) continue
-
-      const startPos = time2pos(start * 1000)
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.5)'
-      ctx.fillRect(
-        startPos.x + 10,
-        startPos.y,
-        dayWidth - 10,
-        hourHeight * (event.duration / 3600)
-      )
-
-      ctx.font = '12px Arial'
-      ctx.fillStyle = '#fff'
-      ctx.fillText(title, startPos.x + 15, startPos.y + 15)
+    if (eventsRef.current) {
+      drawEvents(ctx, drawParams, eventsRef.current, draggedEvent)
     }
 
     if (currentTime && mousePos) {
@@ -149,7 +137,7 @@ const Calendar = ({ startTime, draggedAsset, events, setEvent }) => {
           timePos.x + 10,
           timePos.y,
           dayWidth - 10,
-          hourHeight * (draggedEvent.duration / 3600)
+          hourHeight * ((draggedEvent.duration || 300) / 3600)
         )
         ctx.fill()
       }
@@ -165,6 +153,7 @@ const Calendar = ({ startTime, draggedAsset, events, setEvent }) => {
   }, [currentTime, events])
 
   const onMouseMove = (e) => {
+    const { pos2time } = drawParams.current
     if (!calendarRef?.current) {
       return
     }
@@ -287,6 +276,8 @@ const Calendar = ({ startTime, draggedAsset, events, setEvent }) => {
       </div>
       <div className="calendar-footer">
         <ZoomControl zoom={zoom} setZoom={setZoom} />
+        {draggedAsset && <span>{draggedAsset.title}</span>}
+        {draggedEvent && <span>{draggedEvent.title}</span>}
       </div>
     </CalendarWrapper>
   )
