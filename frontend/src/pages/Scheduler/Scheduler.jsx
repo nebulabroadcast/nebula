@@ -13,22 +13,25 @@ const Scheduler = ({ draggedAsset }) => {
   const [startTime, setStartTime] = useState(getWeekStart())
   const [events, setEvents] = useState([])
 
+  const startTs = useMemo(() => startTime.getTime() / 1000, [startTime])
+
+  const onResponse = (response) => {
+    const events = response.data.events
+    setEvents(events.filter((e) => e.start >= startTs))
+  }
+
   const requestParams = {
     id_channel: 1,
     date: DateTime.fromJSDate(startTime).toFormat('yyyy-MM-dd'),
   }
 
   const loadEvents = () => {
-    nebula.request('scheduler', requestParams).then((response) => {
-      setEvents(response.data.events)
-    })
+    nebula.request('scheduler', requestParams).then(onResponse)
   }
 
   const setEvent = (event) => {
     const params = { ...requestParams, events: [event] }
-    nebula.request('scheduler', params).then((response) => {
-      setEvents(response.data.events)
-    })
+    nebula.request('scheduler', params).then(onResponse)
   }
 
   useEffect(() => {
