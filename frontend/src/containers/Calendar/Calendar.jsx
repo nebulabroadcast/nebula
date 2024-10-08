@@ -1,5 +1,5 @@
 import styled from 'styled-components'
-import { useRef, useEffect, useState, useCallback } from 'react'
+import { useRef, useMemo, useEffect, useState, useCallback } from 'react'
 import CalendarWrapper from './CalendarWrapper'
 import ZoomControl from './ZoomControl'
 import { useDroppable } from '@dnd-kit/core'
@@ -11,6 +11,7 @@ const CalendarCanvas = styled.canvas`
 `
 
 const CLOCK_WIDTH = 40
+const DRAG_THRESHOLD = 20
 
 const Calendar = ({ startTime, draggedAsset, events, setEvent }) => {
   const calendarRef = useRef(null)
@@ -21,16 +22,32 @@ const Calendar = ({ startTime, draggedAsset, events, setEvent }) => {
   const [zoom, setZoom] = useState(1)
   const [currentTime, setCurrentTime] = useState(null)
   const [mousePos, setMousePos] = useState(null)
+
+  // Reference to events
+
+  useEffect(() => {
+    eventsRef.current = events
+  }, [events])
+
+  // Dragging support
+
   const [draggedEvent, setDraggedEvent] = useState(null)
+  const initialMousePos = useRef(null)
+  const lastClickedEvent = useRef(null)
 
   // Drawing parameters
 
   const drawParams = useRef({})
   const eventsRef = useRef([])
 
-  useEffect(() => {
-    eventsRef.current = events
-  }, [events])
+  // Time functions
+
+  const dayStartOffsetSeconds = useMemo(() => {
+    const midnight = new Date(startTime)
+    midnight.setHours(0, 0, 0, 0)
+    const offset = (startTime.getTime() - midnight.getTime()) / 1000
+    return offset
+  }, [startTime])
 
   const pos2time = (x, y) => {
     if (x < CLOCK_WIDTH) return null
@@ -57,18 +74,33 @@ const Calendar = ({ startTime, draggedAsset, events, setEvent }) => {
   const eventAtPos = () => {
     if (!currentTime) return null
     const currentTs = currentTime.getTime() / 1000
+    const currentMidnight = new Date((currentTs - dayStartOffsetSeconds) * 1000)
+    currentMidnight.setHours(0, 0, 0, 0)
+
     let i = 0
     for (const event of events) {
       i += 1
       const { start, duration, title } = event
+
       const nextEvent = events[i]
       const nextStart = nextEvent?.start || start + duration
       if (currentTs >= start && currentTs <= nextStart) {
+        // skip events that are not on the current day
+        // (empty space at the beginning of the day)
+        if (
+          new Date((start - dayStartOffsetSeconds) * 1000).getDate() !==
+          currentMidnight.getDate()
+        ) {
+          continue
+        }
+
         return event
       }
     }
     return null
   }
+
+  // Update drawParams reference
 
   useEffect(() => {
     if (!dayRef.current) return
@@ -144,40 +176,56 @@ const Calendar = ({ startTime, draggedAsset, events, setEvent }) => {
     }
   }
 
-  //
-  // Event handlers
-  //
+  // When to draw?
 
   useEffect(() => {
     drawCalendar()
   }, [currentTime, events])
 
-  const onMouseMove = (e) => {
-    const { pos2time } = drawParams.current
-    if (!calendarRef?.current) {
-      return
-    }
+  // Event handlers
 
+  const onMouseMove = (e) => {
+    if (!calendarRef?.current) return
+
+    // get pos2time from drawParams to avoid stale closure
+    const { pos2time } = drawParams.current
+
+    // Calculate mouse position
     const rect = calendarRef.current.getBoundingClientRect()
     const x = e.clientX - rect.left
     const y = e.clientY - rect.top
     const newTime = pos2time(x, y)
     setMousePos({ x, y })
 
+    // Update current time
+
     if (newTime !== currentTime) {
       setCurrentTime(newTime)
     }
-  }
+
+    // Start dragging after reaching some distance
+
+    if (initialMousePos.current) {
+      const distance = Math.sqrt(
+        Math.pow(x - initialMousePos.current.x, 2) +
+          Math.pow(y - initialMousePos.current.y, 2)
+      )
+      if (distance > DRAG_THRESHOLD) {
+        setDraggedEvent(lastClickedEvent.current)
+      } else {
+        setDraggedEvent(null)
+      }
+    } // start dragging
+  } // onMouseMove
 
   //
-  // Mouse position within the calendar (Track current time)
+  // Clicking
   //
 
   const onMouseUp = (e) => {
-    console.log('mouseup', e)
     if (!calendarRef?.current) return
     if (draggedAsset && currentTime) {
-      console.log('Dropped', draggedAsset, currentTime)
+      console.log('Dropped asset', draggedAsset, currentTime)
       setEvent({
         id_asset: draggedAsset.id,
         start: currentTime.getTime() / 1000,
@@ -192,14 +240,21 @@ const Calendar = ({ startTime, draggedAsset, events, setEvent }) => {
     }
 
     setDraggedEvent(null)
+    lastClickedEvent.current = null
+    initialMousePos.current = null
   }
+
+  // Keep track where the mouse is
+  // and what event was clicked last
 
   const onMouseDown = (evt) => {
     const pos = { x: evt.clientX, y: evt.clientY }
+    const rect = calendarRef.current.getBoundingClientRect()
+    const x = evt.clientX - rect.left
+    const y = evt.clientY - rect.top
+    initialMousePos.current = { x, y }
     const event = eventAtPos(pos.x, pos.y)
-    if (event) {
-      setDraggedEvent(event)
-    }
+    if (event) lastClickedEvent.current = event
   }
 
   useEffect(() => {
