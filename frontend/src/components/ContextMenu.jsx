@@ -120,7 +120,7 @@ const ContextMenu = ({ target, options }) => {
             icon={option.icon}
             onClick={() => {
               setContextData({ ...contextData, visible: false })
-              option.onClick && option.onClick()
+              option.onClick && option.onClick(contextData)
             }}
           />
         </span>

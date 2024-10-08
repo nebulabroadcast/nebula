@@ -2,6 +2,7 @@ import styled from 'styled-components'
 import { useRef, useMemo, useEffect, useState, useCallback } from 'react'
 import CalendarWrapper from './CalendarWrapper'
 import ZoomControl from './ZoomControl'
+import ContextMenu from '/src/components/ContextMenu'
 import { useDroppable } from '@dnd-kit/core'
 import drawMarks from './drawMarks'
 import drawEvents from './drawEvents'
@@ -13,7 +14,13 @@ const CalendarCanvas = styled.canvas`
 const CLOCK_WIDTH = 40
 const DRAG_THRESHOLD = 20
 
-const Calendar = ({ startTime, draggedAsset, events, setEvent }) => {
+const Calendar = ({
+  startTime,
+  draggedAsset,
+  events,
+  setEvent,
+  contextMenu,
+}) => {
   const calendarRef = useRef(null)
   const dayRef = useRef(null)
   const wrapperRef = useRef(null)
@@ -302,6 +309,22 @@ const Calendar = ({ startTime, draggedAsset, events, setEvent }) => {
     }
   }, [wrapperRef.current])
 
+  const contextMenuItems = useCallback(() => {
+    const result = []
+    for (const item of contextMenu) {
+      result.push({
+        label: item.label,
+        icon: item.icon,
+        onClick: (e) => {
+          const event = eventAtPos(e.posX, e.posY)
+          if (!event) return
+          item.onClick(event)
+        },
+      })
+    }
+    return result
+  }, [contextMenu, eventAtPos])
+
   //
   // Render
   //
@@ -334,6 +357,9 @@ const Calendar = ({ startTime, draggedAsset, events, setEvent }) => {
         {draggedAsset && <span>{draggedAsset.title}</span>}
         {draggedEvent && <span>{draggedEvent.title}</span>}
       </div>
+      {contextMenuItems && (
+        <ContextMenu target={calendarRef} options={contextMenuItems} />
+      )}
     </CalendarWrapper>
   )
 }

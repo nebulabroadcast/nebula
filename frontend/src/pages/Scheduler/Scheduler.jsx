@@ -25,6 +25,10 @@ const Scheduler = ({ draggedAsset }) => {
     date: DateTime.fromJSDate(startTime).toFormat('yyyy-MM-dd'),
   }
 
+  //
+  // API calls
+  //
+
   const loadEvents = () => {
     nebula.request('scheduler', requestParams).then(onResponse)
   }
@@ -34,15 +38,40 @@ const Scheduler = ({ draggedAsset }) => {
     nebula.request('scheduler', params).then(onResponse)
   }
 
+  const deleteEvent = (eventId) => {
+    const params = { ...requestParams, delete: [eventId] }
+    nebula.request('scheduler', params).then(onResponse)
+  }
+
+  //
+  // Load data
+  //
+
   useEffect(() => {
     loadEvents()
   }, [startTime])
 
   useEffect(() => {
-    console.log('Week start time changed', startTime)
+    // console.log('Week start time changed', startTime)
     const pageTitle = createTitle(startTime)
     dispatch(setPageTitle({ title: pageTitle }))
   }, [startTime])
+
+  //
+  // Context menu
+  //
+
+  const contextMenu = [
+    {
+      label: 'Delete',
+      icon: 'delete',
+      onClick: (event) => deleteEvent(event.id),
+    },
+  ]
+
+  //
+  // Render
+  //
 
   return (
     <main className="column">
@@ -53,6 +82,7 @@ const Scheduler = ({ draggedAsset }) => {
           events={events}
           setEvent={setEvent}
           draggedAsset={draggedAsset}
+          contextMenu={contextMenu}
         />
       </section>
     </main>
