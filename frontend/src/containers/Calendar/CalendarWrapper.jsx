@@ -23,7 +23,6 @@ const CalendarWrapper = styled.div`
       justify-content: center;
       padding: 6px 0;
       color: #c0c0c0;
-      font-weight: bold;
     }
   }
 

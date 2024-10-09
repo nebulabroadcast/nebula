@@ -3,9 +3,9 @@ import { useRef, useMemo, useEffect, useState, useCallback } from 'react'
 import CalendarWrapper from './CalendarWrapper'
 import ZoomControl from './ZoomControl'
 import ContextMenu from '/src/components/ContextMenu'
-import { useDroppable } from '@dnd-kit/core'
 import drawMarks from './drawMarks'
 import drawEvents from './drawEvents'
+import { useLocalStorage } from '/src/hooks'
 
 const CalendarCanvas = styled.canvas`
   background-color: #24202e;
@@ -26,7 +26,7 @@ const Calendar = ({
   const wrapperRef = useRef(null)
 
   const [scrollbarWidth, setScrollbarWidth] = useState(0)
-  const [zoom, setZoom] = useState(1)
+  const [zoom, setZoom] = useLocalStorage(1)
   const [currentTime, setCurrentTime] = useState(null)
   const [mousePos, setMousePos] = useState(null)
 
@@ -329,18 +329,57 @@ const Calendar = ({
   // Render
   //
 
+  const dstyles = useMemo(() => {
+    const weekStartTs = startTime.getTime() / 1000
+    const todayStartTs =
+      new Date().setHours(0, 0, 0, 0) / 1000 + dayStartOffsetSeconds
+
+    const dayStyles = []
+    for (let i = 0; i < 7; i++) {
+      const dayStartTs = weekStartTs + i * 24 * 3600
+
+      if (todayStartTs === dayStartTs) {
+        dayStyles.push({
+          borderBottom: '1px solid var(--color-text)',
+          fontWeight: 'bold',
+        })
+        continue
+      }
+
+      const color =
+        todayStartTs > dayStartTs ? 'var(--color-red)' : 'var(--color-green)'
+      const style = {
+        borderBottom: `1px solid ${color}`,
+      }
+      dayStyles.push(style)
+    }
+    return dayStyles
+  }, [startTime])
+
   return (
     <CalendarWrapper scrollbarWidth={scrollbarWidth} clockWidth={CLOCK_WIDTH}>
       <div className="calendar-header">
-        <div className="calendar-day" ref={dayRef}>
+        <div className="calendar-day" style={dstyles[0]} ref={dayRef}>
           Monday
         </div>
-        <div className="calendar-day">Tuesday</div>
-        <div className="calendar-day">Wednesday</div>
-        <div className="calendar-day">Thursday</div>
-        <div className="calendar-day">Friday</div>
-        <div className="calendar-day">Saturday</div>
-        <div className="calendar-day">Sunday</div>
+        <div className="calendar-day" style={dstyles[1]}>
+          Tuesday
+        </div>
+        <div className="calendar-day" style={dstyles[2]}>
+          Wednesday
+        </div>
+        <div className="calendar-day" style={dstyles[3]}>
+          Thursday
+        </div>
+        <div className="calendar-day" style={dstyles[4]}>
+          Friday
+        </div>
+        <div className="calendar-day" style={dstyles[5]}>
+          Saturday
+        </div>
+        <div className="calendar-day" style={dstyles[6]}>
+          Sunday
+        </div>
       </div>
       <div className="calendar-body">
         <div className="calendar-body-wrapper" ref={wrapperRef}>
