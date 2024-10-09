@@ -27,6 +27,7 @@ const Calendar = ({
 
   const [scrollbarWidth, setScrollbarWidth] = useState(0)
   const [zoom, setZoom] = useLocalStorage(1)
+  const [scrollPosition, setScrollPosition] = useLocalStorage(0)
   const [currentTime, setCurrentTime] = useState(null)
   const [mousePos, setMousePos] = useState(null)
 
@@ -294,7 +295,6 @@ const Calendar = ({
   }
 
   useEffect(() => {
-    console.log('Zoom', zoom)
     resizeCanvas()
   }, [zoom])
 
@@ -324,6 +324,17 @@ const Calendar = ({
     }
     return result
   }, [contextMenu, eventAtPos])
+
+  const onScroll = (e) => {
+    setScrollPosition(e.target.scrollTop)
+  }
+
+  useEffect(() => {
+    if (!wrapperRef.current) return
+    if (wrapperRef.current.scrollTop !== scrollPosition) {
+      wrapperRef.current.scrollTop = scrollPosition
+    }
+  }, [scrollPosition])
 
   //
   // Render
@@ -382,7 +393,11 @@ const Calendar = ({
         </div>
       </div>
       <div className="calendar-body">
-        <div className="calendar-body-wrapper" ref={wrapperRef}>
+        <div
+          className="calendar-body-wrapper"
+          ref={wrapperRef}
+          onScroll={onScroll}
+        >
           <CalendarCanvas
             id="calendar"
             ref={calendarRef}
