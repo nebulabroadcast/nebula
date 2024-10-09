@@ -18,9 +18,6 @@ const EventDialog = ({ data, setData, onHide }) => {
     return nebula.settings.playout_channels[0].fields
   }, [])
 
-  console.log(data)
-  console.log(fields)
-
   return (
     <Dialog header={header} onHide={onHide} style={{ minWidth: 600 }}>
       <MetadataEditor

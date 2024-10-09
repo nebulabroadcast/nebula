@@ -1,8 +1,15 @@
+import styled from 'styled-components'
+
+const StyledIcon = styled.span`
+  user-select: none !important;
+  user-drag: none !important;
+`
+
 const Icon = ({ icon, style }) => {
   return (
-    <span className="icon material-symbols-outlined" style={style}>
+    <StyledIcon className="icon material-symbols-outlined" style={style}>
       {icon}
-    </span>
+    </StyledIcon>
   )
 }
 

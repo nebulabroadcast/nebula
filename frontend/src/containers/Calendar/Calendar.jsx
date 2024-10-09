@@ -12,7 +12,7 @@ const CalendarCanvas = styled.canvas`
 `
 
 const CLOCK_WIDTH = 40
-const DRAG_THRESHOLD = 20
+const DRAG_THRESHOLD = 10
 
 const Calendar = ({
   startTime,
@@ -39,9 +39,9 @@ const Calendar = ({
 
   // Dragging support
 
-  const [draggedEvent, setDraggedEvent] = useState(null)
   const initialMousePos = useRef(null)
   const lastClickedEvent = useRef(null)
+  const draggedEvent = useRef(null)
 
   // Drawing parameters
 
@@ -59,11 +59,12 @@ const Calendar = ({
 
   const pos2time = (x, y) => {
     if (x < CLOCK_WIDTH) return null
-    if (y < 0) return null
+    //if (y < 0) return null
+    const _y = Math.max(y, 1)
     const _x = x - CLOCK_WIDTH
     const { dayWidth, hourHeight } = drawParams.current
     if (!dayRef.current || !calendarRef.current) return null
-    let offsetSeconds = Math.floor((y / hourHeight) * 60 * 60) // vertical offset
+    let offsetSeconds = Math.floor((_y / hourHeight) * 60 * 60) // vertical offset
     offsetSeconds += Math.floor(_x / dayWidth) * 24 * 60 * 60 // day offset
     offsetSeconds = Math.round(offsetSeconds / 300) * 300 // round to 5 minutes
     const resultDate = new Date(startTime.getTime() + offsetSeconds * 1000)
@@ -134,7 +135,7 @@ const Calendar = ({
 
     drawMarks(ctx, drawParams)
     if (eventsRef.current) {
-      drawEvents(ctx, drawParams, eventsRef.current, draggedEvent)
+      drawEvents(ctx, drawParams, eventsRef.current, draggedEvent.current)
     }
 
     if (currentTime && mousePos) {
@@ -160,14 +161,12 @@ const Calendar = ({
           hourHeight * (draggedAsset.duration / 3600)
         )
         ctx.fill()
-      } else if (draggedEvent) {
+      } else if (draggedEvent.current) {
         ctx.fillStyle = '#cff'
         ctx.fillText(
-          `${Math.round(x)}:${Math.round(y)} ${currentTime.toLocaleString()}: ${
-            draggedEvent.title
-          }`,
-          x + 10,
-          y + 50
+          `${currentTime.toLocaleString()}: ${draggedEvent.current.title}`,
+          x + 20,
+          y + 30
         )
 
         const timePos = time2pos(currentTime)
@@ -177,7 +176,7 @@ const Calendar = ({
           timePos.x + 10,
           timePos.y,
           dayWidth - 10,
-          hourHeight * ((draggedEvent.duration || 300) / 3600)
+          hourHeight * ((draggedEvent.current.duration || 300) / 3600)
         )
         ctx.fill()
       }
@@ -196,16 +195,28 @@ const Calendar = ({
     if (!calendarRef?.current) return
 
     // get pos2time from drawParams to avoid stale closure
-    const { pos2time } = drawParams.current
+    const { pos2time, hourHeight } = drawParams.current
 
     // Calculate mouse position
     const rect = calendarRef.current.getBoundingClientRect()
     const x = e.clientX - rect.left
     const y = e.clientY - rect.top
-    const newTime = pos2time(x, y)
+
+    // TODO align yoffset based on y position (subtract on top, add on bottom)
+    const yoffset = draggedEvent.current
+      ? hourHeight * (Math.max(draggedEvent.current?.duration || 1200) / 7200)
+      : 0
+
+    //console.log('yoffset', yoffset)
+
+    let newTime = pos2time(x, y - yoffset)
     setMousePos({ x, y })
 
     // Update current time
+
+    // if (draggedEvent.current) {
+    //   newTime = new Date(newTime - draggedEvent.current.duration * 500)
+    // }
 
     if (newTime !== currentTime) {
       setCurrentTime(newTime)
@@ -213,15 +224,15 @@ const Calendar = ({
 
     // Start dragging after reaching some distance
 
-    if (initialMousePos.current) {
+    if (initialMousePos.current && !draggedEvent.current) {
       const distance = Math.sqrt(
         Math.pow(x - initialMousePos.current.x, 2) +
           Math.pow(y - initialMousePos.current.y, 2)
       )
       if (distance > DRAG_THRESHOLD) {
-        setDraggedEvent(lastClickedEvent.current)
+        draggedEvent.current = lastClickedEvent.current
       } else {
-        setDraggedEvent(null)
+        draggedEvent.current = null
       }
     } // start dragging
   } // onMouseMove
@@ -236,18 +247,18 @@ const Calendar = ({
       console.log('Dropped asset', draggedAsset, currentTime)
       setEvent({
         id_asset: draggedAsset.id,
-        start: currentTime.getTime() / 1000,
+        start: Math.floor(currentTime.getTime() / 1000),
       })
-    } else if (draggedEvent) {
-      console.log('Dropped event', draggedEvent)
+    } else if (draggedEvent.current) {
+      console.log('Dropped event', draggedEvent.current, currentTime)
 
       setEvent({
-        id: draggedEvent.id,
-        start: currentTime.getTime() / 1000,
+        id: draggedEvent.current.id,
+        start: Math.floor(currentTime.getTime() / 1000),
       })
     }
 
-    setDraggedEvent(null)
+    draggedEvent.current = null
     lastClickedEvent.current = null
     initialMousePos.current = null
   }
