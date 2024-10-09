@@ -34,6 +34,15 @@ const Scheduler = ({ draggedAsset }) => {
   }
 
   const setEvent = (event) => {
+    // Prevent jumping during server-side update
+    if (event.id) {
+      for (let i = 0; i < events.length; i++) {
+        if (events[i].id === event.id) {
+          events[i] = event
+          break
+        }
+      }
+    }
     const params = { ...requestParams, events: [event] }
     nebula.request('scheduler', params).then(onResponse)
   }

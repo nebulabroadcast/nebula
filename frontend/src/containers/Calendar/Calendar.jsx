@@ -354,8 +354,6 @@ const Calendar = ({
       </div>
       <div className="calendar-footer">
         <ZoomControl zoom={zoom} setZoom={setZoom} />
-        {draggedAsset && <span>{draggedAsset.title}</span>}
-        {draggedEvent && <span>{draggedEvent.title}</span>}
       </div>
       {contextMenuItems && (
         <ContextMenu target={calendarRef} options={contextMenuItems} />

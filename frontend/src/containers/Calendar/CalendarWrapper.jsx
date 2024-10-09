@@ -5,7 +5,7 @@ const CalendarWrapper = styled.div`
   flex-grow: 1;
   flex-direction: column;
   font-family: Arial;
-  background-color: #19161f;
+  gap: 6px;
 
   .calendar-header {
     user-select: none;
@@ -18,9 +18,12 @@ const CalendarWrapper = styled.div`
 
     .calendar-day {
       flex: 1;
-      padding: 8px 2px;
-      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 0;
       color: #c0c0c0;
+      font-weight: bold;
     }
   }
 

@@ -30,7 +30,7 @@ const MAMContainer = styled.div`
   .__dbk__child-wrapper {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: var(--section-gap);
     min-width: 400px;
   }
 
