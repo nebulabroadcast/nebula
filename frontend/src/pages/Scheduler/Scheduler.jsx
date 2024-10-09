@@ -4,6 +4,7 @@ import { setPageTitle } from '/src/actions'
 
 import Calendar from '/src/containers/Calendar'
 import SchedulerNav from './SchedulerNav'
+import EventDialog from './EventDialog'
 import { getWeekStart, createTitle } from './utils'
 import nebula from '/src/nebula'
 import { DateTime } from 'luxon'
@@ -12,6 +13,7 @@ const Scheduler = ({ draggedAsset }) => {
   const dispatch = useDispatch()
   const [startTime, setStartTime] = useState(getWeekStart())
   const [events, setEvents] = useState([])
+  const [editorData, setEditorData] = useState(null)
 
   const startTs = useMemo(() => startTime.getTime() / 1000, [startTime])
 
@@ -72,6 +74,11 @@ const Scheduler = ({ draggedAsset }) => {
 
   const contextMenu = [
     {
+      label: 'Edit',
+      icon: 'edit',
+      onClick: (event) => setEditorData(event),
+    },
+    {
       label: 'Delete',
       icon: 'delete',
       onClick: (event) => deleteEvent(event.id),
@@ -94,6 +101,13 @@ const Scheduler = ({ draggedAsset }) => {
           contextMenu={contextMenu}
         />
       </section>
+      {editorData && (
+        <EventDialog
+          data={editorData}
+          setData={setEditorData}
+          onHide={() => setEditorData()}
+        />
+      )}
     </main>
   )
 }
