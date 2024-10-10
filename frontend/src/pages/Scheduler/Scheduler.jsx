@@ -36,16 +36,31 @@ const Scheduler = ({ draggedAsset }) => {
   }
 
   const setEvent = (event) => {
+    const payload = {
+      start: event.start,
+      meta: {},
+    }
+
     // Prevent jumping during server-side update
     if (event.id) {
+      payload.id = event.id
       for (let i = 0; i < events.length; i++) {
         if (events[i].id === event.id) {
           events[i] = event
           break
         }
       }
+      // close event dialog if needed
+      setEditorData(null)
     }
-    const params = { ...requestParams, events: [event] }
+
+    for (const field of nebula.settings.playout_channels[0].fields) {
+      const key = field.name
+      if (event[key] === undefined) continue
+      payload.meta[key] = event[key]
+    }
+
+    const params = { ...requestParams, events: [payload] }
     nebula.request('scheduler', params).then(onResponse)
   }
 
@@ -105,7 +120,8 @@ const Scheduler = ({ draggedAsset }) => {
         <EventDialog
           data={editorData}
           setData={setEditorData}
-          onHide={() => setEditorData()}
+          onHide={() => setEditorData(null)}
+          onSave={setEvent}
         />
       )}
     </main>
