@@ -1,15 +1,16 @@
-import { useEffect } from 'react'
-import { useDispatch } from 'react-redux'
-import { setPageTitle } from '/src/actions'
+import { useState, useEffect, useMemo } from 'react'
+
+import RundownNav from './RundownNav'
 
 const Rundown = () => {
-  const dispatch = useDispatch()
+  const [startTime, setStartTime] = useState(null)
 
-  useEffect(() => {
-    dispatch(setPageTitle({ title: 'Scheduler' }))
-  }, [])
-
-  return <h1>not implemented</h1>
+  return (
+    <main className="column">
+      <RundownNav startTime={startTime} setStartTime={setStartTime} />
+      <section className="grow nopad">{startTime?.toISOString()}</section>
+    </main>
+  )
 }
 
 export default Rundown

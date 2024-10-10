@@ -105,7 +105,6 @@ const MAMPage = () => {
     if (searchParams.get('asset')) {
       const assetId = parseInt(searchParams.get('asset'))
       if (assetId === focusedAsset) return
-
       dispatch(setFocusedAsset(assetId))
       dispatch(setSelectedAssets([assetId]))
     }
@@ -114,10 +113,17 @@ const MAMPage = () => {
   useEffect(() => {
     if (focusedAsset === searchParams.get('asset')) return
     if (focusedAsset === null) {
-      setSearchParams({})
+      setSearchParams((o) => {
+        o.delete('asset')
+        return o
+      })
       return
     }
-    setSearchParams({ asset: focusedAsset })
+    console.log('set asset')
+    setSearchParams((o) => {
+      o.set('asset', focusedAsset)
+      return o
+    })
   }, [focusedAsset])
 
   //
