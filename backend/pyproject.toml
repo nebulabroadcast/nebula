@@ -83,6 +83,7 @@ ignore = [
     "C901",    # too complex. C'mon - this is a complex project
     "ANN101",  # missing type annotation for self
     "ANN102",  # missing type annotation for cls
+    "ASYNC110", # let us sleep
 ]
 
 [tool.mypy]
