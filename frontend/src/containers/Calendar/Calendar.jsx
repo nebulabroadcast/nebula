@@ -24,11 +24,11 @@ const Calendar = ({
   const calendarRef = useRef(null)
   const dayRef = useRef(null)
   const wrapperRef = useRef(null)
+  const cursorTime = useRef(null)
 
   const [scrollbarWidth, setScrollbarWidth] = useState(0)
   const [zoom, setZoom] = useLocalStorage(1)
   const [scrollPosition, setScrollPosition] = useLocalStorage(0)
-  const [currentTime, setCurrentTime] = useState(null)
   const [mousePos, setMousePos] = useState(null)
 
   // Reference to events
@@ -81,37 +81,40 @@ const Calendar = ({
   }
 
   const eventAtPos = () => {
-    if (!currentTime) return null
-    const currentTs = currentTime.getTime() / 1000
+    if (!cursorTime.current) return null
+    const currentTs = cursorTime.current.getTime() / 1000
+
+    // Get the current day midnight (for comparing dates)
     const currentMidnight = new Date((currentTs - dayStartOffsetSeconds) * 1000)
     currentMidnight.setHours(0, 0, 0, 0)
+
+    // When the next day starts (unix timestamp)
+    const nextDayStartTs = currentTs - dayStartOffsetSeconds + 24 * 60 * 60
 
     let i = 0
     for (const event of events) {
       i += 1
-      const { start, duration, title } = event
+      // start and nextStart are unix timestamps
+      const { start } = event
 
+      // Get the next event start time
       const nextEvent = events[i]
       let nextStart = nextEvent?.start
 
-      // if nextStart is not defined, use the end of the day
+      // if nextStart is not defined or is in the next day, use the end of the day
+      if (!nextStart || nextStart > nextDayStartTs) nextStart = nextDayStartTs
 
-      if (!nextStart) {
-        nextStart = currentMidnight.getTime() / 1000 + 24 * 60 * 60
-      }
-
-      if (currentTs >= start && currentTs <= nextStart) {
+      if (currentTs >= start && currentTs < nextStart) {
         // skip events that are not on the current day
         // (empty space at the beginning of the day)
-        if (
-          new Date((start - dayStartOffsetSeconds) * 1000).getDate() !==
-          currentMidnight.getDate()
-        ) {
-          continue
-        }
+        const edate = new Date((start - dayStartOffsetSeconds) * 1000).getDate()
+        if (edate !== currentMidnight.getDate()) continue
+
+        // event fits, returning
         return event
       }
     }
+    // no valid event under the cursor
     return null
   }
 
@@ -144,20 +147,20 @@ const Calendar = ({
       drawEvents(ctx, drawParams, eventsRef.current, draggedEvent.current)
     }
 
-    if (currentTime && mousePos) {
+    if (cursorTime.current && mousePos) {
       const { x, y } = mousePos
 
       if (draggedAsset) {
         ctx.fillStyle = '#fff'
         ctx.fillText(
-          `${Math.round(x)}:${Math.round(y)} ${currentTime.toLocaleString()}: ${
-            draggedAsset.title
-          }`,
+          `${Math.round(x)}:${Math.round(
+            y
+          )} ${cursorTime.current.toLocaleString()}: ${draggedAsset.title}`,
           x + 10,
           y + 50
         )
 
-        const timePos = time2pos(currentTime)
+        const timePos = time2pos(cursorTime.current)
         ctx.beginPath()
         ctx.fillStyle = 'rgba(255, 255, 255, 0.5)'
         ctx.rect(
@@ -170,12 +173,14 @@ const Calendar = ({
       } else if (draggedEvent.current) {
         ctx.fillStyle = '#cff'
         ctx.fillText(
-          `${currentTime.toLocaleString()}: ${draggedEvent.current.title}`,
+          `${cursorTime.current.toLocaleString()}: ${
+            draggedEvent.current.title
+          }`,
           x + 20,
           y + 30
         )
 
-        const timePos = time2pos(currentTime)
+        const timePos = time2pos(cursorTime.current)
         ctx.beginPath()
         ctx.fillStyle = 'rgba(255, 255, 255, 0.5)'
         ctx.rect(
@@ -193,7 +198,7 @@ const Calendar = ({
 
   useEffect(() => {
     drawCalendar()
-  }, [currentTime, events])
+  }, [cursorTime.current, events])
 
   // Event handlers
 
@@ -213,19 +218,13 @@ const Calendar = ({
       ? hourHeight * (Math.max(draggedEvent.current?.duration || 1200) / 7200)
       : 0
 
-    //console.log('yoffset', yoffset)
-
     let newTime = pos2time(x, y - yoffset)
     setMousePos({ x, y })
 
     // Update current time
 
-    // if (draggedEvent.current) {
-    //   newTime = new Date(newTime - draggedEvent.current.duration * 500)
-    // }
-
-    if (newTime !== currentTime) {
-      setCurrentTime(newTime)
+    if (newTime !== cursorTime.current) {
+      cursorTime.current = newTime
     }
 
     // Start dragging after reaching some distance
@@ -249,18 +248,18 @@ const Calendar = ({
 
   const onMouseUp = (e) => {
     if (!calendarRef?.current) return
-    if (draggedAsset && currentTime) {
-      console.log('Dropped asset', draggedAsset, currentTime)
+    if (draggedAsset && cursorTime.current) {
+      console.log('Dropped asset', draggedAsset, cursorTime.current)
       setEvent({
         id_asset: draggedAsset.id,
-        start: Math.floor(currentTime.getTime() / 1000),
+        start: Math.floor(cursorTime.current.getTime() / 1000),
       })
-    } else if (draggedEvent.current) {
-      console.log('Dropped event', draggedEvent.current, currentTime)
+    } else if (draggedEvent.current && cursorTime.current) {
+      console.log('Dropped event', draggedEvent.current, cursorTime.current)
 
       setEvent({
         id: draggedEvent.current.id,
-        start: Math.floor(currentTime.getTime() / 1000),
+        start: Math.floor(cursorTime.current.getTime() / 1000),
       })
     }
 
@@ -285,9 +284,11 @@ const Calendar = ({
   useEffect(() => {
     if (!calendarRef.current) return
     calendarRef.current.addEventListener('mousemove', onMouseMove)
+    document.addEventListener('mouseup', onMouseUp)
     return () => {
       if (!calendarRef.current) return
       calendarRef.current.removeEventListener('mousemove', onMouseMove)
+      document.removeEventListener('mouseup', onMouseUp)
     }
   }, [calendarRef.current])
 
@@ -418,7 +419,6 @@ const Calendar = ({
           <CalendarCanvas
             id="calendar"
             ref={calendarRef}
-            onMouseUp={onMouseUp}
             onMouseDown={onMouseDown}
           />
         </div>

@@ -15,6 +15,8 @@ const drawEvents = (ctx, drawParams, events, draggedEvent) => {
     const endPos = nextStart ? time2pos(nextStart * 1000) : null
     const eventDuration = nextStart ? (nextStart - start) * 1000 : null
 
+    // Compute the event rectangle height
+
     let eventHeight
     if (!endPos) eventHeight = maxY - startPos.y
     else if (endPos.x > startPos.x) eventHeight = maxY - startPos.y
@@ -28,15 +30,16 @@ const drawEvents = (ctx, drawParams, events, draggedEvent) => {
     gradient.addColorStop(1, 'transparent')
 
     ctx.fillStyle = gradient
-    //ctx.fillStyle = '#885bff99'
     ctx.fillRect(startPos.x + 10, startPos.y, dayWidth - 10, eventHeight - 2)
 
     // draw actual duration
+
     const usedHeight = hourHeight * (duration / 3600)
     ctx.fillStyle = duration - 30 > nextStart - start ? '#ff2404' : '#5fff5f'
     ctx.fillRect(startPos.x + 10, startPos.y, 3, usedHeight)
 
     // event title
+
     ctx.font = '12px Arial'
     ctx.fillStyle = '#fff'
     ctx.fillText(title, startPos.x + 15, startPos.y + 15)
