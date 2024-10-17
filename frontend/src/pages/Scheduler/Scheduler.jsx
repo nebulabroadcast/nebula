@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useDispatch } from 'react-redux'
 import { setPageTitle } from '/src/actions'
+import { toast } from 'react-toastify'
 
 import Calendar from '/src/containers/Calendar'
 import SchedulerNav from './SchedulerNav'
@@ -22,6 +23,17 @@ const Scheduler = ({ draggedAsset }) => {
     setEvents(events.filter((e) => e.start >= startTs))
   }
 
+  const onError = (error) => {
+    console.log(error.response)
+    toast.error(
+      <>
+        <strong>Scheduler API error</strong>
+        <br />
+        <p>{error.response?.data?.detail || 'Unknown error'}</p>
+      </>
+    )
+  }
+
   const requestParams = {
     id_channel: 1,
     date: DateTime.fromJSDate(startTime).toFormat('yyyy-MM-dd'),
@@ -32,7 +44,7 @@ const Scheduler = ({ draggedAsset }) => {
   //
 
   const loadEvents = () => {
-    nebula.request('scheduler', requestParams).then(onResponse)
+    nebula.request('scheduler', requestParams).then(onResponse).catch(onError)
   }
 
   const setEvent = (event) => {
@@ -63,12 +75,12 @@ const Scheduler = ({ draggedAsset }) => {
     }
 
     const params = { ...requestParams, events: [payload] }
-    nebula.request('scheduler', params).then(onResponse)
+    nebula.request('scheduler', params).then(onResponse).catch(onError)
   }
 
   const deleteEvent = (eventId) => {
     const params = { ...requestParams, delete: [eventId] }
-    nebula.request('scheduler', params).then(onResponse)
+    nebula.request('scheduler', params).then(onResponse).catch(onError)
   }
 
   //
