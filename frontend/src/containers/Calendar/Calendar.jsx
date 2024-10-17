@@ -92,7 +92,14 @@ const Calendar = ({
       const { start, duration, title } = event
 
       const nextEvent = events[i]
-      const nextStart = nextEvent?.start || start + duration
+      let nextStart = nextEvent?.start
+
+      // if nextStart is not defined, use the end of the day
+
+      if (!nextStart) {
+        nextStart = currentMidnight.getTime() / 1000 + 24 * 60 * 60
+      }
+
       if (currentTs >= start && currentTs <= nextStart) {
         // skip events that are not on the current day
         // (empty space at the beginning of the day)
@@ -102,7 +109,6 @@ const Calendar = ({
         ) {
           continue
         }
-
         return event
       }
     }
