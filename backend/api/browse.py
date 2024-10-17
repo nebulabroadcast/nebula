@@ -256,7 +256,8 @@ def build_query(
 class Request(APIRequest):
     """Browse the assets database."""
 
-    name: str = "browse"
+    name = "browse"
+    title = "Browse assets"
     response_model = BrowseResponseModel
 
     async def handle(

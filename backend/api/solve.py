@@ -20,7 +20,8 @@ class SolveRequestModel(RequestModel):
 class Request(APIRequest):
     """Solve a rundown placeholder"""
 
-    name: str = "solve"
+    name = "solve"
+    title = "Solve"
     responses: list[int] = [200]
 
     async def handle(

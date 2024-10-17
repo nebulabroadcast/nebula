@@ -17,9 +17,9 @@ class UploadRequest(APIRequest):
     This endpoint is used by the web frontend to upload media files.
     """
 
-    name: str = "upload"
-    path: str = "/upload/{id_asset}"
-    title: str = "Get objects"
+    name = "upload"
+    path = "/upload/{id_asset}"
+    title = "Get objects"
     response_class = Response
 
     async def handle(

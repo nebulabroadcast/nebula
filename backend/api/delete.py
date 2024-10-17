@@ -21,10 +21,10 @@ class DeleteRequestModel(RequestModel):
 
 
 class Request(APIRequest):
-    """Delete object(s)"""
+    """Delete one or multiple objects from the database"""
 
-    name: str = "delete"
-    title: str = "Delete objects"
+    name = "delete"
+    title = "Delete objects"
     responses: list[int] = [204, 401, 403]
 
     async def handle(

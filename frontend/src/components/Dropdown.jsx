@@ -9,9 +9,9 @@ const DropdownContainer = styled.div`
   .dropdown-content {
     display: none;
     position: absolute;
-    background-color: var(--color-surface-04);
+    background-color: var(--color-surface-02);
     min-width: 100px;
-    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.4);
     z-index: 1;
 
     hr {
@@ -29,7 +29,7 @@ const DropdownContainer = styled.div`
       padding: 25px 8px;
 
       &:hover {
-        background-color: var(--color-surface-03);
+        background-color: var(--color-surface-04);
       }
 
       &:active,

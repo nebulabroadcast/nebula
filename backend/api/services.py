@@ -46,10 +46,16 @@ class ServicesResponseModel(ResponseModel):
 
 
 class Request(APIRequest):
-    """List and control installed services."""
+    """
+    List and control installed services.
 
-    name: str = "services"
-    title: str = "Service control"
+    This endpoint allows users to list all installed services and control their state.
+    Users can start, stop, or toggle the autostart setting of a service by providing
+    the respective service ID in the request.
+    """
+
+    name = "services"
+    title = "Service control"
     response_model = ServicesResponseModel
 
     async def handle(

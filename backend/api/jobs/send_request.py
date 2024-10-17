@@ -154,8 +154,8 @@ async def send_to(
 class SendRequest(APIRequest):
     """Create jobs for a given list of assets."""
 
-    name: str = "send"
-    title: str = "Send to"
+    name = "send"
+    title = "Send to"
     response_model = SendResponseModel
 
     async def handle(

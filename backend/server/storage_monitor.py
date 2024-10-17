@@ -16,9 +16,7 @@ async def exec_mount(cmd: str) -> bool:
     proc = subprocess.Popen(cmd, shell=True)  # noqa
     while proc.poll() is None:
         await asyncio.sleep(0.1)
-    if proc.returncode:
-        return False
-    return True
+    return not proc.returncode
 
 
 # def handle_nfs_storage(storage: Storage):

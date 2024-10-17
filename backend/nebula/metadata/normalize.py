@@ -23,9 +23,7 @@ def is_serializable(value: Any) -> bool:
 
     This is used to check if a value can be stored in the database.
     """
-    if isinstance(value, (str, int, float, bool, dict, list, tuple)):
-        return True
-    return False
+    return bool(isinstance(value, (str, int, float, bool, dict, list, tuple)))
 
 
 def normalize_meta(key: str, value: Any) -> Any:
