@@ -4,11 +4,6 @@ version = "6.0.7"
 description = "Open source broadcast automation system"
 authors = ["Nebula Broadcast <info@nebulabroadcast.com>"]
 
-[tool.poetry.group.dev.dependencies]
-types-requests = "^2.31.0.20240311"
-types-aiofiles = "^23.2.0.20240311"
-asyncpg-stubs = "^0.29.1"
-
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
@@ -36,13 +31,16 @@ requests = "^2.32.3"
 rich = "^13.8.0"
 shortuuid = "^1.0.12"
 user-agents = "^2.2.0"
-uvicorn = {extras = ["standard"], version = "0.31.0"}
+uvicorn = { extras = ["standard"], version = "0.31.0" }
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
+asyncpg-stubs = "^0.29.1"
 mypy = "^1.11"
 pytest = "^8.0"
 pytest-asyncio = "^0.20.3"
 ruff = "^0.6.8"
+types-aiofiles = "^23.2.0.20240311"
+types-requests = "^2.31.0.20240311"
 
 #
 # Tools
@@ -71,25 +69,23 @@ select = [
     "ASYNC", # flake8-async
     "SIM",   # flake8-simplify
     "ISC",   # flake8-implicit-str-concat
-  # "ANN",   # flake8-annotations
-  # "N",     # pep8-naming
-  # "D",     # pydocstyle
-  # "S",     # flake8-bandit
+    # "ANN",   # flake8-annotations
+    # "N",     # pep8-naming
+    # "D",     # pydocstyle
+    # "S",     # flake8-bandit
 ]
 
 ignore = [
     "ISC001",
-    "B008",    # do not perform function calls in argument defaults
-    "C901",    # too complex. C'mon - this is a complex project
-    "ANN101",  # missing type annotation for self
-    "ANN102",  # missing type annotation for cls
+    "B008",     # do not perform function calls in argument defaults
+    "C901",     # too complex. C'mon - this is a complex project
+    "ANN101",   # missing type annotation for self
+    "ANN102",   # missing type annotation for cls
     "ASYNC110", # let us sleep
 ]
 
 [tool.mypy]
-plugins = [
-  "pydantic.mypy"
-]
+plugins = ["pydantic.mypy"]
 
 #follow_imports = "silent"
 #strict = true
@@ -104,11 +100,7 @@ strict_optional = true
 exclude = "tests/|venv/"
 
 [[tool.mypy.overrides]]
-module = [
-  "nxtools",
-  "user_agents",
-  "tomllib"
-]
+module = ["nxtools", "user_agents", "tomllib"]
 ignore_errors = true
 follow_imports = "skip"
 ignore_missing_imports = true
