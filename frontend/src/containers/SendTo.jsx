@@ -9,9 +9,14 @@ const SendToDialogBody = ({ selectedAssets, onHide }) => {
   const [sendToOptions, setSendToOptions] = useState(null)
 
   const loadOptions = () => {
-    nebula.request('actions', { ids: selectedAssets }).then((response) => {
-      setSendToOptions(response.data.actions)
-    })
+    nebula
+      .request('actions', { ids: selectedAssets })
+      .then((response) => {
+        setSendToOptions(response.data.actions)
+      })
+      .catch((error) => {
+        sendToOptions([])
+      })
   }
 
   useEffect(() => {
@@ -63,6 +68,10 @@ const SendToDialogBody = ({ selectedAssets, onHide }) => {
     selectedAssets.length === 1
       ? 'the asset'
       : `${selectedAssets.length} assets`
+
+  if (!sendToOptions) {
+    return
+  }
 
   return (
     <Dialog

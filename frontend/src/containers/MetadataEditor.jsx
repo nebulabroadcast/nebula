@@ -137,20 +137,21 @@ const EditorField = ({
   )
 }
 
-const EditorForm = ({
+const MetadataEditor = ({
   originalData,
-  assetData,
-  setAssetData,
+  objectData,
+  setObjectData,
   fields,
   onSave,
   disabled,
 }) => {
   const onFieldChanged = (key, value) =>
-    setAssetData((o) => {
+    setObjectData((o) => {
       return { ...o, [key]: value }
     })
 
   function handleKeyDown(event) {
+    if (!onSave) return
     if (event.ctrlKey && event.key === 's') {
       event.preventDefault() // prevent default browser behavior (saving the page)
       onSave()
@@ -163,7 +164,7 @@ const EditorForm = ({
         <EditorField
           key={field.name}
           field={field}
-          value={assetData[field.name]}
+          value={objectData[field.name]}
           originalValue={originalData[field.name]}
           onFieldChanged={onFieldChanged}
           disabled={disabled}
@@ -173,4 +174,4 @@ const EditorForm = ({
   )
 }
 
-export default EditorForm
+export default MetadataEditor
