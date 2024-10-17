@@ -41,6 +41,8 @@ const Scheduler = ({ draggedAsset }) => {
       meta: {},
     }
 
+    if (event.id_asset) payload.id_asset = event.id_asset
+
     // Prevent jumping during server-side update
     if (event.id) {
       payload.id = event.id
