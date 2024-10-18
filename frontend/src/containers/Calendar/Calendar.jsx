@@ -290,7 +290,7 @@ const Calendar = ({
       calendarRef.current.removeEventListener('mousemove', onMouseMove)
       document.removeEventListener('mouseup', onMouseUp)
     }
-  }, [calendarRef.current])
+  }, [calendarRef.current, startTime])
 
   //
   // Handle calendar resizing
@@ -420,6 +420,7 @@ const Calendar = ({
             id="calendar"
             ref={calendarRef}
             onMouseDown={onMouseDown}
+            onMouseUp={onMouseUp}
           />
         </div>
       </div>

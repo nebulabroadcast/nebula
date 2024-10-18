@@ -1,3 +1,5 @@
+import { drawTruncatedText } from './drawUtils'
+
 const drawEvents = (ctx, drawParams, events, draggedEvent) => {
   const { dayWidth, hourHeight, time2pos } = drawParams.current
   const maxY = ctx.canvas.height
@@ -26,7 +28,11 @@ const drawEvents = (ctx, drawParams, events, draggedEvent) => {
 
     const gradientEnd = startPos.y + eventHeight
     const gradient = ctx.createLinearGradient(0, startPos.y, 0, gradientEnd)
-    gradient.addColorStop(0, '#885bff')
+    const eventColor = event.color
+      ? `#${event.color.toString(16).padStart(6, '0')}`
+      : '#7287fd'
+
+    gradient.addColorStop(0, eventColor)
     gradient.addColorStop(1, 'transparent')
 
     ctx.fillStyle = gradient
@@ -40,9 +46,17 @@ const drawEvents = (ctx, drawParams, events, draggedEvent) => {
 
     // event title
 
-    ctx.font = '12px Arial'
+    ctx.font = '12px Noto Sans'
     ctx.fillStyle = '#fff'
-    ctx.fillText(title, startPos.x + 15, startPos.y + 15)
+    drawTruncatedText(
+      ctx,
+      startPos.x + 15,
+      startPos.y + 15,
+      dayWidth - 20,
+      title
+    )
+
+    //ctx.fillText(title, startPos.x + 15, startPos.y + 15)
   }
 }
 
