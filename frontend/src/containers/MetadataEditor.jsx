@@ -4,11 +4,12 @@ import { useMemo } from 'react'
 
 import { Form, FormRow, Select } from '/src/components'
 import {
-  InputText,
-  InputInteger,
-  TextArea,
+  InputColor,
   InputDatetime,
+  InputInteger,
   InputSwitch,
+  InputText,
+  TextArea,
 } from '/src/components'
 
 const EditorField = ({
@@ -47,6 +48,8 @@ const EditorField = ({
         return 0
       case 'boolean':
         return false
+      case 'color':
+        return 0
       default:
         return undefined
     }
@@ -120,6 +123,11 @@ const EditorField = ({
         <InputInteger value={value} onChange={onChange} disabled={disabled} />
       )
       break
+    case 'color':
+      editor = (
+        <InputColor value={value} onChange={onChange} disabled={disabled} />
+      )
+      break
     default:
       editor = <InputText value={value} onChange={onChange} disabled={true} />
   }
@@ -137,20 +145,21 @@ const EditorField = ({
   )
 }
 
-const EditorForm = ({
+const MetadataEditor = ({
   originalData,
-  assetData,
-  setAssetData,
+  objectData,
+  setObjectData,
   fields,
   onSave,
   disabled,
 }) => {
   const onFieldChanged = (key, value) =>
-    setAssetData((o) => {
+    setObjectData((o) => {
       return { ...o, [key]: value }
     })
 
   function handleKeyDown(event) {
+    if (!onSave) return
     if (event.ctrlKey && event.key === 's') {
       event.preventDefault() // prevent default browser behavior (saving the page)
       onSave()
@@ -163,7 +172,7 @@ const EditorForm = ({
         <EditorField
           key={field.name}
           field={field}
-          value={assetData[field.name]}
+          value={objectData[field.name]}
           originalValue={originalData[field.name]}
           onFieldChanged={onFieldChanged}
           disabled={disabled}
@@ -173,4 +182,4 @@ const EditorForm = ({
   )
 }
 
-export default EditorForm
+export default MetadataEditor

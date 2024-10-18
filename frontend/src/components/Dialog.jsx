@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import styled from 'styled-components'
+import clsx from 'clsx'
 
 const StyledDialog = styled.dialog`
   color: var(--color-text);
@@ -15,12 +16,27 @@ const StyledDialog = styled.dialog`
   max-height: 80%;
   border: none;
 
+  // Animated parameters
+
   transition: all 0.3s ease;
+  opacity: 0;
+  transform: scale(0.9);
 
   &::backdrop {
-    background-color: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(2px);
+    background-color: rgba(0, 0, 0, 0);
+    backdrop-filter: none;
   }
+
+  &[open] {
+    opacity: 1;
+    transform: scale(1);
+    &::backdrop {
+      background-color: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(2px);
+    }
+  }
+
+  // Guts
 
   header,
   footer {
@@ -97,7 +113,7 @@ const Dialog = ({
 
   return (
     <StyledDialog
-      className={className}
+      className={clsx(className, 'enter-active')}
       style={style}
       ref={dialogRef}
       onClick={onShadeClick}

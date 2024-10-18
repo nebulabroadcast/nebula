@@ -24,6 +24,7 @@
   --font-size: 0.9rem;
   --gap-size: 6px;
   --section-gap: 6px;
+  color-scheme: dark;
 }
 
 // Hacks
@@ -162,4 +163,11 @@ section {
   left: 0;
   right: 0;
   bottom: 0;
+}
+
+.no-scroll {
+  overflow: hidden !important;
+  tr {
+    cursor: grabbing !important;
+  }
 }

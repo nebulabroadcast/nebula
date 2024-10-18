@@ -122,6 +122,8 @@ const NavBar = () => {
         {false && nebula.settings.system.ui_asset_preview && (
           <NavLink to={`/mam/preview${mamSuffix}`}>Preview</NavLink>
         )}
+        <NavLink to={`/mam/scheduler`}>Scheduler</NavLink>
+        <NavLink to={`/mam/rundown`}>Rundown</NavLink>
         <NavLink to="/jobs">Jobs</NavLink>
         {!nebula.user.is_limited && (
           <>
