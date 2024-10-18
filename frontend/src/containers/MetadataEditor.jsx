@@ -4,11 +4,12 @@ import { useMemo } from 'react'
 
 import { Form, FormRow, Select } from '/src/components'
 import {
-  InputText,
-  InputInteger,
-  TextArea,
+  InputColor,
   InputDatetime,
+  InputInteger,
   InputSwitch,
+  InputText,
+  TextArea,
 } from '/src/components'
 
 const EditorField = ({
@@ -47,6 +48,8 @@ const EditorField = ({
         return 0
       case 'boolean':
         return false
+      case 'color':
+        return 0
       default:
         return undefined
     }
@@ -118,6 +121,11 @@ const EditorField = ({
     case 'integer':
       editor = (
         <InputInteger value={value} onChange={onChange} disabled={disabled} />
+      )
+      break
+    case 'color':
+      editor = (
+        <InputColor value={value} onChange={onChange} disabled={disabled} />
       )
       break
     default:
