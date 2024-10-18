@@ -7,32 +7,38 @@ const BaseColorInput = styled(BaseInput)`
   width: 30px;
 `
 
+const COLOR_PRESETS = [
+  '#dc8a78',
+  '#dd7878',
+  '#ea76cb',
+  '#8839ef',
+  '#d20f39',
+  '#e64553',
+  '#fe640b',
+  '#df8e1d',
+  '#40a02b',
+  '#179299',
+  '#04a5e5',
+  '#209fb5',
+  '#1e66f5',
+  '#7287fd',
+  '#4c4f69',
+]
+
 const InputColor = ({ value, onChange, tooltip, ...props }) => {
   /*
   Nebula stores color as integer so we need to convert it to hex
   */
 
   const hexValue = useMemo(() => {
-    if (!value) return '#885bff'
-    const hval = `#${value.toString(16).padStart(6, '0')}`
-    console.log('hexValue', value, '->', hval)
-    return hval
+    if (!value) return '#7287fd'
+    return `#${value.toString(16).padStart(6, '0')}`
   }, [value])
 
   const setColor = (hex) => {
     if (!hex) return null
-    const intVal = parseInt(hex.slice(1), 16)
-    console.log('setColor', hex, '->', intVal)
-    onChange(intVal)
+    onChange(parseInt(hex.slice(1), 16))
   }
-
-  const presetColors = useMemo(() => {
-    return Object.keys(defaultTheme.colors)
-      .filter(
-        (color) => !(color.startsWith('surface') || color.startsWith('text'))
-      )
-      .map((color) => defaultTheme[color])
-  }, [])
 
   return (
     <>
@@ -45,7 +51,7 @@ const InputColor = ({ value, onChange, tooltip, ...props }) => {
         {...props}
       />
       <datalist id="presetColors">
-        {presetColors.map((color) => (
+        {COLOR_PRESETS.map((color) => (
           <option key={color} value={color} />
         ))}
       </datalist>
