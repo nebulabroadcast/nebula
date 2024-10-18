@@ -16,15 +16,13 @@ const Scheduler = ({ draggedAsset }) => {
   const [events, setEvents] = useState([])
   const [editorData, setEditorData] = useState(null)
 
-  const startTs = useMemo(() => startTime.getTime() / 1000, [startTime])
-
   const onResponse = (response) => {
     const events = response.data.events
+    const startTs = startTime.getTime() / 1000
     setEvents(events.filter((e) => e.start >= startTs))
   }
 
   const onError = (error) => {
-    console.log(error.response)
     toast.error(
       <>
         <strong>Scheduler API error</strong>
