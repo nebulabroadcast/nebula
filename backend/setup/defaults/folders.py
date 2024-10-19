@@ -60,7 +60,7 @@ FOLDERS: list[FolderSettings] = [
     ),
     FolderSettings(
         id=2,
-        name="Serie",
+        name="Episode",
         color="#0397bb",
         fields=[
             *primary_description,
@@ -183,7 +183,7 @@ FOLDERS: list[FolderSettings] = [
     ),
     FolderSettings(
         id=13,
-        name="Series",
+        name="Serie",
         color="#a0aac5",
         fields=[
             *primary_description,
