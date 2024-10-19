@@ -175,7 +175,7 @@ def build_order(order_by: str) -> str:
         order_by = f"meta->>'{order_by}'"
 
     if cast_order_by:
-        order_by = f"CAST({order_by} AS {cast_order_by})"
+        order_by = f"COALESCE(CAST({order_by} AS {cast_order_by}), 0)"
 
     return order_by
 
