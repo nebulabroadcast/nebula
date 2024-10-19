@@ -70,6 +70,8 @@ class InitResponseModel(ResponseModel):
         ),
     ] = None
 
+    experimental: Annotated[bool | None, Field(title="Enable experimental features")] = None
+
 
 class InitRequest(APIRequest):
     """Initial client request to ensure user is logged in.
@@ -102,7 +104,10 @@ class InitRequest(APIRequest):
         # Not logged in. Only return motd and oauth2 options.
         # TODO: return oauth2 options
         if user is None:
-            return InitResponseModel(motd=motd)
+            return InitResponseModel(
+                motd=motd,
+                experimental=nebula.config.enable_experimental or None,
+            )
 
         # TODO: get preferred user language
         lang: LanguageCode = user.language
@@ -119,4 +124,5 @@ class InitRequest(APIRequest):
             settings=client_settings,
             frontend_plugins=plugins,
             scoped_endpoints=server_context.scoped_endpoints,
+            experimental=nebula.config.enable_experimental or None,
         )
