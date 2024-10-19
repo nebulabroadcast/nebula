@@ -6,9 +6,9 @@ const ContextMenuWrapper = styled.div`
   position: fixed;
   display: inline-block;
 
-  background-color: var(--color-surface-04);
+  background-color: var(--color-surface-02);
   min-width: 100px;
-  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.4);
   z-index: 1;
 
   hr {
@@ -26,7 +26,7 @@ const ContextMenuWrapper = styled.div`
     padding: 20px 10px;
 
     &:hover {
-      background-color: var(--color-surface-03);
+      background-color: var(--color-surface-04);
     }
 
     &:active,

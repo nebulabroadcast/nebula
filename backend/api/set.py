@@ -154,8 +154,8 @@ async def can_modify_object(obj: BaseObject, user: nebula.User) -> None:
 class OperationsRequest(APIRequest):
     """Create or update multiple objects in one requests."""
 
-    name: str = "ops"
-    title: str = "Save multiple objects"
+    name = "ops"
+    title = "Operations"
     response_model = OperationsResponseModel
 
     async def handle(

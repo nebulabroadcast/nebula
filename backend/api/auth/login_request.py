@@ -1,19 +1,13 @@
 import time
 
-from fastapi import Header, Request, Response
+from fastapi import Request
 from pydantic import Field
 
 import nebula
 from server.clientinfo import get_real_ip
-from server.dependencies import CurrentUser
 from server.models import RequestModel, ResponseModel
 from server.request import APIRequest
 from server.session import Session
-from server.utils import parse_access_token
-
-#
-# Models
-#
 
 
 class LoginRequestModel(RequestModel):
@@ -38,16 +32,6 @@ class LoginResponseModel(ResponseModel):
         description="Access token to be used in Authorization header"
         "for the subsequent requests",
     )
-
-
-class PasswordRequestModel(RequestModel):
-    login: str | None = Field(None, title="Login", examples=["admin"])
-    password: str = Field(..., title="Password", examples=["Password.123"])
-
-
-#
-# Request
-#
 
 
 async def check_failed_login(ip_address: str) -> None:
@@ -121,65 +105,3 @@ class LoginRequest(APIRequest):
 
         session = await Session.create(user, request)
         return LoginResponseModel(access_token=session.token)
-
-
-class LogoutRequest(APIRequest):
-    """Log out the current user.
-
-    This request will invalidate the access token used in the Authorization header.
-    """
-
-    name: str = "logout"
-    title: str = "Logout"
-
-    async def handle(self, authorization: str | None = Header(None)) -> None:
-        if not authorization:
-            raise nebula.UnauthorizedException("No authorization header provided")
-
-        access_token = parse_access_token(authorization)
-        if not access_token:
-            raise nebula.UnauthorizedException("Invalid authorization header provided")
-
-        await Session.delete(access_token)
-
-        raise nebula.UnauthorizedException("Logged out")
-
-
-class SetPassword(APIRequest):
-    """Set a new password for the current (or a given) user.
-
-    Normal users can only change their own password.
-
-    In order to set a password for another user,
-    the current user must be an admin, otherwise a 403 error is returned.
-    """
-
-    name: str = "password"
-    title: str = "Set password"
-
-    async def handle(
-        self,
-        request: PasswordRequestModel,
-        user: CurrentUser,
-    ) -> Response:
-        if request.login:
-            if not user.is_admin:
-                raise nebula.ForbiddenException(
-                    "Only admin can change other user's password"
-                )
-            query = "SELECT meta FROM users WHERE login = $1"
-            async for row in nebula.db.iterate(query, request.login):
-                target_user = nebula.User.from_row(row)
-                break
-            else:
-                raise nebula.NotFoundException(f"User {request.login} not found")
-        else:
-            target_user = user
-
-        if len(request.password) < 8:
-            raise nebula.BadRequestException("Password is too short")
-
-        target_user.set_password(request.password)
-        await target_user.save()
-
-        return Response(status_code=204)

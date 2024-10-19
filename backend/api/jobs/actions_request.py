@@ -33,8 +33,8 @@ class ActionsResponseModel(ResponseModel):
 class ActionsRequest(APIRequest):
     """List available actions for given list of assets"""
 
-    name: str = "actions"
-    title: str = "Get available actions"
+    name = "actions"
+    title = "Get available actions"
     response_model = ActionsResponseModel
 
     async def handle(
