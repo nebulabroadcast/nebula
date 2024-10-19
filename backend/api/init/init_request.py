@@ -70,7 +70,7 @@ class InitResponseModel(ResponseModel):
         ),
     ] = None
 
-    enable_experimental: Annotated[bool, Field(title="Enable experimental features")] = False
+    experimental: Annotated[bool | None, Field(title="Enable experimental features")] = None
 
 
 class InitRequest(APIRequest):
@@ -106,7 +106,7 @@ class InitRequest(APIRequest):
         if user is None:
             return InitResponseModel(
                 motd=motd,
-                enable_experimental=nebula.config.enable_experimental,
+                experimental=nebula.config.enable_experimental or None,
             )
 
         # TODO: get preferred user language
@@ -124,5 +124,5 @@ class InitRequest(APIRequest):
             settings=client_settings,
             frontend_plugins=plugins,
             scoped_endpoints=server_context.scoped_endpoints,
-            enable_experimental=nebula.config.enable_experimental,
+            experimental=nebula.config.enable_experimental or None,
         )
