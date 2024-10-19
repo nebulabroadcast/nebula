@@ -26,17 +26,7 @@ import AssigneesButton from './AssigneesButton'
 
 import contentType from 'content-type'
 
-const AssetEditorNav = ({
-  assetData,
-  onNewAsset,
-  onCloneAsset,
-  onRevert,
-  onSave,
-  setMeta,
-  previewVisible,
-  setPreviewVisible,
-  enabledActions,
-}) => {
+const AssetEditorNav = ({ assetData, setMeta, enabledActions }) => {
   const [detailsVisible, setDetailsVisible] = useState(false)
   const [contextActionResult, setContextActionResult] = useState(null)
   const dispatch = useDispatch()
@@ -135,73 +125,54 @@ const AssetEditorNav = ({
         />
       )}
 
-      <Button
-        icon="add"
-        onClick={onNewAsset}
-        label="New asset"
-        disabled={!enabledActions.create}
-      />
-      <Button
-        icon="content_copy"
-        onClick={onCloneAsset}
-        label="Clone asset"
-        disabled={!enabledActions.clone}
+      <Dropdown
+        options={folderOptions}
+        buttonStyle={{
+          borderLeft: ` 4px solid ${currentFolder?.color}`,
+          minWidth: 130,
+          width: 130,
+        }}
+        label={currentFolder?.name || 'no folder'}
+        disabled={!enabledActions.folderChange}
       />
 
-      <Spacer />
+      <InputTimecode
+        value={assetData?.duration}
+        fps={fps}
+        onChange={(val) => setMeta('duration', val)}
+        tooltip="Asset duration"
+        readOnly={assetData.status || !enabledActions.edit}
+      />
 
-      {nebula.settings.system.ui_asset_preview && (
-        <Button
-          icon="visibility"
-          onClick={() => setPreviewVisible(!previewVisible)}
-          active={previewVisible}
-          tooltip="Toggle video preview"
+      <ToolbarSeparator />
+
+      {enabledActions.advanced && (
+        <AssigneesButton
+          assignees={assetData?.assignees || []}
+          setAssignees={(val) => setMeta('assignees', val)}
         />
       )}
 
-      <ToolbarSeparator />
+      <Spacer />
 
-      <Button
-        icon="flag"
-        style={{ color: 'var(--color-text)' }}
-        tooltip="Revert QC state"
-        onClick={() => setMeta('qc/state', 0)}
-        className={!(assetData && assetData['qc/state']) ? 'active' : ''}
-        disabled={!enabledActions.flag}
-      />
-      <Button
-        icon="flag"
-        style={{ color: 'var(--color-red)' }}
-        tooltip="Reject asset"
-        onClick={() => setMeta('qc/state', 3)}
-        className={assetData && assetData['qc/state'] === 3 ? 'active' : ''}
-        active={assetData && assetData['qc/state'] === 3}
-        disabled={!enabledActions.flag}
-      />
-      <Button
-        icon="flag"
-        style={{ color: 'var(--color-green)' }}
-        tooltip="Approve asset"
-        onClick={() => setMeta('qc/state', 4)}
-        className={assetData && assetData['qc/state'] === 4 ? 'active' : ''}
-        active={assetData && assetData['qc/state'] === 4}
-        disabled={!enabledActions.flag}
-      />
+      {enabledActions.advanced && (
+        <>
+          <Dropdown
+            options={assetActions}
+            disabled={!enabledActions.actions}
+            label="Actions"
+          />
+          <Button
+            icon="manage_search"
+            label="Details"
+            onClick={() => setDetailsVisible(true)}
+          />
+        </>
+      )}
 
-      <ToolbarSeparator />
-
-      <Button
-        icon="backspace"
-        label="Discard changes"
-        onClick={onRevert}
-        disabled={!enabledActions.revert}
-      />
-      <Button
-        icon="check"
-        label="Save asset"
-        onClick={() => onSave()}
-        disabled={!enabledActions.save}
-      />
+      {nebula.settings?.system?.ui_asset_upload && (
+        <UploadButton assetData={assetData} disabled={!enabledActions.upload} />
+      )}
     </Navbar>
   )
 }

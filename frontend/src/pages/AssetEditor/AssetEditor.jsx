@@ -17,6 +17,7 @@ import {
 import { Loader } from '/src/components'
 
 import AssetEditorNav from './EditorNav'
+import AssetMainProps from './AssetMainProps'
 import EditorForm from './EditorForm'
 import Preview from './Preview'
 
@@ -294,6 +295,42 @@ const AssetEditor = () => {
 
   // Render
 
+  const mainComponent = previewVisible ? (
+    <div className="grow row">
+      <Preview assetData={assetData} setAssetData={setAssetData} />
+    </div>
+  ) : (
+    <main className="grow column">
+      <AssetMainProps
+        assetData={assetData}
+        setMeta={setMeta}
+        enabledActions={enabledActions}
+      />
+      <section
+        className={clsx('grow', 'column', {
+          'section-changed': isChanged,
+        })}
+        style={{ minWidth: 500 }}
+      >
+        <div className="contained" style={{ overflowY: 'scroll', padding: 10 }}>
+          {loading && (
+            <div className="contained center">
+              <Loader />
+            </div>
+          )}
+          <EditorForm
+            onSave={onSave}
+            originalData={originalData}
+            assetData={assetData}
+            setAssetData={setAssetData}
+            fields={fields}
+            disabled={!enabledActions.edit}
+          />
+        </div>
+      </section>
+    </main>
+  )
+
   return (
     <div className="grow column">
       <AssetEditorNav
@@ -308,42 +345,7 @@ const AssetEditor = () => {
         setPreviewVisible={setPreviewVisible}
         enabledActions={enabledActions}
       />
-
-      {Object.keys(assetData || {}).length ? (
-        <div className="grow row">
-          {!previewVisible && (
-            <section
-              className={clsx('grow', 'column', {
-                'section-changed': isChanged,
-              })}
-              style={{ minWidth: 500 }}
-            >
-              <div
-                className="contained"
-                style={{ overflowY: 'scroll', padding: 10 }}
-              >
-                {loading && (
-                  <div className="contained center">
-                    <Loader />
-                  </div>
-                )}
-                <EditorForm
-                  onSave={onSave}
-                  originalData={originalData}
-                  assetData={assetData}
-                  setAssetData={setAssetData}
-                  fields={fields}
-                  disabled={!enabledActions.edit}
-                />
-              </div>
-            </section>
-          )}
-
-          {previewVisible && (
-            <Preview assetData={assetData} setAssetData={setAssetData} />
-          )}
-        </div>
-      ) : null}
+      {Object.keys(assetData || {}).length && mainComponent}
       <ConfirmDialog />
     </div>
   )

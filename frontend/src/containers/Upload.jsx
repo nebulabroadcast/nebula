@@ -231,7 +231,7 @@ const UploadButton = ({ assetData, disabled }) => {
       )}
       <Button
         icon="upload"
-        tooltip="Upload media file"
+        label="Upload media"
         onClick={() => setDialogVisible(true)}
         disabled={disabled}
       />
