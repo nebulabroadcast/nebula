@@ -1,38 +1,67 @@
 import Table from '/src/components/table'
 import { useMemo } from 'react'
+import styled from 'styled-components'
+import nebula from '/src/nebula'
 
-const formatTime = (rowData, key) => {
-  const timestamp = rowData[key]
-  const date = new Date(timestamp * 1000)
-  // format to hh:mm:ss
-  const ftime = date.toTimeString().split(' ')[0]
-  return <td>{ftime}</td>
+import {
+  getColumnWidth,
+  getFormatter,
+  formatRowHighlightColor,
+  formatRowHighlightStyle,
+} from '/src/tableFormatting.jsx'
+
+const RundownWrapper = styled.section`
+  tbody {
+    .event-row {
+      background-color: black;
+      font-weight: bold;
+    }
+  }
+`
+
+const getRowClass = (rowData) => {
+  if (rowData.type === 'event') {
+    return 'event-row'
+  }
 }
 
-const RundownTable = ({ data }) => {
-  const columns = useMemo(
-    () => [
-      {
-        title: 'Title',
-        name: 'title',
-      },
-      {
-        title: 'Scheduled',
-        name: 'scheduled_time',
-        width: 100,
-        formatter: formatTime,
-      },
-      {
-        title: 'Broacast',
-        name: 'broadcast_time',
-        width: 100,
-        formatter: formatTime,
-      },
-    ],
-    []
-  )
+const COLUMNS = [
+  'title',
+  'id_folder',
+  'status',
+  'duration',
+  'scheduled_time',
+  'broadcast_time',
+  'mark_in',
+  'mark_out',
+]
 
-  return <Table columns={columns} data={data} className="contained" />
+const RundownTable = ({ data }) => {
+  const columns = useMemo(() => {
+    return COLUMNS.map((key) => {
+      return {
+        key: key,
+        title: nebula.metaHeader(key),
+        name: key,
+        width: getColumnWidth(key),
+        formatter: getFormatter(key),
+      }
+    })
+  }, [])
+
+  return (
+    <RundownWrapper className="grow nopad">
+      <Table
+        keyField="id"
+        columns={columns}
+        data={data}
+        className="contained"
+        rowClass={getRowClass}
+        rowHighlightColor={formatRowHighlightColor}
+        rowHighlightStyle={formatRowHighlightStyle}
+      />
+    </RundownWrapper>
+  )
 }
 
 export default RundownTable

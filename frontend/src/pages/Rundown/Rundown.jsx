@@ -28,9 +28,7 @@ const Rundown = () => {
   return (
     <main className="column">
       <RundownNav startTime={startTime} setStartTime={setStartTime} />
-      <section className="grow nopad">
-        <RundownTable data={rundown} />
-      </section>
+      <RundownTable data={rundown} />
     </main>
   )
 }
