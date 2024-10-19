@@ -59,6 +59,11 @@ class NebulaConfig(BaseModel):
         description="Logging level",
     )
 
+    enable_experimental: bool = Field(
+        False,
+        description="Enable experimental features",
+    )
+
 
 def load_config() -> NebulaConfig:
     prefix = "NEBULA_"
