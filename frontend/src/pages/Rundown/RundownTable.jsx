@@ -14,7 +14,6 @@ const RundownWrapper = styled.section`
   tbody {
     .event-row {
       background-color: black;
-      font-weight: bold;
     }
   }
 `

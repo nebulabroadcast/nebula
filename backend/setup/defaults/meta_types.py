@@ -90,11 +90,13 @@ META_TYPES = {
     "broadcast_time": {
         "ns": "v",
         "type": T.DATETIME,
+        "mode": "time",
         "format": "%H:%M:%S",
     },
     "scheduled_time": {
         "ns": "v",
         "type": T.DATETIME,
+        "mode": "time",
         "format": "%H:%M:%S",
     },
     "rundown_difference": {

@@ -6,9 +6,10 @@ const DateTime = styled.div`
   flex-direction: row;
   gap: 8px;
   align-items: center;
-  font-size: 0.9rem;
-  > span:first-child {
-    color: ${(props) => props.theme.colors.textDim};
+  font-size: 1rem;
+  color: ${(props) => props.theme.colors.textDim};
+  > span:last-child {
+    color: ${(props) => props.theme.colors.text};
   }
 `
 
@@ -39,7 +40,7 @@ const Timestamp = ({ timestamp, mode, ...props }) => {
 
   return (
     <DateTime {...props}>
-      <span>{localDate}</span>
+      {!(mode === 'time') && <span>{localDate}</span>}
       {!(mode === 'date') && <span>{localTime}</span>}
     </DateTime>
   )
