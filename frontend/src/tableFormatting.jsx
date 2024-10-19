@@ -117,11 +117,30 @@ const getDefaultFormatter = (key) => {
 }
 
 const getFormatter = (key) => {
-  if (['title', 'subtitle', 'description'].includes(key))
+  if (['subtitle', 'description'].includes(key))
     // eslint-disable-next-line
     return (rowData, key) => <td>{rowData[key]}</td>
 
   switch (key) {
+    case 'title':
+      return (rowData, key) => {
+        const title = rowData[key]
+        const subtitle = rowData.subtitle
+        return (
+          <td>
+            <span>{title}</span>
+            {subtitle && (
+              <>
+                <span style={{ color: 'var(--color-text-dim)' }}>
+                  {nebula.settings.system.subtitle_separator}
+                  {subtitle}
+                </span>
+              </>
+            )}
+          </td>
+        )
+      }
+
     case 'qc/state':
       // eslint-disable-next-line
       return (rowData, key) => {

@@ -109,13 +109,15 @@ const BrowserTable = ({ isDragging }) => {
           setSortDirection(response.data.order_dir)
 
         let cols = []
-        for (const colName of response.data.columns)
+        for (const colName of response.data.columns) {
+          if (colName == 'subtitle') continue // added automatically
           cols.push({
             name: colName,
             title: nebula.metaHeader(colName),
             formatter: getFormatter(colName),
             width: getColumnWidth(colName),
           })
+        }
         setColumns(cols)
         setHasMore(hasMore)
       })
