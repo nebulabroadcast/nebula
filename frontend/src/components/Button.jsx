@@ -10,11 +10,22 @@ const BaseButton = styled.button`
   background: ${(props) => props.theme.inputBackground};
   color: ${(props) => props.theme.colors.text};
   font-size: ${(props) => props.theme.fontSize};
-  padding-left: ${(props) => props.theme.inputPadding};
-  padding-right: ${(props) => props.theme.inputPadding};
+  padding-left: 12px;
+  padding-right: 12px;
   min-height: ${(props) => props.theme.inputHeight};
   max-height: ${(props) => props.theme.inputHeight};
   min-width: ${(props) => props.theme.inputHeight} !important;
+
+  &.icon-only {
+    padding: 0;
+    min-width: ${(props) => props.theme.inputHeight};
+    max-width: ${(props) => props.theme.inputHeight};
+    min-height: ${(props) => props.theme.inputHeight};
+    max-height: ${(props) => props.theme.inputHeight};
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 
   user-select: none;
   user-drag: none;
@@ -22,7 +33,7 @@ const BaseButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 8px;
   cursor: pointer;
   white-space: nowrap;
 
@@ -76,7 +87,7 @@ const Button = forwardRef(
     return (
       <BaseButton
         {...props}
-        className={clsx(className, { active })}
+        className={clsx(className, { active }, !label && 'icon-only')}
         title={tooltip}
         ref={ref}
       >

@@ -31,7 +31,7 @@ const AssigneesButton = ({ assignees, setAssignees }) => {
       )}
       <Button
         icon="person"
-        tooltip="Assignees"
+        label="Assignees"
         onClick={() => setDialogVisible(true)}
         active={assignees?.length > 0}
       />

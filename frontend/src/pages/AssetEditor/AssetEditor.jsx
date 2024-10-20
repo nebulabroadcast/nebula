@@ -17,6 +17,7 @@ import {
 import { Loader } from '/src/components'
 
 import AssetEditorNav from './EditorNav'
+import AssetMainProps from './AssetMainProps'
 import MetadataEditor from '/src/containers/MetadataEditor'
 import Preview from './Preview'
 
@@ -69,10 +70,7 @@ const AssetEditor = () => {
   const [originalData, setOriginalData] = useState({})
   const [loading, setLoading] = useState(false)
   const [ConfirmDialog, confirm] = useConfirm()
-  const [previewVisible, setPreviewVisible] = useLocalStorage(
-    'previewVisible',
-    false
-  )
+  const [editorMode, setEditorMode] = useLocalStorage('editorMode', 'metadata')
 
   // Load asset data
 
@@ -294,24 +292,23 @@ const AssetEditor = () => {
 
   // Render
 
-  return (
-    <div className="grow column">
-      <AssetEditorNav
-        assetData={assetData}
-        onNewAsset={onNewAsset}
-        onCloneAsset={onCloneAsset}
-        onRevert={onRevert}
-        onSave={onSave}
-        setMeta={setMeta}
-        isChanged={isChanged}
-        previewVisible={previewVisible}
-        setPreviewVisible={setPreviewVisible}
-        enabledActions={enabledActions}
-      />
+  const mainComponent = () => {
+    switch (editorMode) {
+      case 'preview':
+        return (
+          <div className="grow row">
+            <Preview assetData={assetData} setAssetData={setAssetData} />
+          </div>
+        )
 
-      {Object.keys(assetData || {}).length ? (
-        <div className="grow row">
-          {!previewVisible && (
+      default:
+        return (
+          <main className="grow column">
+            <AssetMainProps
+              assetData={assetData}
+              setMeta={setMeta}
+              enabledActions={enabledActions}
+            />
             <section
               className={clsx('grow', 'column', {
                 'section-changed': isChanged,
@@ -337,13 +334,26 @@ const AssetEditor = () => {
                 />
               </div>
             </section>
-          )}
+          </main>
+        )
+    }
+  }
 
-          {previewVisible && (
-            <Preview assetData={assetData} setAssetData={setAssetData} />
-          )}
-        </div>
-      ) : null}
+  return (
+    <div className="grow column">
+      <AssetEditorNav
+        assetData={assetData}
+        onNewAsset={onNewAsset}
+        onCloneAsset={onCloneAsset}
+        onRevert={onRevert}
+        onSave={onSave}
+        setMeta={setMeta}
+        isChanged={isChanged}
+        editorMode={editorMode}
+        setEditorMode={setEditorMode}
+        enabledActions={enabledActions}
+      />
+      {Object.keys(assetData || {}).length && mainComponent()}
       <ConfirmDialog />
     </div>
   )
