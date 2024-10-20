@@ -32,6 +32,7 @@ const App = () => {
       .then((response) => {
         setInitData(response.data)
         nebula.settings = response.data.settings
+        nebula.experimental = response.data.experimental || false
         nebula.plugins = response.data.frontend_plugins || []
         nebula.scopedEndpoints = response.data.scoped_endpoints || []
         nebula.user = response.data.user || {}

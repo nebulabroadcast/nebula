@@ -1,0 +1,69 @@
+// Coloring stuff
+
+.qc-state {
+  div {
+    display: inline-block;
+    &::before {
+      content: '⚑';
+    }
+  }
+
+  &.new {
+    color: var(--color-text);
+  }
+  &.rejected {
+    color: var(--color-red);
+  }
+  &.accepted {
+    color: var(--color-green);
+  }
+}
+
+.qc-state-3 {
+  color: var(--color-red);
+}
+
+.qc-state-4 {
+  color: var(--color-green);
+}
+
+.status {
+  text-transform: uppercase;
+  &.offline {
+    color: var(--color-red) !important;
+  }
+  &.online {
+    color: var(--color-green) !important;
+  }
+  &.creating {
+    color: var(--color-yellow) !important;
+  }
+  &.trashed {
+    color: var(--color-text-dim) !important;
+  }
+  &.archived {
+    color: var(--color-blue) !important;
+  }
+  &.reset {
+    color: var(--color-yellow) !important;
+  }
+  &.corrupted {
+    color: var(--color-red) !important;
+  }
+  &.remote {
+    color: var(--color-yellow) !important;
+  }
+  &.unknown {
+    color: var(--color-yellow) !important;
+  }
+  &.aired {
+    color: var(--color-text-dim) !important;
+  }
+  &.onair {
+    background-color: var(--color-red) !important;
+    color: white !important;
+  }
+  &.retrieving {
+    color: var(--color-yellow) !important;
+  }
+}

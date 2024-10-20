@@ -172,6 +172,7 @@ async def get_rundown(request: RundownRequestModel) -> RundownResponseModel:
             id_asset=id_asset,
             id_bin=id_bin,
             id_event=id_event,
+            id_folder=asset["id_folder"] if asset else None,
             duration=duration,
             status=istatus,
             transfer_progress=transfer_progress,

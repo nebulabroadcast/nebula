@@ -26,6 +26,7 @@ class RundownRow(ResponseModel):
     title: str | None = Field(None)
     subtitle: str | None = Field(None)
     id_asset: int | None = Field(None)
+    id_folder: int | None = Field(None)
     asset_mtime: float | None = Field(None)
     status: ObjectStatus | None = Field(None)
     transfer_progress: int | None = Field(None)

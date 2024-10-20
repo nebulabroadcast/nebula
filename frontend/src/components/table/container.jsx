@@ -69,7 +69,7 @@ const TableWrapper = styled.div`
         display: block;
         z-index: 0;
         width: 0;
-        opacity: 0; 
+        opacity: 0;
         content: "";
       }
     }

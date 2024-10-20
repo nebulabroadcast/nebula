@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { toast } from 'react-toastify'
 import { debounce } from 'lodash'
+import clsx from 'clsx'
 
 import { Table } from '/src/components'
 import Pagination from '/src/containers/Pagination'
@@ -21,11 +22,11 @@ import {
   getFormatter,
   formatRowHighlightColor,
   formatRowHighlightStyle,
-} from './Formatting.jsx'
+} from '/src/tableFormatting.jsx'
 
 const ROWS_PER_PAGE = 200
 
-const BrowserTable = () => {
+const BrowserTable = ({ isDragging }) => {
   const currentView = useSelector((state) => state.context.currentView?.id)
   const searchQuery = useSelector((state) => state.context.searchQuery)
   const selectedAssets = useSelector((state) => state.context.selectedAssets)
@@ -108,13 +109,15 @@ const BrowserTable = () => {
           setSortDirection(response.data.order_dir)
 
         let cols = []
-        for (const colName of response.data.columns)
+        for (const colName of response.data.columns) {
+          if (colName == 'subtitle') continue // added automatically
           cols.push({
             name: colName,
             title: nebula.metaHeader(colName),
             formatter: getFormatter(colName),
             width: getColumnWidth(colName),
           })
+        }
         setColumns(cols)
         setHasMore(hasMore)
       })
@@ -263,13 +266,15 @@ const BrowserTable = () => {
     },
   ]
 
+  const tableClass = clsx('contained', isDragging && 'no-scroll')
+
   return (
     <>
       <section className="grow">
         <Table
           data={data}
           columns={columns}
-          className="contained"
+          className={tableClass}
           keyField="id"
           selection={selectedAssets}
           onRowClick={onRowClick}
@@ -292,11 +297,11 @@ const BrowserTable = () => {
   )
 }
 
-const Browser = () => {
+const Browser = ({ isDragging }) => {
   return (
     <>
       <BrowserNav />
-      <BrowserTable />
+      <BrowserTable isDragging={isDragging} />
     </>
   )
 }

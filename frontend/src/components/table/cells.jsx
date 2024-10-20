@@ -1,4 +1,6 @@
 import { useMemo } from 'react'
+import { useDraggable } from '@dnd-kit/core'
+import clsx from 'clsx'
 
 const HeaderCell = ({ name, width, title, sortDirection, onSort }) => {
   let sortArrowElement = null
@@ -47,8 +49,21 @@ const DataRow = ({
   onRowClick,
   rowHighlightColor,
   rowHighlightStyle,
+  rowClass,
   selected = false,
 }) => {
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useDraggable({
+      id: rowData.id,
+      data: {
+        id: rowData.id,
+        type: 'asset',
+        duration: rowData.duration,
+        title: rowData.title,
+        subtitle: rowData.subtitle,
+      },
+    })
+
   const handleClick = (event) => {
     if (event.type === 'contextmenu' || event.button === 2) {
       // if we're right-clicking, and the row is already selected,
@@ -58,13 +73,19 @@ const DataRow = ({
 
     if (onRowClick) onRowClick(rowData, event)
   }
-  const rowStyle = {}
+
+  const rowStyle = {
+    opacity: isDragging ? 0.5 : 1,
+  }
+
+  let rowClassName = ''
 
   // Left-border highlight color
   let highlightColor = null
   let highlightStyle = null
   if (rowHighlightColor) highlightColor = rowHighlightColor(rowData)
   if (rowHighlightStyle) highlightStyle = rowHighlightStyle(rowData)
+  if (rowClass) rowClassName = rowClass(rowData)
   if (highlightColor) rowStyle['borderLeftColor'] = highlightColor
   if (highlightStyle) rowStyle['borderLeftStyle'] = highlightStyle
 
@@ -95,9 +116,12 @@ const DataRow = ({
 
   return (
     <tr
+      ref={setNodeRef}
       onClick={handleClick}
       onContextMenu={handleClick}
-      className={selected ? 'selected' : ''}
+      {...attributes}
+      {...listeners}
+      className={clsx(selected && 'selected', rowClassName)}
       style={rowStyle}
     >
       {rowContent}

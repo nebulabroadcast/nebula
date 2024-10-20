@@ -1,22 +1,33 @@
 import nebula from '/src/nebula'
+import clsx from 'clsx'
 import styled from 'styled-components'
 import { Timecode } from '@wfoxall/timeframe'
 import { Timestamp } from '/src/components'
 
-const QCState = styled.div`
-  display: inline-block;
-  &::before {
-    content: '⚑';
-  }
+import './tableFormatting.scss'
 
-  &.qc-state-3 {
-    color: var(--color-red);
-  }
+const QC_STATES = [
+  'new',
+  'auto_rejected',
+  'auto_accepted',
+  'rejected',
+  'accepted',
+]
 
-  &.qc-state-4 {
-    color: var(--color-green);
-  }
-`
+const STATUSES = [
+  'offline',
+  'online',
+  'creating',
+  'trashed',
+  'archived',
+  'reset',
+  'corrupted',
+  'remote',
+  'unknown',
+  'aired',
+  'onair',
+  'retrieving',
+]
 
 const formatRowHighlightColor = (rowData) => {
   switch (rowData['status']) {
@@ -32,6 +43,8 @@ const formatRowHighlightColor = (rowData) => {
       return 'var(--color-yellow)' // reset
     case 6:
       return 'var(--color-red)' // corrupted
+    case 7:
+      return 'var(--color-yellow)' // ready
     case 11:
       return 'var(--color-yellow)' // retrieving
     default:
@@ -44,6 +57,8 @@ const formatRowHighlightStyle = (rowData) => {
     case 5:
       return 'dashed'
     case 6:
+      return 'dashed'
+    case 7:
       return 'dashed'
     default:
       return 'solid'
@@ -69,7 +84,7 @@ const getDefaultFormatter = (key) => {
       // eslint-disable-next-line
       return (rowData, key) => (
         <td>
-          <Timestamp timestamp={rowData[key]} mode={metaType.mode} />{' '}
+          <Timestamp timestamp={rowData[key]} mode={metaType.mode} />
         </td>
       )
 
@@ -102,18 +117,40 @@ const getDefaultFormatter = (key) => {
 }
 
 const getFormatter = (key) => {
-  if (['title', 'subtitle', 'description'].includes(key))
+  if (['subtitle', 'description'].includes(key))
     // eslint-disable-next-line
     return (rowData, key) => <td>{rowData[key]}</td>
 
   switch (key) {
+    case 'title':
+      return (rowData, key) => {
+        const title = rowData[key]
+        const subtitle = rowData.subtitle
+        return (
+          <td>
+            <span>{title}</span>
+            {subtitle && (
+              <>
+                <span style={{ color: 'var(--color-text-dim)' }}>
+                  {nebula.settings.system.subtitle_separator}
+                  {subtitle}
+                </span>
+              </>
+            )}
+          </td>
+        )
+      }
+
     case 'qc/state':
       // eslint-disable-next-line
-      return (rowData, key) => (
-        <td>
-          <QCState className={`qc-state-${rowData[key]}`} />
-        </td>
-      )
+      return (rowData, key) => {
+        const qcState = QC_STATES[rowData[key]]
+        return (
+          <td className={clsx('qc-state', qcState)}>
+            <div />
+          </td>
+        )
+      }
 
     case 'id_folder':
       // eslint-disable-next-line
@@ -128,9 +165,26 @@ const getFormatter = (key) => {
       // eslint-disable-next-line
       return (rowData, key) => {
         const fps = rowData['video/fps_f'] || 25
-        const duration = rowData[key] || 0
+        let duration = rowData[key] || 0
+        if (rowData.mark_out) duration = rowData.mark_out
+        if (rowData.mark_in) duration -= rowData.mark_in
+        const trimmed = duration < rowData.duration
         const timecode = new Timecode(duration * fps, fps)
-        return <td>{timecode.toString().substring(0, 11)}</td>
+        const title =
+          trimmed &&
+          `Original duration ${new Timecode(rowData.duration * fps, fps)}`
+        return (
+          <td title={title || ''}>
+            {timecode.toString().substring(0, 11)}
+            {trimmed && '*'}
+          </td>
+        )
+      }
+
+    case 'status':
+      return (rowData, key) => {
+        const status = STATUSES[rowData[key]]
+        return <td className={clsx('status', status)}>{status}</td>
       }
 
     case 'created_by':

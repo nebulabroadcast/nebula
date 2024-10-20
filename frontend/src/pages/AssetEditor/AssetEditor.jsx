@@ -18,7 +18,7 @@ import { Loader } from '/src/components'
 
 import AssetEditorNav from './EditorNav'
 import AssetMainProps from './AssetMainProps'
-import EditorForm from './EditorForm'
+import MetadataEditor from '/src/containers/MetadataEditor'
 import Preview from './Preview'
 
 const getEnabledActions = ({ assetData, isChanged }) => {
@@ -324,11 +324,11 @@ const AssetEditor = () => {
                     <Loader />
                   </div>
                 )}
-                <EditorForm
+                <MetadataEditor
                   onSave={onSave}
                   originalData={originalData}
-                  assetData={assetData}
-                  setAssetData={setAssetData}
+                  objectData={assetData}
+                  setObjectData={setAssetData}
                   fields={fields}
                   disabled={!enabledActions.edit}
                 />

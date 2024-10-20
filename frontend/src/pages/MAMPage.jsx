@@ -1,4 +1,4 @@
-import { useMemo, useEffect } from 'react'
+import { useMemo, useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { useParams, useSearchParams } from 'react-router-dom'
 import Splitter, { SplitDirection } from '@devbookhq/splitter'
@@ -6,9 +6,18 @@ import styled from 'styled-components'
 
 import { useLocalStorage } from '/src/hooks'
 import { setFocusedAsset, setSelectedAssets } from '/src/actions'
+
 import Browser from '/src/containers/Browser'
 import AssetEditor from '/src/pages/AssetEditor'
-// import AssetPreview from '/src/pages/AssetPreview'
+import Scheduler from '/src/pages/Scheduler'
+import Rundown from './Rundown'
+import {
+  DndContext,
+  DragOverlay,
+  MouseSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core'
 import SendToDialog from '/src/containers/SendTo'
 
 const MAMContainer = styled.div`
@@ -21,7 +30,7 @@ const MAMContainer = styled.div`
   .__dbk__child-wrapper {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: var(--section-gap);
     min-width: 400px;
   }
 
@@ -44,11 +53,58 @@ const MAMPage = () => {
     null
   )
 
+  // Drag and drop from the browser
+
+  // const [activeId, setActiveId] = useState(null)
+  const [draggedAsset, setDraggedAsset] = useState(null)
+  const [isDragging, setIsDragging] = useState(false)
+
+  const mouseSensor = useSensor(MouseSensor, {
+    // Require the mouse to move by 10 pixels before activating
+    activationConstraint: {
+      distance: 10,
+    },
+  })
+
+  const sensors = useSensors(mouseSensor)
+
+  const setBodyCursor = (cursor) => {
+    document.body.style.setProperty('cursor', cursor, 'important')
+  }
+
+  const onDragStart = (event) => {
+    setIsDragging(true)
+    // setActiveId(event.active.id)
+    setDraggedAsset(event.active.data.current)
+    setBodyCursor('grabbing')
+
+    if (event.active.id === focusedAsset) return
+    dispatch(setFocusedAsset(event.active.id))
+    dispatch(setSelectedAssets([event.active.id]))
+  }
+
+  const onDragEnd = (event) => {
+    setIsDragging(false)
+    // setActiveId(null)
+    setDraggedAsset(null)
+    const { active, over } = event
+    setBodyCursor('auto')
+  }
+
+  const onDragCancel = () => {
+    setIsDragging(false)
+    // setActiveId(null)
+    setDraggedAsset(null)
+  }
+
+  //
+  // URL handling
+  //
+
   useEffect(() => {
     if (searchParams.get('asset')) {
       const assetId = parseInt(searchParams.get('asset'))
       if (assetId === focusedAsset) return
-
       dispatch(setFocusedAsset(assetId))
       dispatch(setSelectedAssets([assetId]))
     }
@@ -57,36 +113,60 @@ const MAMPage = () => {
   useEffect(() => {
     if (focusedAsset === searchParams.get('asset')) return
     if (focusedAsset === null) {
-      setSearchParams({})
+      setSearchParams((o) => {
+        o.delete('asset')
+        return o
+      })
       return
     }
-    setSearchParams({ asset: focusedAsset })
+    console.log('set asset')
+    setSearchParams((o) => {
+      o.set('asset', focusedAsset)
+      return o
+    })
   }, [focusedAsset])
 
-  const componentProps = {}
+  //
+  // MAM Module
+  //
+
+  const componentProps = {
+    draggedAsset,
+  }
 
   const moduleComponent = useMemo(() => {
     if (module == 'editor') return <AssetEditor {...componentProps} />
-    // if (module == 'preview') return <AssetPreview {...componentProps} />
+    if (module == 'scheduler') return <Scheduler {...componentProps} />
+    if (module == 'rundown') return <Rundown {...componentProps} />
 
     return 'Not implemented'
-  }, [module])
+  }, [module, draggedAsset])
 
   // eslint-disable-next-line no-unused-vars
   const onResize = (gutter, size) => {
     setSplitterSizes(size)
   }
 
+  //
+  // Render
+  //
+
   return (
     <MAMContainer>
-      <Splitter
-        direction={SplitDirection.Horizontal}
-        onResizeFinished={onResize}
-        initialSizes={splitterSizes}
+      <DndContext
+        onDragEnd={onDragEnd}
+        onDragStart={onDragStart}
+        sensors={sensors}
       >
-        <Browser />
-        {moduleComponent}
-      </Splitter>
+        <Splitter
+          direction={SplitDirection.Horizontal}
+          onResizeFinished={onResize}
+          initialSizes={splitterSizes}
+        >
+          <Browser isDragging={isDragging} />
+          {moduleComponent}
+        </Splitter>
+      </DndContext>
       <SendToDialog />
     </MAMContainer>
   )
