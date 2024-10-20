@@ -17,6 +17,7 @@ export { default as TextArea } from './TextArea'
 export { default as Button } from './Button'
 export { default as DatePicker } from './DatePicker'
 export { default as Canvas } from './Canvas'
+export { default as RadioButton } from './RadioButton'
 
 export { DateTime, Timestamp } from './Fields'
 export { Form, FormRow } from './Form'
