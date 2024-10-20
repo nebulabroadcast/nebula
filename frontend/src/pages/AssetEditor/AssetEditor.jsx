@@ -70,10 +70,7 @@ const AssetEditor = () => {
   const [originalData, setOriginalData] = useState({})
   const [loading, setLoading] = useState(false)
   const [ConfirmDialog, confirm] = useConfirm()
-  const [previewVisible, setPreviewVisible] = useLocalStorage(
-    'previewVisible',
-    false
-  )
+  const [editorMode, setEditorMode] = useLocalStorage('editorMode', 'metadata')
 
   // Load asset data
 
@@ -295,41 +292,52 @@ const AssetEditor = () => {
 
   // Render
 
-  const mainComponent = previewVisible ? (
-    <div className="grow row">
-      <Preview assetData={assetData} setAssetData={setAssetData} />
-    </div>
-  ) : (
-    <main className="grow column">
-      <AssetMainProps
-        assetData={assetData}
-        setMeta={setMeta}
-        enabledActions={enabledActions}
-      />
-      <section
-        className={clsx('grow', 'column', {
-          'section-changed': isChanged,
-        })}
-        style={{ minWidth: 500 }}
-      >
-        <div className="contained" style={{ overflowY: 'scroll', padding: 10 }}>
-          {loading && (
-            <div className="contained center">
-              <Loader />
-            </div>
-          )}
-          <EditorForm
-            onSave={onSave}
-            originalData={originalData}
-            assetData={assetData}
-            setAssetData={setAssetData}
-            fields={fields}
-            disabled={!enabledActions.edit}
-          />
-        </div>
-      </section>
-    </main>
-  )
+  const mainComponent = () => {
+    switch (editorMode) {
+      case 'preview':
+        return (
+          <div className="grow row">
+            <Preview assetData={assetData} setAssetData={setAssetData} />
+          </div>
+        )
+
+      default:
+        return (
+          <main className="grow column">
+            <AssetMainProps
+              assetData={assetData}
+              setMeta={setMeta}
+              enabledActions={enabledActions}
+            />
+            <section
+              className={clsx('grow', 'column', {
+                'section-changed': isChanged,
+              })}
+              style={{ minWidth: 500 }}
+            >
+              <div
+                className="contained"
+                style={{ overflowY: 'scroll', padding: 10 }}
+              >
+                {loading && (
+                  <div className="contained center">
+                    <Loader />
+                  </div>
+                )}
+                <EditorForm
+                  onSave={onSave}
+                  originalData={originalData}
+                  assetData={assetData}
+                  setAssetData={setAssetData}
+                  fields={fields}
+                  disabled={!enabledActions.edit}
+                />
+              </div>
+            </section>
+          </main>
+        )
+    }
+  }
 
   return (
     <div className="grow column">
@@ -341,11 +349,11 @@ const AssetEditor = () => {
         onSave={onSave}
         setMeta={setMeta}
         isChanged={isChanged}
-        previewVisible={previewVisible}
-        setPreviewVisible={setPreviewVisible}
+        editorMode={editorMode}
+        setEditorMode={setEditorMode}
         enabledActions={enabledActions}
       />
-      {Object.keys(assetData || {}).length && mainComponent}
+      {Object.keys(assetData || {}).length && mainComponent()}
       <ConfirmDialog />
     </div>
   )
