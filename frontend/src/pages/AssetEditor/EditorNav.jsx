@@ -1,25 +1,28 @@
 import nebula from '/src/nebula'
 
-import contentType from 'content-type'
-import { useDispatch } from 'react-redux'
-import { useState, useMemo } from 'react'
-import {
-  setCurrentViewId,
-  setSearchQuery,
-  showSendToDialog,
-} from '/src/actions'
-
 import {
   Navbar,
   Button,
   Spacer,
   RadioButton,
   ToolbarSeparator,
-  Dialog,
 } from '/src/components'
 
-import MetadataDetail from './MetadataDetail'
-import ContextActionResult from './ContextAction'
+const QC_STATE_OPTIONS = [
+  { value: 0, icon: 'flag', tooltip: 'Revert QC state' },
+  {
+    value: 3,
+    icon: 'flag',
+    buttonStyle: { color: 'var(--color-red)' },
+    tooltip: 'Reject asset',
+  },
+  {
+    value: 4,
+    icon: 'flag',
+    buttonStyle: { color: 'var(--color-green)' },
+    tooltip: 'Approve asset',
+  },
+]
 
 const AssetEditorNav = ({
   assetData,
@@ -32,16 +35,6 @@ const AssetEditorNav = ({
   setEditorMode,
   enabledActions,
 }) => {
-  const dispatch = useDispatch()
-
-  const currentFolder = useMemo(() => {
-    if (!nebula.settings.folders) return null
-    for (const f of nebula.settings.folders) {
-      if (f.id !== assetData?.id_folder) continue
-      return f
-    }
-  }, [{ ...assetData }])
-
   return (
     <Navbar>
       <Button
@@ -72,21 +65,7 @@ const AssetEditorNav = ({
 
       <RadioButton
         value={assetData['qc/state']}
-        options={[
-          { value: 0, icon: 'flag', tooltip: 'Revert QC state' },
-          {
-            value: 3,
-            icon: 'flag',
-            buttonStyle: { color: 'var(--color-red)' },
-            tooltip: 'Reject asset',
-          },
-          {
-            value: 4,
-            icon: 'flag',
-            buttonStyle: { color: 'var(--color-green)' },
-            tooltip: 'Approve asset',
-          },
-        ]}
+        options={QC_STATE_OPTIONS}
         onChange={(value) => setMeta('qc/state', value)}
         disabled={!enabledActions.flag}
       />
