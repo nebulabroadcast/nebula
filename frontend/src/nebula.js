@@ -11,6 +11,7 @@ const nebula = {
   language: 'en',
   senderId: uuidv4(),
   users: [],
+  experimental: false,
 
   // API
 
