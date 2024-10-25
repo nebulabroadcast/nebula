@@ -64,7 +64,10 @@ const Preview = ({ assetData, setAssetData }) => {
   }
 
   useEffect(() => {
-    setSelection({})
+    setSelection({
+      mark_in: assetData.mark_in,
+      mark_out: assetData.mark_out,
+    })
     setSubclips(assetData.subclips || [])
   }, [assetData?.id])
 
