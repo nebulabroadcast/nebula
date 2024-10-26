@@ -25,6 +25,7 @@ const StyledDialog = styled.dialog`
   &::backdrop {
     background-color: rgba(0, 0, 0, 0);
     backdrop-filter: none;
+    z-index: 999; // P5e04
   }
 
   &[open] {
