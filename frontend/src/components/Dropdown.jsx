@@ -77,6 +77,7 @@ const Dropdown = ({
   contentStyle = {},
   value = null,
   disabled = false,
+  defaultValue = null,
 }) => {
   if (align === 'right') contentStyle['right'] = 0
 

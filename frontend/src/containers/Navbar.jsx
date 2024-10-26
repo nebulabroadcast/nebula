@@ -84,6 +84,7 @@ const logout = () => {
 const NavBar = () => {
   const navigate = useNavigate()
   const focusedAsset = useSelector((state) => state.context.focusedAsset)
+  const currentChannel = useSelector((state) => state.context.currentChannel)
 
   const mamSuffix = focusedAsset ? `?asset=${focusedAsset}` : ''
 
@@ -114,6 +115,13 @@ const NavBar = () => {
     return result
   }, [])
 
+  const channelOptions = useMemo(() => {
+    return nebula.settings.channels.map((channel) => ({
+      label: channel.name,
+      value: channel,
+    }))
+  }, [nebula.settings.channels])
+
   return (
     <Navbar>
       <div className="left">
@@ -136,6 +144,13 @@ const NavBar = () => {
         <PageTitle />
       </div>
       <div className="right">
+        <Dropdown
+          icon="swap_horiz"
+          align="right"
+          options={channelOptions}
+          buttonStyle={{ background: 'none' }}
+          value={currentChannel}
+        />
         <Dropdown
           icon="apps"
           align="right"

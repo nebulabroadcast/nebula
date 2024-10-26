@@ -86,6 +86,19 @@ const useLocalStorage = (key, initialValue) => {
       console.error(error)
     }
   }
+
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const item = window.localStorage.getItem(key)
+      setStoredValue(item ? JSON.parse(item) : initialValue)
+    }
+
+    window.addEventListener('storage', handleStorageChange)
+    return () => {
+      window.removeEventListener('storage', handleStorageChange)
+    }
+  }, [key, initialValue])
+
   return [storedValue, setValue]
 }
 
