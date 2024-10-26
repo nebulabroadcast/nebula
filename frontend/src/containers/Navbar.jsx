@@ -1,8 +1,9 @@
 import nebula from '/src/nebula'
 import styled from 'styled-components'
 import { useMemo } from 'react'
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 import { NavLink, useNavigate } from 'react-router-dom'
+import { setCurrentChannel } from '/src/actions'
 
 import { Navbar, Dropdown } from '/src/components'
 
@@ -83,9 +84,9 @@ const logout = () => {
 
 const NavBar = () => {
   const navigate = useNavigate()
+  const dispatch = useDispatch()
   const focusedAsset = useSelector((state) => state.context.focusedAsset)
   const currentChannel = useSelector((state) => state.context.currentChannel)
-
   const mamSuffix = focusedAsset ? `?asset=${focusedAsset}` : ''
 
   const mainMenuOptions = useMemo(() => {
@@ -115,12 +116,29 @@ const NavBar = () => {
     return result
   }, [])
 
-  const channelOptions = useMemo(() => {
-    return nebula.settings.channels.map((channel) => ({
+  const channelSwitcher = useMemo(() => {
+    if (!nebula.settings?.playout_channels) {
+      return null
+    }
+
+    const channelOptions = nebula.settings?.playout_channels.map((channel) => ({
       label: channel.name,
-      value: channel,
+      onClick: () => dispatch(setCurrentChannel(channel.id)),
     }))
-  }, [nebula.settings.channels])
+
+    const currentChannelName = nebula.settings?.playout_channels.find(
+      (channel) => channel.id === currentChannel
+    )?.name
+
+    return (
+      <Dropdown
+        align="right"
+        options={channelOptions}
+        buttonStyle={{ background: 'none' }}
+        label={currentChannelName}
+      />
+    )
+  }, [nebula.settings?.playout_channels, currentChannel])
 
   return (
     <Navbar>
@@ -144,13 +162,7 @@ const NavBar = () => {
         <PageTitle />
       </div>
       <div className="right">
-        <Dropdown
-          icon="swap_horiz"
-          align="right"
-          options={channelOptions}
-          buttonStyle={{ background: 'none' }}
-          value={currentChannel}
-        />
+        {channelSwitcher}
         <Dropdown
           icon="apps"
           align="right"

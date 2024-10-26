@@ -16,7 +16,6 @@ import ToolPage from '/src/pages/ToolPage'
 import ProfilePage from '/src/pages/ProfilePage'
 import UsersPage from '/src/pages/UsersPage'
 import Dropdown from '/src/components/Dropdown'
-import { setCurrentChannel } from '/src/actions'
 
 const App = () => {
   const [accessToken, setAccessToken] = useLocalStorage('accessToken', null)
@@ -62,7 +61,9 @@ const App = () => {
   useEffect(() => {
     if (initData?.settings?.channels) {
       setChannels(initData.settings.channels)
-      const mostRecentChannel = JSON.parse(localStorage.getItem('currentChannel'))
+      const mostRecentChannel = JSON.parse(
+        localStorage.getItem('currentChannel')
+      )
       if (mostRecentChannel) {
         setCurrentChannel(mostRecentChannel)
       } else if (initData.settings.channels.length > 0) {
@@ -92,11 +93,6 @@ const App = () => {
       <WebsocketListener />
       <BrowserRouter>
         <NavBar />
-        <Dropdown
-          options={channels.map(channel => ({ label: channel.name, value: channel }))}
-          onChange={handleChannelChange}
-          defaultValue={JSON.parse(localStorage.getItem('currentChannel'))}
-        />
         <Routes>
           <Route
             path="/"
