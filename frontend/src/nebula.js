@@ -63,6 +63,12 @@ const nebula = {
     return result
   },
 
+  getPlayoutChannel(id_channel) {
+    for (const channel of this.settings?.playoutChannels || []) {
+      if (channel.id === id_channel) return channel
+    }
+  },
+
   getFolderName(id_folder) {
     for (const folder of this.settings?.folders || []) {
       if (folder.id === id_folder) return folder.name
