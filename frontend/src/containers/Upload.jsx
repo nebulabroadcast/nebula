@@ -2,7 +2,6 @@ import axios from 'axios'
 import styled from 'styled-components'
 
 import { useState, useRef, useMemo } from 'react'
-import { toast } from 'react-toastify'
 import { Dialog, Button, Progress } from '/src/components'
 
 import nebula from '/src/nebula'
@@ -134,7 +133,7 @@ const UploadDialog = ({ onHide, assetData }) => {
 
   const handleHide = () => {
     if (status === 'uploading') {
-      toast.error('Upload in progress')
+      console.warn('Unable to close dialog: upload in progress')
       return
     }
     onHide()
@@ -159,18 +158,11 @@ const UploadDialog = ({ onHide, assetData }) => {
       })
 
       setStatus('success')
-      toast.success('Upload finished')
     } catch (error) {
       console.error(error)
       if (axios.isCancel(error)) {
         console.error('Request canceled', error.message)
       } else if (error.response) {
-        toast.error(
-          <>
-            <strong>Upload failed</strong>
-            <p>{error.response.data?.detail || 'Unknown error'}</p>
-          </>
-        )
         console.error('Error response', error.response)
       }
       setBytesTransferred(0)
