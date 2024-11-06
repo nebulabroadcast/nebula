@@ -117,9 +117,14 @@ const NavBar = () => {
   }, [])
 
   const channelSwitcher = useMemo(() => {
-    if (!nebula.settings?.playout_channels) {
+    if ((nebula.settings?.playout_channels || []).length < 2) {
+      if (nebula.settings?.playout_channels.length === 1) {
+        dispatch(setCurrentChannel(nebula.settings.playout_channels[0].id))
+      }
       return null
     }
+
+    if (!nebula.experimental) return null
 
     const channelOptions = nebula.settings?.playout_channels.map((channel) => ({
       label: channel.name,

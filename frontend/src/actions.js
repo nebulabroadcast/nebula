@@ -69,6 +69,7 @@ const contextSlice = createSlice({
     },
 
     setCurrentChannel: (state, action) => {
+      console.debug('setCurrentChannel', action.payload)
       state.currentChannel = action.payload
       localStorage.setItem('currentChannel', JSON.stringify(action.payload))
       return state
