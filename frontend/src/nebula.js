@@ -64,7 +64,7 @@ const nebula = {
   },
 
   getPlayoutChannel(id_channel) {
-    for (const channel of this.settings?.playoutChannels || []) {
+    for (const channel of this.settings?.playout_channels || []) {
       if (channel.id === id_channel) return channel
     }
   },
