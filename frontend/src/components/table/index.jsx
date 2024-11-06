@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 
 import Loader from '../Loader'
 import TableWrapper from './container'
@@ -22,9 +22,13 @@ const Table = ({
   onSort,
   onLoadMore,
   contextMenu,
+  droppable,
   loading = false,
 }) => {
   const tableRef = useRef(null)
+  const droppableRef = useRef(null)
+  const [dropHl, setDropHl] = useState(null)
+
   const head = useMemo(() => {
     return (
       <thead>
@@ -48,6 +52,10 @@ const Table = ({
     }
   }
 
+  useEffect(() => {
+    droppableRef.current = droppable
+  }, [droppable])
+
   const body = useMemo(() => {
     return (
       <tbody>
@@ -61,6 +69,7 @@ const Table = ({
             rowClass={rowClass}
             selected={selection && selection.includes(rowData[keyField])}
             key={keyField ? rowData[keyField] : idx}
+            ident={keyField ? rowData[keyField] : idx}
           />
         ))}
       </tbody>
@@ -78,12 +87,39 @@ const Table = ({
     }
   }
 
+  const onMouseMove = (event) => {
+    if (!droppableRef.current) return
+
+    const target = event.target
+    if (!target) return
+    // find the closest row
+    const row = target.closest('tr')
+    // get row data-key attribute
+    const key = row ? row.getAttribute('data-key') : null
+    console.log('key', key)
+    setDropHl(key)
+  }
+
+  const onMouseUp = (event) => {}
+
+  useEffect(() => {
+    if (!tableRef.current) return
+    tableRef.current.addEventListener('mousemove', onMouseMove)
+    document.addEventListener('mouseup', onMouseUp)
+    return () => {
+      if (!tableRef.current) return
+      tableRef.current.removeEventListener('mousemove', onMouseMove)
+      document.removeEventListener('mouseup', onMouseUp)
+    }
+  }, [tableRef.current])
+
   return (
     <TableWrapper
       className={className}
       style={style}
       onScroll={handleScroll}
       onKeyDown={handleKeyDown}
+      dropHl={dropHl}
     >
       {loading && (
         <div className="contained center">

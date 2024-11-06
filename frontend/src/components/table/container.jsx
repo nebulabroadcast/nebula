@@ -5,6 +5,12 @@ const TableWrapper = styled.div`
   --progress-opacity: 0;
   overflow: auto;
 
+  [data-key='${(props) => props.dropHl}'] {
+    td {
+      border-bottom: 1px solid red !important;
+    }
+  }
+
   table {
     width: 100%;
     border-collapse: collapse;

@@ -35,7 +35,7 @@ const COLUMNS = [
   'mark_out',
 ]
 
-const RundownTable = ({ data }) => {
+const RundownTable = ({ data, draggedObject }) => {
   const columns = useMemo(() => {
     return COLUMNS.map((key) => {
       return {
@@ -58,6 +58,7 @@ const RundownTable = ({ data }) => {
         rowClass={getRowClass}
         rowHighlightColor={formatRowHighlightColor}
         rowHighlightStyle={formatRowHighlightStyle}
+        droppable={draggedObject}
       />
     </RundownWrapper>
   )

@@ -50,6 +50,7 @@ const DataRow = ({
   rowHighlightColor,
   rowHighlightStyle,
   rowClass,
+  ident,
   selected = false,
 }) => {
   const { attributes, listeners, setNodeRef, transform, isDragging } =
@@ -124,6 +125,7 @@ const DataRow = ({
       {...listeners}
       className={clsx(selected && 'selected', rowClassName)}
       style={rowStyle}
+      data-key={ident}
     >
       {rowContent}
     </tr>

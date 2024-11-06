@@ -30,7 +30,7 @@ const Rundown = ({ draggedObject }) => {
   return (
     <main className="column">
       <RundownNav startTime={startTime} setStartTime={setStartTime} />
-      <RundownTable data={rundown} />
+      <RundownTable data={rundown} draggedObject={draggedObject} />
     </main>
   )
 }
