@@ -8,6 +8,7 @@ const initialState = {
   selectedAssets: [],
   focusedAsset: null,
   pageTitle: '',
+  currentChannel: JSON.parse(localStorage.getItem('currentChannel') || 'null'),
 }
 
 const contextSlice = createSlice({
@@ -66,6 +67,13 @@ const contextSlice = createSlice({
       state.sendToIds = undefined
       state.sendToDialogVisible = false
     },
+
+    setCurrentChannel: (state, action) => {
+      console.debug('setCurrentChannel', action.payload)
+      state.currentChannel = action.payload
+      localStorage.setItem('currentChannel', JSON.stringify(action.payload))
+      return state
+    },
   },
 })
 
@@ -79,6 +87,7 @@ export const {
   setPageTitle,
   showSendToDialog,
   hideSendToDialog,
+  setCurrentChannel,
 } = contextSlice.actions
 
 export default contextSlice.reducer

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { setPageTitle } from '/src/actions'
 import { toast } from 'react-toastify'
 
@@ -15,6 +15,11 @@ const Scheduler = ({ draggedAsset }) => {
   const [startTime, setStartTime] = useState(getWeekStart())
   const [events, setEvents] = useState([])
   const [editorData, setEditorData] = useState(null)
+  const currentChannel = useSelector((state) => state.context.currentChannel)
+
+  const channelConfig = useMemo(() => {
+    return nebula.getPlayoutChannel(currentChannel)
+  }, [currentChannel])
 
   const onResponse = (response) => {
     const events = response.data.events
@@ -33,7 +38,7 @@ const Scheduler = ({ draggedAsset }) => {
   }
 
   const requestParams = {
-    id_channel: 1,
+    id_channel: currentChannel,
     date: DateTime.fromJSDate(startTime).toFormat('yyyy-MM-dd'),
   }
 
@@ -66,7 +71,7 @@ const Scheduler = ({ draggedAsset }) => {
       setEditorData(null)
     }
 
-    for (const field of nebula.settings.playout_channels[0].fields) {
+    for (const field of channelConfig?.fields || []) {
       const key = field.name
       if (event[key] === undefined) continue
       payload.meta[key] = event[key]
@@ -87,13 +92,13 @@ const Scheduler = ({ draggedAsset }) => {
 
   useEffect(() => {
     loadEvents()
-  }, [startTime])
+  }, [startTime, currentChannel])
 
   useEffect(() => {
     // console.log('Week start time changed', startTime)
     const pageTitle = createTitle(startTime)
     dispatch(setPageTitle({ title: pageTitle }))
-  }, [startTime])
+  }, [startTime, currentChannel])
 
   //
   // Context menu
