@@ -57,7 +57,7 @@ const DataRow = ({
       id: rowData.id,
       data: {
         id: rowData.id,
-        type: 'asset',
+        type: rowData.type || 'asset',
         duration: rowData.duration,
         title: rowData.title,
         subtitle: rowData.subtitle,
@@ -75,7 +75,8 @@ const DataRow = ({
   }
 
   const rowStyle = {
-    opacity: isDragging ? 0.5 : 1,
+    opacity: isDragging ? 0.3 : 1,
+    //display: isDragging && rowData.type == 'item' ? 'none' : 'table-row',
   }
 
   let rowClassName = ''

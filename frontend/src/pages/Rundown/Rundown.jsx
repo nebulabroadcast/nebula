@@ -5,7 +5,7 @@ import nebula from '/src/nebula'
 import RundownNav from './RundownNav'
 import RundownTable from './RundownTable'
 
-const Rundown = () => {
+const Rundown = ({ draggedObject }) => {
   const [startTime, setStartTime] = useState(null)
   const currentChannel = useSelector((state) => state.context.currentChannel)
   const [rundown, setRundown] = useState(null)

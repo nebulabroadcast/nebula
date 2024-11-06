@@ -10,7 +10,7 @@ import { getWeekStart, createTitle } from './utils'
 import nebula from '/src/nebula'
 import { DateTime } from 'luxon'
 
-const Scheduler = ({ draggedAsset }) => {
+const Scheduler = ({ draggedObject }) => {
   const dispatch = useDispatch()
   const [startTime, setStartTime] = useState(getWeekStart())
   const [events, setEvents] = useState([])
@@ -20,6 +20,11 @@ const Scheduler = ({ draggedAsset }) => {
   const channelConfig = useMemo(() => {
     return nebula.getPlayoutChannel(currentChannel)
   }, [currentChannel])
+
+  const draggedAsset = useMemo(() => {
+    if (draggedObject?.type !== 'asset') return null
+    return draggedObject
+  }, [draggedObject])
 
   const onResponse = (response) => {
     const events = response.data.events
