@@ -13,7 +13,15 @@ import {
 const RundownWrapper = styled.section`
   tbody {
     .event-row {
-      background-color: black;
+      background-color: var(--color-surface-01);
+      &:hover {
+        background-color: var(--color-surface-01);
+      }
+
+      td {
+        padding-top: 8px !important;
+        padding-bottom: 8px !important;
+      }
     }
   }
 `
@@ -35,7 +43,7 @@ const COLUMNS = [
   'mark_out',
 ]
 
-const RundownTable = ({ data, draggedObject }) => {
+const RundownTable = ({ data, draggedObject, onDrop }) => {
   const columns = useMemo(() => {
     return COLUMNS.map((key) => {
       return {
@@ -51,7 +59,6 @@ const RundownTable = ({ data, draggedObject }) => {
   return (
     <RundownWrapper className="grow nopad">
       <Table
-        keyField="id"
         columns={columns}
         data={data}
         className="contained"
@@ -59,6 +66,7 @@ const RundownTable = ({ data, draggedObject }) => {
         rowHighlightColor={formatRowHighlightColor}
         rowHighlightStyle={formatRowHighlightStyle}
         droppable={draggedObject}
+        onDrop={onDrop}
       />
     </RundownWrapper>
   )

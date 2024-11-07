@@ -23,10 +23,12 @@ const Table = ({
   onLoadMore,
   contextMenu,
   droppable,
+  onDrop,
   loading = false,
 }) => {
   const tableRef = useRef(null)
   const droppableRef = useRef(null)
+  const dropIndexRef = useRef(null)
   const [dropHl, setDropHl] = useState(null)
 
   const head = useMemo(() => {
@@ -89,18 +91,25 @@ const Table = ({
 
   const onMouseMove = (event) => {
     if (!droppableRef.current) return
-
     const target = event.target
     if (!target) return
     // find the closest row
     const row = target.closest('tr')
     // get row data-key attribute
+    // this is used to highlight the bottom edge of the row
+    // also used to determine the drop index
+    // TODO: use actual index, not the key
     const key = row ? row.getAttribute('data-key') : null
-    console.log('key', key)
+    dropIndexRef.current = key
     setDropHl(key)
   }
 
-  const onMouseUp = (event) => {}
+  const onMouseUp = (event) => {
+    if (!droppableRef.current) return
+    if (onDrop) onDrop(droppableRef.current, dropIndexRef.current)
+    droppableRef.current = null
+    setDropHl(null)
+  }
 
   useEffect(() => {
     if (!tableRef.current) return
