@@ -81,7 +81,6 @@ const TableWrapper = styled.div`
     }
 
     tbody {
-
       &:focus, &:focus-visible {
         outline: none;
       }

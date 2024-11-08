@@ -74,6 +74,7 @@ const Table = ({
             selected={selection && selection.includes(rowData[keyField])}
             key={keyField ? rowData[keyField] : idx}
             ident={keyField ? rowData[keyField] : idx}
+            index={idx}
           />
         ))}
       </tbody>
@@ -97,13 +98,9 @@ const Table = ({
     if (!target) return
     // find the closest row
     const row = target.closest('tr')
-    // get row data-key attribute
-    // this is used to highlight the bottom edge of the row
-    // also used to determine the drop index
-    // TODO: use actual index, not the key
-    const key = row ? row.getAttribute('data-key') : null
-    dropIndexRef.current = key
-    setDropHl(key)
+    const index = row ? row.getAttribute('data-index') : null
+    dropIndexRef.current = index
+    setDropHl(index)
   }
 
   const onMouseUp = (event) => {

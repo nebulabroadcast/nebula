@@ -12,6 +12,7 @@ const DataRow = ({
   rowHighlightStyle,
   rowClass,
   ident,
+  index,
   selected = false,
 }) => {
   const { attributes, listeners, setNodeRef, transform, isDragging } =
@@ -84,6 +85,7 @@ const DataRow = ({
       className={clsx(selected && 'selected', rowClassName)}
       style={rowStyle}
       data-key={ident}
+      data-index={index}
       {...attributes}
       {...listeners}
     >
