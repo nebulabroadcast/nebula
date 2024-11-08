@@ -2,46 +2,7 @@ import { useMemo } from 'react'
 import { useDraggable } from '@dnd-kit/core'
 import clsx from 'clsx'
 
-const HeaderCell = ({ name, width, title, sortDirection, onSort }) => {
-  let sortArrowElement = null
-  if (onSort) {
-    if (sortDirection === 'asc') {
-      sortArrowElement = (
-        <span className="icon material-symbols-outlined">arrow_drop_up</span>
-      )
-    } else if (sortDirection === 'desc') {
-      sortArrowElement = (
-        <span className="icon material-symbols-outlined">arrow_drop_down</span>
-      )
-    } else {
-      sortArrowElement = (
-        <span className="icon material-symbols-outlined">more_vert</span>
-      )
-    }
-  }
-
-  const onClick = () => {
-    if (!onSort) return
-    if (sortDirection === 'asc') {
-      onSort(name, 'desc')
-    } else {
-      onSort(name, 'asc')
-    }
-  }
-  return (
-    <th style={{ width: width }} onClick={onClick}>
-      <div>
-        {title}
-        {sortArrowElement}
-      </div>
-    </th>
-  )
-}
-
-const BodyCell = ({ rowData, column, cellFormatter }) => {
-  if (cellFormatter) return cellFormatter(rowData, column.name)
-  return <td>{rowData[column.name]}</td>
-}
+import BodyCell from './BodyCell'
 
 const DataRow = ({
   rowData,
@@ -77,7 +38,6 @@ const DataRow = ({
 
   const rowStyle = {
     opacity: isDragging ? 0.3 : 1,
-    //display: isDragging && rowData.type == 'item' ? 'none' : 'table-row',
   }
 
   let rowClassName = ''
@@ -121,15 +81,15 @@ const DataRow = ({
       ref={setNodeRef}
       onClick={handleClick}
       onContextMenu={handleClick}
-      {...attributes}
-      {...listeners}
       className={clsx(selected && 'selected', rowClassName)}
       style={rowStyle}
       data-key={ident}
+      {...attributes}
+      {...listeners}
     >
       {rowContent}
     </tr>
   )
 }
 
-export { DataRow, HeaderCell }
+export default DataRow
