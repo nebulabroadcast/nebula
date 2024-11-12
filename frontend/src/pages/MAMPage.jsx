@@ -54,7 +54,7 @@ const MAMPage = () => {
   )
 
   // Drag and drop from the browser
-  const [draggedObject, setDraggedObject] = useState(null)
+  const [draggedObjects, setDraggedObjects] = useState(null)
   const [isDragging, setIsDragging] = useState(false)
 
   const mouseSensor = useSensor(MouseSensor, {
@@ -73,7 +73,7 @@ const MAMPage = () => {
   const onDragStart = (event) => {
     setIsDragging(true)
     console.log('Start drag', event.active.data.current)
-    setDraggedObject(event.active.data.current)
+    setDraggedObjects(event.active.data.current)
     setBodyCursor('grabbing')
 
     if (event.active.id === focusedAsset) return
@@ -83,14 +83,14 @@ const MAMPage = () => {
 
   const onDragEnd = (event) => {
     setIsDragging(false)
-    setDraggedObject(null)
+    setDraggedObjects(null)
     const { active, over } = event
     setBodyCursor('auto')
   }
 
   const onDragCancel = () => {
     setIsDragging(false)
-    setDraggedObject(null)
+    setDraggedObjects(null)
   }
 
   //
@@ -127,7 +127,7 @@ const MAMPage = () => {
   //
 
   const componentProps = {
-    draggedObject,
+    draggedObjects,
   }
 
   const moduleComponent = useMemo(() => {
@@ -136,7 +136,7 @@ const MAMPage = () => {
     if (module == 'rundown') return <Rundown {...componentProps} />
 
     return 'Not implemented'
-  }, [module, draggedObject])
+  }, [module, draggedObjects])
 
   // eslint-disable-next-line no-unused-vars
   const onResize = (gutter, size) => {

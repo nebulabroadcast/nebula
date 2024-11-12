@@ -51,7 +51,7 @@ const COLUMNS = [
 
 const RundownTable = ({
   data,
-  draggedObject,
+  draggedObjects,
   onDrop,
   currentItem,
   cuedItem,
@@ -167,7 +167,7 @@ const RundownTable = ({
         selection={selectedIndices}
         onRowClick={onRowClick}
         onKeyDown={onKeyDown}
-        droppable={draggedObject}
+        droppable={draggedObjects}
         onDrop={onDrop}
       />
     </RundownWrapper>

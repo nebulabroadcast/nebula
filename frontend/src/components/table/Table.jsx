@@ -61,6 +61,21 @@ const Table = ({
   }, [droppable])
 
   const body = useMemo(() => {
+    const draggableItems = []
+    if (selection?.length > 0) {
+      for (let i = 0; i < data.length; i++) {
+        const row = data[i]
+        if (selection.includes(keyField ? row[keyField] : i)) {
+          draggableItems.push({
+            id: row.id,
+            type: row.type || 'asset',
+            duration: row.duration,
+            title: row.title,
+            subtitle: row.subtitle,
+          })
+        }
+      }
+    }
     return (
       <tbody>
         {(data || []).map((rowData, idx) => (
@@ -78,11 +93,12 @@ const Table = ({
             key={keyField ? rowData[keyField] : idx}
             ident={keyField ? rowData[keyField] : idx}
             index={idx}
+            draggableItems={draggableItems}
           />
         ))}
       </tbody>
     )
-  }, [columns, data, selection, keyField, rowHighlightColor])
+  }, [columns, data, selection, keyField, rowHighlightColor, droppable])
 
   const handleScroll = (event) => {
     if (!onLoadMore) return

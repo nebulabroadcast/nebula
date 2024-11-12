@@ -6,7 +6,7 @@ import RundownNav from './RundownNav'
 import RundownTable from './RundownTable'
 import PlayoutControls from './PlayoutControls'
 
-const Rundown = ({ draggedObject }) => {
+const Rundown = ({ draggedObjects }) => {
   const [startTime, setStartTime] = useState(null)
   const currentChannel = useSelector((state) => state.context.currentChannel)
   const [rundown, setRundown] = useState(null)
@@ -54,7 +54,7 @@ const Rundown = ({ draggedObject }) => {
     playoutStatus?.cued_item,
   ])
 
-  const onDrop = (item, index) => {
+  const onDrop = (items, index) => {
     const rundown = rundownDataRef.current
 
     const dropAfterItem = rundown[index]
@@ -64,20 +64,28 @@ const Rundown = ({ draggedObject }) => {
       i++
       if (dropAfterItem.id_bin != row.id_bin) continue
 
-      //skip the item that is being dragged
-      if (item.id == row.id && item.type === row.type) continue
+      //skip the items that are being dragged
+      let skip = false
+      for (const item of items) {
+        if (item.id === row.id && item.type === row.type) {
+          skip = true
+          break
+        }
+      }
 
       // do not include events
-      if (row.type === 'event') continue
+      if (row.type === 'event') skip = true
 
       // include items that were already in the bin
-      newOrder.push({ id: row.id, type: row.type })
+      if (!skip) newOrder.push({ id: row.id, type: row.type })
 
       //append the dragged item after the current item
       // TODO: update marks
       if (i == index) {
         console.log('Dropped after', dropAfterItem)
-        newOrder.push({ id: item.id, type: item.type })
+        for (const item of items) {
+          newOrder.push({ id: item.id, type: item.type })
+        }
       }
     }
 
@@ -115,7 +123,7 @@ const Rundown = ({ draggedObject }) => {
       <PlayoutControls playoutStatus={playoutStatus} />
       <RundownTable
         data={rundown}
-        draggedObject={draggedObject}
+        draggedObjects={draggedObjects}
         onDrop={onDrop}
         currentItem={playoutStatus?.current_item}
         cuedItem={playoutStatus?.cued_item}

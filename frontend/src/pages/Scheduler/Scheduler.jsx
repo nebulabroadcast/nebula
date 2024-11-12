@@ -10,7 +10,7 @@ import { getWeekStart, createTitle } from './utils'
 import nebula from '/src/nebula'
 import { DateTime } from 'luxon'
 
-const Scheduler = ({ draggedObject }) => {
+const Scheduler = ({ draggedObjects }) => {
   const dispatch = useDispatch()
   const [startTime, setStartTime] = useState(getWeekStart())
   const [events, setEvents] = useState([])
@@ -22,9 +22,14 @@ const Scheduler = ({ draggedObject }) => {
   }, [currentChannel])
 
   const draggedAsset = useMemo(() => {
-    if (draggedObject?.type !== 'asset') return null
-    return draggedObject
-  }, [draggedObject])
+    if (!draggedObjects) return null
+    if (draggedObjects?.length !== 1) {
+      toast.error('Please drag only one asset')
+      return
+    }
+    if (draggedObjects[0]?.type !== 'asset') return null
+    return draggedObjects[0]
+  }, [draggedObjects])
 
   const onResponse = (response) => {
     const events = response.data.events

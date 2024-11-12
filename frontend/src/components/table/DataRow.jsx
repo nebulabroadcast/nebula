@@ -14,17 +14,22 @@ const DataRow = ({
   ident,
   index,
   selected = false,
+  draggableItems,
 }) => {
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({
       id: rowData.id,
-      data: {
-        id: rowData.id,
-        type: rowData.type || 'asset',
-        duration: rowData.duration,
-        title: rowData.title,
-        subtitle: rowData.subtitle,
-      },
+      data: draggableItems?.length
+        ? draggableItems
+        : [
+            {
+              id: rowData.id,
+              type: rowData.type || 'asset',
+              title: rowData.title,
+              subtitle: rowData.subtitle,
+              duration: rowData.duration,
+            },
+          ],
     })
 
   const handleClick = (event) => {
@@ -33,13 +38,11 @@ const DataRow = ({
       // don't change the selection - just show the context menu
       if (selected) return
     }
-
     if (onRowClick) onRowClick(rowData, event)
   }
 
-  const rowStyle = {
-    opacity: isDragging ? 0.3 : 1,
-  }
+  const rowStyle = {}
+  if (isDragging) rowStyle.backgroundColor = 'var(--color-surface-05)' // same as select
 
   let rowClassName = ''
 
