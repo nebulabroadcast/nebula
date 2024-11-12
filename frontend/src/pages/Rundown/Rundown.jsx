@@ -11,6 +11,8 @@ const Rundown = ({ draggedObject }) => {
   const currentChannel = useSelector((state) => state.context.currentChannel)
   const [rundown, setRundown] = useState(null)
   const [playoutStatus, setPlayoutStatus] = useState(null)
+  const [selectedItems, setSelectedItems] = useState([])
+  const [focusedObject, setFocusedObject] = useState(null)
 
   const rundownDataRef = useRef(rundown)
   const currentDateRef = useRef(startTime)
@@ -86,6 +88,10 @@ const Rundown = ({ draggedObject }) => {
         order: newOrder,
       })
       .then(loadRundown)
+      .finally(() => {
+        setSelectedItems([])
+        setFocusedObject(null)
+      })
   }
 
   const handlePubSub = (topic, message) => {
@@ -113,6 +119,10 @@ const Rundown = ({ draggedObject }) => {
         onDrop={onDrop}
         currentItem={playoutStatus?.current_item}
         cuedItem={playoutStatus?.cued_item}
+        selectedItems={selectedItems}
+        setSelectedItems={setSelectedItems}
+        focusedObject={focusedObject}
+        setFocusedObject={setFocusedObject}
       />
     </main>
   )

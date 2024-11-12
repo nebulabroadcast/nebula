@@ -71,7 +71,10 @@ const Table = ({
             rowHighlightColor={rowHighlightColor}
             rowHighlightStyle={rowHighlightStyle}
             rowClass={rowClass}
-            selected={selection && selection.includes(rowData[keyField])}
+            selected={
+              selection &&
+              selection.includes(keyField ? rowData[keyField] : idx)
+            }
             key={keyField ? rowData[keyField] : idx}
             ident={keyField ? rowData[keyField] : idx}
             index={idx}

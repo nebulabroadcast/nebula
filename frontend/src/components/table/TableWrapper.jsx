@@ -21,6 +21,7 @@ const TableWrapper = styled.div`
 
     tr {
       border-left: 2px solid var(--color-surface-02);
+      outline: none !important;
     }
 
     td, th {
