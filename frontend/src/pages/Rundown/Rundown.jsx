@@ -4,11 +4,13 @@ import nebula from '/src/nebula'
 
 import RundownNav from './RundownNav'
 import RundownTable from './RundownTable'
+import PlayoutControls from './PlayoutControls'
 
 const Rundown = ({ draggedObject }) => {
   const [startTime, setStartTime] = useState(null)
   const currentChannel = useSelector((state) => state.context.currentChannel)
   const [rundown, setRundown] = useState(null)
+  const [playoutStatus, setPlayoutStatus] = useState(null)
 
   const rundownDataRef = useRef(rundown)
   const currentDateRef = useRef(startTime)
@@ -21,6 +23,7 @@ const Rundown = ({ draggedObject }) => {
   }, [startTime])
   useEffect(() => {
     currentChannelRef.current = currentChannel
+    setPlayoutStatus(null)
   }, [currentChannel])
 
   const onResponse = (response) => {
@@ -42,7 +45,12 @@ const Rundown = ({ draggedObject }) => {
 
   useEffect(() => {
     loadRundown()
-  }, [startTime, currentChannel])
+  }, [
+    startTime,
+    currentChannel,
+    playoutStatus?.current_item,
+    playoutStatus?.cued_item,
+  ])
 
   const onDrop = (item, index) => {
     const rundown = rundownDataRef.current
@@ -80,13 +88,31 @@ const Rundown = ({ draggedObject }) => {
       .then(loadRundown)
   }
 
+  const handlePubSub = (topic, message) => {
+    if (topic === 'playout_status') {
+      if (message.id_channel === currentChannelRef.current) {
+        setPlayoutStatus(message)
+      }
+    }
+  }
+
+  useEffect(() => {
+    // eslint-disable-next-line no-undef
+    const token = PubSub.subscribe('playout_status', handlePubSub)
+    // eslint-disable-next-line no-undef
+    return () => PubSub.unsubscribe(token)
+  }, [])
+
   return (
     <main className="column">
       <RundownNav startTime={startTime} setStartTime={setStartTime} />
+      <PlayoutControls playoutStatus={playoutStatus} />
       <RundownTable
         data={rundown}
         draggedObject={draggedObject}
         onDrop={onDrop}
+        currentItem={playoutStatus?.current_item}
+        cuedItem={playoutStatus?.cued_item}
       />
     </main>
   )

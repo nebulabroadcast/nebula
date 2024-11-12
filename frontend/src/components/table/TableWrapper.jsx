@@ -7,7 +7,7 @@ const TableWrapper = styled.div`
 
   [data-key='${(props) => props.dropHl}'] {
     td {
-      border-bottom: 1px solid red !important;
+      border-bottom: 1px solid var(--color-violet) !important;
     }
   }
 
@@ -85,8 +85,11 @@ const TableWrapper = styled.div`
         outline: none;
       }
 
-      td {
+      tr {
         border-bottom: 1px solid var(--color-surface-03);
+      }
+
+      td {
 
         hr {
           margin: 0;

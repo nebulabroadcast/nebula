@@ -26,6 +26,8 @@ const getEnabledActions = ({ assetData, isChanged }) => {
   // for the current asset and the current user
   // This is used to enable/disable buttons in the UI
 
+  if (!assetData) return {}
+
   const limited = nebula.user.is_limited
   const writableFolderIds = nebula.getWritableFolders().map((f) => f.id)
 
@@ -79,8 +81,8 @@ const AssetEditor = () => {
     nebula
       .request('get', { ids: [id_asset], type: 'asset' })
       .then((response) => {
-        setAssetData(response.data.data[0])
-        setOriginalData(response.data.data[0])
+        setAssetData(response.data.data[0] || {})
+        setOriginalData(response.data.data[0] || {})
         navigate({ pathname: `/mam/editor`, search: `?asset=${id_asset}` })
       })
       .catch((error) => {

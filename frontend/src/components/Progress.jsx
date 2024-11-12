@@ -12,6 +12,7 @@ const BaseProgress = styled.div`
     height: 100%;
     transition: width 0.3s linear;
     background: ${(props) => props.theme.colors.cyan};
+    border-radius: ${(props) => props.theme.inputBorderRadius};
   }
 `
 BaseProgress.defaultProps = {

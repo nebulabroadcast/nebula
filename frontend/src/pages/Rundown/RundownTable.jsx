@@ -12,6 +12,18 @@ import {
 
 const RundownWrapper = styled.section`
   tbody {
+    tr {
+      border-left: 0 !important;
+    }
+
+    .current-item {
+      background-color: var(--color-red-muted) !important;
+    }
+
+    .cued-item {
+      background-color: var(--color-green-muted) !important;
+    }
+
     .event-row {
       background-color: var(--color-surface-01);
       &:hover {
@@ -26,12 +38,6 @@ const RundownWrapper = styled.section`
   }
 `
 
-const getRowClass = (rowData) => {
-  if (rowData.type === 'event') {
-    return 'event-row'
-  }
-}
-
 const COLUMNS = [
   'title',
   'id_folder',
@@ -43,7 +49,13 @@ const COLUMNS = [
   'mark_out',
 ]
 
-const RundownTable = ({ data, draggedObject, onDrop }) => {
+const RundownTable = ({
+  data,
+  draggedObject,
+  onDrop,
+  currentItem,
+  cuedItem,
+}) => {
   const columns = useMemo(() => {
     return COLUMNS.map((key) => {
       return {
@@ -55,6 +67,14 @@ const RundownTable = ({ data, draggedObject, onDrop }) => {
       }
     })
   }, [])
+
+  const getRowClass = (rowData) => {
+    if (rowData.type === 'event') {
+      return 'event-row'
+    }
+    if (rowData.id === currentItem) return 'current-item'
+    if (rowData.id === cuedItem) return 'cued-item'
+  }
 
   return (
     <RundownWrapper className="grow nopad">
