@@ -11,6 +11,8 @@ const BaseDisplay = styled.div`
   background-color: var(--color-surface-01);
   padding: 4px 8px;
   font-weight: bold;
+  user-select: none;
+  user-drag: none;
 `
 
 const DisplayTime = styled(BaseDisplay)`
@@ -44,11 +46,10 @@ const s2tc = (seconds, fps) => {
     .padStart(2, '0')}:${f.toString().padStart(2, '0')}`
 }
 
-const PlayoutControls = ({ playoutStatus }) => {
-  const position = playoutStatus?.position || 0
-  const duration = playoutStatus?.duration || 0
+const PlayoutControls = ({ playoutStatus, rundownMode }) => {
   const currentTitle = playoutStatus?.current_title || ''
   const cuedTitle = playoutStatus?.cued_title || ''
+  const [progress, setProgress] = useState(0)
 
   const [dispClk, setDispClk] = useState('--:--:--:--')
   const [dispPos, setDispPos] = useState('--:--:--:--')
@@ -60,9 +61,13 @@ const PlayoutControls = ({ playoutStatus }) => {
   useEffect(() => {
     const now = new Date().getTime() / 1000
     statusRef.current = { ...playoutStatus, receivedAt: now }
-  }, [playoutStatus])
 
-  const progress = (playoutStatus?.position / playoutStatus?.duration) * 100
+    if (playoutStatus?.duration) {
+      const progress =
+        ((playoutStatus?.position || 0) / playoutStatus?.duration) * 100
+      setProgress(progress)
+    }
+  }, [playoutStatus])
 
   const onTimer = () => {
     if (!statusRef.current) return
@@ -71,14 +76,15 @@ const PlayoutControls = ({ playoutStatus }) => {
     const { position, duration, receivedAt } = statusRef.current
     const elapsed = now - receivedAt
     const fps = 25
-    const estimatedPosition = Math.max(0, position + elapsed)
+    const estimatedPos = Math.max(0, position + elapsed)
+    const estimatedRem = Math.max(0, duration - estimatedPos)
 
     const localNow = new Date()
     const localOffset = localNow.getTimezoneOffset() * 60
 
     setDispClk(s2tc(now - localOffset, fps))
-    setDispPos(s2tc(estimatedPosition, fps))
-    setDispRem(s2tc(duration - estimatedPosition, fps))
+    setDispPos(s2tc(estimatedPos, fps))
+    setDispRem(s2tc(estimatedRem, fps))
     setDispDur(s2tc(duration, fps))
   }
 
@@ -88,37 +94,48 @@ const PlayoutControls = ({ playoutStatus }) => {
   }, [])
 
   return (
-    <section className="column" style={{ gap: 8 }}>
-      <DisplayRow>
-        <DisplayTime>CLK: {dispClk}</DisplayTime>
-        <DisplayName>CUR: {currentTitle}</DisplayName>
-        <DisplayTime>REM: {dispRem}</DisplayTime>
-      </DisplayRow>
+    <>
+      <section className="column" style={{ gap: 8 }}>
+        <DisplayRow>
+          <DisplayTime>CLK: {dispClk}</DisplayTime>
+          <DisplayName>CUR: {currentTitle}</DisplayName>
+          <DisplayTime>REM: {dispRem}</DisplayTime>
+        </DisplayRow>
 
-      <DisplayRow>
-        <DisplayTime>POS: {dispPos}</DisplayTime>
-        <DisplayName>NXT: {cuedTitle}</DisplayName>
-        <DisplayTime>DUR: {dispDur}</DisplayTime>
-      </DisplayRow>
+        <DisplayRow>
+          <DisplayTime>POS: {dispPos}</DisplayTime>
+          <DisplayName>NXT: {cuedTitle}</DisplayName>
+          <DisplayTime>DUR: {dispDur}</DisplayTime>
+        </DisplayRow>
 
-      <Progress value={progress} />
+        <Progress value={progress} />
+      </section>
+      {rundownMode === 'playout' && (
+        <section className="column" style={{ gap: 8 }}>
+          <ButtonRow>
+            <Button
+              label="Take"
+              style={{ border: '1px solid var(--color-green-muted)' }}
+            />
+            <Button
+              label="Freeze"
+              style={{ border: '1px solid var(--color-red-muted)' }}
+            />
+            <Button label="Retake" />
+            <Button label="Abort" />
+            <Button label="Loop" />
+            <Button label="Cue prev" />
+            <Button label="Cue next" />
+          </ButtonRow>
+        </section>
+      )}
 
-      <ButtonRow>
-        <Button
-          label="Take"
-          style={{ border: '1px solid var(--color-green-muted)' }}
-        />
-        <Button
-          label="Freeze"
-          style={{ border: '1px solid var(--color-red-muted)' }}
-        />
-        <Button label="Retake" />
-        <Button label="Abort" />
-        <Button label="Loop" />
-        <Button label="Cue prev" />
-        <Button label="Cue next" />
-      </ButtonRow>
-    </section>
+      {rundownMode === 'plugins' && (
+        <section className="column" style={{ gap: 8 }}>
+          not implemented
+        </section>
+      )}
+    </>
   )
 }
 

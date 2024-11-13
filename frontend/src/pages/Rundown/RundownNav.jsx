@@ -2,12 +2,17 @@ import { useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import { NavLink, useSearchParams } from 'react-router-dom'
 
-import { Navbar, InputText, Button, Spacer } from '/src/components'
+import { Navbar, InputText, Button, Spacer, RadioButton } from '/src/components'
 import { setPageTitle } from '/src/actions'
 
 const DAY = 24 * 60 * 60 * 1000
 
-const RundownNav = ({ startTime, setStartTime }) => {
+const RundownNav = ({
+  startTime,
+  setStartTime,
+  rundownMode,
+  setRundownMode,
+}) => {
   const [searchParams, setSearchParams] = useSearchParams()
   const dispatch = useDispatch()
 
@@ -44,8 +49,20 @@ const RundownNav = ({ startTime, setStartTime }) => {
 
   return (
     <Navbar>
-      <Button icon="chevron_left" onClick={prevDay} />
-      <Button icon="chevron_right" onClick={nextDay} />
+      <Button icon="chevron_left" onClick={prevDay} tooltip="Previous day" />
+      <Button icon="chevron_right" onClick={nextDay} tooltip="Next day" />
+
+      <Spacer />
+      <RadioButton
+        options={[
+          { label: 'Edit', value: 'edit' },
+          { label: 'Playout', value: 'playout' },
+          { label: 'Plugins', value: 'plugins' },
+        ]}
+        value={rundownMode}
+        onChange={setRundownMode}
+      />
+      <Spacer />
     </Navbar>
   )
 }

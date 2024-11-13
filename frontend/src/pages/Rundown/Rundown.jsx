@@ -1,5 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { useLocalStorage } from '/src/hooks'
+import { toast } from 'react-toastify'
 import nebula from '/src/nebula'
 
 import RundownNav from './RundownNav'
@@ -13,6 +15,7 @@ const Rundown = ({ draggedObjects }) => {
   const [playoutStatus, setPlayoutStatus] = useState(null)
   const [selectedItems, setSelectedItems] = useState([])
   const [focusedObject, setFocusedObject] = useState(null)
+  const [rundownMode, setRundownMode] = useLocalStorage('rundownMode', 'edit')
 
   const rundownDataRef = useRef(rundown)
   const currentDateRef = useRef(startTime)
@@ -55,6 +58,10 @@ const Rundown = ({ draggedObjects }) => {
   ])
 
   const onDrop = (items, index) => {
+    if (rundownMode !== 'edit') {
+      toast.error('Rundown is not in edit mode')
+      return
+    }
     const rundown = rundownDataRef.current
 
     const dropAfterItem = rundown[index]
@@ -119,8 +126,16 @@ const Rundown = ({ draggedObjects }) => {
 
   return (
     <main className="column">
-      <RundownNav startTime={startTime} setStartTime={setStartTime} />
-      <PlayoutControls playoutStatus={playoutStatus} />
+      <RundownNav
+        startTime={startTime}
+        setStartTime={setStartTime}
+        rundownMode={rundownMode}
+        setRundownMode={setRundownMode}
+      />
+      <PlayoutControls
+        playoutStatus={playoutStatus}
+        rundownMode={rundownMode}
+      />
       <RundownTable
         data={rundown}
         draggedObjects={draggedObjects}
