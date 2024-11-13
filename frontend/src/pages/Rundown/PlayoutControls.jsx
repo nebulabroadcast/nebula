@@ -73,7 +73,10 @@ const PlayoutControls = ({ playoutStatus }) => {
     const fps = 25
     const estimatedPosition = Math.max(0, position + elapsed)
 
-    setDispClk(s2tc(now, fps))
+    const localNow = new Date()
+    const localOffset = localNow.getTimezoneOffset() * 60
+
+    setDispClk(s2tc(now - localOffset, fps))
     setDispPos(s2tc(estimatedPosition, fps))
     setDispRem(s2tc(duration - estimatedPosition, fps))
     setDispDur(s2tc(duration, fps))
