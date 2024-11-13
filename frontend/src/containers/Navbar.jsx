@@ -135,6 +135,10 @@ const NavBar = () => {
       (channel) => channel.id === currentChannel
     )?.name
 
+    if (!currentChannel) {
+      dispatch(setCurrentChannel(nebula.settings.playout_channels[0].id))
+    }
+
     return (
       <Dropdown
         align="right"
