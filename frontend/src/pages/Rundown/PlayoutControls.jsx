@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from 'react'
 import styled from 'styled-components'
 import { Dialog, Button, Progress } from '/src/components'
 
@@ -33,26 +34,68 @@ const ButtonRow = styled.div`
   }
 `
 
+const s2tc = (seconds, fps) => {
+  const h = Math.floor(seconds / 3600) % 24
+  const m = Math.floor((seconds % 3600) / 60)
+  const s = Math.floor(seconds % 60)
+  const f = Math.floor((seconds % 1) * fps)
+  return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s
+    .toString()
+    .padStart(2, '0')}:${f.toString().padStart(2, '0')}`
+}
+
 const PlayoutControls = ({ playoutStatus }) => {
   const position = playoutStatus?.position || 0
   const duration = playoutStatus?.duration || 0
   const currentTitle = playoutStatus?.current_title || ''
   const cuedTitle = playoutStatus?.cued_title || ''
 
+  const [dispClk, setDispClk] = useState('--:--:--:--')
+  const [dispPos, setDispPos] = useState('--:--:--:--')
+  const [dispRem, setDispRem] = useState('--:--:--:--')
+  const [dispDur, setDispDur] = useState('--:--:--:--')
+
+  const statusRef = useRef(playoutStatus)
+
+  useEffect(() => {
+    const now = new Date().getTime() / 1000
+    statusRef.current = { ...playoutStatus, receivedAt: now }
+  }, [playoutStatus])
+
   const progress = (playoutStatus?.position / playoutStatus?.duration) * 100
+
+  const onTimer = () => {
+    if (!statusRef.current) return
+
+    const now = new Date().getTime() / 1000
+    const { position, duration, receivedAt } = statusRef.current
+    const elapsed = now - receivedAt
+    const fps = 25
+    const estimatedPosition = Math.max(0, position + elapsed)
+
+    setDispClk(s2tc(now, fps))
+    setDispPos(s2tc(estimatedPosition, fps))
+    setDispRem(s2tc(duration - estimatedPosition, fps))
+    setDispDur(s2tc(duration, fps))
+  }
+
+  useEffect(() => {
+    const timer = setInterval(onTimer, 40)
+    return () => clearInterval(timer)
+  }, [])
 
   return (
     <section className="column" style={{ gap: 8 }}>
       <DisplayRow>
-        <DisplayTime>CLK:</DisplayTime>
+        <DisplayTime>CLK: {dispClk}</DisplayTime>
         <DisplayName>CUR: {currentTitle}</DisplayName>
-        <DisplayTime>REM:</DisplayTime>
+        <DisplayTime>REM: {dispRem}</DisplayTime>
       </DisplayRow>
 
       <DisplayRow>
-        <DisplayTime>POS:</DisplayTime>
+        <DisplayTime>POS: {dispPos}</DisplayTime>
         <DisplayName>NXT: {cuedTitle}</DisplayName>
-        <DisplayTime>DUR:</DisplayTime>
+        <DisplayTime>DUR: {dispDur}</DisplayTime>
       </DisplayRow>
 
       <Progress value={progress} />
