@@ -171,10 +171,12 @@ const Rundown = ({ draggedObjects }) => {
         rundownMode={rundownMode}
         setRundownMode={setRundownMode}
       />
-      <PlayoutControls
-        playoutStatus={playoutStatus}
-        rundownMode={rundownMode}
-      />
+      {rundownMode !== 'edit' && (
+        <PlayoutControls
+          playoutStatus={playoutStatus}
+          rundownMode={rundownMode}
+        />
+      )}
       <RundownTable
         data={rundown}
         loading={loading}

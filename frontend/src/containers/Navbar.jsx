@@ -2,7 +2,12 @@ import nebula from '/src/nebula'
 import styled from 'styled-components'
 import { useMemo } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { NavLink, useNavigate } from 'react-router-dom'
+import {
+  NavLink,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from 'react-router-dom'
 import { setCurrentChannel } from '/src/actions'
 
 import { Navbar, Dropdown } from '/src/components'
@@ -87,7 +92,20 @@ const NavBar = () => {
   const dispatch = useDispatch()
   const focusedAsset = useSelector((state) => state.context.focusedAsset)
   const currentChannel = useSelector((state) => state.context.currentChannel)
-  const mamSuffix = focusedAsset ? `?asset=${focusedAsset}` : ''
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  const mamSuffix = useMemo(() => {
+    const params = new URLSearchParams()
+    for (const key of ['date', 'asset']) {
+      if (searchParams.has(key)) {
+        params.append(key, searchParams.get(key))
+      }
+    }
+    if (focusedAsset && !searchParams.has('asset')) {
+      params.append('asset', focusedAsset)
+    }
+    return params ? `?${params.toString()}` : ''
+  }, [searchParams, focusedAsset])
 
   const mainMenuOptions = useMemo(() => {
     const result = []
@@ -156,8 +174,8 @@ const NavBar = () => {
         <NavLink to={`/mam/editor${mamSuffix}`}>Assets</NavLink>
         {nebula.experimental && (
           <>
-            <NavLink to={`/mam/scheduler`}>Scheduler</NavLink>
-            <NavLink to={`/mam/rundown`}>Rundown</NavLink>
+            <NavLink to={`/mam/scheduler${mamSuffix}`}>Scheduler</NavLink>
+            <NavLink to={`/mam/rundown${mamSuffix}`}>Rundown</NavLink>
           </>
         )}
         <NavLink to="/jobs">Jobs</NavLink>

@@ -1,18 +1,16 @@
+import nebula from '/src/nebula'
+
 import { useState, useEffect, useMemo } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { setPageTitle } from '/src/actions'
+import { useSelector } from 'react-redux'
 import { toast } from 'react-toastify'
+import { DateTime } from 'luxon'
 
 import Calendar from '/src/containers/Calendar'
 import SchedulerNav from './SchedulerNav'
 import EventDialog from './EventDialog'
-import { getWeekStart, createTitle } from './utils'
-import nebula from '/src/nebula'
-import { DateTime } from 'luxon'
 
 const Scheduler = ({ draggedObjects }) => {
-  const dispatch = useDispatch()
-  const [startTime, setStartTime] = useState(getWeekStart())
+  const [startTime, setStartTime] = useState()
   const [events, setEvents] = useState([])
   const [editorData, setEditorData] = useState(null)
   const currentChannel = useSelector((state) => state.context.currentChannel)
@@ -101,13 +99,8 @@ const Scheduler = ({ draggedObjects }) => {
   //
 
   useEffect(() => {
+    if (!startTime) return
     loadEvents()
-  }, [startTime, currentChannel])
-
-  useEffect(() => {
-    // console.log('Week start time changed', startTime)
-    const pageTitle = createTitle(startTime)
-    dispatch(setPageTitle({ title: pageTitle }))
   }, [startTime, currentChannel])
 
   //
@@ -135,13 +128,15 @@ const Scheduler = ({ draggedObjects }) => {
     <main className="column">
       <SchedulerNav startTime={startTime} setStartTime={setStartTime} />
       <section className="grow nopad">
-        <Calendar
-          startTime={startTime}
-          events={events}
-          setEvent={setEvent}
-          draggedAsset={draggedAsset}
-          contextMenu={contextMenu}
-        />
+        {startTime && (
+          <Calendar
+            startTime={startTime}
+            events={events}
+            setEvent={setEvent}
+            draggedAsset={draggedAsset}
+            contextMenu={contextMenu}
+          />
+        )}
       </section>
       {editorData && (
         <EventDialog

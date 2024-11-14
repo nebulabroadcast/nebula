@@ -152,6 +152,7 @@ const MAMPage = () => {
       <DndContext
         onDragEnd={onDragEnd}
         onDragStart={onDragStart}
+        onDragCancel={onDragCancel}
         sensors={sensors}
       >
         <Splitter

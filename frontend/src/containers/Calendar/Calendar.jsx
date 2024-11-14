@@ -399,9 +399,13 @@ const Calendar = ({
       <div className="calendar-header">
         {dstyles.map((d, i) => {
           const r = i === 0 ? dayRef : null
-
           return (
-            <div className="calendar-day" style={dstyles[i].style} ref={r}>
+            <div
+              className="calendar-day"
+              style={dstyles[i].style}
+              ref={r}
+              key={i}
+            >
               <NavLink to={`/mam/rundown?date=${dstyles[i].date}`}>
                 {dstyles[i].date}
               </NavLink>

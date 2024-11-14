@@ -111,7 +111,7 @@ const PlayoutControls = ({ playoutStatus, rundownMode }) => {
 
         <Progress value={progress} />
       </section>
-      {rundownMode === 'playout' && (
+      {rundownMode === 'control' && (
         <section className="column" style={{ gap: 8 }}>
           <ButtonRow>
             <Button
