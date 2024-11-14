@@ -18,6 +18,7 @@ const Rundown = ({ draggedObjects }) => {
   const [rundownMode, setRundownMode] = useLocalStorage('rundownMode', 'edit')
 
   const [rundown, setRundown] = useState(null)
+  const [loading, setLoading] = useState(false)
 
   const [playoutStatus, setPlayoutStatus] = useState(null)
   const [selectedItems, setSelectedItems] = useState([])
@@ -30,17 +31,24 @@ const Rundown = ({ draggedObjects }) => {
   const rundownDataRef = useRef(rundown)
   const currentDateRef = useRef(startTime)
   const currentChannelRef = useRef(currentChannel)
+  const rundownModeRef = useRef(rundownMode)
 
   useEffect(() => {
     rundownDataRef.current = rundown || []
   }, [rundown])
+
   useEffect(() => {
     currentDateRef.current = startTime
   }, [startTime])
+
   useEffect(() => {
     currentChannelRef.current = currentChannel
     setPlayoutStatus(null)
   }, [currentChannel])
+
+  useEffect(() => {
+    rundownModeRef.current = rundownMode
+  }, [rundownMode])
 
   //
   // Load rundown
@@ -56,11 +64,16 @@ const Rundown = ({ draggedObjects }) => {
 
   const loadRundown = () => {
     if (!startTime) return
+    setLoading(true)
     const requestParams = {
       date: currentDateRef.current.toISOString().split('T')[0],
       id_channel: currentChannelRef.current,
     }
-    nebula.request('rundown', requestParams).then(onResponse).catch(onError)
+    nebula
+      .request('rundown', requestParams)
+      .then(onResponse)
+      .catch(onError)
+      .finally(() => setLoading(false))
   }
 
   useEffect(() => {
@@ -77,7 +90,7 @@ const Rundown = ({ draggedObjects }) => {
   //
 
   const onDrop = (items, index) => {
-    if (rundownMode !== 'edit') {
+    if (rundownModeRef.current !== 'edit') {
       toast.error('Rundown is not in edit mode')
       return
     }
@@ -164,6 +177,7 @@ const Rundown = ({ draggedObjects }) => {
       />
       <RundownTable
         data={rundown}
+        loading={loading}
         draggedObjects={draggedObjects}
         onDrop={onDrop}
         currentItem={playoutStatus?.current_item}

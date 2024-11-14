@@ -1,8 +1,8 @@
 import { useEffect } from 'react'
 import { useDispatch } from 'react-redux'
-import { NavLink, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 
-import { Navbar, InputText, Button, Spacer, RadioButton } from '/src/components'
+import { Navbar, Button, Spacer, RadioButton } from '/src/components'
 import { setPageTitle } from '/src/actions'
 
 const DAY = 24 * 60 * 60 * 1000

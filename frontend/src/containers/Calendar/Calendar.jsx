@@ -1,5 +1,6 @@
 import styled from 'styled-components'
 import { useRef, useMemo, useEffect, useState, useCallback } from 'react'
+import { NavLink } from 'react-router-dom'
 import CalendarWrapper from './CalendarWrapper'
 import ZoomControl from './ZoomControl'
 import ContextMenu from '/src/components/ContextMenu'
@@ -366,49 +367,47 @@ const Calendar = ({
     const dayStyles = []
     for (let i = 0; i < 7; i++) {
       const dayStartTs = weekStartTs + i * 24 * 3600
+      // get date in YYYY-MM-DD format
+      const jsDate = new Date(dayStartTs * 1000)
+      const date = jsDate.toISOString().slice(0, 10)
+      const dayName = jsDate.toLocaleDateString('en-US', { weekday: 'short' })
+
+      const style = {}
 
       if (todayStartTs === dayStartTs) {
-        dayStyles.push({
-          borderBottom: '1px solid var(--color-text)',
-          fontWeight: 'bold',
-        })
-        continue
+        style.borderBottom = '1px solid var(--color-text)'
+        style.fontWeight = 'bold'
+      } else {
+        const color =
+          todayStartTs > dayStartTs ? 'var(--color-red)' : 'var(--color-green)'
+        style.borderBottom = `1px solid ${color}`
       }
 
-      const color =
-        todayStartTs > dayStartTs ? 'var(--color-red)' : 'var(--color-green)'
-      const style = {
-        borderBottom: `1px solid ${color}`,
-      }
-      dayStyles.push(style)
+      dayStyles.push({
+        style,
+        date,
+        dayName,
+      })
     }
     return dayStyles
   }, [startTime])
 
+  // yes. this is very ugly, but i need that reference to one day
+  // to get its width
   return (
     <CalendarWrapper scrollbarWidth={scrollbarWidth} clockWidth={CLOCK_WIDTH}>
       <div className="calendar-header">
-        <div className="calendar-day" style={dstyles[0]} ref={dayRef}>
-          Monday
-        </div>
-        <div className="calendar-day" style={dstyles[1]}>
-          Tuesday
-        </div>
-        <div className="calendar-day" style={dstyles[2]}>
-          Wednesday
-        </div>
-        <div className="calendar-day" style={dstyles[3]}>
-          Thursday
-        </div>
-        <div className="calendar-day" style={dstyles[4]}>
-          Friday
-        </div>
-        <div className="calendar-day" style={dstyles[5]}>
-          Saturday
-        </div>
-        <div className="calendar-day" style={dstyles[6]}>
-          Sunday
-        </div>
+        {dstyles.map((d, i) => {
+          const r = i === 0 ? dayRef : null
+
+          return (
+            <div className="calendar-day" style={dstyles[i].style} ref={r}>
+              <NavLink to={`/mam/rundown?date=${dstyles[i].date}`}>
+                {dstyles[i].date}
+              </NavLink>
+            </div>
+          )
+        })}
       </div>
       <div className="calendar-body">
         <div
