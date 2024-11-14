@@ -9,17 +9,28 @@ import RundownTable from './RundownTable'
 import PlayoutControls from './PlayoutControls'
 
 const Rundown = ({ draggedObjects }) => {
+  //
+  // States
+  //
+
   const [startTime, setStartTime] = useState(null)
   const currentChannel = useSelector((state) => state.context.currentChannel)
+  const [rundownMode, setRundownMode] = useLocalStorage('rundownMode', 'edit')
+
   const [rundown, setRundown] = useState(null)
+
   const [playoutStatus, setPlayoutStatus] = useState(null)
   const [selectedItems, setSelectedItems] = useState([])
   const [focusedObject, setFocusedObject] = useState(null)
-  const [rundownMode, setRundownMode] = useLocalStorage('rundownMode', 'edit')
+
+  //
+  // Sync state with refs (to avoid stale closures)
+  //
 
   const rundownDataRef = useRef(rundown)
   const currentDateRef = useRef(startTime)
   const currentChannelRef = useRef(currentChannel)
+
   useEffect(() => {
     rundownDataRef.current = rundown || []
   }, [rundown])
@@ -30,6 +41,10 @@ const Rundown = ({ draggedObjects }) => {
     currentChannelRef.current = currentChannel
     setPlayoutStatus(null)
   }, [currentChannel])
+
+  //
+  // Load rundown
+  //
 
   const onResponse = (response) => {
     setRundown(response.data.rows)
@@ -57,13 +72,16 @@ const Rundown = ({ draggedObjects }) => {
     playoutStatus?.cued_item,
   ])
 
+  //
+  // Rundown re-ordering
+  //
+
   const onDrop = (items, index) => {
     if (rundownMode !== 'edit') {
       toast.error('Rundown is not in edit mode')
       return
     }
     const rundown = rundownDataRef.current
-
     const dropAfterItem = rundown[index]
     let i = -1
     const newOrder = []
@@ -94,7 +112,7 @@ const Rundown = ({ draggedObjects }) => {
           newOrder.push({ id: item.id, type: item.type })
         }
       }
-    }
+    } // create a new order array
 
     nebula
       .request('order', {
@@ -107,7 +125,11 @@ const Rundown = ({ draggedObjects }) => {
         setSelectedItems([])
         setFocusedObject(null)
       })
-  }
+  } // onDrop
+
+  //
+  // Realtime updates
+  //
 
   const handlePubSub = (topic, message) => {
     if (topic === 'playout_status') {
@@ -123,6 +145,10 @@ const Rundown = ({ draggedObjects }) => {
     // eslint-disable-next-line no-undef
     return () => PubSub.unsubscribe(token)
   }, [])
+
+  //
+  // Render
+  //
 
   return (
     <main className="column">
