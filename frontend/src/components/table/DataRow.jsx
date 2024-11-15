@@ -19,17 +19,22 @@ const DataRow = ({
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({
       id: rowData.id,
-      data: draggableItems?.length
-        ? draggableItems
-        : [
-            {
-              id: rowData.id,
-              type: rowData.type || 'asset',
-              title: rowData.title,
-              subtitle: rowData.subtitle,
-              duration: rowData.duration,
-            },
-          ],
+      data:
+        draggableItems?.length &&
+        draggableItems.filter(
+          (item) =>
+            item.id === rowData.id && (item.type === rowData.type || 'asset')
+        ).length
+          ? draggableItems
+          : [
+              {
+                id: rowData.id,
+                type: rowData.type || 'asset',
+                title: rowData.title,
+                subtitle: rowData.subtitle,
+                duration: rowData.duration,
+              },
+            ],
     })
 
   const handleClick = (event) => {
@@ -43,6 +48,14 @@ const DataRow = ({
 
   const rowStyle = {}
   if (isDragging) rowStyle.backgroundColor = 'var(--color-surface-05)' // same as select
+
+  if (
+    draggableItems?.length &&
+    draggableItems.length > 0 &&
+    draggableItems.filter((item) => item.id === rowData.id).length > 0
+  ) {
+    rowStyle.backgroundColor = 'var(--color-surface-05)' // same as select
+  }
 
   let rowClassName = ''
 
