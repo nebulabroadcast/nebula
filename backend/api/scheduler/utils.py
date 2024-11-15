@@ -1,3 +1,4 @@
+import asyncpg
 from nxtools import format_time
 
 import nebula
@@ -45,8 +46,12 @@ async def delete_events(ids: list[int], user: nebula.User | None = None) -> list
                     "DELETE FROM items WHERE id_bin = $1",
                     id_bin,
                 )
+            except asyncpg.exceptions.ForeignKeyViolationError as e:
+                raise nebula.ConflictException(
+                    "Cannot delete event containing aired items"
+                ) from e
             except Exception:
-                nebula.log.error(f"Failed to delete items of {event}")
+                nebula.log.traceback(f"Failed to delete items of {event}")
                 continue
 
             await nebula.db.execute("DELETE FROM bins WHERE id = $1", id_bin)
@@ -75,35 +80,38 @@ async def get_events_in_range(
         f"from {format_time(int(start_time))} to {format_time(int(end_time))}",
         user=username,
     )
-
     result = []
 
-    # Last event before start_time
+    # Events between start_time and end_time
+    # and the last event before end_time
     async for row in nebula.db.iterate(
         """
-        SELECT e.meta as emeta, o.meta as ometa FROM events AS e, bins AS o
-        WHERE
-            e.id_channel=$1
+        (
+            SELECT
+                e.meta AS emeta,
+                o.meta AS ometa,
+                e.start
+            FROM events AS e, bins AS o
+            WHERE
+                e.id_channel = $1
             AND e.start < $2
             AND e.id_magic = o.id
-        ORDER BY start DESC LIMIT 1
-        """,
-        id_channel,
-        start_time,
-    ):
-        rec = row["emeta"]
-        rec["duration"] = row["ometa"].get("duration")
-        result.append(nebula.Event.from_meta(rec))
-
-    # Events between start_time and end_time
-    async for row in nebula.db.iterate(
-        """
-        SELECT e.meta as emeta, o.meta as ometa FROM events AS e, bins AS o
-        WHERE
-            e.id_channel=$1
+            ORDER BY e.start DESC
+            LIMIT 1
+        )
+        UNION ALL
+        (
+            SELECT
+                e.meta AS emeta,
+                o.meta AS ometa,
+                e.start
+            FROM events AS e, bins AS o
+            WHERE
+                e.id_channel = $1
             AND e.start >= $2
             AND e.start < $3
             AND e.id_magic = o.id
+        )
         ORDER BY start ASC
         """,
         id_channel,
