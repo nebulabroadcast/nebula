@@ -47,16 +47,6 @@ const DataRow = ({
   }
 
   const rowStyle = {}
-  if (isDragging) rowStyle.backgroundColor = 'var(--color-surface-05)' // same as select
-
-  if (
-    draggableItems?.length &&
-    draggableItems.length > 0 &&
-    draggableItems.filter((item) => item.id === rowData.id).length > 0
-  ) {
-    rowStyle.backgroundColor = 'var(--color-surface-05)' // same as select
-  }
-
   let rowClassName = ''
 
   // Left-border highlight color

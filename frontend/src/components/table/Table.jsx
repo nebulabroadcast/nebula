@@ -58,6 +58,7 @@ const Table = ({
 
   useEffect(() => {
     droppableRef.current = droppable
+    if (!droppableRef.current) setDropHl(null)
   }, [droppable])
 
   const body = useMemo(() => {
@@ -76,6 +77,7 @@ const Table = ({
         }
       }
     }
+
     return (
       <tbody>
         {(data || []).map((rowData, idx) => (
@@ -123,7 +125,10 @@ const Table = ({
   }
 
   const onMouseUp = (event) => {
+    // are we dragging?
     if (!droppableRef.current) return
+    // ensure mouse up event is triggered on the child element of the table
+    if (!tableRef.current.contains(event.target)) return
     if (onDrop) onDrop(droppableRef.current, dropIndexRef.current)
     droppableRef.current = null
     setDropHl(null)
@@ -146,6 +151,7 @@ const Table = ({
       style={style}
       onScroll={handleScroll}
       onKeyDown={handleKeyDown}
+      onMouseLeave={() => setDropHl(null)}
       dropHl={dropHl}
     >
       {loading && (

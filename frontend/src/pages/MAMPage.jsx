@@ -1,4 +1,4 @@
-import { useMemo, useEffect, useState } from 'react'
+import { useMemo, useEffect, useState, useRef } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { useParams, useSearchParams } from 'react-router-dom'
 import Splitter, { SplitDirection } from '@devbookhq/splitter'
@@ -19,12 +19,13 @@ import {
   useSensors,
 } from '@dnd-kit/core'
 import SendToDialog from '/src/containers/SendTo'
+import { useEventSource } from 'react-use-websocket'
 
 const MAMContainer = styled.div`
   flex-grow: 1;
 
   .__dbk__gutter.Dark {
-    background-color: var(--color-surface01);
+    background-color: var(--color-surface-01);
   }
 
   .__dbk__child-wrapper {
@@ -36,6 +37,19 @@ const MAMContainer = styled.div`
 
   .__dbk__child-wrapper:last-child {
     min-width: 1000px;
+  }
+`
+
+const DraggedIndicator = styled.div`
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+
+  div {
+    display: inline-block;
+    padding: 4px;
+    background-color: var(--color-surface-05);
+    box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.3);
   }
 `
 
@@ -52,6 +66,8 @@ const MAMPage = () => {
     'mamSplitterSizes',
     null
   )
+
+  const draggedIndicatorRef = useRef(null)
 
   // Drag and drop from the browser
   const [draggedObjects, setDraggedObjects] = useState(null)
@@ -82,15 +98,10 @@ const MAMPage = () => {
   }
 
   const onDragEnd = (event) => {
+    console.log('End drag', event.active.data.current)
     setIsDragging(false)
     setDraggedObjects(null)
-    const { active, over } = event
     setBodyCursor('auto')
-  }
-
-  const onDragCancel = () => {
-    setIsDragging(false)
-    setDraggedObjects(null)
   }
 
   //
@@ -115,7 +126,6 @@ const MAMPage = () => {
       })
       return
     }
-    console.log('set asset')
     setSearchParams((o) => {
       o.set('asset', focusedAsset)
       return o
@@ -147,12 +157,41 @@ const MAMPage = () => {
   // Render
   //
 
+  const draggedwidget = useMemo(() => {
+    //if (!draggedObjects?.length) return null
+    return (
+      <>
+        {(draggedObjects || []).map((obj) => {
+          return <div key={obj.id}>{obj.title}</div>
+        })}
+      </>
+    )
+  }, [draggedObjects])
+
+  // const onMouseMove = (e) => {
+  //   setMousePos({ x: e.clientX, y: e.clientY })
+  // }
+  //
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (!draggedIndicatorRef.current) return
+      draggedIndicatorRef.current.style.left = e.clientX + 20 + 'px'
+      draggedIndicatorRef.current.style.top = e.clientY + 20 + 'px'
+    }
+
+    window.addEventListener('mousemove', handleMouseMove)
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove)
+    }
+  }, [])
+
   return (
     <MAMContainer>
       <DndContext
         onDragEnd={onDragEnd}
         onDragStart={onDragStart}
-        onDragCancel={onDragCancel}
+        onDragCancel={onDragEnd}
         sensors={sensors}
       >
         <Splitter
@@ -165,6 +204,11 @@ const MAMPage = () => {
         </Splitter>
       </DndContext>
       <SendToDialog />
+      {draggedObjects?.length > 0 && (
+        <DraggedIndicator ref={draggedIndicatorRef}>
+          {draggedwidget}
+        </DraggedIndicator>
+      )}
     </MAMContainer>
   )
 }
