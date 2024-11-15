@@ -13,8 +13,9 @@ const Rundown = ({ draggedObjects }) => {
   // States
   //
 
-  const [startTime, setStartTime] = useState(null)
   const currentChannel = useSelector((state) => state.context.currentChannel)
+
+  const [startTime, setStartTime] = useState(null)
   const [rundownMode, setRundownMode] = useLocalStorage('rundownMode', 'edit')
 
   const [rundown, setRundown] = useState(null)
@@ -102,22 +103,15 @@ const Rundown = ({ draggedObjects }) => {
       i++
       if (dropAfterItem.id_bin != row.id_bin) continue
 
-      //skip the items that are being dragged
-      let skip = false
-      for (const item of items) {
-        if (item.id === row.id && item.type === row.type) {
-          skip = true
-          break
-        }
-      }
-
-      // do not include events
-      if (row.type === 'event') skip = true
+      // skip events and the items that are being dragged
+      const skip =
+        row.type === 'event' ||
+        items.some((item) => item.id === row.id && item.type === row.type)
 
       // include items that were already in the bin
       if (!skip) newOrder.push({ id: row.id, type: row.type })
 
-      //append the dragged item after the current item
+      // append the dragged item after the current item
       // TODO: update marks
       if (i == index) {
         console.log('Dropped after', dropAfterItem)

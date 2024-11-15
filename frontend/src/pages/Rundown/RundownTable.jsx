@@ -1,5 +1,5 @@
 import Table from '/src/components/table'
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import styled from 'styled-components'
 import nebula from '/src/nebula'
 
@@ -100,8 +100,6 @@ const RundownTable = ({
         data.findIndex((row) => selectedItems.includes(row.id)) ||
         clickedIndex ||
         0
-
-      console.log('focusedIndex', focusedIndex)
 
       const min = Math.min(clickedIndex, focusedIndex)
       const max = Math.max(clickedIndex, focusedIndex)

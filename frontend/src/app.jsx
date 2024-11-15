@@ -6,7 +6,7 @@ import { useLocalStorage } from '/src/hooks'
 import { Routes, Route, Navigate, BrowserRouter } from 'react-router-dom'
 
 import WebsocketListener from '/src/websocket'
-import NavBar from '/src/containers/Navbar'
+import MainNavbar from '/src/containers/MainNavbar'
 import LoginPage from '/src/pages/LoginPage'
 import LoadingPage from '/src/pages/LoadingPage'
 import MAMPage from '/src/pages/MAMPage'
@@ -92,7 +92,7 @@ const App = () => {
     <Suspense fallback={<LoadingPage />}>
       <WebsocketListener />
       <BrowserRouter>
-        <NavBar />
+        <MainNavbar />
         <Routes>
           <Route
             path="/"
