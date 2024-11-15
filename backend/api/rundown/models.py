@@ -43,3 +43,4 @@ class RundownRow(ResponseModel):
 
 class RundownResponseModel(ResponseModel):
     rows: list[RundownRow] = Field(default_factory=list)
+    detail: str | None = Field(None)

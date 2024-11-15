@@ -1,3 +1,5 @@
+import time
+
 import nebula
 from nebula.enum import ObjectStatus, RunMode
 from nebula.helpers.scheduling import (
@@ -14,9 +16,10 @@ async def get_rundown(request: RundownRequestModel) -> RundownResponseModel:
     if not (channel := nebula.settings.get_playout_channel(request.id_channel)):
         raise nebula.BadRequestException(f"No such channel: {request.id_channel}")
 
+    request_start_time = time.monotonic()
     start_time = parse_rundown_date(request.date, channel)
     end_time = start_time + (3600 * 24)
-    item_runs = await get_item_runs(request.id_channel, start_time, end_time)
+    # item_runs = await get_item_runs(request.id_channel, start_time, end_time)
     pending_assets = await get_pending_assets(channel.send_action)
     pskey = f"playout_status/{request.id_channel}"
 
@@ -27,19 +30,41 @@ async def get_rundown(request: RundownRequestModel) -> RundownResponseModel:
             e.id_magic AS id_bin,
             i.id AS id_item,
             i.meta AS imeta,
-            a.meta AS ameta
-        FROM
-            events AS e
-        LEFT JOIN
-            items AS i
-        ON
-            e.id_magic = i.id_bin
-        LEFT JOIN
-            assets AS a
-        ON
-            i.id_asset = a.id
+            a.meta AS ameta,
+            ar.latest_start AS as_start,
+            ar.latest_stop AS as_stop
+        FROM events AS e
+
+        LEFT JOIN items AS i
+        ON e.id_magic = i.id_bin
+
+        LEFT JOIN assets AS a
+        ON i.id_asset = a.id
+
+        LEFT JOIN (
+            SELECT
+                id_item,
+                start AS latest_start,
+                stop AS latest_stop
+                FROM (
+                    SELECT
+                        id_item,
+                        start,
+                        stop,
+                        ROW_NUMBER() OVER
+                            (PARTITION BY id_item ORDER BY start DESC) AS rn
+                    FROM asrun
+                ) AS ranked
+                WHERE rn = 1
+        ) AS ar
+
+        ON i.id = ar.id_item
+
         WHERE
-            e.id_channel = $1 AND e.start >= $2 AND e.start < $3
+            e.id_channel = $1
+        AND e.start >= $2
+        AND e.start < $3
+
         ORDER BY
             e.start ASC,
             i.position ASC,
@@ -103,9 +128,11 @@ async def get_rundown(request: RundownRequestModel) -> RundownResponseModel:
             continue
 
         airstatus = 0
-        if (runs := item_runs.get(id_item)) is not None:
-            as_start, as_stop = runs
+        # if (runs := item_runs.get(id_item)) is not None:
+        #     as_start, as_stop = runs
+        if (as_start := record["as_start"]) is not None:
             ts_broadcast = as_start
+            as_stop = record["as_stop"]
             airstatus = ObjectStatus.AIRED if as_stop else ObjectStatus.ONAIR
 
         # TODO
@@ -116,17 +143,25 @@ async def get_rundown(request: RundownRequestModel) -> RundownResponseModel:
 
         istatus = 0
         if not ameta:
+            # virtual item. consider it online
             istatus = ObjectStatus.ONLINE
-        elif airstatus:
-            istatus = airstatus
         elif ameta.get("status") == ObjectStatus.OFFLINE:
+            # media is not on the production storage
             istatus = ObjectStatus.OFFLINE
         elif pskey not in ameta or ameta[pskey]["status"] == ObjectStatus.OFFLINE:
+            # media is not on the playout storage
             istatus = ObjectStatus.REMOTE
-        elif ameta[pskey]["status"] == ObjectStatus.ONLINE:
-            istatus = ObjectStatus.ONLINE
         elif ameta[pskey]["status"] == ObjectStatus.CORRUPTED:
+            # media is on the playout storage but corrupted
             istatus = ObjectStatus.CORRUPTED
+        elif ameta[pskey]["status"] == ObjectStatus.ONLINE:
+            if airstatus:
+                # media is on the playout storage and aired
+                istatus = airstatus
+                last_air = as_start
+            else:
+                # media is on the playout storage but not aired
+                istatus = ObjectStatus.ONLINE
         else:
             istatus = ObjectStatus.UNKNOWN
 
@@ -196,4 +231,7 @@ async def get_rundown(request: RundownRequestModel) -> RundownResponseModel:
             last_event.duration += duration
             last_event.is_empty = False
 
-    return RundownResponseModel(rows=rows)
+    elapsed = time.monotonic() - request_start_time
+    msg = f"Rundown generated in {elapsed:.3f} seconds"
+
+    return RundownResponseModel(rows=rows, detail=msg)
