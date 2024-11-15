@@ -1,3 +1,4 @@
+import asyncpg
 from fastapi import Response
 from pydantic import Field
 
@@ -46,8 +47,13 @@ class Request(APIRequest):
                 query = "DELETE FROM items WHERE id = ANY($1) RETURNING id, id_bin"
                 affected_bins = set()
                 nebula.log.debug(f"Deleted items: {request.ids}", user=user.name)
-                async for row in nebula.db.iterate(query, request.ids):
-                    affected_bins.add(row["id_bin"])
+                try:
+                    async for row in nebula.db.iterate(query, request.ids):
+                        affected_bins.add(row["id_bin"])
+                except asyncpg.exceptions.ForeignKeyViolationError as e:
+                    raise nebula.ConflictException(
+                        "Cannot delete item because it was already aired"
+                    ) from e
                 await bin_refresh(list(affected_bins), initiator=initiator)
                 return Response(status_code=204)
 
