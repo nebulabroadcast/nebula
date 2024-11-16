@@ -60,7 +60,8 @@ const Rundown = ({ draggedObjects }) => {
   }
 
   const onError = (error) => {
-    console.log(error.response)
+    const msg = error.response?.data?.detail || error.message
+    toast.error(msg)
   }
 
   const loadRundown = () => {
@@ -182,6 +183,9 @@ const Rundown = ({ draggedObjects }) => {
         setSelectedItems={setSelectedItems}
         focusedObject={focusedObject}
         setFocusedObject={setFocusedObject}
+        rundownMode={rundownMode}
+        loadRundown={loadRundown}
+        onError={onError}
       />
     </main>
   )

@@ -1,5 +1,7 @@
 import Table from '/src/components/table'
 import { useMemo } from 'react'
+import { useSelector } from 'react-redux'
+import { toast } from 'react-toastify'
 import styled from 'styled-components'
 import nebula from '/src/nebula'
 
@@ -59,7 +61,12 @@ const RundownTable = ({
   setSelectedItems,
   focusedObject,
   setFocusedObject,
+  rundownMode,
+  loadRundown,
+  onError,
 }) => {
+  const currentChannel = useSelector((state) => state.context.currentChannel)
+
   const columns = useMemo(() => {
     return COLUMNS.map((key) => {
       return {
@@ -84,6 +91,21 @@ const RundownTable = ({
     if (rowData.type === 'event') {
       setSelectedItems([])
       return
+    }
+
+    if (event.detail === 2) {
+      // doubleClick
+      if (rundownMode === 'control' && rowData.type === 'item') {
+        nebula
+          .request('playout', {
+            id_channel: currentChannel,
+            action: 'cue',
+            payload: { id_item: rowData.id },
+          })
+          .then(loadRundown)
+          .catch(onError)
+        return
+      }
     }
 
     let newSelectedItems = []
@@ -132,13 +154,27 @@ const RundownTable = ({
     }
   }
 
+  const deleteSelectedItems = () => {
+    if (!selectedItems.length) {
+      toast.error('No items selected')
+      return
+    }
+    console.log('Deleting items:', selectedItems)
+    nebula
+      .request('delete', { object_type: 'item', ids: selectedItems })
+      .then(loadRundown)
+      .catch(onError)
+  }
+
   const onKeyDown = (e) => {
     if (e.key === 'ArrowDown') {
       focusNext(1)
       e.preventDefault()
-    }
-    if (e.key === 'ArrowUp') {
+    } else if (e.key === 'ArrowUp') {
       focusNext(-1)
+      e.preventDefault()
+    } else if (e.key === 'Delete') {
+      deleteSelectedItems()
       e.preventDefault()
     }
   }
