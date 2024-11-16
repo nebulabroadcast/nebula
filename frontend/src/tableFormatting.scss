@@ -67,3 +67,10 @@
     color: var(--color-yellow) !important;
   }
 }
+
+.run-mode {
+  text-transform: uppercase !important;
+  div {
+    display: inline-block;
+  }
+}

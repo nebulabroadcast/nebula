@@ -41,9 +41,10 @@ const RundownWrapper = styled.section`
 `
 
 const COLUMNS = [
+  'rundown_symbol',
   'title',
-  'id_folder',
   'status',
+  'run_mode',
   'duration',
   'scheduled_time',
   'broadcast_time',

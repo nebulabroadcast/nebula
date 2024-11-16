@@ -53,6 +53,11 @@ const TableWrapper = styled.div`
     }
 
     thead {
+      tr {
+        background-color: var(--color-surface-03);
+        z-index: 999;
+      }
+
       th {
         text-align: left;
         background-color: var(--color-surface-03);

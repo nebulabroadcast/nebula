@@ -29,6 +29,35 @@ const STATUSES = [
   'retrieving',
 ]
 
+const RUN_MODES = ['Auto', 'Manual', 'Soft', 'Hard', 'Skip']
+
+const formatRundownSymbol = (rowData) => {
+  if (rowData.type !== 'item') {
+    return <td></td>
+  }
+
+  const style = {}
+  let icon = ''
+  if (rowData.id_asset) {
+    const folder = nebula.settings.folders.find(
+      (f) => f.id === rowData.id_folder
+    )
+    style.color = folder?.color
+    icon = 'fiber_manual_record'
+  } else {
+    //todo
+    icon = 'crop_square'
+  }
+
+  return (
+    <td style={{ padding: 0 }}>
+      <span className="icon material-symbols-outlined" style={style}>
+        {icon}
+      </span>
+    </td>
+  )
+}
+
 const formatRowHighlightColor = (rowData) => {
   switch (rowData['status']) {
     case 0:
@@ -161,6 +190,9 @@ const getFormatter = (key) => {
         return <td style={{ color: folder?.color }}>{folder?.name}</td>
       }
 
+    case 'rundown_symbol':
+      return (rowData, key) => formatRundownSymbol(rowData)
+
     case 'duration':
       // eslint-disable-next-line
       return (rowData, key) => {
@@ -185,6 +217,12 @@ const getFormatter = (key) => {
       return (rowData, key) => {
         const status = STATUSES[rowData[key]]
         return <td className={clsx('status', status)}>{status}</td>
+      }
+
+    case 'run_mode':
+      return (rowData, key) => {
+        const runMode = RUN_MODES[rowData[key] || 0]
+        return <td className={'run-mode'}>{runMode}</td>
       }
 
     case 'created_by':
