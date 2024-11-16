@@ -43,11 +43,13 @@ const RundownWrapper = styled.section`
 const COLUMNS = [
   'rundown_symbol',
   'title',
+  'id/main',
+  'duration',
   'status',
   'run_mode',
-  'duration',
   'scheduled_time',
   'broadcast_time',
+  'rundown_difference',
   'mark_in',
   'mark_out',
 ]
