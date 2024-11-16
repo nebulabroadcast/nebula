@@ -100,7 +100,7 @@
   ["source"                 , "Source"                 , null                , ""],
   ["id_folder"              , "Folder"                 , null                , ""],
   ["is_admin"               , "Admin"                  , null                , ""],
-  ["run_mode"               , "Run mode"               , null                , ""],
+  ["run_mode"               , "Run mode"               , "Mode"              , ""],
   ["summary"                , "Summary"                , null                , ""],
   ["description"            , "Description"            , null                , ""],
   ["file/format"            , "File format"            , null                , ""],
