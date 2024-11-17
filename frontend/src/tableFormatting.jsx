@@ -44,9 +44,14 @@ const formatRundownSymbol = (rowData) => {
     )
     style.color = folder?.color
     icon = 'fiber_manual_record'
+  } else if (rowData.item_role === 'placeholder') {
+    icon = 'expand'
+  } else if (rowData.item_role === 'lead_in') {
+    icon = 'vertical_align_bottom'
+  } else if (rowData.item_role === 'lead_out') {
+    icon = 'vertical_align_top'
   } else {
-    //todo
-    icon = 'crop_square'
+    icon = 'question_mark'
   }
 
   return (
@@ -215,6 +220,10 @@ const getFormatter = (key) => {
 
     case 'status':
       return (rowData, key) => {
+        if (rowData.item_role) {
+          // virtual rundown items
+          return <td></td>
+        }
         const status = STATUSES[rowData[key]]
         return <td className={clsx('status', status)}>{status}</td>
       }
