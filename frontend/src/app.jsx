@@ -21,7 +21,6 @@ const App = () => {
   const [errorCode, setErrorCode] = useState(null)
   const [loading, setLoading] = useState(true)
   const [initData, setInitData] = useState(null)
-  const [channels, setChannels] = useState([])
 
   // Ensure server connection
 

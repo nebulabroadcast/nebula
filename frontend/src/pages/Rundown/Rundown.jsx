@@ -7,6 +7,7 @@ import nebula from '/src/nebula'
 import RundownNav from './RundownNav'
 import RundownTable from './RundownTable'
 import PlayoutControls from './PlayoutControls'
+import RundownEditTools from './RundownEditTools'
 
 const Rundown = ({ draggedObjects }) => {
   //
@@ -117,7 +118,19 @@ const Rundown = ({ draggedObjects }) => {
       if (i == index) {
         console.log('Dropped after', dropAfterItem)
         for (const item of items) {
-          newOrder.push({ id: item.id, type: item.type })
+          const meta = {}
+          if (item.type === 'item') {
+            for (const key of ['item_role', 'mark_in', 'mark_out', 'title']) {
+              if (item[key]) meta[key] = item[key]
+            }
+          } else if (item.type === 'asset') {
+            for (const key of ['mark_in', 'mark_out']) {
+              if (item[key]) meta[key] = item[key]
+            }
+          }
+
+          console.log('Dropped item', item, meta)
+          newOrder.push({ id: item.id, type: item.type, meta })
         }
       }
     } // create a new order array
@@ -166,6 +179,7 @@ const Rundown = ({ draggedObjects }) => {
         rundownMode={rundownMode}
         setRundownMode={setRundownMode}
       />
+      {rundownMode === 'edit' && <RundownEditTools />}
       {rundownMode !== 'edit' && (
         <PlayoutControls
           playoutStatus={playoutStatus}

@@ -70,9 +70,11 @@ const Table = ({
           draggableItems.push({
             id: row.id,
             type: row.type || 'asset',
-            duration: row.duration,
             title: row.title,
             subtitle: row.subtitle,
+            duration: row.duration,
+            mark_in: row.mark_in,
+            mark_out: row.mark_out,
           })
         }
       }

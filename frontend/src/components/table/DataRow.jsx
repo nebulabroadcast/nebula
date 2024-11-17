@@ -33,6 +33,8 @@ const DataRow = ({
                 title: rowData.title,
                 subtitle: rowData.subtitle,
                 duration: rowData.duration,
+                mark_in: rowData.mark_in,
+                mark_out: rowData.mark_out,
               },
             ],
     })
