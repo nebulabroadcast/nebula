@@ -1,4 +1,8 @@
+import nebula from '/src/nebula'
+
 import { useState, useEffect, useRef } from 'react'
+import { useSelector } from 'react-redux'
+import { toast } from 'react-toastify'
 import styled from 'styled-components'
 import { Dialog, Button, Progress } from '/src/components'
 
@@ -47,7 +51,13 @@ const s2tc = (seconds, fps) => {
     .padStart(2, '0')}:${f.toString().padStart(2, '0')}`
 }
 
-const PlayoutControls = ({ playoutStatus, rundownMode }) => {
+const PlayoutControls = ({
+  playoutStatus,
+  rundownMode,
+  loadRundown,
+  onError,
+}) => {
+  const currentChannel = useSelector((state) => state.context.currentChannel)
   const currentTitle = playoutStatus?.current_title || ''
   const cuedTitle = playoutStatus?.cued_title || ''
   const [progress, setProgress] = useState(0)
@@ -94,6 +104,18 @@ const PlayoutControls = ({ playoutStatus, rundownMode }) => {
     return () => clearInterval(timer)
   }, [])
 
+  const onCommand = (command, payload) => {
+    console.log('Command', command)
+    nebula
+      .request('playout', {
+        id_channel: currentChannel,
+        action: command,
+        payload,
+      })
+      .then(loadRundown)
+      .catch(onError)
+  }
+
   return (
     <>
       <section className="column" style={{ gap: 8 }}>
@@ -117,16 +139,24 @@ const PlayoutControls = ({ playoutStatus, rundownMode }) => {
             <Button
               label="Take"
               style={{ border: '1px solid var(--color-green-muted)' }}
+              onClick={() => onCommand('take')}
             />
             <Button
               label="Freeze"
               style={{ border: '1px solid var(--color-red-muted)' }}
+              onClick={() => onCommand('freeze')}
             />
-            <Button label="Retake" />
-            <Button label="Abort" />
-            <Button label="Loop" />
-            <Button label="Cue prev" />
-            <Button label="Cue next" />
+            <Button label="Retake" onClick={() => onCommand('retake')} />
+            <Button label="Abort" onClick={() => onCommand('abort')} />
+            <Button
+              label="Loop"
+              onClick={() => toast.error('not implemented')}
+            />
+            <Button
+              label="Cue prev"
+              onClick={() => onCommand('cue_backward')}
+            />
+            <Button label="Cue next" onClick={() => onCommand('cue_forward')} />
           </ButtonRow>
         </section>
       )}

@@ -184,6 +184,8 @@ const Rundown = ({ draggedObjects }) => {
         <PlayoutControls
           playoutStatus={playoutStatus}
           rundownMode={rundownMode}
+          loadRundown={loadRundown}
+          onError={onError}
         />
       )}
       <RundownTable
