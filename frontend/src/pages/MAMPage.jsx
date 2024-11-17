@@ -161,8 +161,8 @@ const MAMPage = () => {
     //if (!draggedObjects?.length) return null
     return (
       <>
-        {(draggedObjects || []).map((obj) => {
-          return <div key={obj.id}>{obj.title}</div>
+        {(draggedObjects || []).map((obj, idx) => {
+          return <div key={idx}>{obj.title}</div>
         })}
       </>
     )
