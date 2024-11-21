@@ -1,9 +1,11 @@
 import Table from '/src/components/table'
 import { useMemo } from 'react'
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
+import { useSearchParams } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import styled from 'styled-components'
 import nebula from '/src/nebula'
+import { showSendToDialog } from '/src/actions'
 
 import {
   getColumnWidth,
@@ -68,7 +70,9 @@ const RundownTable = ({
   loadRundown,
   onError,
 }) => {
+  const [searchParams, setSearchParams] = useSearchParams()
   const currentChannel = useSelector((state) => state.context.currentChannel)
+  const dispatch = useDispatch()
 
   const columns = useMemo(() => {
     return COLUMNS.map((key) => {
@@ -94,6 +98,14 @@ const RundownTable = ({
     if (rowData.type === 'event') {
       setSelectedItems([])
       return
+    }
+
+    if (rowData.id_asset) {
+      const id_asset = rowData.id_asset
+      setSearchParams((o) => {
+        o.set('asset', id_asset)
+        return o
+      })
     }
 
     if (event.detail === 2) {
@@ -182,6 +194,36 @@ const RundownTable = ({
     }
   }
 
+  const onSendTo = () => {
+    const ids = []
+    for (const row of data) {
+      if (selectedItems.includes(row.id)) {
+        if (row.id_asset) ids.push(row.id_asset)
+      }
+    }
+
+    if (ids.length) {
+      dispatch(showSendToDialog({ ids }))
+    }
+  }
+
+  const contextMenu = () => [
+    {
+      label: 'Send to...',
+      icon: 'send',
+      onClick: onSendTo,
+    },
+    {
+      label: 'Delete',
+      icon: 'delete',
+      onClick: deleteSelectedItems,
+    },
+  ]
+
+  //
+  // Render
+  //
+
   const selectedIndices = useMemo(() => {
     const selectedIndices = []
     for (let i = 0; i < data?.length || 0; i++) {
@@ -198,11 +240,12 @@ const RundownTable = ({
         columns={columns}
         data={data}
         className="contained"
+        onRowClick={onRowClick}
         rowClass={getRowClass}
         rowHighlightColor={formatRowHighlightColor}
         rowHighlightStyle={formatRowHighlightStyle}
+        contextMenu={contextMenu}
         selection={selectedIndices}
-        onRowClick={onRowClick}
         onKeyDown={onKeyDown}
         droppable={draggedObjects}
         onDrop={onDrop}
