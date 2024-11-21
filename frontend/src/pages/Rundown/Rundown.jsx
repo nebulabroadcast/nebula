@@ -24,6 +24,7 @@ const Rundown = ({ draggedObjects }) => {
 
   const [playoutStatus, setPlayoutStatus] = useState(null)
   const [selectedItems, setSelectedItems] = useState([])
+  const [selectedEvents, setSelectedEvents] = useState([])
   const [focusedObject, setFocusedObject] = useState(null)
 
   //
@@ -197,6 +198,8 @@ const Rundown = ({ draggedObjects }) => {
         cuedItem={playoutStatus?.cued_item}
         selectedItems={selectedItems}
         setSelectedItems={setSelectedItems}
+        selectedEvents={selectedEvents}
+        setSelectedEvents={setSelectedEvents}
         focusedObject={focusedObject}
         setFocusedObject={setFocusedObject}
         rundownMode={rundownMode}

@@ -13,6 +13,7 @@ import {
   formatRowHighlightColor,
   formatRowHighlightStyle,
 } from '/src/tableFormatting.jsx'
+import { Select } from '../../components'
 
 const RundownWrapper = styled.section`
   tbody {
@@ -56,6 +57,52 @@ const COLUMNS = [
   'mark_out',
 ]
 
+const getRunModeOptions = (object_type, selection, func) => {
+  if (object_type === 'event') {
+    return [
+      {
+        label: 'Run: Auto',
+        icon: 'play_arrow',
+        onClick: () => setRunMode('event', selectedEvents[0], 0),
+      },
+      {
+        label: 'Run: Manual',
+        icon: 'hand_gesture',
+        onClick: () => setRunMode('event', selectedEvents[0], 1),
+      },
+      {
+        label: 'Run: Soft',
+        icon: 'hourglass_empty',
+        onClick: () => setRunMode('event', selectedEvents[0], 2),
+      },
+      {
+        label: 'Run Hard',
+        icon: 'hourglass_bottom',
+        onClick: () => setRunMode('event', selectedEvents[0], 3),
+      },
+    ]
+  }
+  if (object_type === 'item') {
+    return [
+      {
+        label: 'Run: Auto',
+        icon: 'play_arrow',
+        onClick: () => func('item', selection, 0),
+      },
+      {
+        label: 'Run: Manual',
+        icon: 'hand_gesture',
+        onClick: () => func('item', selection, 1),
+      },
+      {
+        label: 'Run: Skip',
+        icon: 'skip_next',
+        onClick: () => func('item', selection, 4),
+      },
+    ]
+  }
+}
+
 const RundownTable = ({
   data,
   draggedObjects,
@@ -64,6 +111,8 @@ const RundownTable = ({
   cuedItem,
   selectedItems,
   setSelectedItems,
+  selectedEvents,
+  setSelectedEvents,
   focusedObject,
   setFocusedObject,
   rundownMode,
@@ -97,6 +146,7 @@ const RundownTable = ({
   const onRowClick = (rowData, event) => {
     if (rowData.type === 'event') {
       setSelectedItems([])
+      setSelectedEvents([rowData.id])
       return
     }
 
@@ -108,6 +158,7 @@ const RundownTable = ({
       })
     }
 
+    setSelectedEvents([])
     if (event.detail === 2) {
       // doubleClick
       if (rundownMode === 'control' && rowData.type === 'item') {
@@ -207,18 +258,47 @@ const RundownTable = ({
     }
   }
 
-  const contextMenu = () => [
-    {
-      label: 'Send to...',
-      icon: 'send',
-      onClick: onSendTo,
-    },
-    {
-      label: 'Delete',
-      icon: 'delete',
-      onClick: deleteSelectedItems,
-    },
-  ]
+  const setRunMode = (object_type, id, run_mode) => {
+    console.log('Setting run mode:', object_type, id, run_mode)
+    const operations = [{ id, object_type, data: { run_mode } }]
+    nebula.request('ops', { operations }).then(loadRundown).catch(onError)
+  }
+
+  const contextMenu = () => {
+    const res = []
+    if (selectedItems.length) {
+      if (selectedItems.length === 1) {
+        res.push(...getRunModeOptions('item', selectedItems[0], setRunMode))
+        res.push({
+          label: 'Edit item',
+          icon: 'edit',
+          separator: true,
+        })
+      }
+      res.push(
+        {
+          label: 'Send to...',
+          icon: 'send',
+          onClick: onSendTo,
+          separator: true,
+        },
+        {
+          label: 'Delete',
+          icon: 'delete',
+          onClick: deleteSelectedItems,
+        }
+      )
+      return res
+    } else if (selectedEvents.length === 1) {
+      res.push(...getRunModeOptions('event', selectedEvents[0], setRunMode))
+      res.push({
+        label: 'Edit event',
+        icon: 'edit',
+        separator: true,
+      })
+    }
+    return res
+  }
 
   //
   // Render
@@ -227,12 +307,16 @@ const RundownTable = ({
   const selectedIndices = useMemo(() => {
     const selectedIndices = []
     for (let i = 0; i < data?.length || 0; i++) {
-      if (selectedItems.includes(data[i].id)) {
+      if (selectedItems.includes(data[i].id) && data[i].type === 'item') {
+        selectedIndices.push(i)
+      }
+      if (selectedEvents.includes(data[i].id) && data[i].type === 'event') {
         selectedIndices.push(i)
       }
     }
+
     return selectedIndices
-  }, [selectedItems, data])
+  }, [selectedItems, selectedEvents, data])
 
   return (
     <RundownWrapper className="grow nopad">

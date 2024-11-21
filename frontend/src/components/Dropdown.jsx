@@ -5,6 +5,7 @@ import clsx from 'clsx'
 const DropdownContainer = styled.div`
   position: relative;
   display: inline-block;
+  z-index: 999;
 
   .dropdown-content {
     display: none;

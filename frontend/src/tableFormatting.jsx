@@ -201,6 +201,9 @@ const getFormatter = (key) => {
     case 'duration':
       // eslint-disable-next-line
       return (rowData, key) => {
+        if (rowData.run_mode === 4) {
+          return <td>--:--:--:--</td>
+        }
         const fps = rowData['video/fps_f'] || 25
         let duration = rowData[key] || 0
         if (rowData.mark_out) duration = rowData.mark_out
