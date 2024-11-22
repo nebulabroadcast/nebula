@@ -3,6 +3,7 @@ import nebula from '/src/nebula'
 import { useState, useEffect, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { toast } from 'react-toastify'
+import { useMetadataDialog } from '/src/hooks'
 import { DateTime } from 'luxon'
 
 import Calendar from '/src/containers/Calendar'
@@ -12,8 +13,8 @@ import EventDialog from './EventDialog'
 const Scheduler = ({ draggedObjects }) => {
   const [startTime, setStartTime] = useState()
   const [events, setEvents] = useState([])
-  const [editorData, setEditorData] = useState(null)
   const currentChannel = useSelector((state) => state.context.currentChannel)
+  const [MetadataDialog, showMetadataDialog] = useMetadataDialog()
 
   const channelConfig = useMemo(() => {
     return nebula.getPlayoutChannel(currentChannel)
@@ -75,8 +76,6 @@ const Scheduler = ({ draggedObjects }) => {
           break
         }
       }
-      // close event dialog if needed
-      setEditorData(null)
     }
 
     for (const field of channelConfig?.fields || []) {
@@ -86,11 +85,6 @@ const Scheduler = ({ draggedObjects }) => {
     }
 
     const params = { ...requestParams, events: [payload] }
-    nebula.request('scheduler', params).then(onResponse).catch(onError)
-  }
-
-  const deleteEvent = (eventId) => {
-    const params = { ...requestParams, delete: [eventId] }
     nebula.request('scheduler', params).then(onResponse).catch(onError)
   }
 
@@ -104,6 +98,20 @@ const Scheduler = ({ draggedObjects }) => {
   }, [startTime, currentChannel])
 
   //
+  // Context menu actions
+  //
+
+  const editEvent = (event) => {
+    const title = `Edit event: ${event.title || 'Untitled'}`
+    showMetadataDialog(title, channelConfig.fields, event).then(setEvent)
+  }
+
+  const deleteEvent = (eventId) => {
+    const params = { ...requestParams, delete: [eventId] }
+    nebula.request('scheduler', params).then(onResponse).catch(onError)
+  }
+
+  //
   // Context menu
   //
 
@@ -111,7 +119,7 @@ const Scheduler = ({ draggedObjects }) => {
     {
       label: 'Edit',
       icon: 'edit',
-      onClick: (event) => setEditorData(event),
+      onClick: editEvent,
     },
     {
       label: 'Delete',
@@ -138,14 +146,7 @@ const Scheduler = ({ draggedObjects }) => {
           />
         )}
       </section>
-      {editorData && (
-        <EventDialog
-          data={editorData}
-          setData={setEditorData}
-          onHide={() => setEditorData(null)}
-          onSave={setEvent}
-        />
-      )}
+      <MetadataDialog />
     </main>
   )
 }
