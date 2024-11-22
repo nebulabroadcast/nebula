@@ -1,7 +1,7 @@
 import Table from '/src/components/table'
-import { useMemo } from 'react'
+import { useMemo, useRef, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, useLocation } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import styled from 'styled-components'
 import nebula from '/src/nebula'
@@ -120,8 +120,39 @@ const RundownTable = ({
   onError,
 }) => {
   const [searchParams, setSearchParams] = useSearchParams()
+  const location = useLocation()
+  const lastHash = useRef('')
   const currentChannel = useSelector((state) => state.context.currentChannel)
   const dispatch = useDispatch()
+  const tableRef = useRef()
+
+  useEffect(() => {
+    if (!location.hash) return
+    if (!data?.length) return
+    if (!tableRef.current) return
+    // already scrolled to this hash
+    if (lastHash.current === location.hash.slice(1)) return
+
+    // find the index of the event to scroll to
+    let scrollToIndex = null
+    for (let i = 0; i < data.length; i++) {
+      const row = data[i]
+      if (row.type === 'event' && row.id == location.hash.slice(1)) {
+        scrollToIndex = i
+        break
+      }
+    }
+    // get the row element and scroll to it
+    const row = tableRef.current.querySelector(
+      `[data-index="${scrollToIndex}"]`
+    )
+    if (row) {
+      const pos = row.offsetTop - row.parentNode.offsetTop
+      const parent = row.parentNode.parentNode.parentNode // he he he
+      parent.scrollTop = pos
+      lastHash.current = location.hash.slice(1)
+    }
+  }, [location, data])
 
   const columns = useMemo(() => {
     return COLUMNS.map((key) => {
@@ -319,7 +350,7 @@ const RundownTable = ({
   }, [selectedItems, selectedEvents, data])
 
   return (
-    <RundownWrapper className="grow nopad">
+    <RundownWrapper className="grow nopad" ref={tableRef}>
       <Table
         columns={columns}
         data={data}

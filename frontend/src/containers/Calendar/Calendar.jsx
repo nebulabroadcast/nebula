@@ -1,6 +1,6 @@
 import styled from 'styled-components'
 import { useRef, useMemo, useEffect, useState, useCallback } from 'react'
-import { NavLink } from 'react-router-dom'
+import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 import CalendarWrapper from './CalendarWrapper'
 import ZoomControl from './ZoomControl'
 import ContextMenu from '/src/components/ContextMenu'
@@ -22,6 +22,9 @@ const Calendar = ({
   setEvent,
   contextMenu,
 }) => {
+  const navigate = useNavigate()
+  const location = useLocation()
+
   const calendarRef = useRef(null)
   const dayRef = useRef(null)
   const wrapperRef = useRef(null)
@@ -247,6 +250,32 @@ const Calendar = ({
   // Clicking
   //
 
+  const openEventInRundown = (event) => {
+    const basePath = '/mam/rundown'
+    const searchParams = new URLSearchParams(location.search)
+    const startTs = event.start - dayStartOffsetSeconds
+    const targetDate = new Date(startTs * 1000).toISOString().slice(0, 10)
+    searchParams.set('date', targetDate)
+    const hash = `#${event.id}`
+    const fullPath = `${basePath}?${searchParams.toString()}${hash}`
+    navigate(fullPath)
+  }
+
+  const onClick = (evt) => {
+    //handle double click on event
+    const pos = { x: evt.clientX, y: evt.clientY }
+    const rect = calendarRef.current.getBoundingClientRect()
+    const x = evt.clientX - rect.left
+    const y = evt.clientY - rect.top
+    initialMousePos.current = { x, y }
+    const event = eventAtPos(pos.x, pos.y)
+
+    // on double click, navigate to event details
+    if (evt.detail === 2 && event) {
+      openEventInRundown(event)
+    }
+  }
+
   const onMouseUp = (e) => {
     if (!calendarRef?.current) return
     if (draggedAsset && cursorTime.current) {
@@ -424,6 +453,7 @@ const Calendar = ({
             ref={calendarRef}
             onMouseDown={onMouseDown}
             onMouseUp={onMouseUp}
+            onClick={onClick}
           />
         </div>
       </div>
