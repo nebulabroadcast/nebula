@@ -4,6 +4,7 @@ import './cellStyles.scss'
 
 import formatAuthorship from './formatAuthorship'
 import formatMetaDatetime from './formatMetaDatetime'
+import formatMetaTimecode from './formatMetaTimecode'
 import formatObjectDuration from './formatObjectDuration'
 import formatObjectIdFolder from './formatObjectIdFolder'
 import formatObjectQcState from './formatObjectQcState'
@@ -65,6 +66,9 @@ const getDefaultFormatter = (key) => {
 
     case 'datetime':
       return (rowData, key) => formatMetaDatetime(rowData, key, metaType.mode)
+
+    case 'timecode':
+      return (rowData, key) => formatMetaTimecode(rowData, key)
 
     case 'select':
       // eslint-disable-next-line
