@@ -14,7 +14,7 @@ const Scheduler = ({ draggedObjects }) => {
 
   const [startTime, setStartTime] = useState()
   const [events, setEvents] = useState([])
-  const [EventDialog, showEventDialog] = useMetadataDialog()
+  const showEventDialog = useMetadataDialog()
 
   const channelConfig = useMemo(() => {
     return nebula.getPlayoutChannel(currentChannel)
@@ -145,7 +145,6 @@ const Scheduler = ({ draggedObjects }) => {
           />
         )}
       </section>
-      <EventDialog />
     </main>
   )
 }

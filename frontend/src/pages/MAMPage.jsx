@@ -8,6 +8,7 @@ import { useLocalStorage } from '/src/hooks'
 import { setFocusedAsset, setSelectedAssets } from '/src/actions'
 
 import Browser from '/src/containers/Browser'
+import { MetadataDialogProvider } from '/src/hooks'
 import AssetEditor from '/src/pages/AssetEditor'
 import Scheduler from '/src/pages/Scheduler'
 import Rundown from './Rundown'
@@ -19,7 +20,6 @@ import {
   useSensors,
 } from '@dnd-kit/core'
 import SendToDialog from '/src/containers/SendTo'
-import { useEventSource } from 'react-use-websocket'
 
 const MAMContainer = styled.div`
   flex-grow: 1;
@@ -188,27 +188,29 @@ const MAMPage = () => {
 
   return (
     <MAMContainer>
-      <DndContext
-        onDragEnd={onDragEnd}
-        onDragStart={onDragStart}
-        onDragCancel={onDragEnd}
-        sensors={sensors}
-      >
-        <Splitter
-          direction={SplitDirection.Horizontal}
-          onResizeFinished={onResize}
-          initialSizes={splitterSizes}
+      <MetadataDialogProvider>
+        <DndContext
+          onDragEnd={onDragEnd}
+          onDragStart={onDragStart}
+          onDragCancel={onDragEnd}
+          sensors={sensors}
         >
-          <Browser isDragging={isDragging} />
-          {moduleComponent}
-        </Splitter>
-      </DndContext>
-      <SendToDialog />
-      {draggedObjects?.length > 0 && (
-        <DraggedIndicator ref={draggedIndicatorRef}>
-          {draggedwidget}
-        </DraggedIndicator>
-      )}
+          <Splitter
+            direction={SplitDirection.Horizontal}
+            onResizeFinished={onResize}
+            initialSizes={splitterSizes}
+          >
+            <Browser isDragging={isDragging} />
+            {moduleComponent}
+          </Splitter>
+        </DndContext>
+        <SendToDialog />
+        {draggedObjects?.length > 0 && (
+          <DraggedIndicator ref={draggedIndicatorRef}>
+            {draggedwidget}
+          </DraggedIndicator>
+        )}
+      </MetadataDialogProvider>
     </MAMContainer>
   )
 }

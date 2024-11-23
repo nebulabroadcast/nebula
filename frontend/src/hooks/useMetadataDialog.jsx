@@ -1,8 +1,10 @@
-import { useState, useRef } from 'react'
+import { createContext, useState, useRef, useContext } from 'react'
 import styled from 'styled-components'
 
 import { Button, Dialog } from '/src/components'
 import MetadataEditor from '/src/containers/MetadataEditor'
+
+const MetadataDialogContext = createContext()
 
 const MetadataDialog = ({
   title,
@@ -39,16 +41,14 @@ const MetadataDialog = ({
   )
 }
 
-const useMetadataDialog = () => {
+export const MetadataDialogProvider = ({ children }) => {
   const [promise, setPromise] = useState(null)
   const initialDataRef = useRef({})
   const fieldsRef = useRef([])
   const titleRef = useRef('')
-
   const [visible, setVisible] = useState(false)
 
   const confirm = (title, fields, initialData) =>
-    // eslint-disable-next-line
     new Promise((resolve, reject) => {
       initialDataRef.current = initialData
       fieldsRef.current = fields
@@ -67,20 +67,28 @@ const useMetadataDialog = () => {
     setVisible(false)
   }
 
-  const DialogComponent = () => {
-    if (!visible) return <></>
-    return (
-      <MetadataDialog
-        title={titleRef.current}
-        fields={fieldsRef.current}
-        initialData={initialDataRef.current}
-        handleCancel={handleCancel}
-        handleConfirm={handleConfirm}
-      />
-    )
-  }
-
-  return [DialogComponent, confirm]
+  return (
+    <MetadataDialogContext.Provider value={{ confirm }}>
+      {children}
+      {visible && (
+        <MetadataDialog
+          title={titleRef.current}
+          fields={fieldsRef.current}
+          initialData={initialDataRef.current}
+          handleCancel={handleCancel}
+          handleConfirm={handleConfirm}
+        />
+      )}
+    </MetadataDialogContext.Provider>
+  )
 }
 
-export default useMetadataDialog
+export const useMetadataDialog = () => {
+  const context = useContext(MetadataDialogContext)
+  if (!context) {
+    throw new Error(
+      'useMetadataDialog must be used within a MetadataDialogProvider'
+    )
+  }
+  return context.confirm
+}

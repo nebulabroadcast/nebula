@@ -1,7 +1,6 @@
 import { useMemo, useRef, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { useSearchParams, useLocation } from 'react-router-dom'
-import { toast } from 'react-toastify'
 
 import nebula from '/src/nebula'
 import { Table } from '/src/components'
@@ -37,7 +36,11 @@ const RundownTable = ({
   const currentChannel = useSelector((state) => state.context.currentChannel)
   const dispatch = useDispatch()
   const tableRef = useRef()
-  const [MetadataDialog, showMetadataDialog] = useMetadataDialog()
+  const showMetadataDialog = useMetadataDialog()
+
+  const channelConfig = useMemo(() => {
+    return nebula.getPlayoutChannel(currentChannel)
+  }, [currentChannel])
 
   //
   // Scroll to the event definded in the hash when the component mounts
@@ -116,7 +119,27 @@ const RundownTable = ({
     )
     if (!objectData) return // this should never happen
 
-    console.log('Editing object', objectData)
+    let fields
+    if (objectData.type === 'event') {
+      fields = [{ name: 'start' }, ...channelConfig.fields]
+    } else if (objectData.item_role === 'placeholder') {
+      fields = [{ name: 'duration' }]
+    } else if (['lead_in', 'lead_out'].includes(objectData.item_role)) {
+      return
+    }
+
+    const title = `Edit ${objectData.type}: ${objectData.title}`
+
+    const initialData = {}
+    for (const field of fields) {
+      initialData[field.name] = objectData[field.name]
+    }
+
+    showMetadataDialog(title, fields, initialData)
+      .then((newData) => {
+        updateObject(objectData.type, objectData.id, newData)
+      })
+      .catch(onError)
   }
 
   //
@@ -284,7 +307,6 @@ const RundownTable = ({
         droppable={draggedObjects}
         onDrop={onDrop}
       />
-      <MetadataDialog />
     </RundownTableWrapper>
   )
 }
