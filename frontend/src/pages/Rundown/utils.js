@@ -1,4 +1,4 @@
-import nebula from '/src/nebula.js'
+import nebula from '/src/nebula'
 import { getColumnWidth, getFormatter } from '/src/tableFormatting.jsx'
 
 const getRunModeOptions = (object_type, selection, func) => {
