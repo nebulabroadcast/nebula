@@ -1,6 +1,7 @@
 from fastapi import Response
 from pydantic import Field
 
+import nebula
 from nebula.exceptions import BadRequestException
 from nebula.plugins.library import plugin_library
 from server.dependencies import CurrentUser
@@ -29,8 +30,20 @@ class Request(APIRequest):
         request: SolveRequestModel,
         user: CurrentUser,
     ) -> Response:
-        # TODO: check permissions
-        assert user is not None
+        # Get the list of channels of the requested items
+
+        query = """
+            SELECT DISTINCT id_channel
+            FROM events e
+            INNER JOIN items i
+            ON e.id_magic = i.id_bin
+            WHERE i.id = ANY($1)
+        """
+
+        err_msg = "You are not allowed to edit this rundown"
+        async for row in nebula.db.iterate(query, request.items):
+            if not user.can("rundown_edit", row["id_channel"]):
+                raise nebula.ForbiddenException(err_msg)
 
         try:
             solver = plugin_library.get("solver", request.solver)
