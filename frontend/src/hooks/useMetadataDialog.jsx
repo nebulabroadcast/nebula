@@ -41,9 +41,6 @@ const MetadataDialog = ({
 
 const useMetadataDialog = () => {
   const [promise, setPromise] = useState(null)
-  const [title, setTitle] = useState('')
-  const [message, setMessage] = useState('')
-
   const initialDataRef = useRef({})
   const fieldsRef = useRef([])
   const titleRef = useRef('')
@@ -56,7 +53,7 @@ const useMetadataDialog = () => {
       initialDataRef.current = initialData
       fieldsRef.current = fields
       titleRef.current = title
-      setPromise({ resolve })
+      setPromise({ resolve, reject })
       setVisible(true)
     })
 

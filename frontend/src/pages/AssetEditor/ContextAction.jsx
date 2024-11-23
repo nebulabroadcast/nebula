@@ -3,7 +3,7 @@ import { Dialog, Table, Button } from '/src/components'
 import styled from 'styled-components'
 import { toast } from 'react-toastify'
 import { formatTimeString } from '/src/utils'
-import { tableFormatTime } from '/src/tableFormatters'
+import formatMetaDatetime from '/src/tableFormat/formatMetaDatetime'
 
 const MarkdownWrapper = styled.div`
   padding: 12px;
@@ -57,7 +57,7 @@ const UriComponent = ({ children, ...props }) => {
 const TableDialog = ({ onHide, dialogStyle, header, payload }) => {
   const columns = payload.columns.map((column) => {
     if (column.type === 'datetime') {
-      column.formatter = tableFormatTime
+      column.formatter = formatMetaDatetime
     }
     return column
   })

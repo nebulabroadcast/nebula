@@ -19,7 +19,7 @@ const Calendar = ({
   startTime,
   draggedAsset,
   events,
-  setEvent,
+  saveEvent,
   contextMenu,
 }) => {
   const navigate = useNavigate()
@@ -280,14 +280,14 @@ const Calendar = ({
     if (!calendarRef?.current) return
     if (draggedAsset && cursorTime.current) {
       console.log('Dropped asset', draggedAsset, cursorTime.current)
-      setEvent({
+      saveEvent({
         id_asset: draggedAsset.id,
         start: Math.floor(cursorTime.current.getTime() / 1000),
       })
     } else if (draggedEvent.current && cursorTime.current) {
       console.log('Dropped event', draggedEvent.current, cursorTime.current)
 
-      setEvent({
+      saveEvent({
         id: draggedEvent.current.id,
         start: Math.floor(cursorTime.current.getTime() / 1000),
       })

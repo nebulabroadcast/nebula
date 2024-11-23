@@ -5,7 +5,7 @@ import { useParams } from 'react-router-dom'
 import { Table, Button } from '/src/components'
 import { NavLink } from 'react-router-dom'
 import { setPageTitle } from '/src/actions'
-import { tableFormatTime } from '/src/tableFormatters'
+import formatMetaDatetime from '/src/tableFormat/formatMetaDatetime'
 
 import JobsNav from './JobsNav'
 
@@ -121,21 +121,21 @@ const JobsPage = () => {
       name: 'ctime',
       title: 'Created',
       className: 'time',
-      formatter: tableFormatTime,
+      formatter: formatMetaDatetime,
       width: 150,
     },
     {
       name: 'stime',
       title: 'Started',
       className: 'time',
-      formatter: tableFormatTime,
+      formatter: formatMetaDatetime,
       width: 150,
     },
     {
       name: 'etime',
       title: 'Finished',
       className: 'time',
-      formatter: tableFormatTime,
+      formatter: formatMetaDatetime,
       width: 150,
     },
     { name: 'message', title: 'Message', className: 'job-message', width: 400 },

@@ -6,10 +6,11 @@ import { toast } from 'react-toastify'
 import nebula from '/src/nebula'
 import { Table } from '/src/components'
 import { showSendToDialog } from '/src/actions'
+import { useMetadataDialog } from '/src/hooks'
 import {
   formatRowHighlightColor,
   formatRowHighlightStyle,
-} from '/src/tableFormatting.jsx'
+} from '/src/tableFormat'
 
 import RundownTableWrapper from './RundownTableWrapper'
 import { getRunModeOptions, getRundownColumns } from './utils'
@@ -36,6 +37,7 @@ const RundownTable = ({
   const currentChannel = useSelector((state) => state.context.currentChannel)
   const dispatch = useDispatch()
   const tableRef = useRef()
+  const [MetadataDialog, showMetadataDialog] = useMetadataDialog()
 
   //
   // Scroll to the event definded in the hash when the component mounts
@@ -58,9 +60,8 @@ const RundownTable = ({
       }
     }
     // get the row element and scroll to it
-    const row = tableRef.current.querySelector(
-      `[data-index="${scrollToIndex}"]`
-    )
+    const query = `[data-index="${scrollToIndex}"]`
+    const row = tableRef.current.querySelector(query)
     if (row) {
       const pos = row.offsetTop - row.parentNode.offsetTop
       const parent = row.parentNode.parentNode.parentNode // he he he
@@ -86,15 +87,10 @@ const RundownTable = ({
   //
 
   const deleteSelectedItems = () => {
-    if (!selectedItems.length) {
-      toast.error('No items selected')
-      return
-    }
-    console.log('Deleting items:', selectedItems)
-    nebula
-      .request('delete', { object_type: 'item', ids: selectedItems })
-      .then(loadRundown)
-      .catch(onError)
+    if (!selectedItems.length) return
+    console.debug('Deleting items:', selectedItems)
+    const payload = { object_type: 'item', ids: selectedItems }
+    nebula.request('delete', payload).then(loadRundown).catch(onError)
   }
 
   const onSendTo = () => {
@@ -105,9 +101,22 @@ const RundownTable = ({
     if (ids.length) dispatch(showSendToDialog({ ids }))
   }
 
-  const setRunMode = (object_type, id, run_mode) => {
-    const operations = [{ id, object_type, data: { run_mode } }]
+  const updateObject = (object_type, id, data) => {
+    const operations = [{ object_type, id, data }]
     nebula.request('ops', { operations }).then(loadRundown).catch(onError)
+  }
+
+  const setRunMode = (object_type, id, run_mode) => {
+    updateObject(object_type, id, { run_mode })
+  }
+
+  const editObject = (object_type, id) => {
+    const objectData = data.find(
+      (row) => row.id === id && row.type === object_type
+    )
+    if (!objectData) return // this should never happen
+
+    console.log('Editing object', objectData)
   }
 
   //
@@ -213,6 +222,7 @@ const RundownTable = ({
           label: 'Edit item',
           icon: 'edit',
           separator: true,
+          onClick: () => editObject('item', selectedItems[0]),
         })
       }
       res.push(
@@ -235,6 +245,7 @@ const RundownTable = ({
         label: 'Edit event',
         icon: 'edit',
         separator: true,
+        onClick: () => editObject('event', selectedEvents[0]),
       })
     }
     return res
@@ -273,6 +284,7 @@ const RundownTable = ({
         droppable={draggedObjects}
         onDrop={onDrop}
       />
+      <MetadataDialog />
     </RundownTableWrapper>
   )
 }

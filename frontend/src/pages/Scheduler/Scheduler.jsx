@@ -8,12 +8,12 @@ import { DateTime } from 'luxon'
 
 import Calendar from '/src/containers/Calendar'
 import SchedulerNav from './SchedulerNav'
-import EventDialog from './EventDialog'
 
 const Scheduler = ({ draggedObjects }) => {
+  const currentChannel = useSelector((state) => state.context.currentChannel)
+
   const [startTime, setStartTime] = useState()
   const [events, setEvents] = useState([])
-  const currentChannel = useSelector((state) => state.context.currentChannel)
   const [EventDialog, showEventDialog] = useMetadataDialog()
 
   const channelConfig = useMemo(() => {
@@ -29,6 +29,10 @@ const Scheduler = ({ draggedObjects }) => {
     if (draggedObjects[0]?.type !== 'asset') return null
     return draggedObjects[0]
   }, [draggedObjects])
+
+  //
+  // API calls
+  //
 
   const onResponse = (response) => {
     const events = response.data.events
@@ -51,15 +55,15 @@ const Scheduler = ({ draggedObjects }) => {
     date: DateTime.fromJSDate(startTime).toFormat('yyyy-MM-dd'),
   }
 
-  //
-  // API calls
-  //
+  // Loading events from the server
 
   const loadEvents = () => {
     nebula.request('scheduler', requestParams).then(onResponse).catch(onError)
   }
 
-  const setEvent = (event) => {
+  // Saving events to the server
+
+  const saveEvent = (event) => {
     const payload = {
       start: event.start,
       meta: {},
@@ -89,31 +93,21 @@ const Scheduler = ({ draggedObjects }) => {
   }
 
   //
-  // Load data
-  //
-
-  useEffect(() => {
-    if (!startTime) return
-    loadEvents()
-  }, [startTime, currentChannel])
-
-  //
-  // Context menu actions
+  // Context menu
   //
 
   const editEvent = (event) => {
     const title = `Edit event: ${event.title || 'Untitled'}`
-    showEventDialog(title, channelConfig.fields, event).then(setEvent)
+    const fields = [{ name: 'start' }, ...channelConfig.fields]
+    showEventDialog(title, fields, event)
+      .then(saveEvent)
+      .catch(() => {})
   }
 
   const deleteEvent = (eventId) => {
     const params = { ...requestParams, delete: [eventId] }
     nebula.request('scheduler', params).then(onResponse).catch(onError)
   }
-
-  //
-  // Context menu
-  //
 
   const contextMenu = [
     {
@@ -129,8 +123,13 @@ const Scheduler = ({ draggedObjects }) => {
   ]
 
   //
-  // Render
+  // Load data and render
   //
+
+  useEffect(() => {
+    if (!startTime) return
+    loadEvents()
+  }, [startTime, currentChannel])
 
   return (
     <main className="column">
@@ -140,7 +139,7 @@ const Scheduler = ({ draggedObjects }) => {
           <Calendar
             startTime={startTime}
             events={events}
-            setEvent={setEvent}
+            saveEvent={saveEvent}
             draggedAsset={draggedAsset}
             contextMenu={contextMenu}
           />

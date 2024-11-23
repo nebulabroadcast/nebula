@@ -22,7 +22,7 @@ import {
   getFormatter,
   formatRowHighlightColor,
   formatRowHighlightStyle,
-} from '/src/tableFormatting.jsx'
+} from '/src/tableFormat'
 
 const ROWS_PER_PAGE = 200
 
