@@ -103,7 +103,7 @@ const RundownTable = ({
     if (ids.length) dispatch(showSendToDialog({ ids }))
   }
 
-  const onSolve = () => {
+  const onSolve = (solver) => {
     const items = data
       .filter(
         (row) =>
@@ -111,7 +111,6 @@ const RundownTable = ({
       )
       .map((row) => row.id)
     // TODO: dialog to select solver
-    const solver = channelConfig.solvers[0]
     nebula.request('solve', { solver, items }).then(loadRundown).catch(onError)
   }
 
@@ -270,15 +269,14 @@ const RundownTable = ({
           onClick: onSendTo,
         })
       }
-      if (
-        focusedObject.item_role === 'placeholder' &&
-        channelConfig.solvers?.length
-      ) {
-        res.push({
-          label: 'Solve placeholder',
-          icon: 'change_circle',
-          onClick: onSolve,
-        })
+      if (focusedObject.item_role === 'placeholder') {
+        for (const solver of channelConfig.solvers) {
+          res.push({
+            label: `Solve using ${solver}`,
+            icon: 'change_circle',
+            onClick: () => onSolve(solver),
+          })
+        }
       }
       res.push({
         label: 'Delete',
