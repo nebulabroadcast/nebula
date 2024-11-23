@@ -9,6 +9,7 @@ import {
   InputInteger,
   InputSwitch,
   InputText,
+  InputTimecode,
   Select,
   TextArea,
 } from '/src/components'
@@ -107,6 +108,15 @@ const EditorField = ({
           onChange={onChange}
           disabled={disabled}
           mode={metaType.mode}
+        />
+      )
+      break
+    case 'timecode':
+      editor = (
+        <InputTimecode
+          value={value || ''}
+          onChange={onChange}
+          disabled={disabled}
         />
       )
       break

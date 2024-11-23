@@ -100,8 +100,19 @@ const RundownTable = ({
     const ids = data
       .filter((row) => row.id_asset && selectedItems.includes(row.id))
       .map((row) => row.id_asset)
-
     if (ids.length) dispatch(showSendToDialog({ ids }))
+  }
+
+  const onSolve = () => {
+    const items = data
+      .filter(
+        (row) =>
+          row.item_role === 'placeholder' && selectedItems.includes(row.id)
+      )
+      .map((row) => row.id)
+    // TODO: dialog to select solver
+    const solver = channelConfig.solvers[0]
+    nebula.request('solve', { solver, items }).then(loadRundown).catch(onError)
   }
 
   const updateObject = (object_type, id, data) => {
@@ -121,10 +132,14 @@ const RundownTable = ({
 
     let fields
     if (objectData.type === 'event') {
-      fields = [{ name: 'start' }, ...channelConfig.fields]
+      fields = [...channelConfig.fields]
     } else if (objectData.item_role === 'placeholder') {
-      fields = [{ name: 'duration' }]
+      fields = [{ name: 'title' }, { name: 'duration' }]
+    } else if (objectData.id_asset) {
+      fields = [{ name: 'title' }, { name: 'mark_in' }, { name: 'mark_out' }]
     } else if (['lead_in', 'lead_out'].includes(objectData.item_role)) {
+      return
+    } else {
       return
     }
 
@@ -248,19 +263,29 @@ const RundownTable = ({
           onClick: () => editObject('item', selectedItems[0]),
         })
       }
-      res.push(
-        {
+      if (focusedObject.id_asset) {
+        res.push({
           label: 'Send to...',
           icon: 'send',
           onClick: onSendTo,
-          separator: true,
-        },
-        {
-          label: 'Delete',
-          icon: 'delete',
-          onClick: deleteSelectedItems,
-        }
-      )
+        })
+      }
+      if (
+        focusedObject.item_role === 'placeholder' &&
+        channelConfig.solvers?.length
+      ) {
+        res.push({
+          label: 'Solve placeholder',
+          icon: 'change_circle',
+          onClick: onSolve,
+        })
+      }
+      res.push({
+        label: 'Delete',
+        icon: 'delete',
+        onClick: deleteSelectedItems,
+        separator: true,
+      })
       return res
     } else if (selectedEvents.length === 1) {
       res.push(...getRunModeOptions('event', selectedEvents[0], setRunMode))

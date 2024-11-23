@@ -37,6 +37,7 @@ const Progress = ({ value, ...props }) => {
   return (
     <BaseProgress {...props} disableTransition={disableTransition}>
       <div
+        className="progress"
         style={{ width: `${value}%` }}
         key={disableTransition ? 'no-transition' : 'transition'}
       />

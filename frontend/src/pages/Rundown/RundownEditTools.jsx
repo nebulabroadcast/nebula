@@ -10,6 +10,7 @@ const dragIcons = [
       type: 'item',
       item_role: 'placeholder',
       title: 'Placeholder',
+      duration: 3600,
     },
   },
   {

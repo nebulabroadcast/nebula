@@ -120,14 +120,21 @@ const Rundown = ({ draggedObjects }) => {
         console.log('Dropped after', dropAfterItem)
         for (const item of items) {
           const meta = {}
+          let keys = []
+
+          // what keys to copy from the source object?
           if (item.type === 'item') {
-            for (const key of ['item_role', 'mark_in', 'mark_out', 'title']) {
-              if (item[key]) meta[key] = item[key]
-            }
-          } else if (item.type === 'asset') {
-            for (const key of ['mark_in', 'mark_out']) {
-              if (item[key]) meta[key] = item[key]
-            }
+            // from the virutal items, take everything
+            if (item.item_role) keys = Object.keys(item)
+            // existing items. should we even care?
+            else keys = ['mark_in', 'mark_out', 'title', 'subtitle']
+          } else {
+            // from assets, take only the marks
+            keys = ['mark_in', 'mark_out']
+          }
+
+          for (const key of keys) {
+            if (item[key]) meta[key] = item[key]
           }
 
           console.log('Dropped item', item, meta)
