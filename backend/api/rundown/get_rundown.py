@@ -129,7 +129,8 @@ async def get_rundown(request: RundownRequestModel) -> RundownResponseModel:
         airstatus: ObjectStatus | None = None
 
         if (as_start := record["as_start"]) is not None:
-            ts_broadcast = as_start
+            if as_start > ts_broadcast:
+                ts_broadcast = as_start
             as_stop = record["as_stop"]
             airstatus = ObjectStatus.AIRED if as_stop else ObjectStatus.ONAIR
 
