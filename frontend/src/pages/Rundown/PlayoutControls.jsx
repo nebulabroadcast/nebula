@@ -1,10 +1,22 @@
-import nebula from '/src/nebula'
-
 import { useState, useEffect, useRef } from 'react'
 import { useSelector } from 'react-redux'
 import { toast } from 'react-toastify'
 import styled from 'styled-components'
-import { Dialog, Button, Progress } from '/src/components'
+import clsx from 'clsx'
+
+import nebula from '/src/nebula'
+import { Button, Progress } from '/src/components'
+
+const ControlsSection = styled.section`
+  flex-direction: column;
+  gap: 8px;
+
+  &.warn {
+    .progress {
+      background-color: var(--color-red);
+    }
+  }
+`
 
 const DisplayRow = styled.div`
   display: flex;
@@ -20,7 +32,7 @@ const BaseDisplay = styled.div`
 `
 
 const DisplayTime = styled(BaseDisplay)`
-  flex-basis: 150px;
+  flex-basis: 140px;
   font-family: var(--font-family-mono), monospace;
 `
 
@@ -58,16 +70,18 @@ const PlayoutControls = ({
   onError,
 }) => {
   const currentChannel = useSelector((state) => state.context.currentChannel)
-  const currentTitle = playoutStatus?.current_title || ''
-  const cuedTitle = playoutStatus?.cued_title || ''
-  const [progress, setProgress] = useState(0)
 
-  const [dispClk, setDispClk] = useState('--:--:--:--')
-  const [dispPos, setDispPos] = useState('--:--:--:--')
-  const [dispRem, setDispRem] = useState('--:--:--:--')
-  const [dispDur, setDispDur] = useState('--:--:--:--')
+  const [progress, setProgress] = useState(0)
+  const [progressClassName, setProgressClassName] = useState(null)
 
   const statusRef = useRef(playoutStatus)
+
+  const dispClkRef = useRef()
+  const dispPosRef = useRef()
+  const dispRemRef = useRef()
+  const dispDurRef = useRef()
+  const dispCurRef = useRef()
+  const dispNxtRef = useRef()
 
   useEffect(() => {
     const now = new Date().getTime() / 1000
@@ -77,6 +91,12 @@ const PlayoutControls = ({
       const progress =
         ((playoutStatus?.position || 0) / playoutStatus?.duration) * 100
       setProgress(progress)
+
+      if (playoutStatus.duration - playoutStatus.position < 10) {
+        setProgressClassName('warn')
+      } else {
+        setProgressClassName(null)
+      }
     }
   }, [playoutStatus])
 
@@ -84,7 +104,8 @@ const PlayoutControls = ({
     if (!statusRef.current) return
 
     const now = new Date().getTime() / 1000
-    const { position, duration, receivedAt } = statusRef.current
+    const { position, duration, receivedAt, current_title, cued_title } =
+      statusRef.current
     const elapsed = now - receivedAt
     const fps = 25
     const estimatedPos = Math.max(0, position + elapsed)
@@ -93,10 +114,19 @@ const PlayoutControls = ({
     const localNow = new Date()
     const localOffset = localNow.getTimezoneOffset() * 60
 
-    setDispClk(s2tc(now - localOffset, fps))
-    setDispPos(s2tc(estimatedPos, fps))
-    setDispRem(s2tc(estimatedRem, fps))
-    setDispDur(s2tc(duration, fps))
+    const dispClk = 'CLK: ' + s2tc(now - localOffset, fps)
+    const dispPos = 'POS: ' + s2tc(estimatedPos, fps)
+    const dispRem = 'REM: ' + s2tc(estimatedRem, fps)
+    const dispDur = 'DUR: ' + s2tc(Math.max(0, duration), fps)
+    const dispCur = 'CUR: ' + (current_title || '')
+    const dispNxt = 'NXT: ' + (cued_title || '')
+
+    dispClkRef.current.innerText = dispClk
+    dispPosRef.current.innerText = dispPos
+    dispRemRef.current.innerText = dispRem
+    dispDurRef.current.innerText = dispDur
+    dispCurRef.current.innerText = dispCur
+    dispNxtRef.current.innerText = dispNxt
   }
 
   useEffect(() => {
@@ -118,23 +148,23 @@ const PlayoutControls = ({
 
   return (
     <>
-      <section className="column" style={{ gap: 8 }}>
+      <ControlsSection className={clsx(progressClassName)}>
         <DisplayRow>
-          <DisplayTime>CLK: {dispClk}</DisplayTime>
-          <DisplayName>CUR: {currentTitle}</DisplayName>
-          <DisplayTime>REM: {dispRem}</DisplayTime>
+          <DisplayTime ref={dispClkRef}></DisplayTime>
+          <DisplayName ref={dispCurRef}></DisplayName>
+          <DisplayTime ref={dispRemRef}></DisplayTime>
         </DisplayRow>
 
         <DisplayRow>
-          <DisplayTime>POS: {dispPos}</DisplayTime>
-          <DisplayName>NXT: {cuedTitle}</DisplayName>
-          <DisplayTime>DUR: {dispDur}</DisplayTime>
+          <DisplayTime ref={dispPosRef}></DisplayTime>
+          <DisplayName ref={dispNxtRef}></DisplayName>
+          <DisplayTime ref={dispDurRef}></DisplayTime>
         </DisplayRow>
 
         <Progress value={progress} />
-      </section>
+      </ControlsSection>
       {rundownMode === 'control' && (
-        <section className="column" style={{ gap: 8 }}>
+        <ControlsSection>
           <ButtonRow>
             <Button
               label="Take"
@@ -158,13 +188,11 @@ const PlayoutControls = ({
             />
             <Button label="Cue next" onClick={() => onCommand('cue_forward')} />
           </ButtonRow>
-        </section>
+        </ControlsSection>
       )}
 
       {rundownMode === 'plugins' && (
-        <section className="column" style={{ gap: 8 }}>
-          not implemented
-        </section>
+        <ControlsSection>not implemented</ControlsSection>
       )}
     </>
   )
