@@ -226,7 +226,8 @@ async def get_rundown(request: RundownRequestModel) -> RundownResponseModel:
             if not last_event.duration:
                 last_event.broadcast_time = ts_broadcast
             ts_scheduled += duration
-            ts_broadcast += duration
+            if row.item_role not in ["placeholder", "lead_in", "lead_out"]:
+                ts_broadcast += duration
             last_event.duration += duration
             last_event.is_empty = False
 
