@@ -13,6 +13,7 @@ import formatObjectTitle from './formatObjectTitle'
 import formatRundownRunMode from './formatRundownRunMode'
 import formatRundownSymbol from './formatRundownSymbol'
 import formatRundownTime from './formatRundownTime'
+import formatRundownDifference from './formatRundownDifference'
 
 const formatRowHighlightColor = (rowData) => {
   switch (rowData['status']) {
@@ -125,6 +126,8 @@ const getFormatter = (key) => {
       return formatAuthorship
     case 'updated_by':
       return formatAuthorship
+    case 'rundown_difference':
+      return formatRundownDifference
 
     default:
       return getDefaultFormatter(key)

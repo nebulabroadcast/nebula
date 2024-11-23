@@ -1,3 +1,5 @@
+import nebula from '/src/nebula'
+
 const formatObjectTitle = (rowData, key) => {
   const title = rowData[key]
   const subtitle = rowData.subtitle
