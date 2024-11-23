@@ -1,16 +1,60 @@
-import { NavLink } from 'react-router-dom'
-import { Navbar, InputText, Button, Spacer } from '/src/components'
+import { useEffect, useState } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
+import { useSearchParams } from 'react-router-dom'
 
-const SchedulerNav = ({ startTime, setStartTime }) => {
-  const prevWeek = () => {
-    console.log('prevWeek')
-    setStartTime(new Date(startTime.getTime() - 7 * 24 * 60 * 60 * 1000))
+import { createTitle } from './utils'
+import { setPageTitle } from '/src/actions'
+
+import { Navbar, Button } from '/src/components'
+
+const SchedulerNav = ({ setStartTime }) => {
+  const [date, setDate] = useState()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const currentChannel = useSelector((state) => state.context.currentChannel)
+  const dispatch = useDispatch()
+
+  useEffect(() => {
+    // When the query param `date` changes, update the start time
+    // of the calendar view and the page title
+
+    let dateParam = searchParams.get('date')
+    if (date && dateParam === date) return
+    if (!dateParam) dateParam = new Date().toISOString().split('T')[0]
+
+    const newDate = new Date(dateParam)
+    const dayOfWeek = newDate.getDay()
+    const diff = newDate.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1)
+    const weekStart = new Date(newDate.setDate(diff))
+    weekStart.setHours(7, 30, 0, 0)
+
+    const pageTitle = createTitle(weekStart)
+    dispatch(setPageTitle({ title: pageTitle }))
+    setStartTime(weekStart)
+    setDate(dateParam)
+  }, [searchParams, currentChannel])
+
+  useEffect(() => {
+    if (date && date !== searchParams.get('date')) {
+      setSearchParams((o) => {
+        o.set('date', date)
+        return o
+      })
+    }
+  }, [date])
+
+  const dateStep = (days) => {
+    let dateParam = searchParams.get('date')
+    if (!dateParam) dateParam = new Date().toISOString().split('T')[0]
+    const currentDate = new Date(dateParam)
+    const newDate = new Date(currentDate.getTime() + days * 24 * 60 * 60 * 1000)
+    setSearchParams((o) => {
+      o.set('date', newDate.toISOString().split('T')[0])
+      return o
+    })
   }
 
-  const nextWeek = () => {
-    console.log('nextWeek')
-    setStartTime(new Date(startTime.getTime() + 7 * 24 * 60 * 60 * 1000))
-  }
+  const prevWeek = () => dateStep(-7)
+  const nextWeek = () => dateStep(7)
 
   return (
     <Navbar>

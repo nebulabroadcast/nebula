@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import styled from 'styled-components'
 import defaultTheme from './theme'
 
@@ -10,8 +11,10 @@ const BaseProgress = styled.div`
 
   div {
     height: 100%;
-    transition: width 0.3s linear;
     background: ${(props) => props.theme.colors.cyan};
+    border-radius: ${(props) => props.theme.inputBorderRadius};
+    transition: ${(props) =>
+      props.disableTransition ? 'none' : 'width 0.3s linear'};
   }
 `
 BaseProgress.defaultProps = {
@@ -19,9 +22,25 @@ BaseProgress.defaultProps = {
 }
 
 const Progress = ({ value, ...props }) => {
+  const [prevValue, setPrevValue] = useState(value)
+  const [disableTransition, setDisableTransition] = useState(false)
+
+  useEffect(() => {
+    if (value < prevValue) {
+      setDisableTransition(true)
+    } else {
+      setDisableTransition(false)
+    }
+    setPrevValue(value)
+  }, [value, prevValue])
+
   return (
-    <BaseProgress {...props}>
-      <div style={{ width: `${value}%` }} />
+    <BaseProgress {...props} disableTransition={disableTransition}>
+      <div
+        className="progress"
+        style={{ width: `${value}%` }}
+        key={disableTransition ? 'no-transition' : 'transition'}
+      />
     </BaseProgress>
   )
 }

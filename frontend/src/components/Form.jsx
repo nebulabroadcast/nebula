@@ -21,6 +21,8 @@ const Form = styled.div`
       min-width: 200px;
       max-width: 200px;
       padding-top: 0.5rem;
+      user-select: none;
+      user-drag: none;
     }
 
     .form-control {

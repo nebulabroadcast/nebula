@@ -1,5 +1,3 @@
-import nebula from '/src/nebula'
-
 import {
   Navbar,
   Button,

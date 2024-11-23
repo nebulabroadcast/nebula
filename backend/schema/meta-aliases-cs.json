@@ -100,7 +100,7 @@
   ["source"                 , "Zdroj"                  , null                , ""],
   ["id_folder"              , "Složka"                 , null                , ""],
   ["is_admin"               , "Admin"                  , null                , ""],
-  ["run_mode"               , "Run mode"               , null                , "Režim odbavení příspěvků"],
+  ["run_mode"               , "Režim"                  , "Režim"             , "Režim odbavení příspěvků"],
   ["summary"                , "Perex"                  , null                , ""],
   ["description"            , "Popis"                  , null                , ""],
   ["file/format"            , "Formát souboru"         , null                , ""],

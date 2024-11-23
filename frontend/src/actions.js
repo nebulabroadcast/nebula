@@ -1,5 +1,6 @@
 import nebula from '/src/nebula'
 import { createSlice } from '@reduxjs/toolkit'
+import { isNaN } from 'lodash'
 
 const initialState = {
   browserRefresh: 0,
@@ -49,6 +50,7 @@ const contextSlice = createSlice({
     },
 
     setFocusedAsset: (state, action) => {
+      if (isNaN(action.payload)) return
       state.focusedAsset = action.payload
     },
 

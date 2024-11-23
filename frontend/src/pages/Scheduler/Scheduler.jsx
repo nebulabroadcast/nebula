@@ -1,25 +1,38 @@
+import nebula from '/src/nebula'
+
 import { useState, useEffect, useMemo } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { setPageTitle } from '/src/actions'
+import { useSelector } from 'react-redux'
 import { toast } from 'react-toastify'
+import { useMetadataDialog } from '/src/hooks'
+import { DateTime } from 'luxon'
 
 import Calendar from '/src/containers/Calendar'
 import SchedulerNav from './SchedulerNav'
-import EventDialog from './EventDialog'
-import { getWeekStart, createTitle } from './utils'
-import nebula from '/src/nebula'
-import { DateTime } from 'luxon'
 
-const Scheduler = ({ draggedAsset }) => {
-  const dispatch = useDispatch()
-  const [startTime, setStartTime] = useState(getWeekStart())
-  const [events, setEvents] = useState([])
-  const [editorData, setEditorData] = useState(null)
+const Scheduler = ({ draggedObjects }) => {
   const currentChannel = useSelector((state) => state.context.currentChannel)
+
+  const [startTime, setStartTime] = useState()
+  const [events, setEvents] = useState([])
+  const showEventDialog = useMetadataDialog()
 
   const channelConfig = useMemo(() => {
     return nebula.getPlayoutChannel(currentChannel)
   }, [currentChannel])
+
+  const draggedAsset = useMemo(() => {
+    if (!draggedObjects) return null
+    if (draggedObjects?.length !== 1) {
+      toast.error('Please drag only one asset')
+      return
+    }
+    if (draggedObjects[0]?.type !== 'asset') return null
+    return draggedObjects[0]
+  }, [draggedObjects])
+
+  //
+  // API calls
+  //
 
   const onResponse = (response) => {
     const events = response.data.events
@@ -42,15 +55,15 @@ const Scheduler = ({ draggedAsset }) => {
     date: DateTime.fromJSDate(startTime).toFormat('yyyy-MM-dd'),
   }
 
-  //
-  // API calls
-  //
+  // Loading events from the server
 
   const loadEvents = () => {
     nebula.request('scheduler', requestParams).then(onResponse).catch(onError)
   }
 
-  const setEvent = (event) => {
+  // Saving events to the server
+
+  const saveEvent = (event) => {
     const payload = {
       start: event.start,
       meta: {},
@@ -67,8 +80,6 @@ const Scheduler = ({ draggedAsset }) => {
           break
         }
       }
-      // close event dialog if needed
-      setEditorData(null)
     }
 
     for (const field of channelConfig?.fields || []) {
@@ -81,34 +92,28 @@ const Scheduler = ({ draggedAsset }) => {
     nebula.request('scheduler', params).then(onResponse).catch(onError)
   }
 
+  //
+  // Context menu
+  //
+
+  const editEvent = (event) => {
+    const title = `Edit event: ${event.title || 'Untitled'}`
+    const fields = [{ name: 'start' }, ...channelConfig.fields]
+    showEventDialog(title, fields, event)
+      .then(saveEvent)
+      .catch(() => {})
+  }
+
   const deleteEvent = (eventId) => {
     const params = { ...requestParams, delete: [eventId] }
     nebula.request('scheduler', params).then(onResponse).catch(onError)
   }
 
-  //
-  // Load data
-  //
-
-  useEffect(() => {
-    loadEvents()
-  }, [startTime, currentChannel])
-
-  useEffect(() => {
-    // console.log('Week start time changed', startTime)
-    const pageTitle = createTitle(startTime)
-    dispatch(setPageTitle({ title: pageTitle }))
-  }, [startTime, currentChannel])
-
-  //
-  // Context menu
-  //
-
   const contextMenu = [
     {
       label: 'Edit',
       icon: 'edit',
-      onClick: (event) => setEditorData(event),
+      onClick: editEvent,
     },
     {
       label: 'Delete',
@@ -118,29 +123,28 @@ const Scheduler = ({ draggedAsset }) => {
   ]
 
   //
-  // Render
+  // Load data and render
   //
+
+  useEffect(() => {
+    if (!startTime) return
+    loadEvents()
+  }, [startTime, currentChannel])
 
   return (
     <main className="column">
       <SchedulerNav startTime={startTime} setStartTime={setStartTime} />
       <section className="grow nopad">
-        <Calendar
-          startTime={startTime}
-          events={events}
-          setEvent={setEvent}
-          draggedAsset={draggedAsset}
-          contextMenu={contextMenu}
-        />
+        {startTime && (
+          <Calendar
+            startTime={startTime}
+            events={events}
+            saveEvent={saveEvent}
+            draggedAsset={draggedAsset}
+            contextMenu={contextMenu}
+          />
+        )}
       </section>
-      {editorData && (
-        <EventDialog
-          data={editorData}
-          setData={setEditorData}
-          onHide={() => setEditorData(null)}
-          onSave={setEvent}
-        />
-      )}
     </main>
   )
 }

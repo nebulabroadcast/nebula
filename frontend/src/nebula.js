@@ -101,5 +101,15 @@ const nebula = {
       return false
     })
   },
+
+  logout() {
+    this.request('logout')
+      .then(() => {
+        window.location.href = '/'
+      })
+      .catch(() => {
+        window.location.href = '/'
+      })
+  },
 }
 export default nebula

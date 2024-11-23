@@ -82,6 +82,7 @@ const Dialog = ({
   headerStyle,
   bodyStyle,
   footerStyle,
+  open = true,
 }) => {
   const dialogRef = useRef(null)
 

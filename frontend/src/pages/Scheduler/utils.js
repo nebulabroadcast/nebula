@@ -1,12 +1,3 @@
-const getWeekStart = () => {
-  const now = new Date()
-  const dayOfWeek = now.getDay()
-  const diff = now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1)
-  const weekStart = new Date(now.setDate(diff))
-  weekStart.setHours(7, 30, 0, 0)
-  return weekStart
-}
-
 const createTitle = (startTime) => {
   const start = startTime.toLocaleDateString('en-US', {
     month: 'short',
@@ -18,4 +9,4 @@ const createTitle = (startTime) => {
   return `Scheduler (${start} - ${end})`
 }
 
-export { getWeekStart, createTitle }
+export { createTitle }

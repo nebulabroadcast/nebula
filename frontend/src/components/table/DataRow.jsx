@@ -2,46 +2,7 @@ import { useMemo } from 'react'
 import { useDraggable } from '@dnd-kit/core'
 import clsx from 'clsx'
 
-const HeaderCell = ({ name, width, title, sortDirection, onSort }) => {
-  let sortArrowElement = null
-  if (onSort) {
-    if (sortDirection === 'asc') {
-      sortArrowElement = (
-        <span className="icon material-symbols-outlined">arrow_drop_up</span>
-      )
-    } else if (sortDirection === 'desc') {
-      sortArrowElement = (
-        <span className="icon material-symbols-outlined">arrow_drop_down</span>
-      )
-    } else {
-      sortArrowElement = (
-        <span className="icon material-symbols-outlined">more_vert</span>
-      )
-    }
-  }
-
-  const onClick = () => {
-    if (!onSort) return
-    if (sortDirection === 'asc') {
-      onSort(name, 'desc')
-    } else {
-      onSort(name, 'asc')
-    }
-  }
-  return (
-    <th style={{ width: width }} onClick={onClick}>
-      <div>
-        {title}
-        {sortArrowElement}
-      </div>
-    </th>
-  )
-}
-
-const BodyCell = ({ rowData, column, cellFormatter }) => {
-  if (cellFormatter) return cellFormatter(rowData, column.name)
-  return <td>{rowData[column.name]}</td>
-}
+import BodyCell from './BodyCell'
 
 const DataRow = ({
   rowData,
@@ -50,18 +11,32 @@ const DataRow = ({
   rowHighlightColor,
   rowHighlightStyle,
   rowClass,
+  ident,
+  index,
   selected = false,
+  draggableItems,
 }) => {
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({
       id: rowData.id,
-      data: {
-        id: rowData.id,
-        type: 'asset',
-        duration: rowData.duration,
-        title: rowData.title,
-        subtitle: rowData.subtitle,
-      },
+      data:
+        draggableItems?.length &&
+        draggableItems.filter(
+          (item) =>
+            item.id === rowData.id && (item.type === rowData.type || 'asset')
+        ).length
+          ? draggableItems
+          : [
+              {
+                id: rowData.id,
+                type: rowData.type || 'asset',
+                title: rowData.title,
+                subtitle: rowData.subtitle,
+                duration: rowData.duration,
+                mark_in: rowData.mark_in,
+                mark_out: rowData.mark_out,
+              },
+            ],
     })
 
   const handleClick = (event) => {
@@ -70,14 +45,10 @@ const DataRow = ({
       // don't change the selection - just show the context menu
       if (selected) return
     }
-
     if (onRowClick) onRowClick(rowData, event)
   }
 
-  const rowStyle = {
-    opacity: isDragging ? 0.5 : 1,
-  }
-
+  const rowStyle = {}
   let rowClassName = ''
 
   // Left-border highlight color
@@ -119,14 +90,16 @@ const DataRow = ({
       ref={setNodeRef}
       onClick={handleClick}
       onContextMenu={handleClick}
-      {...attributes}
-      {...listeners}
       className={clsx(selected && 'selected', rowClassName)}
       style={rowStyle}
+      data-key={ident}
+      data-index={index}
+      {...attributes}
+      {...listeners}
     >
       {rowContent}
     </tr>
   )
 }
 
-export { DataRow, HeaderCell }
+export default DataRow

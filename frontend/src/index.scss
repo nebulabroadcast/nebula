@@ -3,6 +3,7 @@
 
 :root {
   --font-family: 'Noto Sans', Roboto, Arial, sans-serif;
+  --font-family-mono: 'Noto Sans Mono', monospace;
   --color-surface-01: #19161f;
   --color-surface-02: #1f1e26;
   --color-surface-03: #24202e;
@@ -21,6 +22,9 @@
   --color-yellow: #fcde00;
   --color-red: #ff2404;
   --color-green: #5fff5f;
+
+  --color-red-muted: #cc1414;
+  --color-green-muted: #2e8b57;
 
   --input-height: 32px;
   --font-size: 0.9rem;
@@ -55,7 +59,7 @@
 .material-symbols-outlined {
   font-variation-settings: 'FILL' 0, 'wght' 100, 'GRAD' 200, 'opsz' 20;
   vertical-align: bottom;
-  position: relative;
+  //position: relative;
 }
 
 html {

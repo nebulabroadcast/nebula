@@ -70,7 +70,9 @@ class InitResponseModel(ResponseModel):
         ),
     ] = None
 
-    experimental: Annotated[bool | None, Field(title="Enable experimental features")] = None
+    experimental: Annotated[
+        bool | None, Field(title="Enable experimental features")
+    ] = None
 
 
 class InitRequest(APIRequest):

@@ -8,13 +8,13 @@ const ContextMenuWrapper = styled.div`
 
   background-color: var(--color-surface-02);
   min-width: 100px;
-  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.4);
+  box-shadow: 4px 4px 10px 4px rgba(0, 0, 0, 0.7);
   z-index: 1;
 
   hr {
     margin: 0;
     border: none;
-    border-top: 2px solid var(--color-surface-03);
+    border-top: 2px solid var(--color-surface-05);
   }
 
   button {

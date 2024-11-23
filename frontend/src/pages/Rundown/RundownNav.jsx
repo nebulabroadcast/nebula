@@ -1,51 +1,78 @@
-import { useEffect } from 'react'
-import { useDispatch } from 'react-redux'
-import { NavLink, useSearchParams } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
+import { useSearchParams } from 'react-router-dom'
 
-import { Navbar, InputText, Button, Spacer } from '/src/components'
+import { Navbar, Button, Spacer, RadioButton } from '/src/components'
 import { setPageTitle } from '/src/actions'
 
 const DAY = 24 * 60 * 60 * 1000
 
-const RundownNav = ({ startTime, setStartTime }) => {
+const RundownNav = ({
+  startTime,
+  setStartTime,
+  rundownMode,
+  setRundownMode,
+}) => {
+  const [date, setDate] = useState()
   const [searchParams, setSearchParams] = useSearchParams()
+  const currentChannel = useSelector((state) => state.context.currentChannel)
   const dispatch = useDispatch()
 
   useEffect(() => {
-    const dateParam = searchParams.get('date')
-    if (dateParam) {
-      const newStartTime = new Date(dateParam)
-      newStartTime.setHours(7, 30, 0, 0)
-      if (newStartTime.getTime() !== startTime?.getTime()) {
-        setStartTime(newStartTime)
-      }
-    } else {
-      const defaultDate = new Date()
-      defaultDate.setHours(7, 30, 0, 0)
-      setStartTime(defaultDate)
-    }
-  }, [searchParams])
+    let dateParam = searchParams.get('date')
+    if (date && dateParam === date) return
+    if (!dateParam) dateParam = new Date().toISOString().split('T')[0]
+
+    const newDate = new Date(dateParam)
+    newDate.setHours(7, 30, 0, 0)
+    setStartTime(newDate)
+    setDate(dateParam)
+    const pageTitle = `Rundown (${newDate.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+    })})`
+    dispatch(setPageTitle({ title: pageTitle }))
+  }, [searchParams, currentChannel])
 
   useEffect(() => {
-    if (!startTime) return
-    const dateParam = searchParams.get('date')
-    const formattedDate = startTime.toISOString().split('T')[0]
-    if (dateParam !== formattedDate) {
+    if (date && date !== searchParams.get('date')) {
       setSearchParams((o) => {
-        o.set('date', formattedDate)
+        o.set('date', date)
         return o
       })
     }
-    dispatch(setPageTitle({ title: `Rundown ${formattedDate}` }))
-  }, [startTime, setSearchParams])
+  }, [date])
 
-  const prevDay = () => setStartTime(new Date(startTime.getTime() - DAY))
-  const nextDay = () => setStartTime(new Date(startTime.getTime() + DAY))
+  const dateStep = (days) => {
+    let dateParam = searchParams.get('date')
+    if (!dateParam) dateParam = new Date().toISOString().split('T')[0]
+    const currentDate = new Date(dateParam)
+    const newDate = new Date(currentDate.getTime() + days * 24 * 60 * 60 * 1000)
+    setSearchParams((o) => {
+      o.set('date', newDate.toISOString().split('T')[0])
+      return o
+    })
+  }
+
+  const prevDay = () => dateStep(-1)
+  const nextDay = () => dateStep(1)
 
   return (
     <Navbar>
-      <Button icon="chevron_left" onClick={prevDay} />
-      <Button icon="chevron_right" onClick={nextDay} />
+      <Button icon="chevron_left" onClick={prevDay} tooltip="Previous day" />
+      <Button icon="chevron_right" onClick={nextDay} tooltip="Next day" />
+
+      <Spacer />
+      <RadioButton
+        options={[
+          { label: 'Edit', value: 'edit' },
+          { label: 'Control', value: 'control' },
+          { label: 'Plugins', value: 'plugins' },
+        ]}
+        value={rundownMode}
+        onChange={setRundownMode}
+      />
+      <Spacer />
     </Navbar>
   )
 }

@@ -6,7 +6,7 @@ import { useLocalStorage } from '/src/hooks'
 import { Routes, Route, Navigate, BrowserRouter } from 'react-router-dom'
 
 import WebsocketListener from '/src/websocket'
-import NavBar from '/src/containers/Navbar'
+import MainNavbar from '/src/containers/MainNavbar'
 import LoginPage from '/src/pages/LoginPage'
 import LoadingPage from '/src/pages/LoadingPage'
 import MAMPage from '/src/pages/MAMPage'
@@ -15,14 +15,12 @@ import ServicesPage from '/src/pages/ServicesPage'
 import ToolPage from '/src/pages/ToolPage'
 import ProfilePage from '/src/pages/ProfilePage'
 import UsersPage from '/src/pages/UsersPage'
-import Dropdown from '/src/components/Dropdown'
 
 const App = () => {
   const [accessToken, setAccessToken] = useLocalStorage('accessToken', null)
   const [errorCode, setErrorCode] = useState(null)
   const [loading, setLoading] = useState(true)
   const [initData, setInitData] = useState(null)
-  const [channels, setChannels] = useState([])
 
   // Ensure server connection
 
@@ -58,28 +56,9 @@ const App = () => {
       .finally(() => setLoading(false))
   }, [accessToken])
 
-  useEffect(() => {
-    if (initData?.settings?.channels) {
-      setChannels(initData.settings.channels)
-      const mostRecentChannel = JSON.parse(
-        localStorage.getItem('currentChannel')
-      )
-      if (mostRecentChannel) {
-        setCurrentChannel(mostRecentChannel)
-      } else if (initData.settings.channels.length > 0) {
-        setCurrentChannel(initData.settings.channels[0])
-      }
-    }
-  }, [initData])
-
-  const handleChannelChange = (channel) => {
-    setCurrentChannel(channel)
-  }
-
   // Render
 
   if (loading) return <LoadingPage />
-
   if (errorCode > 401) return <main className="center">server unavailable</main>
 
   if (!initData.installed)
@@ -92,7 +71,7 @@ const App = () => {
     <Suspense fallback={<LoadingPage />}>
       <WebsocketListener />
       <BrowserRouter>
-        <NavBar />
+        <MainNavbar />
         <Routes>
           <Route
             path="/"

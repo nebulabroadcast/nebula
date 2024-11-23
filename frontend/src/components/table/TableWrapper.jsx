@@ -5,6 +5,12 @@ const TableWrapper = styled.div`
   --progress-opacity: 0;
   overflow: auto;
 
+  [data-key='${(props) => props.dropHl}'] {
+    td {
+      border-bottom: 1px solid var(--color-violet) !important;
+    }
+  }
+
   table {
     width: 100%;
     border-collapse: collapse;
@@ -15,6 +21,7 @@ const TableWrapper = styled.div`
 
     tr {
       border-left: 2px solid var(--color-surface-02);
+      outline: none !important;
     }
 
     td, th {
@@ -46,6 +53,11 @@ const TableWrapper = styled.div`
     }
 
     thead {
+      tr {
+        background-color: var(--color-surface-03);
+        z-index: 999;
+      }
+
       th {
         text-align: left;
         background-color: var(--color-surface-03);
@@ -75,13 +87,15 @@ const TableWrapper = styled.div`
     }
 
     tbody {
-
       &:focus, &:focus-visible {
         outline: none;
       }
 
-      td {
+      tr {
         border-bottom: 1px solid var(--color-surface-03);
+      }
+
+      td {
 
         hr {
           margin: 0;

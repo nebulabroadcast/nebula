@@ -1,4 +1,4 @@
-import { useMemo, useEffect, useState } from 'react'
+import { useMemo, useEffect, useState, useRef } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { useParams, useSearchParams } from 'react-router-dom'
 import Splitter, { SplitDirection } from '@devbookhq/splitter'
@@ -8,6 +8,7 @@ import { useLocalStorage } from '/src/hooks'
 import { setFocusedAsset, setSelectedAssets } from '/src/actions'
 
 import Browser from '/src/containers/Browser'
+import { MetadataDialogProvider } from '/src/hooks'
 import AssetEditor from '/src/pages/AssetEditor'
 import Scheduler from '/src/pages/Scheduler'
 import Rundown from './Rundown'
@@ -24,7 +25,7 @@ const MAMContainer = styled.div`
   flex-grow: 1;
 
   .__dbk__gutter.Dark {
-    background-color: var(--color-surface01);
+    background-color: var(--color-surface-01);
   }
 
   .__dbk__child-wrapper {
@@ -36,6 +37,19 @@ const MAMContainer = styled.div`
 
   .__dbk__child-wrapper:last-child {
     min-width: 1000px;
+  }
+`
+
+const DraggedIndicator = styled.div`
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+
+  div {
+    display: inline-block;
+    padding: 4px;
+    background-color: var(--color-surface-05);
+    box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.3);
   }
 `
 
@@ -53,10 +67,10 @@ const MAMPage = () => {
     null
   )
 
-  // Drag and drop from the browser
+  const draggedIndicatorRef = useRef(null)
 
-  // const [activeId, setActiveId] = useState(null)
-  const [draggedAsset, setDraggedAsset] = useState(null)
+  // Drag and drop from the browser
+  const [draggedObjects, setDraggedObjects] = useState(null)
   const [isDragging, setIsDragging] = useState(false)
 
   const mouseSensor = useSensor(MouseSensor, {
@@ -74,8 +88,8 @@ const MAMPage = () => {
 
   const onDragStart = (event) => {
     setIsDragging(true)
-    // setActiveId(event.active.id)
-    setDraggedAsset(event.active.data.current)
+    console.log('Start drag', event.active.data.current)
+    setDraggedObjects(event.active.data.current)
     setBodyCursor('grabbing')
 
     if (event.active.id === focusedAsset) return
@@ -84,17 +98,10 @@ const MAMPage = () => {
   }
 
   const onDragEnd = (event) => {
+    console.log('End drag', event.active.data.current)
     setIsDragging(false)
-    // setActiveId(null)
-    setDraggedAsset(null)
-    const { active, over } = event
+    setDraggedObjects(null)
     setBodyCursor('auto')
-  }
-
-  const onDragCancel = () => {
-    setIsDragging(false)
-    // setActiveId(null)
-    setDraggedAsset(null)
   }
 
   //
@@ -119,7 +126,6 @@ const MAMPage = () => {
       })
       return
     }
-    console.log('set asset')
     setSearchParams((o) => {
       o.set('asset', focusedAsset)
       return o
@@ -131,7 +137,7 @@ const MAMPage = () => {
   //
 
   const componentProps = {
-    draggedAsset,
+    draggedObjects,
   }
 
   const moduleComponent = useMemo(() => {
@@ -140,7 +146,7 @@ const MAMPage = () => {
     if (module == 'rundown') return <Rundown {...componentProps} />
 
     return 'Not implemented'
-  }, [module, draggedAsset])
+  }, [module, draggedObjects])
 
   // eslint-disable-next-line no-unused-vars
   const onResize = (gutter, size) => {
@@ -151,23 +157,60 @@ const MAMPage = () => {
   // Render
   //
 
+  const draggedwidget = useMemo(() => {
+    //if (!draggedObjects?.length) return null
+    return (
+      <>
+        {(draggedObjects || []).map((obj, idx) => {
+          return <div key={idx}>{obj.title}</div>
+        })}
+      </>
+    )
+  }, [draggedObjects])
+
+  // const onMouseMove = (e) => {
+  //   setMousePos({ x: e.clientX, y: e.clientY })
+  // }
+  //
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (!draggedIndicatorRef.current) return
+      draggedIndicatorRef.current.style.left = e.clientX + 20 + 'px'
+      draggedIndicatorRef.current.style.top = e.clientY + 20 + 'px'
+    }
+
+    window.addEventListener('mousemove', handleMouseMove)
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove)
+    }
+  }, [])
+
   return (
     <MAMContainer>
-      <DndContext
-        onDragEnd={onDragEnd}
-        onDragStart={onDragStart}
-        sensors={sensors}
-      >
-        <Splitter
-          direction={SplitDirection.Horizontal}
-          onResizeFinished={onResize}
-          initialSizes={splitterSizes}
+      <MetadataDialogProvider>
+        <DndContext
+          onDragEnd={onDragEnd}
+          onDragStart={onDragStart}
+          onDragCancel={onDragEnd}
+          sensors={sensors}
         >
-          <Browser isDragging={isDragging} />
-          {moduleComponent}
-        </Splitter>
-      </DndContext>
-      <SendToDialog />
+          <Splitter
+            direction={SplitDirection.Horizontal}
+            onResizeFinished={onResize}
+            initialSizes={splitterSizes}
+          >
+            <Browser isDragging={isDragging} />
+            {moduleComponent}
+          </Splitter>
+        </DndContext>
+        <SendToDialog />
+        {draggedObjects?.length > 0 && (
+          <DraggedIndicator ref={draggedIndicatorRef}>
+            {draggedwidget}
+          </DraggedIndicator>
+        )}
+      </MetadataDialogProvider>
     </MAMContainer>
   )
 }

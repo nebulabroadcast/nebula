@@ -1,14 +1,16 @@
-import nebula from '/src/nebula'
-
 import { useMemo } from 'react'
 
-import { Form, FormRow, Select } from '/src/components'
+import nebula from '/src/nebula'
 import {
+  Form,
+  FormRow,
   InputColor,
   InputDatetime,
   InputInteger,
   InputSwitch,
   InputText,
+  InputTimecode,
+  Select,
   TextArea,
 } from '/src/components'
 
@@ -106,6 +108,15 @@ const EditorField = ({
           onChange={onChange}
           disabled={disabled}
           mode={metaType.mode}
+        />
+      )
+      break
+    case 'timecode':
+      editor = (
+        <InputTimecode
+          value={value || ''}
+          onChange={onChange}
+          disabled={disabled}
         />
       )
       break

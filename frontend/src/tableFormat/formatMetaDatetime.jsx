@@ -1,6 +1,6 @@
 import { Timestamp } from '/src/components'
 
-const tableFormatTime = (rowData, key) => {
+const formatMetaDatetime = (rowData, key, mode = 'datetime') => {
   const timestamp = rowData[key]
   if (!timestamp)
     return (
@@ -10,9 +10,9 @@ const tableFormatTime = (rowData, key) => {
     )
   return (
     <td>
-      <Timestamp timestamp={timestamp} />
+      <Timestamp timestamp={rowData[key]} mode={mode} />
     </td>
   )
 }
 
-export { tableFormatTime }
+export default formatMetaDatetime
