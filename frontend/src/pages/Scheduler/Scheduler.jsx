@@ -14,7 +14,7 @@ const Scheduler = ({ draggedObjects }) => {
   const [startTime, setStartTime] = useState()
   const [events, setEvents] = useState([])
   const currentChannel = useSelector((state) => state.context.currentChannel)
-  const [MetadataDialog, showMetadataDialog] = useMetadataDialog()
+  const [EventDialog, showEventDialog] = useMetadataDialog()
 
   const channelConfig = useMemo(() => {
     return nebula.getPlayoutChannel(currentChannel)
@@ -103,7 +103,7 @@ const Scheduler = ({ draggedObjects }) => {
 
   const editEvent = (event) => {
     const title = `Edit event: ${event.title || 'Untitled'}`
-    showMetadataDialog(title, channelConfig.fields, event).then(setEvent)
+    showEventDialog(title, channelConfig.fields, event).then(setEvent)
   }
 
   const deleteEvent = (eventId) => {
@@ -146,7 +146,7 @@ const Scheduler = ({ draggedObjects }) => {
           />
         )}
       </section>
-      <MetadataDialog />
+      <EventDialog />
     </main>
   )
 }

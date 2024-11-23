@@ -1,107 +1,18 @@
-import Table from '/src/components/table'
 import { useMemo, useRef, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { useSearchParams, useLocation } from 'react-router-dom'
 import { toast } from 'react-toastify'
-import styled from 'styled-components'
-import nebula from '/src/nebula'
-import { showSendToDialog } from '/src/actions'
 
+import nebula from '/src/nebula'
+import { Table } from '/src/components'
+import { showSendToDialog } from '/src/actions'
 import {
-  getColumnWidth,
-  getFormatter,
   formatRowHighlightColor,
   formatRowHighlightStyle,
 } from '/src/tableFormatting.jsx'
-import { Select } from '../../components'
 
-const RundownWrapper = styled.section`
-  tbody {
-    tr {
-      border-left: 0 !important;
-    }
-
-    .current-item {
-      background-color: var(--color-red-muted) !important;
-    }
-
-    .cued-item {
-      background-color: var(--color-green-muted) !important;
-    }
-
-    .event-row {
-      background-color: var(--color-surface-01);
-      &:hover {
-        background-color: var(--color-surface-01);
-      }
-
-      td {
-        padding-top: 8px !important;
-        padding-bottom: 8px !important;
-      }
-    }
-  }
-`
-
-const COLUMNS = [
-  'rundown_symbol',
-  'title',
-  'id/main',
-  'duration',
-  'status',
-  'run_mode',
-  'scheduled_time',
-  'broadcast_time',
-  'rundown_difference',
-  'mark_in',
-  'mark_out',
-]
-
-const getRunModeOptions = (object_type, selection, func) => {
-  if (object_type === 'event') {
-    return [
-      {
-        label: 'Run: Auto',
-        icon: 'play_arrow',
-        onClick: () => setRunMode('event', selectedEvents[0], 0),
-      },
-      {
-        label: 'Run: Manual',
-        icon: 'hand_gesture',
-        onClick: () => setRunMode('event', selectedEvents[0], 1),
-      },
-      {
-        label: 'Run: Soft',
-        icon: 'hourglass_empty',
-        onClick: () => setRunMode('event', selectedEvents[0], 2),
-      },
-      {
-        label: 'Run Hard',
-        icon: 'hourglass_bottom',
-        onClick: () => setRunMode('event', selectedEvents[0], 3),
-      },
-    ]
-  }
-  if (object_type === 'item') {
-    return [
-      {
-        label: 'Run: Auto',
-        icon: 'play_arrow',
-        onClick: () => func('item', selection, 0),
-      },
-      {
-        label: 'Run: Manual',
-        icon: 'hand_gesture',
-        onClick: () => func('item', selection, 1),
-      },
-      {
-        label: 'Run: Skip',
-        icon: 'skip_next',
-        onClick: () => func('item', selection, 4),
-      },
-    ]
-  }
-}
+import RundownTableWrapper from './RundownTableWrapper'
+import { getRunModeOptions, getRundownColumns } from './utils'
 
 const RundownTable = ({
   data,
@@ -125,6 +36,10 @@ const RundownTable = ({
   const currentChannel = useSelector((state) => state.context.currentChannel)
   const dispatch = useDispatch()
   const tableRef = useRef()
+
+  //
+  // Scroll to the event definded in the hash when the component mounts
+  //
 
   useEffect(() => {
     if (!location.hash) return
@@ -154,25 +69,50 @@ const RundownTable = ({
     }
   }, [location, data])
 
-  const columns = useMemo(() => {
-    return COLUMNS.map((key) => {
-      return {
-        key: key,
-        title: nebula.metaHeader(key),
-        name: key,
-        width: getColumnWidth(key),
-        formatter: getFormatter(key),
-      }
-    })
-  }, [])
+  //
+  // Define table columns and additional styling
+  //
 
-  const getRowClass = (rowData) => {
-    if (rowData.type === 'event') {
-      return 'event-row'
-    }
+  const columns = useMemo(() => getRundownColumns(), [])
+
+  const getRundownRowClass = (rowData) => {
+    if (rowData.type === 'event') return 'event-row'
     if (rowData.id === currentItem) return 'current-item'
     if (rowData.id === cuedItem) return 'cued-item'
   }
+
+  //
+  // Operations on selected items
+  //
+
+  const deleteSelectedItems = () => {
+    if (!selectedItems.length) {
+      toast.error('No items selected')
+      return
+    }
+    console.log('Deleting items:', selectedItems)
+    nebula
+      .request('delete', { object_type: 'item', ids: selectedItems })
+      .then(loadRundown)
+      .catch(onError)
+  }
+
+  const onSendTo = () => {
+    const ids = data
+      .filter((row) => row.id_asset && selectedItems.includes(row.id))
+      .map((row) => row.id_asset)
+
+    if (ids.length) dispatch(showSendToDialog({ ids }))
+  }
+
+  const setRunMode = (object_type, id, run_mode) => {
+    const operations = [{ id, object_type, data: { run_mode } }]
+    nebula.request('ops', { operations }).then(loadRundown).catch(onError)
+  }
+
+  //
+  // User interaction && Selection handling
+  //
 
   const onRowClick = (rowData, event) => {
     if (rowData.type === 'event') {
@@ -236,7 +176,7 @@ const RundownTable = ({
 
     setSelectedItems(newSelectedItems)
     setFocusedObject(rowData)
-  }
+  } // onRowClick
 
   const focusNext = (offset) => {
     if (!focusedObject) return
@@ -251,18 +191,6 @@ const RundownTable = ({
     }
   }
 
-  const deleteSelectedItems = () => {
-    if (!selectedItems.length) {
-      toast.error('No items selected')
-      return
-    }
-    console.log('Deleting items:', selectedItems)
-    nebula
-      .request('delete', { object_type: 'item', ids: selectedItems })
-      .then(loadRundown)
-      .catch(onError)
-  }
-
   const onKeyDown = (e) => {
     if (e.key === 'ArrowDown') {
       focusNext(1)
@@ -274,25 +202,6 @@ const RundownTable = ({
       deleteSelectedItems()
       e.preventDefault()
     }
-  }
-
-  const onSendTo = () => {
-    const ids = []
-    for (const row of data) {
-      if (selectedItems.includes(row.id)) {
-        if (row.id_asset) ids.push(row.id_asset)
-      }
-    }
-
-    if (ids.length) {
-      dispatch(showSendToDialog({ ids }))
-    }
-  }
-
-  const setRunMode = (object_type, id, run_mode) => {
-    console.log('Setting run mode:', object_type, id, run_mode)
-    const operations = [{ id, object_type, data: { run_mode } }]
-    nebula.request('ops', { operations }).then(loadRundown).catch(onError)
   }
 
   const contextMenu = () => {
@@ -345,18 +254,17 @@ const RundownTable = ({
         selectedIndices.push(i)
       }
     }
-
     return selectedIndices
   }, [selectedItems, selectedEvents, data])
 
   return (
-    <RundownWrapper className="grow nopad" ref={tableRef}>
+    <RundownTableWrapper className="grow nopad" ref={tableRef}>
       <Table
         columns={columns}
         data={data}
         className="contained"
         onRowClick={onRowClick}
-        rowClass={getRowClass}
+        rowClass={getRundownRowClass}
         rowHighlightColor={formatRowHighlightColor}
         rowHighlightStyle={formatRowHighlightStyle}
         contextMenu={contextMenu}
@@ -365,7 +273,7 @@ const RundownTable = ({
         droppable={draggedObjects}
         onDrop={onDrop}
       />
-    </RundownWrapper>
+    </RundownTableWrapper>
   )
 }
 
