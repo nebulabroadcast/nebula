@@ -59,4 +59,4 @@ class PlayoutPluginManifest(ResponseModel):
 
 class PlayoutResponseModel(ResponseModel):
     # TODO: use strict model from the worker
-    plugins: list[PlayoutPluginManifest] | None = Field(default_factory=list)
+    plugins: list[PlayoutPluginManifest] | None = Field(default_factory=lambda: [])

@@ -57,7 +57,7 @@ class BrowseRequestModel(RequestModel):
         examples=["star trek"],
     )
     conditions: list[ConditionModel] | None = Field(
-        default_factory=list,
+        default_factory=lambda: [],
         title="Conditions",
         description="List of additional conditions",
         examples=[

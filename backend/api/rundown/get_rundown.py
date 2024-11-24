@@ -154,13 +154,7 @@ async def get_rundown(request: RundownRequestModel) -> RundownResponseModel:
             # media is on the playout storage but corrupted
             istatus = ObjectStatus.CORRUPTED
         elif ameta[pskey]["status"] == ObjectStatus.ONLINE:
-            if airstatus is not None:
-                # media is on the playout storage and aired
-                istatus = airstatus
-                last_air = as_start
-            else:
-                # media is on the playout storage but not aired
-                istatus = ObjectStatus.ONLINE
+            istatus = airstatus if airstatus is not None else ObjectStatus.ONLINE
         else:
             istatus = ObjectStatus.UNKNOWN
 

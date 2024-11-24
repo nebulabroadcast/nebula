@@ -28,7 +28,7 @@ class EventData(RequestModel):
         examples=[123],
     )
 
-    items: list[dict[str, Serializable]] | None = Field(default_factory=list)
+    items: list[dict[str, Serializable]] | None = Field(default_factory=lambda: [])
 
     meta: dict[str, Serializable] | None = Field(
         default=None,
