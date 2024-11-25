@@ -7,6 +7,7 @@ const ApplySchedulingTemplate = ({ loadEvents, date }) => {
   const currentChannel = useSelector((state) => state.context.currentChannel)
   const [templates, setTemplates] = useState([])
   const [selectedTemplate, setSelectedTemplate] = useState(null)
+  const [loading, setLoading] = useState(false)
 
   const channelConfig = useMemo(() => {
     return nebula.getPlayoutChannel(currentChannel)
@@ -35,6 +36,7 @@ const ApplySchedulingTemplate = ({ loadEvents, date }) => {
   }, [templates])
 
   const applyTemplate = () => {
+    setLoading(true)
     const template_name = selectedTemplate.name
     const id_channel = currentChannel
 
@@ -44,7 +46,8 @@ const ApplySchedulingTemplate = ({ loadEvents, date }) => {
         id_channel,
         date,
       })
-      .then(() => loadEvents())
+      .then(() => loadEvents().setLoading(false))
+      .catch(() => setLoading(false))
   }
 
   return (
@@ -54,8 +57,13 @@ const ApplySchedulingTemplate = ({ loadEvents, date }) => {
         value={selectedTemplate}
         onChange={setSelectedTemplate}
         label={selectedTemplate?.title}
+        disabled={loading}
       />
-      <Button label="Apply template" onClick={applyTemplate} />
+      <Button
+        label="Apply template"
+        onClick={applyTemplate}
+        disabled={!selectedTemplate || loading}
+      />
     </>
   )
 }

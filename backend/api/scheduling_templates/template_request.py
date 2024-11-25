@@ -1,7 +1,6 @@
 import nebula
-from nebula.helpers import create_new_event
 from nebula.helpers.create_new_event import create_new_event
-from server.dependencies import RequestInitiator
+from server.dependencies import CurrentUser, RequestInitiator
 from server.request import APIRequest
 
 from .models import (
@@ -49,7 +48,7 @@ class ApplyTemplateRequest(APIRequest):
 
     async def handle(
         self,
-        # user: CurrentUser,
+        user: CurrentUser,
         request: ApplyTemplateRequestModel,
         initiator: RequestInitiator,
     ) -> None:
@@ -65,24 +64,27 @@ class ApplyTemplateRequest(APIRequest):
         first_ts = min(edata.keys())
         last_ts = max(edata.keys())
 
-        # for debugging
-        query = """
-            DELETE FROM events
-            WHERE start >= $1 AND start <= $2 AND id_channel = $3
-        """
-        await nebula.db.execute(query, first_ts, last_ts, request.id_channel)
+        pool = await nebula.db.pool()
+        async with pool.acquire() as conn, conn.transaction():
+            query = """
+                DELETE FROM events
+                WHERE start >= $1 AND start <= $2 AND id_channel = $3
+            """
+            await conn.execute(query, first_ts, last_ts, request.id_channel)
 
-        query = """
-            SELECT start FROM events
-            WHERE start >= $1 AND start <= $2 AND id_channel = $3
-        """
-        async for row in nebula.db.iterate(
-            query, first_ts, last_ts, request.id_channel
-        ):
-            ts = row["start"]
-            if ts in edata:
-                nebula.log.warn(f"Event already exists at {ts}")
-                del edata[ts]
+            # TODO: implement merge mode
+            #
+            # query = """
+            #     SELECT start FROM events
+            #     WHERE start >= $1 AND start <= $2 AND id_channel = $3
+            # """
+            # async for row in nebula.db.iterate(
+            #     query, first_ts, last_ts, request.id_channel
+            # ):
+            #     ts = row["start"]
+            #     if ts in edata:
+            #         nebula.log.warn(f"Event already exists at {ts}")
+            #         del edata[ts]
 
-        for _, event_data in edata.items():
-            await create_new_event(channel, event_data)
+            for _, event_data in edata.items():
+                await create_new_event(channel, event_data, user, conn)
