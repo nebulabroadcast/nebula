@@ -133,7 +133,7 @@ const Scheduler = ({ draggedObjects }) => {
 
   return (
     <main className="column">
-      <SchedulerNav startTime={startTime} setStartTime={setStartTime} />
+      <SchedulerNav setStartTime={setStartTime} loadEvents={loadEvents} />
       <section className="grow nopad">
         {startTime && (
           <Calendar

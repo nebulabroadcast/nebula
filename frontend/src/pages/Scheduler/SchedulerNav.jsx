@@ -6,9 +6,10 @@ import nebula from '/src/nebula'
 import { createTitle } from './utils'
 import { setPageTitle } from '/src/actions'
 
-import { Navbar, Button } from '/src/components'
+import { Navbar, Button, Spacer } from '/src/components'
+import ApplySchedulingTemplate from './ApplySchedulingTemplate'
 
-const SchedulerNav = ({ setStartTime }) => {
+const SchedulerNav = ({ setStartTime, loadEvents }) => {
   const [date, setDate] = useState()
   const [searchParams, setSearchParams] = useSearchParams()
   const currentChannel = useSelector((state) => state.context.currentChannel)
@@ -67,6 +68,8 @@ const SchedulerNav = ({ setStartTime }) => {
     <Navbar>
       <Button icon="chevron_left" onClick={prevWeek} />
       <Button icon="chevron_right" onClick={nextWeek} />
+      <Spacer />
+      <ApplySchedulingTemplate loadEvents={loadEvents} date={date} />
     </Navbar>
   )
 }

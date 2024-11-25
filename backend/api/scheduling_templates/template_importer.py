@@ -56,7 +56,7 @@ class TemplateImporter:
         day_tpl = self.template.get(key, [])
 
         for tpl in day_tpl:
-            hour, minute = [int(k) for k in tpl["time"].split(":")]
+            hour, minute = (int(k) for k in tpl["time"].split(":"))
             # seconds from midnight
             toffset = hour * 3600 + minute * 60
             # if the event is before the day start, it is for the next day
