@@ -21,8 +21,30 @@ class ListTemplatesResponseModel(ResponseModel):
 
 
 class ApplyTemplateRequestModel(RequestModel):
-    id_channel: Annotated[int, Field(..., title="Channel ID", examples=[1])]
-    template_name: Annotated[
-        str, Field(..., title="Template name", examples=["my_template"])
+    id_channel: Annotated[
+        int,
+        Field(
+            ...,
+            title="Channel ID",
+            examples=[1],
+        ),
     ]
-    date: Annotated[str, Field(..., title="Date", examples=["2021-12-31"])]
+    template_name: Annotated[
+        str,
+        Field(..., title="Template name", examples=["my_template"]),
+    ]
+    date: Annotated[
+        str,
+        Field(
+            ...,
+            title="Date",
+            examples=["2022-12-31"],
+        ),
+    ]
+    clear: Annotated[
+        bool,
+        Field(
+            title="Clear events",
+            description="Clear all events before applying the template",
+        ),
+    ] = False

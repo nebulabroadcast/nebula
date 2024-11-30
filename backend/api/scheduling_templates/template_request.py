@@ -61,30 +61,45 @@ class ApplyTemplateRequest(APIRequest):
         importer = TemplateImporter(template.get("schedule", {}), hh, mm)
         edata = importer.build_for_week(request.date)
 
+        if not edata:
+            nebula.log.warn("No events found in template")
+            return
+
         first_ts = min(edata.keys())
         last_ts = max(edata.keys())
 
         pool = await nebula.db.pool()
         async with pool.acquire() as conn, conn.transaction():
-            query = """
-                DELETE FROM events
-                WHERE start >= $1 AND start <= $2 AND id_channel = $3
-            """
-            await conn.execute(query, first_ts, last_ts, request.id_channel)
+            if request.clear:
+                # Clear mode
+                query = """
+                    DELETE FROM events
+                    WHERE start >= $1 AND start <= $2 AND id_channel = $3
+                """
+                await conn.execute(query, first_ts, last_ts, request.id_channel)
 
-            # TODO: implement merge mode
-            #
-            # query = """
-            #     SELECT start FROM events
-            #     WHERE start >= $1 AND start <= $2 AND id_channel = $3
-            # """
-            # async for row in nebula.db.iterate(
-            #     query, first_ts, last_ts, request.id_channel
-            # ):
-            #     ts = row["start"]
-            #     if ts in edata:
-            #         nebula.log.warn(f"Event already exists at {ts}")
-            #         del edata[ts]
+            else:
+                # Merge mode
+                query = """
+                    SELECT start FROM events
+                    WHERE start >= $1 AND start <= $2 AND id_channel = $3
+                """
+                existing_times = []
+                async for row in nebula.db.iterate(
+                    query, first_ts, last_ts, request.id_channel
+                ):
+                    existing_times.append(row["start"])
+
+                MINIMUM_GAP_SECONDS = 5 * 60
+                for new_ts in list(edata.keys()):
+                    if any(
+                        abs(new_ts - existing_ts) < MINIMUM_GAP_SECONDS
+                        for existing_ts in existing_times
+                    ):
+                        nebula.log.warn(
+                            f"Skipping event at {new_ts}: too close to existing event"
+                        )
+                        edata.pop(new_ts)
 
             for _, event_data in edata.items():
                 await create_new_event(channel, event_data, user, conn)

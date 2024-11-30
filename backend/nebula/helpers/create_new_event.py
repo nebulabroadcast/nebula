@@ -59,6 +59,7 @@ async def _create_new_event(
 
     await new_bin.save()
 
+    new_bin["duration"] = 0
     new_event["id_magic"] = new_bin.id
     new_event["id_channel"] = channel.id
     new_event["start"] = event_data.start
@@ -96,6 +97,7 @@ async def _create_new_event(
             item.update(item_data)
             item["id_bin"] = new_bin.id
             item["position"] = position
+            new_bin["duration"] += item.duration
             await item.save()
             position += 1
 
