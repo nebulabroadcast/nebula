@@ -1,11 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { useSearchParams } from 'react-router-dom'
 
+import nebula from '/src/nebula'
 import { Navbar, Button, Spacer, RadioButton } from '/src/components'
 import { setPageTitle } from '/src/actions'
-
-const DAY = 24 * 60 * 60 * 1000
 
 const RundownNav = ({
   startTime,
@@ -18,19 +17,26 @@ const RundownNav = ({
   const currentChannel = useSelector((state) => state.context.currentChannel)
   const dispatch = useDispatch()
 
+  const channelConfig = useMemo(() => {
+    return nebula.getPlayoutChannel(currentChannel)
+  }, [currentChannel])
+
   useEffect(() => {
     let dateParam = searchParams.get('date')
     if (date && dateParam === date) return
     if (!dateParam) dateParam = new Date().toISOString().split('T')[0]
 
+    const [dsHH, dsMM] = channelConfig.day_start
+
     const newDate = new Date(dateParam)
-    newDate.setHours(7, 30, 0, 0)
+    newDate.setHours(dsHH, dsMM, 0, 0)
     setStartTime(newDate)
     setDate(dateParam)
-    const pageTitle = `Rundown (${newDate.toLocaleDateString('en-US', {
-      month: 'short',
+    const pageTitle = `${newDate.toLocaleDateString(nebula.locale, {
+      month: 'long',
+      weekday: 'long',
       day: 'numeric',
-    })})`
+    })}`
     dispatch(setPageTitle({ title: pageTitle }))
   }, [searchParams, currentChannel])
 

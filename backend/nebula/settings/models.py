@@ -275,6 +275,7 @@ class BasePlayoutChannelSettings(BaseListItemModel):
     send_action: int | None = Field(default=None)
     scheduler_accepts: AcceptModel = Field(default_factory=AcceptModel)
     rundown_accepts: AcceptModel = Field(default_factory=AcceptModel)
+    default_template: str | None = Field(default=None)
 
 
 class PlayoutChannelSettings(BasePlayoutChannelSettings):

@@ -1,3 +1,4 @@
+import nebula from '/src/nebula'
 import styled from 'styled-components'
 import { useRef, useMemo, useEffect, useState, useCallback } from 'react'
 import { NavLink, useNavigate, useLocation } from 'react-router-dom'
@@ -157,11 +158,9 @@ const Calendar = ({
       if (draggedAsset) {
         ctx.fillStyle = '#fff'
         ctx.fillText(
-          `${Math.round(x)}:${Math.round(
-            y
-          )} ${cursorTime.current.toLocaleString()}: ${draggedAsset.title}`,
+          `${cursorTime.current.toLocaleString(nebula.locale)}`,
           x + 10,
-          y + 50
+          y + 20
         )
 
         const timePos = time2pos(cursorTime.current)
@@ -399,7 +398,11 @@ const Calendar = ({
       // get date in YYYY-MM-DD format
       const jsDate = new Date(dayStartTs * 1000)
       const date = jsDate.toISOString().slice(0, 10)
-      const dayName = jsDate.toLocaleDateString('en-US', { weekday: 'short' })
+      const dayName = jsDate.toLocaleDateString(nebula.locale, {
+        day: 'numeric',
+        month: 'short',
+        weekday: 'long',
+      })
 
       const style = {}
 
@@ -436,7 +439,7 @@ const Calendar = ({
               key={i}
             >
               <NavLink to={`/mam/rundown?date=${dstyles[i].date}`}>
-                {dstyles[i].date}
+                {dstyles[i].dayName}
               </NavLink>
             </div>
           )

@@ -2,48 +2,8 @@ from typing import Any
 
 from pydantic import Field
 
+from nebula.helpers.create_new_event import EventData
 from server.models import RequestModel, ResponseModel
-
-Serializable = int | str | float | list[str] | bool | None
-
-
-class EventData(RequestModel):
-    id: int | None = Field(
-        None,
-        title="Event ID",
-        description="Event ID. None for new events.",
-        examples=[320],
-    )
-
-    start: int = Field(
-        ...,
-        title="Start time",
-        examples=[1620000000],
-    )
-
-    id_asset: int | None = Field(
-        None,
-        title="Asset ID",
-        description="ID of the asset to be used as a primary asset for this event.",
-        examples=[123],
-    )
-
-    items: list[dict[str, Serializable]] | None = Field(default_factory=lambda: [])
-
-    meta: dict[str, Serializable] | None = Field(
-        default=None,
-        title="Event metadata",
-        description="Metadata for the event.",
-        examples=[
-            {
-                "title": "My event",
-                "subtitle": "My event subtitle",
-                "genre": "My genre",
-            }
-        ],
-    )
-
-    # TODO: validate meta object against the channel_config fields
 
 
 class SchedulerRequestModel(RequestModel):

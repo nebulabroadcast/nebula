@@ -1,3 +1,4 @@
+import ReactMarkdown from 'react-markdown'
 import styled from 'styled-components'
 import { useState } from 'react'
 import { Button, Dialog } from '/src/components'
@@ -44,7 +45,9 @@ const useConfirm = () => {
     if (!promise) return
     return (
       <Dialog onHide={handleClose} header={title} footer={footer}>
-        <Question>{message}</Question>
+        <Question>
+          <ReactMarkdown>{message}</ReactMarkdown>
+        </Question>
       </Dialog>
     )
   }
