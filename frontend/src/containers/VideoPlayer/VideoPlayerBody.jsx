@@ -70,7 +70,12 @@ const VideoPlayerBody = ({ ...props }) => {
     console.log('markIn', props.markIn, markIn)
     if (props.markIn || null !== markIn) {
       setMarkIn(props.markIn)
-      if (!isPlaying && videoRef.current && props.markIn !== undefined) {
+      if (
+        !isPlaying &&
+        videoRef.current &&
+        props.markIn !== undefined &&
+        currentTime !== props.markOut
+      ) {
         videoRef.current.currentTime = props.markIn
       }
     }
