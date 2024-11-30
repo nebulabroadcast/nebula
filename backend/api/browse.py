@@ -217,7 +217,13 @@ def build_query(
     if request.query:
         for elm in slugify(request.query, make_set=True, min_length=3):
             # no need to sanitize this. slugified strings are safe
-            cond_list.append(f"id IN (SELECT id FROM ft WHERE value LIKE '{elm}%')")
+            q = f"""
+                id IN (
+                    SELECT id FROM ft
+                    WHERE object_type = 0 AND value LIKE '{elm}%'
+                )
+            """
+            cond_list.append(q)
 
     # Access control
 
