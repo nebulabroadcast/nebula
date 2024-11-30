@@ -47,8 +47,7 @@ const VideoPlayerBody = ({ ...props }) => {
   const [markIn, setMarkIn] = useState()
   const [markOut, setMarkOut] = useState()
 
-  const initialPosition = useRef(0)
-  const seekedToInitialPosition = useRef(false)
+  const desiredFrame = useRef(0)
 
   useEffect(() => {
     if (props.setPosition) {
@@ -119,7 +118,7 @@ const VideoPlayerBody = ({ ...props }) => {
       } else {
         setCurrentTime(actualTime)
       }
-      initialPosition.current = actualTime
+      desiredFrame.current = Math.floor(actualTime * props.frameRate)
     }
     updateTime()
   }, [videoRef, isPlaying, duration])
@@ -152,10 +151,10 @@ const VideoPlayerBody = ({ ...props }) => {
   }
 
   const handlePause = () => {
-    seekToTime(initialPosition.current)
+    seekToTime(desiredFrame.current / props.frameRate)
     setTimeout(() => {
       if (videoRef.current?.paused) {
-        seekToTime(initialPosition.current)
+        seekToTime(desiredFrame.current / props.frameRate)
         setIsPlaying(false)
       }
     }, 20)
@@ -186,10 +185,11 @@ const VideoPlayerBody = ({ ...props }) => {
   }
 
   const handleScrub = (newTime) => {
-    if (newTime === videoRef.current?.currentTime) return
+    desiredFrame.current = Math.floor(newTime * props.frameRate)
+    const desiredTime = desiredFrame.current / props.frameRate
+    if (desiredTime === videoRef.current?.currentTime) return
     videoRef.current?.pause()
-    seekToTime(newTime)
-    initialPosition.current = newTime
+    seekToTime(desiredTime)
   }
 
   // half of the nodes will be on the left, the other half on the right
