@@ -9,7 +9,13 @@ import { setPageTitle } from '/src/actions'
 import { Navbar, Button, Spacer } from '/src/components'
 import ApplySchedulingTemplate from './ApplySchedulingTemplate'
 
-const SchedulerNav = ({ setStartTime, loadEvents }) => {
+const SchedulerNav = ({
+  setStartTime,
+  loadEvents,
+  deleteUnaired,
+  loading,
+  setLoading,
+}) => {
   const [date, setDate] = useState()
   const [searchParams, setSearchParams] = useSearchParams()
   const currentChannel = useSelector((state) => state.context.currentChannel)
@@ -66,10 +72,21 @@ const SchedulerNav = ({ setStartTime, loadEvents }) => {
 
   return (
     <Navbar>
-      <Button icon="chevron_left" onClick={prevWeek} />
-      <Button icon="chevron_right" onClick={nextWeek} />
+      <Button icon="chevron_left" onClick={prevWeek} disabled={loading} />
+      <Button icon="chevron_right" onClick={nextWeek} disabled={loading} />
       <Spacer />
-      <ApplySchedulingTemplate loadEvents={loadEvents} date={date} />
+      <ApplySchedulingTemplate
+        loadEvents={loadEvents}
+        date={date}
+        loading={loading}
+        setLoading={setLoading}
+      />
+      <Button
+        icon="delete"
+        label="Delete unaired"
+        onClick={deleteUnaired}
+        disabled={loading}
+      />
     </Navbar>
   )
 }

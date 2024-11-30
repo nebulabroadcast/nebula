@@ -20,6 +20,7 @@ const RundownTable = ({
   onDrop,
   currentItem,
   cuedItem,
+  loading,
   selectedItems,
   setSelectedItems,
   selectedEvents,
@@ -320,6 +321,7 @@ const RundownTable = ({
         columns={columns}
         data={data}
         className="contained"
+        loading={loading}
         onRowClick={onRowClick}
         rowClass={getRundownRowClass}
         rowHighlightColor={formatRowHighlightColor}

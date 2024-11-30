@@ -59,9 +59,11 @@ const Rundown = ({ draggedObjects }) => {
 
   const onResponse = (response) => {
     setRundown(response.data.rows)
+    setLoading(false)
   }
 
   const onError = (error) => {
+    setLoading(false)
     const msg = error.response?.data?.detail || error.message
     toast.error(msg)
   }
@@ -73,11 +75,7 @@ const Rundown = ({ draggedObjects }) => {
       date: currentDateRef.current.toISOString().split('T')[0],
       id_channel: currentChannelRef.current,
     }
-    nebula
-      .request('rundown', requestParams)
-      .then(onResponse)
-      .catch(onError)
-      .finally(() => setLoading(false))
+    nebula.request('rundown', requestParams).then(onResponse).catch(onError)
   }
 
   useEffect(() => {
@@ -143,6 +141,7 @@ const Rundown = ({ draggedObjects }) => {
       }
     } // create a new order array
 
+    setLoading(true)
     nebula
       .request('order', {
         id_channel: currentChannelRef.current,

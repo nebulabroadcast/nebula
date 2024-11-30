@@ -3,11 +3,10 @@ import { useSelector } from 'react-redux'
 import { Dropdown, Button } from '/src/components'
 import nebula from '/src/nebula'
 
-const ApplySchedulingTemplate = ({ loadEvents, date }) => {
+const ApplySchedulingTemplate = ({ loadEvents, date, loading, setLoading }) => {
   const currentChannel = useSelector((state) => state.context.currentChannel)
   const [templates, setTemplates] = useState([])
   const [selectedTemplate, setSelectedTemplate] = useState(null)
-  const [loading, setLoading] = useState(false)
 
   const channelConfig = useMemo(() => {
     return nebula.getPlayoutChannel(currentChannel)
@@ -20,7 +19,6 @@ const ApplySchedulingTemplate = ({ loadEvents, date }) => {
       const defaultTemplate =
         templates.find((t) => t.name === channelConfig.default_template) ||
         templates[0]
-      console.log(response.data.templates)
       setSelectedTemplate(defaultTemplate)
     })
   }
@@ -46,13 +44,14 @@ const ApplySchedulingTemplate = ({ loadEvents, date }) => {
         id_channel,
         date,
       })
-      .then(() => loadEvents().setLoading(false))
+      .then(() => loadEvents())
       .catch(() => setLoading(false))
   }
 
   return (
     <>
       <Dropdown
+        tooltip="Select a template to apply"
         options={dropdownOptions}
         value={selectedTemplate}
         onChange={setSelectedTemplate}
@@ -61,6 +60,7 @@ const ApplySchedulingTemplate = ({ loadEvents, date }) => {
       />
       <Button
         label="Apply template"
+        icon="approval"
         onClick={applyTemplate}
         disabled={!selectedTemplate || loading}
       />
