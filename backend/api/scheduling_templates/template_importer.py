@@ -16,6 +16,16 @@ DayKey = Literal[
     "default",
 ]
 
+DAY_NAMES: list[DayKey] = [
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday",
+    "sunday",
+]
+
 
 class TemplateImporter:
     day_start_hour: int
@@ -43,7 +53,7 @@ class TemplateImporter:
 
         for i in range(7):
             day_start = week_start + datetime.timedelta(days=i)
-            day_name = day_start.strftime("%A").lower()
+            day_name: DayKey = DAY_NAMES[day_start.weekday()]
 
             day_start_ts = int(day_start.timestamp())
             self._apply_day_template("default", day_start_ts)
@@ -52,7 +62,7 @@ class TemplateImporter:
                 self._apply_day_template(day_name, day_start_ts)
         return self.events
 
-    def _apply_day_template(self, key: DayKey, day_start_ts: int):
+    def _apply_day_template(self, key: DayKey, day_start_ts: int) -> None:
         day_tpl = self.template.get(key, [])
 
         for tpl in day_tpl:

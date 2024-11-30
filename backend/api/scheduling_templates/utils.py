@@ -33,7 +33,8 @@ def load_template(name: str) -> dict[str, Any]:
     if not os.path.isfile(template_path):
         raise nebula.NotFoundException(f"Template {name} not found")
     try:
-        return json.load(open(template_path))
+        with open(template_path) as f:
+            return json.load(f)
     except Exception as e:
         raise nebula.NebulaException(f"Failed to load template {name}") from e
 

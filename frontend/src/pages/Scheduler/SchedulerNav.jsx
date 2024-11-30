@@ -41,7 +41,7 @@ const SchedulerNav = ({
     const weekStart = new Date(newDate.setDate(diff))
     weekStart.setHours(dsHH, dsMM, 0, 0)
 
-    const pageTitle = createTitle(weekStart)
+    const pageTitle = createTitle(weekStart, channelConfig.name)
     dispatch(setPageTitle({ title: pageTitle }))
     setStartTime(weekStart)
     setDate(dateParam)
@@ -54,7 +54,7 @@ const SchedulerNav = ({
         return o
       })
     }
-  }, [date])
+  }, [date, channelConfig])
 
   const dateStep = (days) => {
     let dateParam = searchParams.get('date')

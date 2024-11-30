@@ -1,3 +1,4 @@
+import nebula from '/src/nebula'
 import { isEmpty, isEqual, xorWith, cloneDeep } from 'lodash'
 
 const arrayEquals = (x, y) => isEmpty(xorWith(x, y, isEqual))
@@ -18,13 +19,13 @@ const formatTimeString = (timestamp) => {
   if (!timestamp) return ''
   const localDateTime = new Date(timestamp * 1000)
   const localTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
-  const dateFormatter = new Intl.DateTimeFormat('sv-SE', {
+  const dateFormatter = new Intl.DateTimeFormat(nebula.locale, {
     timeZone: localTimeZone,
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
   })
-  const timeFormatter = new Intl.DateTimeFormat('sv-SE', {
+  const timeFormatter = new Intl.DateTimeFormat(nebula.locale, {
     timeZone: localTimeZone,
     hour: '2-digit',
     minute: '2-digit',

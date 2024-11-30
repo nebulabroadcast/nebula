@@ -32,10 +32,11 @@ const RundownNav = ({
     newDate.setHours(dsHH, dsMM, 0, 0)
     setStartTime(newDate)
     setDate(dateParam)
-    const pageTitle = `Rundown (${newDate.toLocaleDateString('en-US', {
-      month: 'short',
+    const pageTitle = `${newDate.toLocaleDateString(nebula.locale, {
+      month: 'long',
+      weekday: 'long',
       day: 'numeric',
-    })})`
+    })}`
     dispatch(setPageTitle({ title: pageTitle }))
   }, [searchParams, currentChannel])
 
