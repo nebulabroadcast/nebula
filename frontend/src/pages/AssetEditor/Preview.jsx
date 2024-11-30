@@ -3,7 +3,7 @@ import styled from 'styled-components'
 import { Timecode } from '@wfoxall/timeframe'
 
 import { toast } from 'react-toastify'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import {
   Dropdown,
   Spacer,
@@ -16,7 +16,13 @@ import VideoPlayer from '/src/containers/VideoPlayer'
 import Subclip from './Subclip'
 import { useKeyDown } from '/src/hooks'
 
-const SubclipsPanel = ({ subclips, setSubclips, selection, setSelection }) => {
+const SubclipsPanel = ({
+  subclips,
+  setSubclips,
+  selection,
+  setSelection,
+  fps,
+}) => {
   return (
     <section className="grow">
       <div
@@ -36,6 +42,7 @@ const SubclipsPanel = ({ subclips, setSubclips, selection, setSelection }) => {
             setSubclips={setSubclips}
             selection={selection}
             setSelection={setSelection}
+            fps={fps}
             {...subclip}
           />
         ))}
@@ -53,8 +60,18 @@ const Preview = ({ assetData, setAssetData }) => {
 
   // Video source
 
-  const videoSrc =
-    assetData.id && accessToken && `/proxy/${assetData.id}?token=${accessToken}`
+  const videoSrc = useMemo(
+    () =>
+      assetData.id &&
+      accessToken &&
+      `/proxy/${assetData.id}?token=${accessToken}`,
+    [assetData, accessToken]
+  )
+  const frameRate = useMemo(() => {
+    const fps = assetData['video/fps_f'] || 25.0
+    //console.log('fps', fps)
+    return fps
+  }, [assetData])
 
   const patchAsset = (data) => {
     // helper function to update asset data
@@ -82,17 +99,14 @@ const Preview = ({ assetData, setAssetData }) => {
   // Dropdown menu options for poster frame
 
   const setPosterFrame = () => {
-    console.log('setPosterFrame', position)
     patchAsset({ poster_frame: position })
   }
 
   const goToPosterFrame = () => {
-    console.log('goToPosterFrame', assetData.poster_frame)
     setSelection({ mark_in: assetData.poster_frame, mark_out: null })
   }
 
   const clearPosterFrame = () => {
-    console.log('clearPosterFrame')
     patchAsset({ poster_frame: null })
   }
 
@@ -141,6 +155,7 @@ const Preview = ({ assetData, setAssetData }) => {
       <div className="column" style={{ minWidth: 300, flexGrow: 1 }}>
         <VideoPlayer
           src={videoSrc}
+          frameRate={frameRate}
           position={position}
           setPosition={setPosition}
           markIn={selection.mark_in}
@@ -159,11 +174,13 @@ const Preview = ({ assetData, setAssetData }) => {
             value={assetData.mark_in}
             readOnly={true}
             tooltip="Content start"
+            fps={frameRate}
           />
           <InputTimecode
             value={assetData.mark_out}
             readOnly={true}
             tooltip="Content end"
+            fps={frameRate}
           />
           <Button
             icon="screenshot_region"
@@ -190,6 +207,7 @@ const Preview = ({ assetData, setAssetData }) => {
           setSubclips={setSubclips}
           selection={selection}
           setSelection={setSelection}
+          fps={frameRate}
         />
       </div>
     </div>

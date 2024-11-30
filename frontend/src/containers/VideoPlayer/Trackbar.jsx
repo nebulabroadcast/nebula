@@ -1,13 +1,15 @@
-import { useRef, useEffect, useState, useCallback } from 'react'
+import { useRef, useEffect, useState, useCallback, useMemo } from 'react'
 import { Canvas, Navbar } from '/src/components'
 
 const Trackbar = ({
-  videoDuration,
+  duration,
   currentTime,
+  isPlaying,
   onScrub,
   markIn,
   markOut,
   bufferedRanges,
+  frameRate,
   marks,
 }) => {
   const canvasRef = useRef(null)
@@ -16,6 +18,10 @@ const Trackbar = ({
 
   const auxMarks = marks || {}
 
+  const numFrames = useMemo(
+    () => Math.floor(duration * frameRate),
+    [frameRate, duration]
+  )
   // DRAW
 
   const drawSlider = useCallback(() => {
@@ -33,10 +39,24 @@ const Trackbar = ({
     ctx.fillStyle = '#19161f'
     ctx.fillRect(0, 0, width, height)
 
+    const frameWidth = numFrames >= width ? 2 : width / numFrames
+    const handleWidth = Math.max(frameWidth, 2)
+
+    if (numFrames < width / 4) {
+      for (let i = 1; i < numFrames; i++) {
+        const x = (i / numFrames) * width
+        ctx.strokeStyle = '#303030'
+        ctx.beginPath()
+        ctx.moveTo(x, 0)
+        ctx.lineTo(x, height)
+        ctx.stroke()
+      }
+    }
+
     // Draw the buffered ranges
     for (const range of bufferedRanges) {
-      const start = (range.start / videoDuration) * width
-      const end = (range.end / videoDuration) * width
+      const start = (range.start / duration) * width
+      const end = (range.end / duration) * width
       ctx.strokeStyle = '#885bff'
       ctx.beginPath()
       ctx.moveTo(start, 0)
@@ -46,7 +66,7 @@ const Trackbar = ({
 
     let markInX = 0
     if (markIn) {
-      markInX = (markIn / videoDuration) * width
+      markInX = (markIn / duration) * width
       ctx.strokeStyle = 'green'
       ctx.beginPath()
       ctx.moveTo(markInX, 0)
@@ -56,7 +76,7 @@ const Trackbar = ({
 
     let markOutX = width
     if (markOut) {
-      markOutX = (markOut / videoDuration) * width
+      markOutX = (markOut / duration) * width
       ctx.strokeStyle = 'red'
       ctx.beginPath()
       ctx.moveTo(markOutX, 0)
@@ -70,30 +90,47 @@ const Trackbar = ({
     ctx.lineTo(markOutX, height - 1)
     ctx.stroke()
 
+    // Draw the poster frame
+
     if (auxMarks.poster_frame) {
-      const posterFrameX = (auxMarks.poster_frame / videoDuration) * width
+      const posterFrameX = (auxMarks.poster_frame / duration) * width
       ctx.fillStyle = '#ff00ff'
       ctx.beginPath()
-      ctx.moveTo(posterFrameX - 4, 0) // Start at bottom left
-      ctx.lineTo(posterFrameX + 4, 0) // Draw to bottom right
-      ctx.lineTo(posterFrameX, 4) // Draw to top point
-      ctx.closePath() // Close the triangle path
+      ctx.moveTo(posterFrameX - 4, 0)
+      ctx.lineTo(posterFrameX + 4, 0)
+      ctx.lineTo(posterFrameX, 4)
+      ctx.closePath()
       ctx.fill()
     }
 
+    //
     // Draw the handle
-    const progressWidth = (currentTime / videoDuration) * width
+    //
+
+    let currentFrame
+    if (isPlaying) {
+      currentFrame = Math.floor(currentTime * frameRate)
+      if (currentFrame >= numFrames) {
+        currentFrame = numFrames - 1
+      }
+    } else {
+      currentFrame = Math.floor(currentTime * frameRate)
+    }
+
+    const progressX =
+      currentFrame >= numFrames ? width : (currentFrame / numFrames) * width
+
     ctx.fillStyle = '#0ed3fe'
     ctx.beginPath()
-    ctx.fillRect(progressWidth - 1, 0, 2, height)
+    ctx.fillRect(progressX - 1, 0, handleWidth, height)
     ctx.fill()
-  }, [currentTime, videoDuration, markIn, markOut])
+  }, [currentTime, duration, markIn, markOut])
 
   // Events
 
   useEffect(() => {
     drawSlider()
-  }, [currentTime, videoDuration, markIn, markOut])
+  }, [currentTime, duration, markIn, markOut])
 
   // Dragging
 
@@ -101,7 +138,7 @@ const Trackbar = ({
     if (!isDragging) return
     const rect = canvasRef.current.getBoundingClientRect()
     const x = e.clientX - rect.left
-    const newTime = (x / rect.width) * videoDuration
+    const newTime = (x / rect.width) * duration
     onScrub(newTime)
   }
 
@@ -131,10 +168,8 @@ const Trackbar = ({
 
   const handleClick = (e) => {
     const rect = canvasRef.current.getBoundingClientRect()
-    console.log(rect)
-    console.log(e.clientX, rect.left)
     const x = e.clientX - rect.left
-    const newTime = (x / rect.width) * videoDuration
+    const newTime = (x / rect.width) * duration
     onScrub(newTime)
   }
 

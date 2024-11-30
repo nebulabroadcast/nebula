@@ -44,6 +44,7 @@ const Subclip = ({
   setSubclips,
   selection,
   setSelection,
+  fps,
 }) => {
   const onSetMarks = (marks) => {
     setSubclips((subclips) => {
@@ -69,9 +70,8 @@ const Subclip = ({
     })
   }
 
-  const fps = 25
-  const startTC = new Timecode(mark_in * fps, fps)
-  const endTC = new Timecode(mark_out * fps, fps)
+  const startTC = new Timecode(Math.floor(mark_in * fps), fps)
+  const endTC = new Timecode(Math.floor(mark_out * fps), fps)
 
   return (
     <SubclipContainer>

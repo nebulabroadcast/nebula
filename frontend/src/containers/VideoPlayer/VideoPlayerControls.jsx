@@ -9,6 +9,7 @@ const VideoPlayerControls = ({
   setMarkIn,
   setMarkOut,
   isPlaying,
+  frameRate,
 }) => {
   const { videoRef } = useAudioContext()
 
@@ -20,7 +21,7 @@ const VideoPlayerControls = ({
     markOutRef.current = markOut
   }, [markIn, markOut])
 
-  const frameLength = 0.04 // TODO
+  const frameLength = 1 / frameRate
 
   const handlePlayPause = () => {
     if (videoRef.current.paused) {
@@ -115,7 +116,7 @@ const VideoPlayerControls = ({
           break
         case 'ArrowLeft':
           handleGoBack1()
-          e.preventDevault()
+          e.preventDefault()
           break
         case 'ArrowRight':
           handleGoForward1()
