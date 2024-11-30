@@ -64,6 +64,7 @@ const BaseButton = styled.button`
     cursor: not-allowed;
     background: ${(props) => props.theme.colors.surface03};
     color: ${(props) => props.theme.colors.surface08};
+    transition: background 0.2s, color 0.2s;
   }
 `
 BaseButton.defaultProps = {
