@@ -8,9 +8,13 @@ const Trackbar = ({
   markIn,
   markOut,
   bufferedRanges,
+  marks,
 }) => {
   const canvasRef = useRef(null)
+  const resizeObserverRef = useRef(null)
   const [isDragging, setIsDragging] = useState(false)
+
+  const auxMarks = marks || {}
 
   // DRAW
 
@@ -65,6 +69,17 @@ const Trackbar = ({
     ctx.moveTo(markInX, height - 1)
     ctx.lineTo(markOutX, height - 1)
     ctx.stroke()
+
+    if (auxMarks.poster_frame) {
+      const posterFrameX = (auxMarks.poster_frame / videoDuration) * width
+      ctx.fillStyle = '#ff00ff'
+      ctx.beginPath()
+      ctx.moveTo(posterFrameX - 4, 0) // Start at bottom left
+      ctx.lineTo(posterFrameX + 4, 0) // Draw to bottom right
+      ctx.lineTo(posterFrameX, 4) // Draw to top point
+      ctx.closePath() // Close the triangle path
+      ctx.fill()
+    }
 
     // Draw the handle
     const progressWidth = (currentTime / videoDuration) * width
@@ -122,6 +137,22 @@ const Trackbar = ({
     const newTime = (x / rect.width) * videoDuration
     onScrub(newTime)
   }
+
+  useEffect(() => {
+    if (!canvasRef.current) return
+
+    resizeObserverRef.current = new ResizeObserver(() => {
+      drawSlider()
+    })
+
+    resizeObserverRef.current.observe(canvasRef.current)
+
+    return () => {
+      if (resizeObserverRef.current) {
+        resizeObserverRef.current.disconnect()
+      }
+    }
+  }, [drawSlider])
 
   return (
     <Navbar>

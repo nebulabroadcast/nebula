@@ -46,6 +46,12 @@ const VideoPlayerBody = ({ ...props }) => {
   const [markIn, setMarkIn] = useState()
   const [markOut, setMarkOut] = useState()
 
+  useEffect(() => {
+    if (props.setPosition) {
+      props.setPosition(currentTime)
+    }
+  }, [currentTime])
+
   // Propagating markIn and markOut to parent component
 
   useEffect(() => {
@@ -61,6 +67,9 @@ const VideoPlayerBody = ({ ...props }) => {
     console.log('markIn', props.markIn, markIn)
     if (props.markIn || null !== markIn) {
       setMarkIn(props.markIn)
+      if (!isPlaying && videoRef.current && props.markIn !== undefined) {
+        videoRef.current.currentTime = props.markIn
+      }
     }
     if (props.markOut || null !== markOut) {
       setMarkOut(props.markOut)
@@ -210,6 +219,7 @@ const VideoPlayerBody = ({ ...props }) => {
         markIn={markIn}
         markOut={markOut}
         bufferedRanges={bufferedRanges}
+        marks={props.marks}
       />
 
       <VideoPlayerControls

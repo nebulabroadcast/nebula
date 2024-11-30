@@ -81,19 +81,25 @@ const Preview = ({ assetData, setAssetData }) => {
 
   // Dropdown menu options for poster frame
 
+  const setPosterFrame = () => {
+    console.log('setPosterFrame', position)
+    patchAsset({ poster_frame: position })
+  }
+
+  const goToPosterFrame = () => {
+    console.log('goToPosterFrame', assetData.poster_frame)
+    setSelection({ mark_in: assetData.poster_frame, mark_out: null })
+  }
+
+  const clearPosterFrame = () => {
+    console.log('clearPosterFrame')
+    patchAsset({ poster_frame: null })
+  }
+
   const posterOptions = [
-    {
-      label: 'Set poster frame',
-      onClick: () => patchAsset({ poster_frame: position }),
-    },
-    {
-      label: 'Go to poster frame',
-      onClick: () => setPosition(assetData.poster_frame),
-    },
-    {
-      label: 'Clear poster frame',
-      onClick: () => patchAsset({ poster_frame: null }),
-    },
+    { label: 'Set poster frame', onClick: setPosterFrame },
+    { label: 'Go to poster frame', onClick: goToPosterFrame },
+    { label: 'Clear poster frame', onClick: clearPosterFrame },
   ]
 
   // Actions
@@ -160,12 +166,12 @@ const Preview = ({ assetData, setAssetData }) => {
             tooltip="Content end"
           />
           <Button
-            icon="download"
+            icon="screenshot_region"
             tooltip="Marks from selection"
             onClick={onSetMarks}
           />
           <Button
-            icon="upload"
+            icon="frame_inspect"
             tooltip="Marks to selection"
             onClick={() =>
               setSelection({

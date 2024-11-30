@@ -86,12 +86,12 @@ const Subclip = ({
           onClick={() => onRemove()}
         />
         <Button
-          icon="download"
+          icon="screenshot_region"
           tooltip="Update subclip from selection"
           onClick={() => onSetMarks(selection)}
         />
         <Button
-          icon="upload"
+          icon="frame_inspect"
           tooltip="Select region"
           onClick={() =>
             setSelection({
