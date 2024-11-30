@@ -1,7 +1,7 @@
 import styled from 'styled-components'
 
 import { useAudioContext } from './AudioContext'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 import VUMeter from './VUMeter'
 import ChannelSelect from './ChannelSelect'
@@ -36,6 +36,7 @@ const VideoPlayerBody = ({ ...props }) => {
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
   const [isPlaying, setIsPlaying] = useState(false)
+  const [loop, setLoop] = useState(false)
   const [videoDimensions, setVideoDimensions] = useState({
     width: 600,
     height: 400,
@@ -45,6 +46,14 @@ const VideoPlayerBody = ({ ...props }) => {
 
   const [markIn, setMarkIn] = useState()
   const [markOut, setMarkOut] = useState()
+
+  const desiredFrame = useRef(0)
+
+  useEffect(() => {
+    if (props.setPosition) {
+      props.setPosition(currentTime)
+    }
+  }, [currentTime])
 
   // Propagating markIn and markOut to parent component
 
@@ -61,6 +70,14 @@ const VideoPlayerBody = ({ ...props }) => {
     console.log('markIn', props.markIn, markIn)
     if (props.markIn || null !== markIn) {
       setMarkIn(props.markIn)
+      if (
+        !isPlaying &&
+        videoRef.current &&
+        props.markIn !== undefined &&
+        currentTime !== props.markOut
+      ) {
+        videoRef.current.currentTime = props.markIn
+      }
     }
     if (props.markOut || null !== markOut) {
       setMarkOut(props.markOut)
@@ -90,8 +107,7 @@ const VideoPlayerBody = ({ ...props }) => {
 
   useEffect(() => {
     if (!videoRef.current) return
-    // TODO:
-    const frameLength = 0.04
+    const frameLength = 1 / props.frameRate
     const updateTime = () => {
       const actualDuration = videoRef.current.duration
       if (actualDuration !== duration) {
@@ -107,9 +123,18 @@ const VideoPlayerBody = ({ ...props }) => {
       } else {
         setCurrentTime(actualTime)
       }
+      desiredFrame.current = Math.floor(actualTime * props.frameRate)
     }
     updateTime()
   }, [videoRef, isPlaying, duration])
+
+  const seekToTime = (newTime) => {
+    const videoElement = videoRef.current
+    if (!videoElement) return
+    if (videoElement.currentTime === newTime) return
+    videoElement.currentTime = newTime
+    setCurrentTime(newTime)
+  }
 
   const handleLoad = () => {
     setIsPlaying(false)
@@ -126,6 +151,32 @@ const VideoPlayerBody = ({ ...props }) => {
     setBufferedRanges([])
   }
 
+  const handlePlay = () => {
+    setIsPlaying(true)
+  }
+
+  const handlePause = () => {
+    seekToTime(desiredFrame.current / props.frameRate)
+    setTimeout(() => {
+      if (videoRef.current?.paused) {
+        seekToTime(desiredFrame.current / props.frameRate)
+        setIsPlaying(false)
+      }
+    }, 20)
+  }
+
+  const handleEnded = () => {
+    if (!isPlaying) {
+      return
+    }
+    if (loop) {
+      videoRef.current.currentTime = 0
+      videoRef.current.play()
+    } else {
+      setIsPlaying(false)
+    }
+  }
+
   const handleProgress = (e) => {
     // create a list of buffered time ranges
     const buffered = e.target.buffered
@@ -139,9 +190,11 @@ const VideoPlayerBody = ({ ...props }) => {
   }
 
   const handleScrub = (newTime) => {
-    videoRef.current.pause()
-    videoRef.current.currentTime = newTime
-    setCurrentTime(newTime)
+    desiredFrame.current = Math.floor(newTime * props.frameRate)
+    const desiredTime = desiredFrame.current / props.frameRate
+    if (desiredTime === videoRef.current?.currentTime) return
+    videoRef.current?.pause()
+    seekToTime(desiredTime)
   }
 
   // half of the nodes will be on the left, the other half on the right
@@ -156,6 +209,12 @@ const VideoPlayerBody = ({ ...props }) => {
         <InputTimecode value={currentTime} tooltip="Current position" />
         <ChannelSelect gainNodes={gainNodes} />
         <div style={{ flex: 1 }} />
+        <Button
+          icon="loop"
+          tooltip={loop ? 'Disable loop' : 'Enable loop'}
+          onClick={() => setLoop(!loop)}
+          active={loop}
+        />
         <Button
           icon="crop_free"
           tooltip={showOverlay ? 'Hide guides' : 'Show guides'}
@@ -186,9 +245,9 @@ const VideoPlayerBody = ({ ...props }) => {
               controls={false}
               onLoad={handleLoad}
               onLoadedMetadata={handleLoadedMetadata}
-              onPlaying={() => setIsPlaying(true)}
-              onPause={() => setIsPlaying(false)}
-              onTimeUpdate={() => setCurrentTime(videoRef.current.currentTime)}
+              onEnded={handleEnded}
+              onPlay={handlePlay}
+              onPause={handlePause}
               onProgress={handleProgress}
               src={props.src}
               style={{ outline: showOverlay ? '1px solid silver' : 'none' }}
@@ -204,16 +263,20 @@ const VideoPlayerBody = ({ ...props }) => {
       </section>
 
       <Trackbar
-        videoDuration={duration}
+        duration={duration}
+        frameRate={props.frameRate}
+        isPlaying={isPlaying}
         currentTime={currentTime}
         onScrub={handleScrub}
         markIn={markIn}
         markOut={markOut}
         bufferedRanges={bufferedRanges}
+        marks={props.marks}
       />
 
       <VideoPlayerControls
         markIn={markIn}
+        frameRate={props.frameRate}
         setMarkIn={setMarkIn}
         markOut={markOut}
         setMarkOut={setMarkOut}

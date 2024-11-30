@@ -21,7 +21,7 @@ const InputTimecode = ({
       setText('')
       return
     }
-    const tc = new Timecode(value * fps, fps)
+    const tc = new Timecode(Math.floor(value * fps), fps)
     let str = tc.toString()
     str = str.replace(/;/g, ':')
     str = str.substring(0, 11)
