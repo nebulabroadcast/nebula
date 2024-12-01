@@ -43,7 +43,7 @@ const BaseButton = styled.button`
 
   &:focus {
     background: ${(props) => props.theme.colors.surface06};
-    outline: 1px solid ${(props) => props.theme.colors.cyan};
+    outline: 0;
   }
 
   &:hover {
@@ -57,7 +57,8 @@ const BaseButton = styled.button`
   }
 
   &.active {
-    outline: 1px solid ${(props) => props.theme.colors.highlight};
+    background: ${(props) => props.theme.colors.surface06};
+    text-shadow: 0 0 4px ${(props) => props.theme.colors.highlight};
   }
 
   &:disabled {
