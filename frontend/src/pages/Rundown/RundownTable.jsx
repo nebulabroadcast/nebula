@@ -5,7 +5,7 @@ import { useSearchParams, useLocation } from 'react-router-dom'
 import nebula from '/src/nebula'
 import { Table } from '/src/components'
 import { showSendToDialog } from '/src/actions'
-import { useMetadataDialog } from '/src/hooks'
+import { useDialog } from '/src/hooks'
 import {
   formatRowHighlightColor,
   formatRowHighlightStyle,
@@ -37,7 +37,7 @@ const RundownTable = ({
   const currentChannel = useSelector((state) => state.context.currentChannel)
   const dispatch = useDispatch()
   const tableRef = useRef()
-  const showMetadataDialog = useMetadataDialog()
+  const showDialog = useDialog()
 
   const channelConfig = useMemo(() => {
     return nebula.getPlayoutChannel(currentChannel)
@@ -150,7 +150,7 @@ const RundownTable = ({
       initialData[field.name] = objectData[field.name]
     }
 
-    showMetadataDialog(title, fields, initialData)
+    showDialog('metadata', title, { fields, initialData })
       .then((newData) => {
         updateObject(objectData.type, objectData.id, newData)
       })

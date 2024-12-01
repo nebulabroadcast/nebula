@@ -4,7 +4,7 @@ import styled from 'styled-components'
 import { useState, useEffect, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { toast } from 'react-toastify'
-import { useMetadataDialog, useConfirm } from '/src/hooks'
+import { useDialog, useConfirm } from '/src/hooks'
 import { DateTime } from 'luxon'
 
 import { Loader } from '/src/components'
@@ -29,7 +29,7 @@ const Scheduler = ({ draggedObjects }) => {
 
   const [startTime, setStartTime] = useState()
   const [events, setEvents] = useState([])
-  const showEventDialog = useMetadataDialog()
+  const showDialog = useDialog()
   const [ConfirmDialog, confirm] = useConfirm()
 
   const channelConfig = useMemo(() => {
@@ -119,9 +119,14 @@ const Scheduler = ({ draggedObjects }) => {
   const editEvent = (event) => {
     const title = `Edit event: ${event.title || 'Untitled'}`
     const fields = [{ name: 'start' }, ...channelConfig.fields]
-    showEventDialog(title, fields, event)
-      .then(saveEvent)
-      .catch(() => {})
+    showDialog('metadata', title, { fields, initialData: event })
+      .then((data) => {
+        console.log('Saving', data)
+        saveEvent({ ...data })
+      })
+      .catch(() => {
+        console.log('Cancelled')
+      })
   }
 
   const deleteEvent = (eventId) => {

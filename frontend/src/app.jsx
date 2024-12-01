@@ -5,6 +5,8 @@ import { useState, useEffect, Suspense } from 'react'
 import { useLocalStorage } from '/src/hooks'
 import { Routes, Route, Navigate, BrowserRouter } from 'react-router-dom'
 
+import { DialogProvider } from './hooks/useDialog'
+
 import WebsocketListener from '/src/websocket'
 import MainNavbar from '/src/containers/MainNavbar'
 import LoginPage from '/src/pages/LoginPage'
@@ -70,32 +72,34 @@ const App = () => {
   return (
     <Suspense fallback={<LoadingPage />}>
       <WebsocketListener />
-      <BrowserRouter>
-        <MainNavbar />
-        <Routes>
-          <Route
-            path="/"
-            exact
-            element={<Navigate replace to="/mam/editor" />}
-          />
-          <Route
-            path="/mam"
-            exact
-            element={<Navigate replace to="/mam/editor" />}
-          />
-          <Route path="/mam/:module" element={<MAMPage />} />
-          <Route
-            path="/jobs"
-            exact
-            element={<Navigate replace to="/jobs/active" />}
-          />
-          <Route path="/jobs/:view" element={<JobsPage />} />
-          <Route path="/tool/:tool" element={<ToolPage />} />
-          <Route path="/services" element={<ServicesPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/users" element={<UsersPage />} />
-        </Routes>
-      </BrowserRouter>
+      <DialogProvider>
+        <BrowserRouter>
+          <MainNavbar />
+          <Routes>
+            <Route
+              path="/"
+              exact
+              element={<Navigate replace to="/mam/editor" />}
+            />
+            <Route
+              path="/mam"
+              exact
+              element={<Navigate replace to="/mam/editor" />}
+            />
+            <Route path="/mam/:module" element={<MAMPage />} />
+            <Route
+              path="/jobs"
+              exact
+              element={<Navigate replace to="/jobs/active" />}
+            />
+            <Route path="/jobs/:view" element={<JobsPage />} />
+            <Route path="/tool/:tool" element={<ToolPage />} />
+            <Route path="/services" element={<ServicesPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/users" element={<UsersPage />} />
+          </Routes>
+        </BrowserRouter>
+      </DialogProvider>
     </Suspense>
   )
 }
