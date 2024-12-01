@@ -82,10 +82,17 @@ const Button = forwardRef(
       active,
       className,
       tooltip,
+      hlColor,
       ...props
     },
     ref
   ) => {
+    const _iconStyle = { ...(iconStyle || {}) }
+
+    if (hlColor) {
+      _iconStyle.color = hlColor
+    }
+
     return (
       <BaseButton
         {...props}
@@ -95,7 +102,7 @@ const Button = forwardRef(
       >
         {label && iconOnRight && <span>{label}</span>}
         {icon && (
-          <span className="icon material-symbols-outlined" style={iconStyle}>
+          <span className="icon material-symbols-outlined" style={_iconStyle}>
             {icon}
           </span>
         )}

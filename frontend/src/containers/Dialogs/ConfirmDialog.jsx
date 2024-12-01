@@ -9,8 +9,18 @@ const ConfirmDialog = (props) => {
 
   const footer = (
     <>
-      <Button onClick={onCancel} label="Cancel" icon="close" />
-      <Button onClick={onConfirm} label="Confirm" icon="check" />
+      <Button
+        onClick={onCancel}
+        label={props.cancelLabel || 'Cancel'}
+        icon="close"
+        hlColor="var(--color-red)"
+      />
+      <Button
+        onClick={onConfirm}
+        label={props.confirmLabel || 'Confirm'}
+        icon="check"
+        hlColor="var(--color-green)"
+      />
     </>
   )
 
