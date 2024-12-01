@@ -32,8 +32,11 @@ const Calendar = ({
   const cursorTime = useRef(null)
 
   const [scrollbarWidth, setScrollbarWidth] = useState(0)
-  const [zoom, setZoom] = useLocalStorage(1)
-  const [scrollPosition, setScrollPosition] = useLocalStorage(0)
+  const [zoom, setZoom] = useLocalStorage('scheduler-zoom-level', 1)
+  const [scrollPosition, setScrollPosition] = useLocalStorage(
+    'scheduler-position',
+    0
+  )
   const [mousePos, setMousePos] = useState(null)
 
   // Reference to events
