@@ -32,11 +32,8 @@ const Calendar = ({
   const cursorTime = useRef(null)
 
   const [scrollbarWidth, setScrollbarWidth] = useState(0)
-  const [zoom, setZoom] = useLocalStorage('scheduler-zoom-level', 1)
-  const [scrollPosition, setScrollPosition] = useLocalStorage(
-    'scheduler-position',
-    0
-  )
+  const [zoom, setZoom] = useLocalStorage('calendarZoom', 1)
+  const [scrollPos, setScrollPos] = useLocalStorage('calendarPos', 0)
   const [mousePos, setMousePos] = useState(null)
 
   // Reference to events
@@ -376,15 +373,15 @@ const Calendar = ({
   }, [contextMenu, eventAtPos])
 
   const onScroll = (e) => {
-    setScrollPosition(e.target.scrollTop)
+    setScrollPos(e.target.scrollTop)
   }
 
   useEffect(() => {
     if (!wrapperRef.current) return
-    if (wrapperRef.current.scrollTop !== scrollPosition) {
-      wrapperRef.current.scrollTop = scrollPosition
+    if (wrapperRef.current.scrollTop !== scrollPos) {
+      wrapperRef.current.scrollTop = scrollPos
     }
-  }, [scrollPosition])
+  }, [scrollPos])
 
   //
   // Render
