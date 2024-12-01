@@ -4,7 +4,7 @@ import styled from 'styled-components'
 import { useState, useEffect, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { toast } from 'react-toastify'
-import { useDialog, useConfirm } from '/src/hooks'
+import { useDialog } from '/src/hooks'
 import { DateTime } from 'luxon'
 
 import { Loader } from '/src/components'
@@ -30,7 +30,6 @@ const Scheduler = ({ draggedObjects }) => {
   const [startTime, setStartTime] = useState()
   const [events, setEvents] = useState([])
   const showDialog = useDialog()
-  const [ConfirmDialog, confirm] = useConfirm()
 
   const channelConfig = useMemo(() => {
     return nebula.getPlayoutChannel(currentChannel)
@@ -136,16 +135,19 @@ const Scheduler = ({ draggedObjects }) => {
   }
 
   const deleteUnaired = async () => {
-    const question =
-      'Are you sure you want to delete unaired events in this week?\n\nThis action is not undoable. Events and and their items that were not aired will be deleted.'
-    if (question) {
-      const ans = await confirm('Delete unaired events', question)
-      if (!ans) return
-    }
-    setLoading(true)
-    const eventIds = events.map((e) => e.id)
-    const params = { ...requestParams, delete: eventIds }
-    nebula.request('scheduler', params).then(loadEvents).catch(onError)
+    const message =
+      'Are you sure you want to delete unaired events in this week?\n\n' +
+      'This action is not undoable. ' +
+      'Events and and their items that were not aired will be deleted.'
+
+    showDialog('confirm', 'Delete unaired events', { message })
+      .then(() => {
+        setLoading(true)
+        const eventIds = events.map((e) => e.id)
+        const params = { ...requestParams, delete: eventIds }
+        nebula.request('scheduler', params).then(loadEvents).catch(onError)
+      })
+      .catch(() => {})
   }
 
   const contextMenu = [
@@ -194,7 +196,6 @@ const Scheduler = ({ draggedObjects }) => {
             <Loader />
           </LoaderWrapper>
         )}
-        <ConfirmDialog />
       </section>
     </main>
   )
