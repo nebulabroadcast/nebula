@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 
 import { setCurrentChannel } from '/src/actions'
@@ -9,10 +10,13 @@ const ChannelSwitcher = () => {
   const dispatch = useDispatch()
   const currentChannel = useSelector((state) => state.context.currentChannel)
 
-  if ((nebula.settings?.playout_channels || []).length < 2) {
-    if (nebula.settings?.playout_channels.length === 1) {
+  useEffect(() => {
+    if (!currentChannel && nebula.settings?.playout_channels?.length) {
       dispatch(setCurrentChannel(nebula.settings.playout_channels[0].id))
     }
+  }, [currentChannel])
+
+  if ((nebula.settings?.playout_channels || []).length < 2) {
     return null
   }
 
@@ -26,10 +30,6 @@ const ChannelSwitcher = () => {
   const currentChannelName = nebula.settings?.playout_channels.find(
     (channel) => channel.id === currentChannel
   )?.name
-
-  if (!currentChannel) {
-    dispatch(setCurrentChannel(nebula.settings.playout_channels[0].id))
-  }
 
   return (
     <Dropdown

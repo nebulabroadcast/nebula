@@ -15,7 +15,7 @@ import {
   showSendToDialog,
 } from '/src/actions'
 
-import { useLocalStorage, useConfirm } from '/src/hooks'
+import { useLocalStorage, useDialog } from '/src/hooks'
 import BrowserNav from './BrowserNav'
 import {
   getColumnWidth,
@@ -44,7 +44,7 @@ const BrowserTable = ({ isDragging }) => {
   )
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(false)
-  const [ConfirmDialog, confirm] = useConfirm()
+  const showDialog = useDialog()
 
   const dataRef = useRef(data)
   const requestParamsRef = useRef(null)
@@ -210,13 +210,7 @@ const BrowserTable = ({ isDragging }) => {
     }
   }
 
-  const setSelectionStatus = async (status, question) => {
-    // Change asset status of the selected assets
-    if (question) {
-      const ans = await confirm('Are you sure?', question)
-      if (!ans) return
-    }
-
+  const saveSelectionStatus = (status) => {
     const operations = selectedAssets.map((id) => ({
       id,
       data: { status },
@@ -231,6 +225,17 @@ const BrowserTable = ({ isDragging }) => {
         console.error(error)
         toast.error(error.response?.detail)
       })
+  }
+
+  const setSelectionStatus = (status, question) => {
+    // Change asset status of the selected assets
+    if (question) {
+      showDialog('confirm', 'Are you sure?', { message: question })
+        .then(() => saveSelectionStatus(status))
+        .catch(() => {})
+    } else {
+      saveSelectionStatus(status)
+    }
   }
 
   const contextMenu = () => [
@@ -292,7 +297,6 @@ const BrowserTable = ({ isDragging }) => {
         />
       </section>
       <Pagination page={page} setPage={setPage} hasMore={hasMore} />
-      <ConfirmDialog />
     </>
   )
 }

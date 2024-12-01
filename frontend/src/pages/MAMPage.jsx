@@ -87,7 +87,7 @@ const MAMPage = () => {
 
   const onDragStart = (event) => {
     setIsDragging(true)
-    console.log('Start drag', event.active.data.current)
+    console.debug('Start drag', event.active.data.current)
     setDraggedObjects(event.active.data.current)
     setBodyCursor('grabbing')
 
@@ -97,7 +97,7 @@ const MAMPage = () => {
   }
 
   const onDragEnd = (event) => {
-    console.log('End drag', event.active.data.current)
+    console.debug('End drag', event.active.data.current)
     setIsDragging(false)
     setDraggedObjects(null)
     setBodyCursor('auto')

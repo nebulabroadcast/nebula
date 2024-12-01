@@ -278,13 +278,13 @@ const Calendar = ({
   const onMouseUp = (e) => {
     if (!calendarRef?.current) return
     if (draggedAsset && cursorTime.current) {
-      console.log('Dropped asset', draggedAsset, cursorTime.current)
+      console.debug('Dropped asset', draggedAsset, cursorTime.current)
       saveEvent({
         id_asset: draggedAsset.id,
         start: Math.floor(cursorTime.current.getTime() / 1000),
       })
     } else if (draggedEvent.current && cursorTime.current) {
-      console.log('Dropped event', draggedEvent.current, cursorTime.current)
+      console.debug('Dropped event', draggedEvent.current, cursorTime.current)
 
       saveEvent({
         id: draggedEvent.current.id,
