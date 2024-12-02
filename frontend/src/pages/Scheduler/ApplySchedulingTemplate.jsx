@@ -48,6 +48,10 @@ const ApplySchedulingTemplate = ({ loadEvents, date, loading, setLoading }) => {
       .catch(() => setLoading(false))
   }
 
+  if (templates.length === 0) {
+    return null
+  }
+
   return (
     <>
       <Dropdown
