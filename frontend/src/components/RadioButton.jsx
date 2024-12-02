@@ -7,7 +7,7 @@ import Button from './Button'
 
 const RadioContainer = styled.div`
   display: flex;
-  gap: 1px;
+  gap: 0;
 
   button {
     border-radius: 0;
