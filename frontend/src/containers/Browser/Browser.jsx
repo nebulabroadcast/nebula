@@ -30,6 +30,7 @@ const BrowserTable = ({ isDragging }) => {
   const searchQuery = useSelector((state) => state.context.searchQuery)
   const selectedAssets = useSelector((state) => state.context.selectedAssets)
   const focusedAsset = useSelector((state) => state.context.focusedAsset)
+  const browserRefresh = useSelector((state) => state.context.browserRefresh)
 
   const dispatch = useDispatch()
 
@@ -83,7 +84,7 @@ const BrowserTable = ({ isDragging }) => {
     // show loading indicator only if the user initiated the refresh
     setLoading(true)
     loadData()
-  }, [currentView, searchQuery, sortBy, sortDirection, page])
+  }, [currentView, searchQuery, sortBy, sortDirection, page, browserRefresh])
 
   useEffect(() => {
     // Reset page when view or search query changes
