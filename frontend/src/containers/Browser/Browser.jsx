@@ -272,6 +272,7 @@ const BrowserTable = ({ isDragging }) => {
     {
       label: 'Trash',
       icon: 'delete',
+      hlColor: 'var(--color-red)',
       onClick: () =>
         setSelectionStatus(3, 'Do you want to move selected assets to trash?'),
     },

@@ -23,7 +23,6 @@ const DropdownContainer = styled.div`
 
     button {
       background: none;
-      border: none;
       width: 100%;
       justify-content: flex-start;
       border-radius: 0;
@@ -62,12 +61,30 @@ const DropdownContainer = styled.div`
   }
 `
 
-const DropdownOption = ({ currentValue, separator, disabled, ...props }) => (
-  <span>
-    {separator && <hr />}
-    <Button {...props} disabled={disabled || currentValue === props.value} />
-  </span>
-)
+const DropdownOption = ({
+  currentValue,
+  separator,
+  disabled,
+  hlColor,
+  style,
+  label,
+  icon,
+  onClick,
+  value,
+}) => {
+  return (
+    <span>
+      {separator && <hr />}
+      <Button
+        label={label}
+        icon={icon}
+        iconStyle={hlColor ? { color: hlColor } : {}}
+        disabled={disabled || currentValue === value}
+        onClick={() => onClick(value)}
+      />
+    </span>
+  )
+}
 
 const Dropdown = ({
   options,

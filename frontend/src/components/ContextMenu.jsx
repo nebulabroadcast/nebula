@@ -118,6 +118,7 @@ const ContextMenu = ({ target, options }) => {
           <Button
             label={option.label}
             icon={option.icon}
+            iconStyle={option.hlColor ? { color: option.hlColor } : {}}
             onClick={() => {
               setContextData({ ...contextData, visible: false })
               option.onClick && option.onClick(contextData)
