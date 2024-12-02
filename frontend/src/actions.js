@@ -60,16 +60,6 @@ const contextSlice = createSlice({
       window.document.title = `${action.payload.title} | NEBULA`
     },
 
-    showSendToDialog: (state, action) => {
-      state.sendToIds = action.payload?.ids
-      state.sendToDialogVisible = true
-    },
-
-    hideSendToDialog: (state, action) => {
-      state.sendToIds = undefined
-      state.sendToDialogVisible = false
-    },
-
     setCurrentChannel: (state, action) => {
       state.currentChannel = action.payload
       localStorage.setItem('currentChannel', JSON.stringify(action.payload))
@@ -86,8 +76,6 @@ export const {
   setSelectedAssets,
   setFocusedAsset,
   setPageTitle,
-  showSendToDialog,
-  hideSendToDialog,
   setCurrentChannel,
 } = contextSlice.actions
 

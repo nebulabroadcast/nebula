@@ -18,7 +18,6 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core'
-import SendToDialog from '/src/containers/SendTo'
 
 const MAMContainer = styled.div`
   flex-grow: 1;
@@ -202,7 +201,6 @@ const MAMPage = () => {
           {moduleComponent}
         </Splitter>
       </DndContext>
-      <SendToDialog />
       {draggedObjects?.length > 0 && (
         <DraggedIndicator ref={draggedIndicatorRef}>
           {draggedwidget}

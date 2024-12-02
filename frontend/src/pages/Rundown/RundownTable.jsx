@@ -4,7 +4,6 @@ import { useSearchParams, useLocation } from 'react-router-dom'
 
 import nebula from '/src/nebula'
 import { Table } from '/src/components'
-import { showSendToDialog } from '/src/actions'
 import { useDialog } from '/src/hooks'
 import {
   formatRowHighlightColor,
@@ -35,7 +34,6 @@ const RundownTable = ({
   const location = useLocation()
   const lastHash = useRef('')
   const currentChannel = useSelector((state) => state.context.currentChannel)
-  const dispatch = useDispatch()
   const tableRef = useRef()
   const showDialog = useDialog()
 
@@ -101,7 +99,11 @@ const RundownTable = ({
     const ids = data
       .filter((row) => row.id_asset && selectedItems.includes(row.id))
       .map((row) => row.id_asset)
-    if (ids.length) dispatch(showSendToDialog({ ids }))
+    if (!ids.length) return
+
+    showDialog('sendto', 'Send to...', { assets: ids })
+      .then(() => {})
+      .catch(() => {})
   }
 
   const onSolve = (solver) => {

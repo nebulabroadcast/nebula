@@ -12,7 +12,6 @@ import {
   setCurrentView,
   setSelectedAssets,
   setFocusedAsset,
-  showSendToDialog,
 } from '/src/actions'
 
 import { useLocalStorage, useDialog } from '/src/hooks'
@@ -238,11 +237,17 @@ const BrowserTable = ({ isDragging }) => {
     }
   }
 
+  const sendTo = () => {
+    showDialog('sendto', 'Send to...', { assets: selectedAssets })
+      .then(() => {})
+      .catch(() => {})
+  }
+
   const contextMenu = () => [
     {
       label: 'Send to...',
       icon: 'send',
-      onClick: () => dispatch(showSendToDialog()),
+      onClick: () => sendTo(),
     },
     {
       label: 'Reset',

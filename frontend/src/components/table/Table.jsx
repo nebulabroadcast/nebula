@@ -154,7 +154,7 @@ const Table = ({
       onScroll={handleScroll}
       onKeyDown={handleKeyDown}
       onMouseLeave={() => setDropHl(null)}
-      dropHl={dropHl}
+      dropHl={dropHl || null}
     >
       {loading && (
         <div className="contained center">
