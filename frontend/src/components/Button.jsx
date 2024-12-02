@@ -83,20 +83,24 @@ const Button = forwardRef(
       className,
       tooltip,
       hlColor,
+      style,
       ...props
     },
     ref
   ) => {
+    const _buttonStyle = { ...(style || {}) }
     const _iconStyle = { ...(iconStyle || {}) }
 
     if (hlColor) {
-      _iconStyle.color = hlColor
+      //_iconStyle.color = hlColor
+      _buttonStyle.borderBottom = `1px solid ${hlColor}`
     }
 
     return (
       <BaseButton
         {...props}
         className={clsx(className, { active }, !label && 'icon-only')}
+        style={_buttonStyle}
         title={tooltip}
         ref={ref}
       >
