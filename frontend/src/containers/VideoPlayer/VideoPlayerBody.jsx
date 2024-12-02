@@ -67,7 +67,6 @@ const VideoPlayerBody = ({ ...props }) => {
   }, [markIn, markOut])
 
   useEffect(() => {
-    console.log('markIn', props.markIn, markIn)
     if (props.markIn || null !== markIn) {
       setMarkIn(props.markIn)
       if (
@@ -76,7 +75,7 @@ const VideoPlayerBody = ({ ...props }) => {
         props.markIn !== undefined &&
         currentTime !== props.markOut
       ) {
-        videoRef.current.currentTime = props.markIn
+        seekToTime(props.markIn)
       }
     }
     if (props.markOut || null !== markOut) {
@@ -133,7 +132,16 @@ const VideoPlayerBody = ({ ...props }) => {
     if (!videoElement) return
     if (videoElement.currentTime === newTime) return
     videoElement.currentTime = newTime
+    desiredFrame.current = Math.floor(newTime * props.frameRate)
     setCurrentTime(newTime)
+  }
+
+  const handlePosition = () => {
+    if (videoRef.current.currentTime === currentTime) return
+    setCurrentTime(videoRef.current.currentTime)
+    desiredFrame.current = Math.floor(
+      videoRef.current.currentTime * props.frameRate
+    )
   }
 
   const handleLoad = () => {
@@ -249,6 +257,7 @@ const VideoPlayerBody = ({ ...props }) => {
               onPlay={handlePlay}
               onPause={handlePause}
               onProgress={handleProgress}
+              onTimeUpdate={handlePosition}
               src={props.src}
               style={{ outline: showOverlay ? '1px solid silver' : 'none' }}
             />

@@ -7,7 +7,7 @@ import { toast } from 'react-toastify'
 import { isEqual, isEmpty } from 'lodash'
 import clsx from 'clsx'
 
-import { useLocalStorage, useConfirm } from '/src/hooks'
+import { useLocalStorage, useDialog } from '/src/hooks'
 import {
   setPageTitle,
   reloadBrowser,
@@ -71,8 +71,9 @@ const AssetEditor = () => {
   const [assetData, setAssetData] = useState({})
   const [originalData, setOriginalData] = useState({})
   const [loading, setLoading] = useState(false)
-  const [ConfirmDialog, confirm] = useConfirm()
   const [editorMode, setEditorMode] = useLocalStorage('editorMode', 'metadata')
+
+  const showDialog = useDialog()
 
   // Load asset data
 
@@ -179,32 +180,36 @@ const AssetEditor = () => {
 
   const switchAsset = async () => {
     if (isChanged) {
-      const ans = await confirm(
-        'Unsaved changes',
-        'There are unsaved changes. Do you want to save them?'
-      )
+      const message = 'There are unsaved changes. Do you want to save them?'
+      const cancelLabel = 'Discard'
+      const confirmLabel = 'Save'
 
-      if (ans) {
-        nebula
-          .request('set', { id: assetData.id, data: assetData })
-          .then(() => {
-            assetData.id || dispatch(reloadBrowser())
-          })
-          .catch((error) => {
-            toast.error(
-              <>
-                <strong>Unable to save asset</strong>
-                <p>{error.response.data?.detail || 'Unknown error'}</p>
-              </>
-            )
-          })
-          .finally(() => {
-            loadAsset(focusedAsset)
-          })
-      } else {
-        loadAsset(focusedAsset)
-      }
+      showDialog('confirm', 'Unsaved changes', {
+        message,
+        cancelLabel,
+        confirmLabel,
+      })
+        .then(() => {
+          nebula
+            .request('set', { id: assetData.id, data: assetData })
+            .then(() => {
+              assetData.id || dispatch(reloadBrowser())
+            })
+            .catch((error) => {
+              toast.error(
+                <>
+                  <strong>Unable to save asset</strong>
+                  <p>{error.response.data?.detail || 'Unknown error'}</p>
+                </>
+              )
+            })
+            .finally(() => {
+              loadAsset(focusedAsset)
+            })
+        })
+        .catch(() => loadAsset(focusedAsset))
     } else {
+      // asset unchanged
       loadAsset(focusedAsset)
     }
   }
@@ -356,7 +361,6 @@ const AssetEditor = () => {
         enabledActions={enabledActions}
       />
       {Object.keys(assetData || {}).length && mainComponent()}
-      <ConfirmDialog />
     </div>
   )
 }

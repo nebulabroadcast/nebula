@@ -43,7 +43,7 @@ const BaseButton = styled.button`
 
   &:focus {
     background: ${(props) => props.theme.colors.surface06};
-    outline: 1px solid ${(props) => props.theme.colors.cyan};
+    outline: 0;
   }
 
   &:hover {
@@ -57,7 +57,8 @@ const BaseButton = styled.button`
   }
 
   &.active {
-    outline: 1px solid ${(props) => props.theme.colors.highlight};
+    background: ${(props) => props.theme.colors.surface06};
+    text-shadow: 0 0 4px ${(props) => props.theme.colors.highlight};
   }
 
   &:disabled {
@@ -81,20 +82,31 @@ const Button = forwardRef(
       active,
       className,
       tooltip,
+      hlColor,
+      style,
       ...props
     },
     ref
   ) => {
+    const _buttonStyle = { ...(style || {}) }
+    const _iconStyle = { ...(iconStyle || {}) }
+
+    if (hlColor) {
+      //_iconStyle.color = hlColor
+      _buttonStyle.borderBottom = `1px solid ${hlColor}`
+    }
+
     return (
       <BaseButton
         {...props}
         className={clsx(className, { active }, !label && 'icon-only')}
+        style={_buttonStyle}
         title={tooltip}
         ref={ref}
       >
         {label && iconOnRight && <span>{label}</span>}
         {icon && (
-          <span className="icon material-symbols-outlined" style={iconStyle}>
+          <span className="icon material-symbols-outlined" style={_iconStyle}>
             {icon}
           </span>
         )}

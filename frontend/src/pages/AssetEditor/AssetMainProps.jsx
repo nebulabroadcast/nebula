@@ -2,11 +2,7 @@ import nebula from '/src/nebula'
 
 import { useDispatch } from 'react-redux'
 import { useState, useMemo } from 'react'
-import {
-  setCurrentViewId,
-  setSearchQuery,
-  showSendToDialog,
-} from '/src/actions'
+import { setCurrentViewId, setSearchQuery } from '/src/actions'
 
 import {
   Navbar,
@@ -19,6 +15,7 @@ import {
 } from '/src/components'
 
 import { UploadButton } from '/src/containers/Upload'
+import { useDialog } from '/src/hooks'
 
 import MetadataDetail from './MetadataDetail'
 import ContextActionResult from './ContextAction'
@@ -30,6 +27,7 @@ const AssetEditorNav = ({ assetData, setMeta, enabledActions }) => {
   const [detailsVisible, setDetailsVisible] = useState(false)
   const [contextActionResult, setContextActionResult] = useState(null)
   const dispatch = useDispatch()
+  const showDialog = useDialog()
 
   const currentFolder = useMemo(() => {
     if (!nebula.settings.folders) return null
@@ -84,11 +82,17 @@ const AssetEditorNav = ({ assetData, setMeta, enabledActions }) => {
     }))
   }, [currentFolder])
 
+  const sendTo = () => {
+    showDialog('sendto', 'Send to...', { assets: [assetData.id] })
+      .then(() => {})
+      .catch(() => {})
+  }
+
   const assetActions = useMemo(() => {
     const result = [
       {
         label: 'Send to...',
-        onClick: () => dispatch(showSendToDialog({ ids: [assetData.id] })),
+        onClick: () => sendTo(),
       },
       ...scopedEndpoints,
       ...linkOptions,

@@ -73,5 +73,5 @@ class ActionsRequest(APIRequest):
                             name=row["title"],
                         )
                     )
-        nebula.log.info(f"Actions for assets {request.ids} are {result}")
+        nebula.log.trace(f"Actions for assets {request.ids} are {result}")
         return ActionsResponseModel(actions=result)

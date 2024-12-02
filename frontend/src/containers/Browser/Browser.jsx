@@ -12,10 +12,9 @@ import {
   setCurrentView,
   setSelectedAssets,
   setFocusedAsset,
-  showSendToDialog,
 } from '/src/actions'
 
-import { useLocalStorage, useConfirm } from '/src/hooks'
+import { useLocalStorage, useDialog } from '/src/hooks'
 import BrowserNav from './BrowserNav'
 import {
   getColumnWidth,
@@ -31,6 +30,7 @@ const BrowserTable = ({ isDragging }) => {
   const searchQuery = useSelector((state) => state.context.searchQuery)
   const selectedAssets = useSelector((state) => state.context.selectedAssets)
   const focusedAsset = useSelector((state) => state.context.focusedAsset)
+  const browserRefresh = useSelector((state) => state.context.browserRefresh)
 
   const dispatch = useDispatch()
 
@@ -44,7 +44,7 @@ const BrowserTable = ({ isDragging }) => {
   )
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(false)
-  const [ConfirmDialog, confirm] = useConfirm()
+  const showDialog = useDialog()
 
   const dataRef = useRef(data)
   const requestParamsRef = useRef(null)
@@ -84,7 +84,7 @@ const BrowserTable = ({ isDragging }) => {
     // show loading indicator only if the user initiated the refresh
     setLoading(true)
     loadData()
-  }, [currentView, searchQuery, sortBy, sortDirection, page])
+  }, [currentView, searchQuery, sortBy, sortDirection, page, browserRefresh])
 
   useEffect(() => {
     // Reset page when view or search query changes
@@ -210,13 +210,7 @@ const BrowserTable = ({ isDragging }) => {
     }
   }
 
-  const setSelectionStatus = async (status, question) => {
-    // Change asset status of the selected assets
-    if (question) {
-      const ans = await confirm('Are you sure?', question)
-      if (!ans) return
-    }
-
+  const saveSelectionStatus = (status) => {
     const operations = selectedAssets.map((id) => ({
       id,
       data: { status },
@@ -233,11 +227,28 @@ const BrowserTable = ({ isDragging }) => {
       })
   }
 
+  const setSelectionStatus = (status, question) => {
+    // Change asset status of the selected assets
+    if (question) {
+      showDialog('confirm', 'Are you sure?', { message: question })
+        .then(() => saveSelectionStatus(status))
+        .catch(() => {})
+    } else {
+      saveSelectionStatus(status)
+    }
+  }
+
+  const sendTo = () => {
+    showDialog('sendto', 'Send to...', { assets: selectedAssets })
+      .then(() => {})
+      .catch(() => {})
+  }
+
   const contextMenu = () => [
     {
       label: 'Send to...',
       icon: 'send',
-      onClick: () => dispatch(showSendToDialog()),
+      onClick: () => sendTo(),
     },
     {
       label: 'Reset',
@@ -292,7 +303,6 @@ const BrowserTable = ({ isDragging }) => {
         />
       </section>
       <Pagination page={page} setPage={setPage} hasMore={hasMore} />
-      <ConfirmDialog />
     </>
   )
 }

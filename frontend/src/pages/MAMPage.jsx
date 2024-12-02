@@ -8,7 +8,6 @@ import { useLocalStorage } from '/src/hooks'
 import { setFocusedAsset, setSelectedAssets } from '/src/actions'
 
 import Browser from '/src/containers/Browser'
-import { MetadataDialogProvider } from '/src/hooks'
 import AssetEditor from '/src/pages/AssetEditor'
 import Scheduler from '/src/pages/Scheduler'
 import Rundown from './Rundown'
@@ -19,7 +18,6 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core'
-import SendToDialog from '/src/containers/SendTo'
 
 const MAMContainer = styled.div`
   flex-grow: 1;
@@ -88,7 +86,7 @@ const MAMPage = () => {
 
   const onDragStart = (event) => {
     setIsDragging(true)
-    console.log('Start drag', event.active.data.current)
+    console.debug('Start drag', event.active.data.current)
     setDraggedObjects(event.active.data.current)
     setBodyCursor('grabbing')
 
@@ -98,7 +96,7 @@ const MAMPage = () => {
   }
 
   const onDragEnd = (event) => {
-    console.log('End drag', event.active.data.current)
+    console.debug('End drag', event.active.data.current)
     setIsDragging(false)
     setDraggedObjects(null)
     setBodyCursor('auto')
@@ -188,29 +186,26 @@ const MAMPage = () => {
 
   return (
     <MAMContainer>
-      <MetadataDialogProvider>
-        <DndContext
-          onDragEnd={onDragEnd}
-          onDragStart={onDragStart}
-          onDragCancel={onDragEnd}
-          sensors={sensors}
+      <DndContext
+        onDragEnd={onDragEnd}
+        onDragStart={onDragStart}
+        onDragCancel={onDragEnd}
+        sensors={sensors}
+      >
+        <Splitter
+          direction={SplitDirection.Horizontal}
+          onResizeFinished={onResize}
+          initialSizes={splitterSizes}
         >
-          <Splitter
-            direction={SplitDirection.Horizontal}
-            onResizeFinished={onResize}
-            initialSizes={splitterSizes}
-          >
-            <Browser isDragging={isDragging} />
-            {moduleComponent}
-          </Splitter>
-        </DndContext>
-        <SendToDialog />
-        {draggedObjects?.length > 0 && (
-          <DraggedIndicator ref={draggedIndicatorRef}>
-            {draggedwidget}
-          </DraggedIndicator>
-        )}
-      </MetadataDialogProvider>
+          <Browser isDragging={isDragging} />
+          {moduleComponent}
+        </Splitter>
+      </DndContext>
+      {draggedObjects?.length > 0 && (
+        <DraggedIndicator ref={draggedIndicatorRef}>
+          {draggedwidget}
+        </DraggedIndicator>
+      )}
     </MAMContainer>
   )
 }

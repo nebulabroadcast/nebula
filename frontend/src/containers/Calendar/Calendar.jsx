@@ -32,8 +32,8 @@ const Calendar = ({
   const cursorTime = useRef(null)
 
   const [scrollbarWidth, setScrollbarWidth] = useState(0)
-  const [zoom, setZoom] = useLocalStorage(1)
-  const [scrollPosition, setScrollPosition] = useLocalStorage(0)
+  const [zoom, setZoom] = useLocalStorage('calendarZoom', 1)
+  const [scrollPos, setScrollPos] = useLocalStorage('calendarPos', 0)
   const [mousePos, setMousePos] = useState(null)
 
   // Reference to events
@@ -278,13 +278,13 @@ const Calendar = ({
   const onMouseUp = (e) => {
     if (!calendarRef?.current) return
     if (draggedAsset && cursorTime.current) {
-      console.log('Dropped asset', draggedAsset, cursorTime.current)
+      console.debug('Dropped asset', draggedAsset, cursorTime.current)
       saveEvent({
         id_asset: draggedAsset.id,
         start: Math.floor(cursorTime.current.getTime() / 1000),
       })
     } else if (draggedEvent.current && cursorTime.current) {
-      console.log('Dropped event', draggedEvent.current, cursorTime.current)
+      console.debug('Dropped event', draggedEvent.current, cursorTime.current)
 
       saveEvent({
         id: draggedEvent.current.id,
@@ -373,15 +373,15 @@ const Calendar = ({
   }, [contextMenu, eventAtPos])
 
   const onScroll = (e) => {
-    setScrollPosition(e.target.scrollTop)
+    setScrollPos(e.target.scrollTop)
   }
 
   useEffect(() => {
     if (!wrapperRef.current) return
-    if (wrapperRef.current.scrollTop !== scrollPosition) {
-      wrapperRef.current.scrollTop = scrollPosition
+    if (wrapperRef.current.scrollTop !== scrollPos) {
+      wrapperRef.current.scrollTop = scrollPos
     }
-  }, [scrollPosition])
+  }, [scrollPos])
 
   //
   // Render

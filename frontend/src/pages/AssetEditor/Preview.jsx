@@ -1,13 +1,11 @@
 import nebula from '/src/nebula'
 import styled from 'styled-components'
-import { Timecode } from '@wfoxall/timeframe'
 
 import { toast } from 'react-toastify'
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import {
   Dropdown,
   Spacer,
-  InputText,
   InputTimecode,
   Navbar,
   Button,
