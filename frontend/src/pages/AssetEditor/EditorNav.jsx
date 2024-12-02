@@ -62,7 +62,7 @@ const AssetEditorNav = ({
       <Spacer />
 
       <RadioButton
-        value={assetData['qc/state']}
+        value={assetData['qc/state'] || 0}
         options={QC_STATE_OPTIONS}
         onChange={(value) => setMeta('qc/state', value)}
         disabled={!enabledActions.flag}
