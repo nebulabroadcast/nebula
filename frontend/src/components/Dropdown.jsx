@@ -5,7 +5,6 @@ import clsx from 'clsx'
 const DropdownContainer = styled.div`
   position: relative;
   display: inline-block;
-  z-index: 999;
 
   .dropdown-content {
     display: none;
@@ -13,7 +12,7 @@ const DropdownContainer = styled.div`
     background-color: var(--color-surface-02);
     min-width: 100px;
     box-shadow: 4px 4px 10px 4px rgba(0, 0, 0, 0.7);
-    z-index: 1;
+    z-index: 5;
 
     hr {
       margin: 0;

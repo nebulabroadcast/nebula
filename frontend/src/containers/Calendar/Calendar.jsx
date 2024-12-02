@@ -362,6 +362,7 @@ const Calendar = ({
       result.push({
         label: item.label,
         icon: item.icon,
+        hlColor: item.hlColor,
         onClick: (e) => {
           const event = eventAtPos(e.posX, e.posY)
           if (!event) return

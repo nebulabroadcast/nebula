@@ -159,6 +159,7 @@ const Scheduler = ({ draggedObjects }) => {
     {
       label: 'Delete',
       icon: 'delete',
+      hlColor: 'var(--color-red)',
       onClick: (event) => deleteEvent(event.id),
     },
   ]

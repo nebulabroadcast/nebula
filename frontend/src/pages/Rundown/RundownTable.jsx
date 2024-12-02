@@ -284,6 +284,7 @@ const RundownTable = ({
       res.push({
         label: 'Delete',
         icon: 'delete',
+        hlColor: 'var(--color-red)',
         onClick: deleteSelectedItems,
         separator: true,
       })
