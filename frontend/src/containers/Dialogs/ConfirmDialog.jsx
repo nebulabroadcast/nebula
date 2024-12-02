@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 
 import { Button, Dialog } from '/src/components'

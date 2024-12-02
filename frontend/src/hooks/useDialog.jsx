@@ -2,6 +2,7 @@ import { createContext, useState, useRef, useContext, useMemo } from 'react'
 
 import MetadataDialog from '/src/containers/Dialogs/MetadataDialog'
 import ConfirmDialog from '/src/containers/Dialogs/ConfirmDialog'
+import SendToDialog from '/src/containers/Dialogs/SendToDialog'
 
 const DialogContext = createContext()
 
@@ -49,6 +50,8 @@ export const DialogProvider = ({ children }) => {
         return ConfirmDialog
       case 'metadata':
         return MetadataDialog
+      case 'sendto':
+        return SendToDialog
       default:
         return null
     }
