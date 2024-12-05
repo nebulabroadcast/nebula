@@ -72,6 +72,18 @@ const LoginPage = ({ motd, onLogin }) => {
         onLogin(response.data.access_token)
       })
       .catch((err) => {
+        if (err.response.status === 422) {
+          toast.error(
+            <>
+              <p>
+                <strong>Login failed</strong>
+              </p>
+              <p>Invalid request</p>
+            </>
+          )
+          return
+        }
+
         toast.error(
           <>
             <p>
@@ -82,6 +94,8 @@ const LoginPage = ({ motd, onLogin }) => {
         )
       })
   }
+
+  const loginDisabled = !username || !password
 
   return (
     <main>
@@ -105,7 +119,12 @@ const LoginPage = ({ motd, onLogin }) => {
             onChange={setPassword}
             ref={passwordRef}
           />
-          <Button label="Log in" type="submit" ref={buttonRef} />
+          <Button
+            label="Log in"
+            type="submit"
+            ref={buttonRef}
+            disabled={loginDisabled}
+          />
         </LoginForm>
         {motd && <small>{motd}</small>}
       </LoginContainer>

@@ -54,7 +54,7 @@ const MainNavbar = () => {
     result.push({
       label: 'Logout',
       icon: 'logout',
-      onClick: nebula.logout,
+      onClick: () => nebula.logout(),
     })
     return result
   }, [])
