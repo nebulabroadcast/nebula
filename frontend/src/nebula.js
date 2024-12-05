@@ -104,6 +104,26 @@ const nebula = {
     })
   },
 
+  can(permission, value, anyval = false) {
+    if (this.user.is_admin) {
+      return true
+    }
+    const key = `can/${permission}`
+    if (this.user[key] === false) {
+      return false
+    }
+    if (anyval) {
+      return true
+    }
+    if (this.user[key] === true) {
+      return true
+    }
+    if (this.user[key] === value) {
+      return true
+    }
+    return this.user[key].includes(value)
+  },
+
   logout() {
     this.request('logout')
       .then(() => {

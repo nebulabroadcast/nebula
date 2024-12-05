@@ -12,6 +12,7 @@ import {
   Form,
   FormRow,
   InputSwitch,
+  ScrollBox,
 } from '/src/components'
 
 import Sessions from '/src/containers/Sessions'
@@ -31,7 +32,7 @@ const UserForm = ({ userData, setUserData }) => {
   }
 
   return (
-    <div className="invisible column grow">
+    <ScrollBox>
       <section className="column">
         <PanelHeader>{userData?.id ? userData.login : 'New user'}</PanelHeader>
         <Form>
@@ -96,7 +97,7 @@ const UserForm = ({ userData, setUserData }) => {
         </pre>
       </section>
       */}
-    </div>
+    </ScrollBox>
   )
 }
 

@@ -44,13 +44,18 @@ class UserModel(ResponseModel):
         title="Can edit rundown",
         description="List of channel IDs user can edit. Use 'true' for all channels",
     )
+    can_mcr: bool | list[int] = Field(
+        False,
+        title="Can control playout",
+        description="List of channel IDs user can control",
+    )
     can_job_control: bool | list[int] = Field(
         False,
         title="Can control jobs",
         description="Use list of action IDs to grant access to specific actions",
     )
-    can_mcr: bool | list[int] = Field(
+    can_service_control: bool | list[int] = Field(
         False,
-        title="Can control playout",
-        description="List of channel IDs user can control",
+        title="Can control services",
+        description="List of service IDs user can control",
     )

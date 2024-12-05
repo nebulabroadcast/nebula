@@ -138,6 +138,12 @@ const AccessControl = ({ userData, setValue }) => {
             onChange={(value) => setValue('can_job_control', value)}
           />
         </FormRow>
+        <FormRow title="Services control">
+          <InputSwitch
+            value={userData?.can_service_control || false}
+            onChange={(value) => setValue('can_service_control', value)}
+          />
+        </FormRow>
       </Form>
     </section>
   )
