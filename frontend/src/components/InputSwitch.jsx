@@ -1,12 +1,14 @@
+import clsx from 'clsx'
 import styled from 'styled-components'
 import defaultTheme from './theme'
 
-const BaseSwitch = ({ style, className, value, onChange }) => (
-  <div style={style} className={className}>
+const BaseSwitch = ({ style, className, value, onChange, disabled }) => (
+  <div style={style} className={clsx(className, { disabled })}>
     <label className="switch-body">
       <input
         type="checkbox"
         checked={value}
+        disabled={disabled}
         onChange={() => onChange(!value)}
       />
       <span className="slider"></span>
@@ -29,6 +31,17 @@ const InputSwitch = styled(BaseSwitch)`
     min-height: 0;
   }
   --bwidth: calc(var(--bheight) * 1.75);
+
+  &.disabled {
+    .slider {
+      cursor: not-allowed !important;
+      background: ${(props) => props.theme.colors.surface04} !important;
+
+      &:before {
+        background: ${(props) => props.theme.colors.surface07} !important;
+      }
+    }
+  }
 
   .switch-body {
     position: relative;

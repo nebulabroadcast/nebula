@@ -38,6 +38,12 @@ const BaseInput = styled.input`
     font-style: italic;
   }
 
+  &:disabled {
+    cursor: not-allowed;
+    background: ${(props) => props.theme.colors.surface03};
+    color: ${(props) => props.theme.colors.surface08};
+  }
+
   &.timecode {
     min-width: 92px;
     max-width: 92px;

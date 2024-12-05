@@ -9,7 +9,7 @@ import {
   FormRow,
 } from '/src/components'
 
-const AllOrList = ({ value, setValue, options }) => {
+const AllOrList = ({ value, setValue, options, disabled }) => {
   const [all, setAll] = useState(false)
   const [values, setValues] = useState([])
 
@@ -35,7 +35,7 @@ const AllOrList = ({ value, setValue, options }) => {
           setValues(m)
           setValue(m.length === 0 ? false : m)
         }}
-        disabled={all}
+        disabled={all || disabled}
         selectionMode="multiple"
         style={{ flexGrow: 1 }}
       />
@@ -47,6 +47,7 @@ const AllOrList = ({ value, setValue, options }) => {
           setValue(v ? true : values)
         }}
         title="All"
+        disabled={disabled}
       />
     </div>
   )
@@ -67,6 +68,8 @@ const AccessControl = ({ userData, setValue }) => {
     }))
   }, [])
 
+  const isAdmin = userData?.is_admin || false
+
   return (
     <section className="column">
       <PanelHeader>Access control</PanelHeader>
@@ -81,6 +84,7 @@ const AccessControl = ({ userData, setValue }) => {
           <InputSwitch
             value={userData?.is_limited || false}
             onChange={(value) => setValue('is_limited', value)}
+            disabled={isAdmin}
           />
         </FormRow>
         <FormRow title="Asset view">
@@ -88,6 +92,7 @@ const AccessControl = ({ userData, setValue }) => {
             value={userData?.can_asset_view || false}
             setValue={(value) => setValue('can_asset_view', value)}
             options={folderOptions}
+            disabled={isAdmin}
           />
         </FormRow>
         <FormRow title="Asset edit">
@@ -95,6 +100,7 @@ const AccessControl = ({ userData, setValue }) => {
             value={userData?.can_asset_edit || false}
             setValue={(value) => setValue('can_asset_edit', value)}
             options={folderOptions}
+            disabled={isAdmin}
           />
         </FormRow>
         <FormRow title="Scheduler view">
@@ -102,6 +108,7 @@ const AccessControl = ({ userData, setValue }) => {
             value={userData?.can_scheduler_view || false}
             setValue={(value) => setValue('can_scheduler_view', value)}
             options={channelOptions}
+            disabled={isAdmin}
           />
         </FormRow>
         <FormRow title="Scheduler edit">
@@ -109,6 +116,7 @@ const AccessControl = ({ userData, setValue }) => {
             value={userData?.can_scheduler_edit || false}
             setValue={(value) => setValue('can_scheduler_edit', value)}
             options={channelOptions}
+            disabled={isAdmin}
           />
         </FormRow>
         <FormRow title="Rundown view">
@@ -116,6 +124,7 @@ const AccessControl = ({ userData, setValue }) => {
             value={userData?.can_rundown_view || false}
             setValue={(value) => setValue('can_rundown_view', value)}
             options={channelOptions}
+            disabled={isAdmin}
           />
         </FormRow>
         <FormRow title="Rundown edit">
@@ -123,6 +132,7 @@ const AccessControl = ({ userData, setValue }) => {
             value={userData?.can_rundown_edit || false}
             setValue={(value) => setValue('can_rundown_edit', value)}
             options={channelOptions}
+            disabled={isAdmin}
           />
         </FormRow>
         <FormRow title="Playout control">
@@ -130,18 +140,21 @@ const AccessControl = ({ userData, setValue }) => {
             value={userData?.can_mcr || false}
             setValue={(value) => setValue('can_mcr', value)}
             options={channelOptions}
+            disabled={isAdmin}
           />
         </FormRow>
         <FormRow title="Jobs control">
           <InputSwitch
             value={userData?.can_job_control || false}
             onChange={(value) => setValue('can_job_control', value)}
+            disabled={isAdmin}
           />
         </FormRow>
         <FormRow title="Services control">
           <InputSwitch
             value={userData?.can_service_control || false}
             onChange={(value) => setValue('can_service_control', value)}
+            disabled={isAdmin}
           />
         </FormRow>
       </Form>

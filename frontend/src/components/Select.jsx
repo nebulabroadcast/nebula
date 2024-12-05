@@ -55,6 +55,12 @@ const StyledHTMLSelect = styled.select`
     color: ${(props) => props.theme.colors.text};
   }
 
+  &:disabled {
+    cursor: not-allowed;
+    background: ${(props) => props.theme.colors.surface03};
+    color: ${(props) => props.theme.colors.surface08};
+  }
+
   &:invalid,
   &.error {
     outline: 1px solid ${(props) => props.theme.colors.red} !important;
@@ -131,6 +137,7 @@ const Select = ({
         value={displayValue}
         placeholder={placeholder}
         readOnly={true}
+        disabled={disabled}
         style={{ flexGrow: 1 }}
         onDoubleClick={() => {
           !disabled && setDialogVisible(true)
