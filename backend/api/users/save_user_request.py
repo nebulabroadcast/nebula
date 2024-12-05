@@ -3,6 +3,7 @@ from fastapi import Response
 import nebula
 from server.dependencies import CurrentUser
 from server.request import APIRequest
+from server.session import Session
 
 from .user_model import UserModel
 
@@ -14,10 +15,10 @@ class SaveUserRequest(APIRequest):
     title = "Save user data"
     responses = [204, 201]
 
-    async def handle(self, user: CurrentUser, payload: UserModel) -> Response:
+    async def handle(self, current_user: CurrentUser, payload: UserModel) -> Response:
         new_user = payload.id is None
 
-        if not user.is_admin:
+        if not current_user.is_admin:
             raise nebula.ForbiddenException("You are not allowed to edit users")
 
         meta = payload.dict()
@@ -45,6 +46,9 @@ class SaveUserRequest(APIRequest):
             user.set_api_key(api_key)
 
         await user.save()
+
+        async for session in Session.list(user_name=user.name):
+            await Session.update(session.token, user)
 
         if new_user:
             return Response(status_code=201)

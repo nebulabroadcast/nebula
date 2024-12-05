@@ -113,7 +113,7 @@ class Session:
     ) -> None:
         """Update a session with new user data."""
         try:
-            data = await nebula.redis.get(cls.ns, token)
+            data = await nebula.redis.get_json(cls.ns, token)
         except KeyError:
             return None
 
