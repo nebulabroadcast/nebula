@@ -7,4 +7,4 @@ class SettingsModel(BaseModel):
     pass
 
 
-LanguageCode = Literal["en", "cs", "fi"]
+LanguageCode = Literal["en", "cs"]

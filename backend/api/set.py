@@ -145,6 +145,16 @@ async def can_modify_object(obj: BaseObject, user: nebula.User) -> None:
         acl = user.get("can/rundown_edit", False)
         if not acl:
             raise nebula.ForbiddenException("You are not allowed to edit rundown")
+        elif isinstance(acl, list):
+            q = "SELECT id_channel FROM events WHERE id_magic = $1"
+            res = await nebula.db.fetch(q, obj["id_bin"])
+            if not res:
+                raise nebula.NotFoundException("Bin not found")
+            if res[0]["id_channel"] not in acl:
+                raise nebula.ForbiddenException(
+                    "You are not allowed to edit rundown for this channel"
+                )
+
         # TODO: Check if user can edit rundown for this channel
 
     elif isinstance(obj, nebula.Bin):

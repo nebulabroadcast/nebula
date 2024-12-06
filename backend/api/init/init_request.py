@@ -1,4 +1,4 @@
-from typing import Annotated, Any
+from typing import Annotated, Any, get_args
 
 import fastapi
 from pydantic import Field
@@ -111,10 +111,18 @@ class InitRequest(APIRequest):
                 experimental=nebula.config.enable_experimental or None,
             )
 
-        # TODO: get preferred user language
-        lang: LanguageCode = user.language
+        # User preferred language
+
+        lang: LanguageCode = "en"
+        accept_language = request.headers.get("Accept-Language", "en")
+        preferred_language = accept_language.split(",")[0].strip().lower()
+        if len(preferred_language) > 2:
+            preferred_language = preferred_language[:2]
+        if preferred_language in get_args(LanguageCode):
+            lang = user.meta.get("language") or preferred_language  # type: ignore
 
         # Construct client settings
+
         client_settings = await get_client_settings(lang)
         client_settings.server_url = f"{request.url.scheme}://{request.url.netloc}"
         plugins = get_frontend_plugins()
