@@ -1,6 +1,5 @@
 export { default as Button } from './Button'
 export { default as Canvas } from './Canvas'
-export { default as DatePicker } from './DatePicker'
 export { default as Dialog } from './Dialog'
 export { default as Dropdown } from './Dropdown'
 export { default as ErrorBanner } from './ErrorBanner'

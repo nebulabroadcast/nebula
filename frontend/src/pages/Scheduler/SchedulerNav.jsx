@@ -5,6 +5,7 @@ import { useSearchParams } from 'react-router-dom'
 import nebula from '/src/nebula'
 import { createTitle } from './utils'
 import { setPageTitle } from '/src/actions'
+import { useDialog } from '/src/hooks'
 
 import { Navbar, Button, Spacer } from '/src/components'
 import ApplySchedulingTemplate from './ApplySchedulingTemplate'
@@ -20,6 +21,7 @@ const SchedulerNav = ({
   const [searchParams, setSearchParams] = useSearchParams()
   const currentChannel = useSelector((state) => state.context.currentChannel)
   const dispatch = useDispatch()
+  const showDialog = useDialog()
 
   const channelConfig = useMemo(() => {
     return nebula.getPlayoutChannel(currentChannel)
@@ -67,12 +69,23 @@ const SchedulerNav = ({
     })
   }
 
+  const pickDate = async () => {
+    try {
+      const newDate = await showDialog('date', 'Pick date', { value: date })
+      setSearchParams((o) => {
+        o.set('date', newDate)
+        return o
+      })
+    } catch {}
+  }
+
   const prevWeek = () => dateStep(-7)
   const nextWeek = () => dateStep(7)
 
   return (
     <Navbar>
       <Button icon="chevron_left" onClick={prevWeek} disabled={loading} />
+      <Button icon="calendar_today" onClick={pickDate} tooltip="Pick date" />
       <Button icon="chevron_right" onClick={nextWeek} disabled={loading} />
       <Spacer />
       <ApplySchedulingTemplate

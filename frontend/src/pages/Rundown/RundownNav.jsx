@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { useSearchParams } from 'react-router-dom'
+import { useDialog } from '/src/hooks'
 
 import nebula from '/src/nebula'
 import { Navbar, Button, Spacer, RadioButton } from '/src/components'
@@ -16,6 +17,7 @@ const RundownNav = ({
   const [searchParams, setSearchParams] = useSearchParams()
   const currentChannel = useSelector((state) => state.context.currentChannel)
   const dispatch = useDispatch()
+  const showDialog = useDialog()
 
   const channelConfig = useMemo(() => {
     return nebula.getPlayoutChannel(currentChannel)
@@ -63,9 +65,20 @@ const RundownNav = ({
   const prevDay = () => dateStep(-1)
   const nextDay = () => dateStep(1)
 
+  const pickDate = async () => {
+    try {
+      const newDate = await showDialog('date', 'Pick date', { value: date })
+      setSearchParams((o) => {
+        o.set('date', newDate)
+        return o
+      })
+    } catch {}
+  }
+
   return (
     <Navbar>
       <Button icon="chevron_left" onClick={prevDay} tooltip="Previous day" />
+      <Button icon="calendar_today" onClick={pickDate} tooltip="Pick date" />
       <Button icon="chevron_right" onClick={nextDay} tooltip="Next day" />
 
       <Spacer />
