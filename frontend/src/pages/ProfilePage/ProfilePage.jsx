@@ -5,9 +5,11 @@ import { useState } from 'react'
 import {
   Form,
   FormRow,
+  Icon,
   InputText,
   InputPassword,
   Button,
+  PanelHeader,
 } from '/src/components'
 
 import Sessions from '/src/containers/Sessions.jsx'
@@ -17,7 +19,10 @@ const ProfileForm = () => {
 
   return (
     <section className="column">
-      <h1>Profile: {displayName}</h1>
+      <PanelHeader>
+        <Icon icon="person" />
+        {displayName}
+      </PanelHeader>
       <Form>
         <FormRow title="Login">
           <InputText value={nebula.user.login} disabled />
@@ -61,7 +66,10 @@ const ChangePasswordForm = () => {
 
   return (
     <section className="column">
-      <h2>Change password</h2>
+      <PanelHeader>
+        <Icon icon="security" />
+        Change password
+      </PanelHeader>
       <Form>
         <FormRow title="New password">
           <InputPassword
@@ -94,7 +102,10 @@ const AdminPanel = () => {
 
   return (
     <section className="grow column">
-      <h2>Administration</h2>
+      <PanelHeader>
+        <Icon icon="admin_panel_settings" />
+        Administration
+      </PanelHeader>
 
       <div style={{ flexDirection: 'column', display: 'flex', maxWidth: 200 }}>
         <Button
