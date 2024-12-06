@@ -11,7 +11,7 @@ const LoaderContainer = styled.div`
   background: var(--c) 50% 0, var(--c) 50% 100%, var(--c) 100% 50%,
     var(--c) 0 50%;
   background-size: 10px 10px;
-  animation: l18 1s infinite;
+  animation: l18 0.5s infinite;
   position: relative;
 
   &::before {

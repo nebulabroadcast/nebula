@@ -97,6 +97,7 @@ const App = () => {
             <Route path="/services" element={<ServicesPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/users" element={<UsersPage />} />
+            <Route path="/users/:id" element={<UsersPage />} />
           </Routes>
         </BrowserRouter>
       </DialogProvider>

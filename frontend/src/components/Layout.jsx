@@ -78,6 +78,11 @@ const PanelHeader = styled.h2`
   margin-bottom: 10px;
   border-bottom: 1px solid #514a5e;
   font-size: 18px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
 `
 
 export { Navbar, Spacer, ToolbarSeparator, PanelHeader }

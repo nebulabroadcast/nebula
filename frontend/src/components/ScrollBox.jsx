@@ -18,9 +18,9 @@ const ScrollContent = styled.div`
   gap: 6px;
 `
 
-const ScrollBox = ({ children }) => {
+const ScrollBox = ({ children, style }) => {
   return (
-    <ScrollContainer>
+    <ScrollContainer style={style}>
       <ScrollContent>{children}</ScrollContent>
     </ScrollContainer>
   )
