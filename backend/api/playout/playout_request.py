@@ -23,7 +23,10 @@ class PlayoutRequest(APIRequest):
         if not channel:
             raise nebula.NotFoundException("Channel not found")
 
-        # TODO: Check if user has access to this channel
+        if not user.can("mcr", channel.id):
+            raise nebula.ForbiddenException(
+                "You are not allowed to control this channel"
+            )
 
         # For dummy engine, return empty response
         if channel.engine == "dummy":
@@ -34,13 +37,6 @@ class PlayoutRequest(APIRequest):
         #
 
         controller_url = f"http://{channel.controller_host}:{channel.controller_port}"
-
-        # async with httpx.AsyncClient() as client:
-        #     response = await client.post(
-        #         f"{controller_url}/{request.action.value}",
-        #         json=request.payload,
-        #         timeout=4,
-        #     )
 
         # HTTPx stopped working for some reason, raising asyncio.CancelledError
         # when trying to send a request. Using requests for now.

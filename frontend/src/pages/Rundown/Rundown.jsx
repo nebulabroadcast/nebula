@@ -149,6 +149,7 @@ const Rundown = ({ draggedObjects }) => {
         order: newOrder,
       })
       .then(loadRundown)
+      .catch(onError)
       .finally(() => {
         setSelectedItems([])
         setFocusedObject(null)
