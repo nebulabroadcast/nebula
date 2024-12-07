@@ -34,8 +34,20 @@ const LoaderContainer = styled.div`
   }
 `
 
+const LoaderWrapper = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.01);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`
+
 const Loader = ({ style }) => {
   return <LoaderContainer style={style}></LoaderContainer>
 }
 
-export default Loader
+export { Loader, LoaderWrapper }

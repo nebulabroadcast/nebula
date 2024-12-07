@@ -1,27 +1,15 @@
-import nebula from '/src/nebula'
 import styled from 'styled-components'
+import { toast } from 'react-toastify'
+import { DateTime } from 'luxon'
 
 import { useState, useEffect, useMemo } from 'react'
 import { useSelector } from 'react-redux'
-import { toast } from 'react-toastify'
-import { useDialog } from '/src/hooks'
-import { DateTime } from 'luxon'
 
-import { Loader } from '/src/components'
+import nebula from '/src/nebula'
+import { useDialog } from '/src/hooks'
+import { Loader, LoaderWrapper } from '/src/components'
 import Calendar from '/src/containers/Calendar'
 import SchedulerNav from './SchedulerNav'
-
-const LoaderWrapper = styled.div`
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.01);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`
 
 const Scheduler = ({ draggedObjects }) => {
   const currentChannel = useSelector((state) => state.context.currentChannel)
@@ -41,7 +29,7 @@ const Scheduler = ({ draggedObjects }) => {
       toast.error('Please drag only one asset')
       return
     }
-    if (draggedObjects[0]?.type !== 'asset') return null
+    if (!['asset', 'event'].includes(draggedObjects[0]?.type)) return null
     return draggedObjects[0]
   }, [draggedObjects])
 
@@ -81,7 +69,7 @@ const Scheduler = ({ draggedObjects }) => {
 
   // Saving events to the server
 
-  const saveEvent = (event) => {
+  const saveEvent = async (event) => {
     const payload = {
       start: event.start,
       meta: {},
@@ -100,10 +88,29 @@ const Scheduler = ({ draggedObjects }) => {
       }
     }
 
-    for (const field of channelConfig?.fields || []) {
-      const key = field.name
-      if (event[key] === undefined) continue
-      payload.meta[key] = event[key]
+    if (event.is_empty_event && !event.id_asset) {
+      // this is a hack. Empty events appear as assets in calendar,
+      // but they don't have id_asset, so we cand identify them by this
+      // and trigger a dialog to fill in the metadata
+      const title = `Edit event: ${event.title || 'Untitled'}`
+      const fields = [{ name: 'start' }, ...channelConfig.fields]
+      try {
+        const r = await showDialog('metadata', title, {
+          fields,
+          initialData: { start: event.start },
+        })
+        payload.meta = r
+      } catch (e) {
+        return
+      }
+    } else {
+      // Copy metadata from the event or the asset to the
+      // payload. don't show the metadata dialog
+      for (const field of channelConfig?.fields || []) {
+        const key = field.name
+        if (event[key] === undefined) continue
+        payload.meta[key] = event[key]
+      }
     }
 
     const params = { ...requestParams, events: [payload] }

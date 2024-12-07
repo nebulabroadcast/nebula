@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
 
-import Loader from '../Loader'
+import { Loader, LoaderWrapper } from '../Loader'
 import ContextMenu from '../ContextMenu'
 
 import TableWrapper from './TableWrapper'
@@ -157,9 +157,9 @@ const Table = ({
       $drophl={dropHl || null}
     >
       {loading && (
-        <div className="contained center">
+        <LoaderWrapper>
           <Loader />
-        </div>
+        </LoaderWrapper>
       )}
       <table onKeyDown={handleKeyDown} tabIndex={0} ref={tableRef}>
         {head}

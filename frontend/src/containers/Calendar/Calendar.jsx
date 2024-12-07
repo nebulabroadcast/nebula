@@ -281,6 +281,7 @@ const Calendar = ({
       console.debug('Dropped asset', draggedAsset, cursorTime.current)
       saveEvent({
         id_asset: draggedAsset.id,
+        is_empty_event: true,
         start: Math.floor(cursorTime.current.getTime() / 1000),
       })
     } else if (draggedEvent.current && cursorTime.current) {

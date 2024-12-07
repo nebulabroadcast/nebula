@@ -7,7 +7,21 @@ import { setPageTitle } from '/src/actions'
 
 import { Navbar, Button, Spacer } from '/src/components'
 import DateNav from '/src/containers/DateNav'
+import DraggableIcon from '/src/containers/DraggableIcon'
+
 import ApplySchedulingTemplate from './ApplySchedulingTemplate'
+
+const dragIcons = [
+  {
+    name: 'empty_event',
+    tooltip: 'Empty event',
+    icon: 'calendar_add_on',
+    data: {
+      type: 'event',
+      title: 'Empty event',
+    },
+  },
+]
 
 const SchedulerNav = ({
   setStartTime,
@@ -43,6 +57,15 @@ const SchedulerNav = ({
     <Navbar>
       <DateNav onChange={onDateChange} skipBy={7} />
       <Spacer />
+      {dragIcons.map((icon, index) => (
+        <DraggableIcon
+          key={index}
+          name={icon.name}
+          icon={icon.icon}
+          tooltip={icon.tooltip}
+          data={icon.data}
+        />
+      ))}
       <ApplySchedulingTemplate
         loadEvents={loadEvents}
         date={date}
