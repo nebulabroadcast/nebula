@@ -1,27 +1,27 @@
 import styled from 'styled-components'
 import PropTypes from 'prop-types'
-import defaultTheme from './theme'
+import { getTheme } from './theme'
 import { forwardRef } from 'react'
 import clsx from 'clsx'
 
 const BaseButton = styled.button`
   border: 0;
-  border-radius: ${(props) => props.theme.inputBorderRadius};
-  background: ${(props) => props.theme.inputBackground};
-  color: ${(props) => props.theme.colors.text};
-  font-size: ${(props) => props.theme.fontSize};
+  border-radius: ${getTheme().inputBorderRadius};
+  background: ${getTheme().inputBackground};
+  color: ${getTheme().colors.text};
+  font-size: ${getTheme().fontSize};
   padding-left: 12px;
   padding-right: 12px;
-  min-height: ${(props) => props.theme.inputHeight};
-  max-height: ${(props) => props.theme.inputHeight};
-  min-width: ${(props) => props.theme.inputHeight} !important;
+  min-height: ${getTheme().inputHeight};
+  max-height: ${getTheme().inputHeight};
+  min-width: ${getTheme().inputHeight} !important;
 
   &.icon-only {
     padding: 0;
-    min-width: ${(props) => props.theme.inputHeight};
-    max-width: ${(props) => props.theme.inputHeight};
-    min-height: ${(props) => props.theme.inputHeight};
-    max-height: ${(props) => props.theme.inputHeight};
+    min-width: ${getTheme().inputHeight};
+    max-width: ${getTheme().inputHeight};
+    min-height: ${getTheme().inputHeight};
+    max-height: ${getTheme().inputHeight};
     display: flex;
     align-items: center;
     justify-content: center;
@@ -42,35 +42,32 @@ const BaseButton = styled.button`
   }
 
   &:focus {
-    background: ${(props) => props.theme.colors.surface06};
+    background: ${getTheme().colors.surface06};
     outline: 0;
   }
 
   &:hover {
-    background: ${(props) => props.theme.colors.surface06};
-    color: ${(props) => props.theme.colors.text};
+    background: ${getTheme().colors.surface06};
+    color: ${getTheme().colors.text};
   }
 
   &:invalid,
   &.error {
-    outline: 1px solid ${(props) => props.theme.colors.red} !important;
+    outline: 1px solid ${getTheme().colors.red} !important;
   }
 
   &.active {
-    background: ${(props) => props.theme.colors.surface06};
-    text-shadow: 0 0 4px ${(props) => props.theme.colors.highlight};
+    background: ${getTheme().colors.surface06};
+    text-shadow: 0 0 4px ${getTheme().colors.highlight};
   }
 
   &:disabled {
     cursor: not-allowed;
-    background: ${(props) => props.theme.colors.surface03};
-    color: ${(props) => props.theme.colors.surface08};
+    background: ${getTheme().colors.surface03};
+    color: ${getTheme().colors.surface08};
     transition: background 0.2s, color 0.2s;
   }
 `
-BaseButton.defaultProps = {
-  theme: defaultTheme,
-}
 
 const Button = forwardRef(
   (
@@ -78,12 +75,12 @@ const Button = forwardRef(
       icon,
       iconStyle,
       label,
-      iconOnRight,
       active,
       className,
       tooltip,
       hlColor,
       style,
+      iconOnRight = false,
       ...props
     },
     ref
@@ -117,10 +114,6 @@ const Button = forwardRef(
 )
 
 Button.displayName = 'Button'
-Button.defaultProps = {
-  iconOnRight: false,
-  //component: 'button',
-}
 
 Button.propTypes = {
   icon: PropTypes.string,

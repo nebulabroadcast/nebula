@@ -21,7 +21,7 @@ export { default as Select } from './Select'
 export { default as SelectDialog } from './SelectDialog'
 export { default as Table } from './table'
 export { default as TextArea } from './TextArea'
+export { default as Timestamp } from './Timestamp'
 
-export { DateTime, Timestamp } from './Fields'
 export { Form, FormRow } from './Form'
 export { Navbar, Spacer, ToolbarSeparator, PanelHeader } from './Layout'

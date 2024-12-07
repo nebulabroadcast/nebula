@@ -5,7 +5,7 @@ import InputText from './InputText'
 import Button from './Button'
 import SelectDialog from './SelectDialog'
 
-import defaultTheme from './theme'
+import { getTheme } from './theme'
 
 // Styled dialog-based select component.
 
@@ -30,45 +30,38 @@ const DialogBasedSelect = styled.div`
     }
   }
 `
-DialogBasedSelect.defaultProps = {
-  theme: defaultTheme,
-}
 
 // When there is just a few items in the list, we can use a dropdown.
-
 const StyledHTMLSelect = styled.select`
   border: 0;
-  border-radius: ${(props) => props.theme.inputBorderRadius};
-  background: ${(props) => props.theme.inputBackground};
-  color: ${(props) => props.theme.colors.text};
-  min-height: ${(props) => props.theme.inputHeight};
-  font-size: ${(props) => props.theme.fontSize};
-  padding-left: ${(props) => props.theme.inputPadding};
-  padding-right: ${(props) => props.theme.inputPadding};
+  border-radius: ${getTheme().inputBorderRadius};
+  background: ${getTheme().inputBackground};
+  color: ${getTheme().colors.text};
+  min-height: ${getTheme().inputHeight};
+  font-size: ${getTheme().fontSize};
+  padding-left: ${getTheme().inputPadding};
+  padding-right: ${getTheme().inputPadding};
   min-width: 200px;
 
   &:focus {
-    outline: 1px solid ${(props) => props.theme.colors.cyan};
+    outline: 1px solid ${getTheme().colors.cyan};
   }
 
   &:hover {
-    color: ${(props) => props.theme.colors.text};
+    color: ${getTheme().colors.text};
   }
 
   &:disabled {
     cursor: not-allowed;
-    background: ${(props) => props.theme.colors.surface03};
-    color: ${(props) => props.theme.colors.surface08};
+    background: ${getTheme().colors.surface03};
+    color: ${getTheme().colors.surface08};
   }
 
   &:invalid,
   &.error {
-    outline: 1px solid ${(props) => props.theme.colors.red} !important;
+    outline: 1px solid ${getTheme().colors.red} !important;
   }
 `
-StyledHTMLSelect.defaultProps = {
-  theme: defaultTheme,
-}
 
 const Select = ({
   options,

@@ -1,6 +1,5 @@
 import { useMemo } from 'react'
 import styled from 'styled-components'
-import defaultTheme from './theme'
 import BaseInput from './BaseInput'
 
 const BaseColorInput = styled(BaseInput)`

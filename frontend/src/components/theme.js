@@ -33,4 +33,9 @@ const defaultTheme = {
   navBorderRadius: '6px',
 }
 
+const getTheme = () => {
+  return defaultTheme
+}
+
 export default defaultTheme
+export { getTheme }

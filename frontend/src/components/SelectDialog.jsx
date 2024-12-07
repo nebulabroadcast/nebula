@@ -7,30 +7,29 @@ import Button from './Button'
 
 import { sortByKey } from '/src/utils'
 import styled from 'styled-components'
-import defaultTheme from './theme'
+import { getTheme } from './theme'
 
 const BaseOption = styled.div`
   padding: 3px;
   cursor: pointer;
   white-space: nowrap;
-  background-color: ${(props) => props.theme.colors.surface05};
+  user-select: none;
+  user-drag: none;
+  background-color: ${getTheme().colors.surface05};
 
   &.selected {
-    background-color: ${(props) => props.theme.colors.violet};
+    background-color: ${getTheme().colors.violet};
   }
 
   &.label {
     font-weight: bold;
-    background-color: ${(props) => props.theme.colors.surface03};
+    background-color: ${getTheme().colors.surface03};
   }
 
   &.header {
     font-weight: bold;
   }
 `
-BaseOption.defaultProps = {
-  theme: defaultTheme,
-}
 
 const Option = ({ option, selected, onClick }) => {
   return (

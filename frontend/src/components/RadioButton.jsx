@@ -1,6 +1,5 @@
-import styled from 'styled-components'
-
 import clsx from 'clsx'
+import styled from 'styled-components'
 
 import Button from './Button'
 

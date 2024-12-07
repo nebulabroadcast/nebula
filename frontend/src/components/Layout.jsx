@@ -1,12 +1,12 @@
 import styled from 'styled-components'
-import defaultTheme from './theme'
+import { getTheme } from './theme'
 
 const Navbar = styled.nav`
   display: flex;
   flex-direction: row;
   gap: var(--gap-size);
-  border-radius: ${(props) => props.theme.navBorderRadius};
-  background-color: ${(props) => props.theme.colors.surface02};
+  border-radius: ${getTheme().navBorderRadius};
+  background-color: ${getTheme().colors.surface02};
   padding: 4px 10px;
   align-items: center;
 
@@ -51,10 +51,6 @@ const Navbar = styled.nav`
     align-items: center;
   }
 `
-Navbar.defaultProps = {
-  theme: defaultTheme,
-}
-
 const Spacer = styled.div`
   flex-grow: 1;
   display: flex;
@@ -63,13 +59,10 @@ const Spacer = styled.div`
 `
 
 const ToolbarSeparator = styled.div`
-  border-left: 1px solid ${(props) => props.theme.colors.surface04};
+  border-left: 1px solid ${getTheme().colors.surface04};
   height: 100%;
   margin: 0 4px;
 `
-ToolbarSeparator.defaultProps = {
-  theme: defaultTheme,
-}
 
 const PanelHeader = styled.h2`
   padding: 0;
