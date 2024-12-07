@@ -1,15 +1,12 @@
+import clsx from 'clsx'
+import styled from 'styled-components'
 import { useState, useEffect, useRef } from 'react'
 import { DateTime } from 'luxon'
-import styled from 'styled-components'
-import clsx from 'clsx'
-
 import DatePicker from 'react-datepicker'
-import Dialog from './Dialog'
 
+import Dialog from './Dialog'
 import BaseInput from './BaseInput'
 import Button from './Button'
-
-import './datepicker.sass'
 
 const timeRegex = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/
 const dateRegex = /^(\d{4})-(\d{2})-(\d{2})$/
@@ -55,7 +52,6 @@ const CalendarDialog = ({ value, onChange, onClose }) => {
     <Dialog onHide={onClose} footer={footer} header="Select a date...">
       <DatePickerWrapper>
         <DatePicker
-          locale="sv-SE"
           calendarStartDay={1}
           selected={date.toJSDate()}
           onChange={(date) => {

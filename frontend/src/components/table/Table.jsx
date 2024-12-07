@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
 
-import Loader from '../Loader'
+import { Loader, LoaderWrapper } from '../Loader'
 import ContextMenu from '../ContextMenu'
 
 import TableWrapper from './TableWrapper'
@@ -75,6 +75,7 @@ const Table = ({
             duration: row.duration,
             mark_in: row.mark_in,
             mark_out: row.mark_out,
+            subclips: row.subclips,
           })
         }
       }
@@ -154,12 +155,12 @@ const Table = ({
       onScroll={handleScroll}
       onKeyDown={handleKeyDown}
       onMouseLeave={() => setDropHl(null)}
-      dropHl={dropHl || null}
+      $drophl={dropHl || null}
     >
       {loading && (
-        <div className="contained center">
+        <LoaderWrapper>
           <Loader />
-        </div>
+        </LoaderWrapper>
       )}
       <table onKeyDown={handleKeyDown} tabIndex={0} ref={tableRef}>
         {head}

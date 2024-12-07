@@ -1,13 +1,27 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { useSearchParams } from 'react-router-dom'
 
 import nebula from '/src/nebula'
 import { createTitle } from './utils'
 import { setPageTitle } from '/src/actions'
 
 import { Navbar, Button, Spacer } from '/src/components'
+import DateNav from '/src/containers/DateNav'
+import DraggableIcon from '/src/containers/DraggableIcon'
+
 import ApplySchedulingTemplate from './ApplySchedulingTemplate'
+
+const dragIcons = [
+  {
+    name: 'empty_event',
+    tooltip: 'Empty event',
+    icon: 'calendar_add_on',
+    data: {
+      type: 'event',
+      title: 'Empty event',
+    },
+  },
+]
 
 const SchedulerNav = ({
   setStartTime,
@@ -16,26 +30,18 @@ const SchedulerNav = ({
   loading,
   setLoading,
 }) => {
-  const [date, setDate] = useState()
-  const [searchParams, setSearchParams] = useSearchParams()
   const currentChannel = useSelector((state) => state.context.currentChannel)
   const dispatch = useDispatch()
+  const [date, setDate] = useState()
 
   const channelConfig = useMemo(() => {
     return nebula.getPlayoutChannel(currentChannel)
   }, [currentChannel])
 
-  useEffect(() => {
-    // When the query param `date` changes, update the start time
-    // of the calendar view and the page title
-
-    let dateParam = searchParams.get('date')
-    if (date && dateParam === date) return
-    if (!dateParam) dateParam = new Date().toISOString().split('T')[0]
-
+  const onDateChange = (date) => {
     const [dsHH, dsMM] = channelConfig.day_start
 
-    const newDate = new Date(dateParam)
+    const newDate = new Date(date)
     const dayOfWeek = newDate.getDay()
     const diff = newDate.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1)
     const weekStart = new Date(newDate.setDate(diff))
@@ -44,37 +50,22 @@ const SchedulerNav = ({
     const pageTitle = createTitle(weekStart, channelConfig.name)
     dispatch(setPageTitle({ title: pageTitle }))
     setStartTime(weekStart)
-    setDate(dateParam)
-  }, [searchParams, channelConfig])
-
-  useEffect(() => {
-    if (date && date !== searchParams.get('date')) {
-      setSearchParams((o) => {
-        o.set('date', date)
-        return o
-      })
-    }
-  }, [date, channelConfig])
-
-  const dateStep = (days) => {
-    let dateParam = searchParams.get('date')
-    if (!dateParam) dateParam = new Date().toISOString().split('T')[0]
-    const currentDate = new Date(dateParam)
-    const newDate = new Date(currentDate.getTime() + days * 24 * 60 * 60 * 1000)
-    setSearchParams((o) => {
-      o.set('date', newDate.toISOString().split('T')[0])
-      return o
-    })
+    setDate(date)
   }
-
-  const prevWeek = () => dateStep(-7)
-  const nextWeek = () => dateStep(7)
 
   return (
     <Navbar>
-      <Button icon="chevron_left" onClick={prevWeek} disabled={loading} />
-      <Button icon="chevron_right" onClick={nextWeek} disabled={loading} />
+      <DateNav onChange={onDateChange} skipBy={7} />
       <Spacer />
+      {dragIcons.map((icon, index) => (
+        <DraggableIcon
+          key={index}
+          name={icon.name}
+          icon={icon.icon}
+          tooltip={icon.tooltip}
+          data={icon.data}
+        />
+      ))}
       <ApplySchedulingTemplate
         loadEvents={loadEvents}
         date={date}

@@ -70,9 +70,9 @@ class Session:
         # Extend the session lifetime only if it's in its second half
         # (save update requests).
         # So it doesn't make sense to call the parameter accessed is it?
-        # Whatever. Fix later.
 
-        if time.time() - session.created > cls.ttl / 2:
+        remaining_ttl = cls.ttl - (time.time() - session.accessed)
+        if remaining_ttl < cls.ttl - 120:
             session.accessed = time.time()
             await nebula.redis.set_json(cls.ns, token, session)
 
@@ -113,7 +113,7 @@ class Session:
     ) -> None:
         """Update a session with new user data."""
         try:
-            data = await nebula.redis.get(cls.ns, token)
+            data = await nebula.redis.get_json(cls.ns, token)
         except KeyError:
             return None
 

@@ -5,7 +5,7 @@ const TableWrapper = styled.div`
   --progress-opacity: 0;
   overflow: auto;
 
-  [data-key='${(props) => props.dropHl || 'default'}'] {
+  [data-key='${(props) => props.$drophl || 'default'}'] {
     td {
       border-bottom: 1px solid var(--color-violet) !important;
     }
@@ -51,6 +51,13 @@ const TableWrapper = styled.div`
         font-size: 22px;
       }
     }
+
+    td div {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+    }
+
 
     thead {
       tr {

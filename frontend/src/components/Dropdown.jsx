@@ -5,7 +5,6 @@ import clsx from 'clsx'
 const DropdownContainer = styled.div`
   position: relative;
   display: inline-block;
-  z-index: 999;
 
   .dropdown-content {
     display: none;
@@ -13,7 +12,7 @@ const DropdownContainer = styled.div`
     background-color: var(--color-surface-02);
     min-width: 100px;
     box-shadow: 4px 4px 10px 4px rgba(0, 0, 0, 0.7);
-    z-index: 1;
+    z-index: 5;
 
     hr {
       margin: 0;
@@ -23,7 +22,6 @@ const DropdownContainer = styled.div`
 
     button {
       background: none;
-      border: none;
       width: 100%;
       justify-content: flex-start;
       border-radius: 0;
@@ -62,12 +60,30 @@ const DropdownContainer = styled.div`
   }
 `
 
-const DropdownOption = ({ currentValue, separator, disabled, ...props }) => (
-  <span>
-    {separator && <hr />}
-    <Button {...props} disabled={disabled || currentValue === props.value} />
-  </span>
-)
+const DropdownOption = ({
+  currentValue,
+  separator,
+  disabled,
+  hlColor,
+  style,
+  label,
+  icon,
+  onClick,
+  value,
+}) => {
+  return (
+    <span>
+      {separator && <hr />}
+      <Button
+        label={label}
+        icon={icon}
+        iconStyle={hlColor ? { color: hlColor } : {}}
+        disabled={disabled || currentValue === value}
+        onClick={() => onClick(value)}
+      />
+    </span>
+  )
+}
 
 const Dropdown = ({
   options,
@@ -79,6 +95,7 @@ const Dropdown = ({
   value = null,
   disabled = false,
   defaultValue = null,
+  iconOnRigth = false,
 }) => {
   if (align === 'right') contentStyle['right'] = 0
 
@@ -89,7 +106,7 @@ const Dropdown = ({
         style={buttonStyle}
         icon={icon}
         label={label}
-        iconOnRight={true}
+        iconOnRight={iconOnRigth}
         disabled={disabled}
       />
       <div className="dropdown-content" style={contentStyle}>

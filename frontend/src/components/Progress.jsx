@@ -1,25 +1,22 @@
 import { useState, useEffect } from 'react'
 import styled from 'styled-components'
-import defaultTheme from './theme'
+import { getTheme } from './theme'
 
 const BaseProgress = styled.div`
   width: 100%;
   border: 0;
-  border-radius: ${(props) => props.theme.inputBorderRadius};
-  background: ${(props) => props.theme.inputBackground};
+  border-radius: ${getTheme().inputBorderRadius};
+  background: ${getTheme().inputBackground};
   height: 10px;
 
   div {
     height: 100%;
-    background: ${(props) => props.theme.colors.cyan};
-    border-radius: ${(props) => props.theme.inputBorderRadius};
+    background: ${getTheme().colors.cyan};
+    border-radius: ${getTheme().inputBorderRadius};
     transition: ${(props) =>
       props.disableTransition ? 'none' : 'width 0.3s linear'};
   }
 `
-BaseProgress.defaultProps = {
-  theme: defaultTheme,
-}
 
 const Progress = ({ value, ...props }) => {
   const [prevValue, setPrevValue] = useState(value)

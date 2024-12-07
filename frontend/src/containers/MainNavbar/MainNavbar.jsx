@@ -54,9 +54,22 @@ const MainNavbar = () => {
     result.push({
       label: 'Logout',
       icon: 'logout',
-      onClick: nebula.logout,
+      onClick: () => nebula.logout(),
     })
     return result
+  }, [])
+
+  const show = useMemo(() => {
+    return {
+      scheduler:
+        nebula.can('scheduler_view', null, true) ||
+        nebula.can('scheduler_edit', null, true),
+      rundown:
+        nebula.can('rundown_view', null, true) ||
+        nebula.can('rundown_edit', null, true),
+      services: nebula.can('service_control', null, true),
+      jobs: nebula.can('job_control', null, true),
+    }
   }, [])
 
   return (
@@ -66,16 +79,16 @@ const MainNavbar = () => {
         <NavLink to={`/mam/editor${mamSuffix}`}>Assets</NavLink>
         {nebula.experimental && (
           <>
-            <NavLink to={`/mam/scheduler${mamSuffix}`}>Scheduler</NavLink>
-            <NavLink to={`/mam/rundown${mamSuffix}`}>Rundown</NavLink>
+            {show.scheduler && (
+              <NavLink to={`/mam/scheduler${mamSuffix}`}>Scheduler</NavLink>
+            )}
+            {show.rundown && (
+              <NavLink to={`/mam/rundown${mamSuffix}`}>Rundown</NavLink>
+            )}
           </>
         )}
-        <NavLink to="/jobs">Jobs</NavLink>
-        {!nebula.user.is_limited && (
-          <>
-            <NavLink to="/services">Services</NavLink>
-          </>
-        )}
+        {show.jobs && <NavLink to="/jobs">Jobs</NavLink>}
+        {show.services && <NavLink to="/services">Services</NavLink>}
       </div>
       <div className="center">
         <PageTitle />

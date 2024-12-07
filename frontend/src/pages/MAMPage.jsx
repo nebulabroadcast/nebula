@@ -86,13 +86,10 @@ const MAMPage = () => {
 
   const onDragStart = (event) => {
     setIsDragging(true)
-    console.debug('Start drag', event.active.data.current)
+    const objects = event.active.data.current
+    console.debug('Start drag', objects)
     setDraggedObjects(event.active.data.current)
     setBodyCursor('grabbing')
-
-    if (event.active.id === focusedAsset) return
-    dispatch(setFocusedAsset(event.active.id))
-    dispatch(setSelectedAssets([event.active.id]))
   }
 
   const onDragEnd = (event) => {
@@ -109,6 +106,7 @@ const MAMPage = () => {
   useEffect(() => {
     if (searchParams.get('asset')) {
       const assetId = parseInt(searchParams.get('asset'))
+      if (isNaN(assetId)) return
       if (assetId === focusedAsset) return
       dispatch(setFocusedAsset(assetId))
       dispatch(setSelectedAssets([assetId]))
@@ -156,7 +154,7 @@ const MAMPage = () => {
   //
 
   const draggedwidget = useMemo(() => {
-    //if (!draggedObjects?.length) return null
+    if (!draggedObjects?.length) return null
     return (
       <>
         {(draggedObjects || []).map((obj, idx) => {
@@ -165,11 +163,6 @@ const MAMPage = () => {
       </>
     )
   }, [draggedObjects])
-
-  // const onMouseMove = (e) => {
-  //   setMousePos({ x: e.clientX, y: e.clientY })
-  // }
-  //
 
   useEffect(() => {
     const handleMouseMove = (e) => {

@@ -51,6 +51,7 @@ const BrowserNav = () => {
           options={viewOptions}
           label={currentView?.name}
           buttonStyle={dropdownButtonStyle}
+          iconOnRight={true}
         />
         <Spacer />
         <InputText

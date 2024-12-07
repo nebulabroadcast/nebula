@@ -1,116 +1,71 @@
-import nebula from '/src/nebula'
-
 import { toast } from 'react-toastify'
-import { useState, useEffect } from 'react'
-import {
-  Navbar,
-  InputText,
-  InputPassword,
-  Button,
-  Spacer,
-  PanelHeader,
-  Form,
-  FormRow,
-  InputSwitch,
-} from '/src/components'
+import { useState, useEffect, useMemo } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
+
+import nebula from '/src/nebula'
+import { Navbar, Button, Spacer } from '/src/components'
 
 import Sessions from '/src/containers/Sessions'
 import UserList from './UserList'
-import AccessControl from './AccessControl'
-import ApiKeyPicker from './ApiKeyPicker'
-
-const apiKeyPreview = (apiKey) => {
-  const start = apiKey.substring(0, 4)
-  const end = apiKey.substring(apiKey.length - 4)
-  return start + '*******' + end
-}
-
-const UserForm = ({ userData, setUserData }) => {
-  const setValue = (key, value) => {
-    setUserData((prev) => ({ ...prev, [key]: value }))
-  }
-
-  return (
-    <div className="invisible column grow">
-      <section className="column">
-        <PanelHeader>{userData?.id ? userData.login : 'New user'}</PanelHeader>
-        <Form>
-          <FormRow title="Login">
-            <InputText
-              value={userData?.login || ''}
-              disabled={!!userData?.id}
-              onChange={(value) => setValue('login', value)}
-            />
-          </FormRow>
-          <FormRow title="Full name">
-            <InputText
-              value={userData?.full_name || ''}
-              onChange={(value) => setValue('full_name', value)}
-            />
-          </FormRow>
-          <FormRow title="Email">
-            <InputText
-              value={userData?.email || ''}
-              onChange={(value) => setValue('email', value)}
-            />
-          </FormRow>
-        </Form>
-      </section>
-
-      <section className="column">
-        <PanelHeader>Authentication</PanelHeader>
-
-        <Form>
-          <FormRow title="Password">
-            <InputPassword
-              value={userData?.password || ''}
-              onChange={(value) => setValue('password', value)}
-              autoComplete="new-password"
-              placeholder="Change current password"
-            />
-          </FormRow>
-          <FormRow title="API Key">
-            <ApiKeyPicker
-              setApiKey={(value) => {
-                setValue('api_key', value)
-                setValue('api_key_preview', apiKeyPreview(value))
-              }}
-              apiKeyPreview={userData?.api_key_preview}
-            />
-          </FormRow>
-          <FormRow title="Local network only">
-            <InputSwitch
-              value={userData?.local_network_only || false}
-              onChange={(value) => setValue('local_network_only', value)}
-            />
-          </FormRow>
-        </Form>
-      </section>
-
-      <AccessControl userData={userData} setValue={setValue} />
-
-      {/*
-      <section className="column">
-        <pre>
-          {JSON.stringify(userData, null, 2)}
-        </pre>
-      </section>
-      */}
-    </div>
-  )
-}
+import UserForm from './UserForm'
 
 const UsersPage = () => {
+  const { id } = useParams()
+  const [users, setUsers] = useState([])
+
+  const navigate = useNavigate()
+
   const [userData, setUserData] = useState({})
-  const [currentId, setCurrentId] = useState(null)
-  const [reloadTrigger, setReloadTrigger] = useState(0)
+  const [loading, setLoading] = useState(false)
+
+  const currentId = useMemo(() => {
+    const intId = parseInt(id)
+    if (!isNaN(intId)) return intId
+    return null
+  }, [id])
+
+  const loadUsers = () => {
+    setLoading(true)
+    nebula
+      .request('user_list')
+      .then((res) => {
+        setUsers(
+          res.data.users.map((user) => ({
+            ...user,
+            password: undefined,
+            api_key: undefined,
+            api_key_preview: user.api_key,
+          }))
+        )
+      })
+      .finally(() => setLoading(false))
+  }
+
+  useEffect(() => {
+    loadUsers()
+  }, [])
+
+  useEffect(() => {
+    if (currentId) {
+      const user = users.find((user) => user.id === currentId)
+      if (user) {
+        setUserData(user)
+        return
+      }
+    }
+    const doCopy = new URLSearchParams(window.location.search).get('copy')
+    if (!doCopy) setUserData({})
+  }, [currentId, users])
+
+  const onSelect = (userId) => {
+    navigate(`/users/${userId}`)
+  }
 
   const onSave = () => {
     nebula
       .request('save_user', userData)
       .then(() => {
-        setReloadTrigger(reloadTrigger + 1)
-        toast.success('User saved')
+        loadUsers()
       })
       .catch((err) => {
         toast.error('Error saving user')
@@ -137,12 +92,9 @@ const UsersPage = () => {
       'email',
     ])
       copy[key] = undefined
+    navigate('/users?copy=true')
     setUserData(copy)
   }
-
-  useEffect(() => {
-    if (userData?.id) setCurrentId(userData.id)
-  }, [userData])
 
   return (
     <main className="column">
@@ -150,7 +102,7 @@ const UsersPage = () => {
         <Button
           icon="person_add"
           label="New user"
-          onClick={() => setUserData({})}
+          onClick={() => navigate('/users')}
         />
         <Button
           icon="content_copy"
@@ -164,9 +116,10 @@ const UsersPage = () => {
 
       <div className="row grow">
         <UserList
-          onSelect={setUserData}
+          users={users}
           currentId={currentId}
-          reloadTrigger={reloadTrigger}
+          onSelect={onSelect}
+          loading={loading}
         />
         <UserForm userData={userData} setUserData={setUserData} />
         <Sessions userId={userData?.id} />

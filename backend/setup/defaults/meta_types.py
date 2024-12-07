@@ -112,6 +112,10 @@ META_TYPES = {
         "ns": "v",
         "type": T.INTEGER,
     },
+    "note": {
+        "ns": "i",
+        "type": T.STRING,
+    },
     "is_empty": {
         "ns": "v",
         "type": T.BOOLEAN,

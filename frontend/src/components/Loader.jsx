@@ -11,7 +11,7 @@ const LoaderContainer = styled.div`
   background: var(--c) 50% 0, var(--c) 50% 100%, var(--c) 100% 50%,
     var(--c) 0 50%;
   background-size: 10px 10px;
-  animation: l18 1s infinite;
+  animation: l18 0.5s infinite;
   position: relative;
 
   &::before {
@@ -34,8 +34,20 @@ const LoaderContainer = styled.div`
   }
 `
 
+const LoaderWrapper = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.01);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`
+
 const Loader = ({ style }) => {
   return <LoaderContainer style={style}></LoaderContainer>
 }
 
-export default Loader
+export { Loader, LoaderWrapper }

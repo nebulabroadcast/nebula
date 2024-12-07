@@ -13,8 +13,18 @@ const MetadataDialog = (props) => {
   const footer = (
     <>
       <Button onClick={onReset} label="Reset" icon="backspace" />
-      <Button onClick={onCancel} label="Cancel" icon="close" />
-      <Button onClick={onConfirm} label="Save" icon="check" />
+      <Button
+        onClick={onCancel}
+        label="Cancel"
+        icon="close"
+        hlColor="var(--color-red)"
+      />
+      <Button
+        onClick={onConfirm}
+        label="Save"
+        icon="check"
+        hlColor="var(--color-green)"
+      />
     </>
   )
 

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useSelector } from 'react-redux'
-import { useLocalStorage } from '/src/hooks'
+import { useLocalStorage, useDialog } from '/src/hooks'
 import { toast } from 'react-toastify'
 import nebula from '/src/nebula'
 
@@ -10,6 +10,8 @@ import PlayoutControls from './PlayoutControls'
 import RundownEditTools from './RundownEditTools'
 
 const Rundown = ({ draggedObjects }) => {
+  const showDialog = useDialog()
+
   //
   // States
   //
@@ -91,7 +93,7 @@ const Rundown = ({ draggedObjects }) => {
   // Rundown re-ordering
   //
 
-  const onDrop = (items, index) => {
+  const onDrop = async (items, index) => {
     if (rundownModeRef.current !== 'edit') {
       toast.error('Rundown is not in edit mode')
       return
@@ -127,8 +129,32 @@ const Rundown = ({ draggedObjects }) => {
             // existing items. should we even care?
             else keys = ['mark_in', 'mark_out', 'title', 'subtitle']
           } else {
-            // from assets, take only the marks
-            keys = ['mark_in', 'mark_out']
+            if (item.type === 'asset' && item.subclips?.length) {
+              // Asset has subclips
+              // Display subclips dialog
+              try {
+                const res = await showDialog('subclips', null, { asset: item })
+                console.log('RES', res)
+                for (const region of res) {
+                  const smeta = {}
+                  if (region.title) smeta.note = region.title
+                  if (region.mark_in) smeta.mark_in = region.mark_in
+                  if (region.mark_out) smeta.mark_out = region.mark_out
+                  newOrder.push({ id: item.id, type: 'asset', meta: smeta })
+                }
+                // Continue with the next item instead of
+                // default action after appending all regions
+                // selected in the dialog
+                continue
+              } catch (err) {
+                // dialog aborted
+                console.error(err)
+                continue
+              }
+            } else {
+              // from assets without subclips, take only the marks
+              keys = ['mark_in', 'mark_out']
+            }
           }
 
           for (const key of keys) {
@@ -142,17 +168,21 @@ const Rundown = ({ draggedObjects }) => {
     } // create a new order array
 
     setLoading(true)
-    nebula
-      .request('order', {
+
+    try {
+      await nebula.request('order', {
         id_channel: currentChannelRef.current,
         id_bin: dropAfterItem.id_bin,
         order: newOrder,
       })
-      .then(loadRundown)
-      .finally(() => {
-        setSelectedItems([])
-        setFocusedObject(null)
-      })
+      loadRundown()
+    } catch (error) {
+      onError(error)
+      setLoading(false)
+    }
+
+    setSelectedItems([])
+    setFocusedObject(null)
   } // onDrop
 
   //

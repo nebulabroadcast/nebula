@@ -14,6 +14,17 @@ const dragIcons = [
     },
   },
   {
+    name: 'live',
+    tooltip: 'Live',
+    icon: 'live_tv',
+    data: {
+      type: 'item',
+      item_role: 'live',
+      title: 'Live',
+      duration: 3600,
+    },
+  },
+  {
     name: 'lead_in',
     tooltip: 'Lead In',
     icon: 'vertical_align_bottom',

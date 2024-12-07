@@ -1,7 +1,5 @@
-import styled from 'styled-components'
-
-import { forwardRef } from 'react'
 import clsx from 'clsx'
+import styled from 'styled-components'
 
 import Button from './Button'
 

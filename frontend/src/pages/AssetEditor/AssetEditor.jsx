@@ -223,6 +223,7 @@ const AssetEditor = () => {
 
   const onNewAsset = () => {
     const currentFolder = assetData.id_folder
+    setEditorMode('metadata')
     dispatch(setSelectedAssets([]))
     dispatch(setFocusedAsset(null))
     if (
@@ -241,6 +242,7 @@ const AssetEditor = () => {
 
   const onCloneAsset = () => {
     let ndata = {}
+    setEditorMode('metadata')
     for (const field in assetData) {
       if (
         nebula.metaType(field).ns === 'm' ||

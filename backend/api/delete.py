@@ -64,8 +64,7 @@ class Request(APIRequest):
                     )
 
             case ObjectType.ASSET | ObjectType.EVENT:
-                # TODO: ACL HERE?
-                # In general, normal users don't need to
+                # normal users don't need to
                 # delete assets or events directly
                 if not user.is_admin:
                     raise nebula.ForbiddenException(

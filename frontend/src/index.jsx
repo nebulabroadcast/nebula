@@ -11,6 +11,7 @@ import contextReducer from './actions'
 import 'react-toastify/dist/ReactToastify.css'
 import 'material-symbols'
 import './index.scss'
+import './datepicker.scss'
 
 const store = configureStore({
   reducer: {

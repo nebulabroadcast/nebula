@@ -72,7 +72,7 @@ const Sessions = ({ userId }) => {
   }
 
   return (
-    <section className="column grow" style={{ minWidth: 500 }}>
+    <section className="column grow" style={{ minWidth: 400 }}>
       <Table
         data={sessions}
         loading={loading}
