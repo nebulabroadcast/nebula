@@ -95,6 +95,7 @@ const Dropdown = ({
   value = null,
   disabled = false,
   defaultValue = null,
+  iconOnRigth = false,
 }) => {
   if (align === 'right') contentStyle['right'] = 0
 
@@ -105,7 +106,7 @@ const Dropdown = ({
         style={buttonStyle}
         icon={icon}
         label={label}
-        iconOnRight={true}
+        iconOnRight={iconOnRigth}
         disabled={disabled}
       />
       <div className="dropdown-content" style={contentStyle}>
