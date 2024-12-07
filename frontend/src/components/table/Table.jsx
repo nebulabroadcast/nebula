@@ -75,6 +75,7 @@ const Table = ({
             duration: row.duration,
             mark_in: row.mark_in,
             mark_out: row.mark_out,
+            subclips: row.subclips,
           })
         }
       }

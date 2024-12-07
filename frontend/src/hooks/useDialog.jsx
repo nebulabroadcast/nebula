@@ -4,6 +4,7 @@ import MetadataDialog from '/src/containers/Dialogs/MetadataDialog'
 import ConfirmDialog from '/src/containers/Dialogs/ConfirmDialog'
 import SendToDialog from '/src/containers/Dialogs/SendToDialog'
 import DatePickerDialog from '/src/containers/Dialogs/DatePickerDialog'
+import SubclipsDialog from '/src/containers/Dialogs/SubclipsDialog'
 
 const DialogContext = createContext()
 
@@ -55,6 +56,8 @@ export const DialogProvider = ({ children }) => {
         return SendToDialog
       case 'date':
         return DatePickerDialog
+      case 'subclips':
+        return SubclipsDialog
       default:
         return null
     }

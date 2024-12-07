@@ -31,7 +31,7 @@ const RundownNav = ({ setStartTime, rundownMode, setRundownMode }) => {
 
   return (
     <Navbar>
-      <DateNav onChange={onDateChange} skipBy={7} />
+      <DateNav onChange={onDateChange} skipBy={1} />
       <Spacer />
       <RadioButton
         options={[

@@ -32,6 +32,7 @@
   ["audio/codec"            , "Audio codec"            , null                , ""],
   ["role/composer"          , "Composer"               , null                , "Coma delimited list of composers"],
   ["cue_sheet"              , "Cue sheet"              , null                , ""],
+  ["note"                   , "Note"                   , null                , ""],
   ["notes"                  , "Notes"                  , null                , ""],
   ["ctime"                  , "Creation time"          , "Created"           , "Time when the asset was created"],
   ["role/performer"         , "Artist"                 , null                , ""],

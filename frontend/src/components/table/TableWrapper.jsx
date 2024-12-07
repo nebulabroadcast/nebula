@@ -52,6 +52,13 @@ const TableWrapper = styled.div`
       }
     }
 
+    td div {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+    }
+
+
     thead {
       tr {
         background-color: var(--color-surface-03);

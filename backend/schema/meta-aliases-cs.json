@@ -32,6 +32,7 @@
   ["audio/codec"            , "Audio kodek"            , null                , "Kodek použitý pro kompresi zvukové stopy"],
   ["role/composer"          , "Skladatel"              , null                , "Čárkami oddělený seznam skladatelů"],
   ["cue_sheet"              , "Soupis skladeb"         , "Skladby"           , "Seznam použitých skladeb vyplněný dle konvence"],
+  ["note"                   , "Poznámka"               , null                , "Vysílací poznámka"],
   ["notes"                  , "Poznámky"               , null                , "Uživatelské poznámky"],
   ["ctime"                  , "Čas vzniku"             , null                , "Datum a čas založení assetu v databázi"],
   ["role/performer"         , "Interpret"              , null                , "Čárkami oddělený seznam interpretů"],

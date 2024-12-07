@@ -197,6 +197,7 @@ async def get_rundown(request: RundownRequestModel) -> RundownResponseModel:
             item_role=imeta.get("item_role"),
             title=item["title"],
             subtitle=item["subtitle"],
+            note=item["note"] or None,
             id_asset=id_asset,
             id_bin=id_bin,
             id_event=id_event,

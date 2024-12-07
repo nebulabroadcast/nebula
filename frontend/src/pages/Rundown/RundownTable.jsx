@@ -138,7 +138,13 @@ const RundownTable = ({
     } else if (objectData.item_role === 'placeholder') {
       fields = [{ name: 'title' }, { name: 'duration' }]
     } else if (objectData.id_asset) {
-      fields = [{ name: 'title' }, { name: 'mark_in' }, { name: 'mark_out' }]
+      fields = [
+        { name: 'title' },
+        { name: 'subtitle' },
+        { name: 'note' },
+        { name: 'mark_in' },
+        { name: 'mark_out' },
+      ]
     } else if (['lead_in', 'lead_out'].includes(objectData.item_role)) {
       return
     } else {
@@ -156,7 +162,7 @@ const RundownTable = ({
       .then((newData) => {
         updateObject(objectData.type, objectData.id, newData)
       })
-      .catch(onError)
+      .catch(() => {})
   }
 
   //
