@@ -1,11 +1,10 @@
-import { useEffect, useState  } from 'react'
+import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useDialog } from '/src/hooks'
 
-import { Button}  from '/src/components'
+import { Button } from '/src/components'
 
-
-const DateNav = ({ onChange }) => {
+const DateNav = ({ onChange, skipBy = 1 }) => {
   const [searchParams, setSearchParams] = useSearchParams()
   const [date, setDate] = useState()
   const showDialog = useDialog()
@@ -15,6 +14,7 @@ const DateNav = ({ onChange }) => {
     if (date && dateParam === date) return
     if (!dateParam) dateParam = new Date().toISOString().split('T')[0]
     setDate(dateParam)
+    onChange(dateParam)
   }, [searchParams])
 
   // Actions
@@ -30,8 +30,8 @@ const DateNav = ({ onChange }) => {
     })
   }
 
-  const prevDay = () => dateStep(-1)
-  const nextDay = () => dateStep(1)
+  const prevDay = () => dateStep(-skipBy)
+  const nextDay = () => dateStep(skipBy)
 
   const today = () => {
     setSearchParams((o) => {
@@ -52,12 +52,13 @@ const DateNav = ({ onChange }) => {
 
   // Render
   return (
-    <Button icon="chevron_left" onClick={prevDay} tooltip="Previous day" />
-    <Button icon="calendar_month" onClick={pickDate} tooltip="Pick date" />
-    <Button icon="today" onClick={today} tooltip="Today" />
-    <Button icon="chevron_right" onClick={nextDay} tooltip="Next day" />
+    <>
+      <Button icon="chevron_left" onClick={prevDay} tooltip="Previous day" />
+      <Button icon="calendar_month" onClick={pickDate} tooltip="Pick date" />
+      <Button icon="today" onClick={today} tooltip="Today" />
+      <Button icon="chevron_right" onClick={nextDay} tooltip="Next day" />
+    </>
   )
-
 }
 
 export default DateNav

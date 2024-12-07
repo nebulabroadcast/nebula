@@ -1,94 +1,37 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useMemo } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { useSearchParams } from 'react-router-dom'
-import { useDialog } from '/src/hooks'
 
 import nebula from '/src/nebula'
-import { Navbar, Button, Spacer, RadioButton } from '/src/components'
+import { Navbar, Spacer, RadioButton } from '/src/components'
+import DateNav from '/src/containers/DateNav'
+
 import { setPageTitle } from '/src/actions'
 
-const RundownNav = ({
-  startTime,
-  setStartTime,
-  rundownMode,
-  setRundownMode,
-}) => {
-  const [date, setDate] = useState()
-  const [searchParams, setSearchParams] = useSearchParams()
+const RundownNav = ({ setStartTime, rundownMode, setRundownMode }) => {
   const currentChannel = useSelector((state) => state.context.currentChannel)
   const dispatch = useDispatch()
-  const showDialog = useDialog()
 
   const channelConfig = useMemo(() => {
     return nebula.getPlayoutChannel(currentChannel)
   }, [currentChannel])
 
-  useEffect(() => {
-    let dateParam = searchParams.get('date')
-    if (date && dateParam === date) return
-    if (!dateParam) dateParam = new Date().toISOString().split('T')[0]
-
+  const onDateChange = (date) => {
     const [dsHH, dsMM] = channelConfig.day_start
 
-    const newDate = new Date(dateParam)
+    const newDate = new Date(date)
     newDate.setHours(dsHH, dsMM, 0, 0)
-    setStartTime(newDate)
-    setDate(dateParam)
     const pageTitle = `${newDate.toLocaleDateString(nebula.locale, {
       month: 'long',
       weekday: 'long',
       day: 'numeric',
     })}`
     dispatch(setPageTitle({ title: pageTitle }))
-  }, [searchParams, currentChannel])
-
-  useEffect(() => {
-    if (date && date !== searchParams.get('date')) {
-      setSearchParams((o) => {
-        o.set('date', date)
-        return o
-      })
-    }
-  }, [date])
-
-  const dateStep = (days) => {
-    let dateParam = searchParams.get('date')
-    if (!dateParam) dateParam = new Date().toISOString().split('T')[0]
-    const currentDate = new Date(dateParam)
-    const newDate = new Date(currentDate.getTime() + days * 24 * 60 * 60 * 1000)
-    setSearchParams((o) => {
-      o.set('date', newDate.toISOString().split('T')[0])
-      return o
-    })
-  }
-
-  const prevDay = () => dateStep(-1)
-  const nextDay = () => dateStep(1)
-
-  const today = () => {
-    setSearchParams((o) => {
-      o.set('date', new Date().toISOString().split('T')[0])
-      return o
-    })
-  }
-
-  const pickDate = async () => {
-    try {
-      const newDate = await showDialog('date', 'Pick date', { value: date })
-      setSearchParams((o) => {
-        o.set('date', newDate)
-        return o
-      })
-    } catch {}
+    setStartTime(newDate)
   }
 
   return (
     <Navbar>
-      <Button icon="chevron_left" onClick={prevDay} tooltip="Previous day" />
-      <Button icon="calendar_month" onClick={pickDate} tooltip="Pick date" />
-      <Button icon="today" onClick={today} tooltip="Today" />
-      <Button icon="chevron_right" onClick={nextDay} tooltip="Next day" />
-
+      <DateNav onChange={onDateChange} skipBy={7} />
       <Spacer />
       <RadioButton
         options={[
