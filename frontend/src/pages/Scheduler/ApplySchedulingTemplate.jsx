@@ -1,11 +1,21 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useSelector } from 'react-redux'
-import { Dropdown, Button } from '/src/components'
+
 import nebula from '/src/nebula'
+import { useDialog } from '/src/hooks'
+import { Dropdown } from '/src/components'
+
+const dmessage = `
+Are you sure you want to apply this template?
+Template will be merged with existing events.
+
+This operation cannot be undone.
+`
 
 const ApplySchedulingTemplate = ({ loadEvents, date, loading, setLoading }) => {
   const currentChannel = useSelector((state) => state.context.currentChannel)
   const [templates, setTemplates] = useState([])
+  const showDialog = useDialog()
 
   const channelConfig = useMemo(() => {
     return nebula.getPlayoutChannel(currentChannel)
@@ -26,19 +36,29 @@ const ApplySchedulingTemplate = ({ loadEvents, date, loading, setLoading }) => {
 
   useEffect(() => loadTemplates(), [channelConfig])
 
-  const applyTemplate = (value) => {
+  const applyTemplate = async (value) => {
     setLoading(true)
     const template_name = value
     const id_channel = currentChannel
+    const dtitle = `Apply template "${value}"?`
+    try {
+      const res = await showDialog('confirm', dtitle, { message: dmessage })
+    } catch {
+      setLoading(false)
+      return
+    }
 
-    nebula
-      .request('apply-scheduling-template', {
+    try {
+      nebula.request('apply-scheduling-template', {
         template_name,
         id_channel,
         date,
       })
-      .then(() => loadEvents())
-      .catch(() => setLoading(false))
+      loadEvents()
+    } catch (error) {
+      // noop
+    }
+    setLoading(false)
   }
 
   const dropdownOptions = useMemo(() => {
