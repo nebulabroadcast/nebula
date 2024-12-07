@@ -14,6 +14,7 @@ const StyledDraggableIcon = styled.div`
   background: var(--color-surface-04);
   color: var(--color-surface-text);
   cursor: grab;
+  user-select: none;
 `
 
 const DraggableIcon = ({ name, icon, tooltip, data }) => {
