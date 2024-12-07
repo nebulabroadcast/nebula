@@ -65,6 +65,13 @@ const RundownNav = ({
   const prevDay = () => dateStep(-1)
   const nextDay = () => dateStep(1)
 
+  const today = () => {
+    setSearchParams((o) => {
+      o.set('date', new Date().toISOString().split('T')[0])
+      return o
+    })
+  }
+
   const pickDate = async () => {
     try {
       const newDate = await showDialog('date', 'Pick date', { value: date })
@@ -78,7 +85,8 @@ const RundownNav = ({
   return (
     <Navbar>
       <Button icon="chevron_left" onClick={prevDay} tooltip="Previous day" />
-      <Button icon="calendar_today" onClick={pickDate} tooltip="Pick date" />
+      <Button icon="calendar_month" onClick={pickDate} tooltip="Pick date" />
+      <Button icon="today" onClick={today} tooltip="Today" />
       <Button icon="chevron_right" onClick={nextDay} tooltip="Next day" />
 
       <Spacer />

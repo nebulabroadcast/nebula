@@ -79,13 +79,21 @@ const SchedulerNav = ({
     } catch {}
   }
 
+  const today = () => {
+    setSearchParams((o) => {
+      o.set('date', new Date().toISOString().split('T')[0])
+      return o
+    })
+  }
+
   const prevWeek = () => dateStep(-7)
   const nextWeek = () => dateStep(7)
 
   return (
     <Navbar>
       <Button icon="chevron_left" onClick={prevWeek} disabled={loading} />
-      <Button icon="calendar_today" onClick={pickDate} tooltip="Pick date" />
+      <Button icon="calendar_month" onClick={pickDate} tooltip="Pick date" />
+      <Button icon="today" onClick={today} tooltip="Today" />
       <Button icon="chevron_right" onClick={nextWeek} disabled={loading} />
       <Spacer />
       <ApplySchedulingTemplate
