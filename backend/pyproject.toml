@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nebula"
-version = "6.0.8"
+version = "6.0.9"
 description = "Open source broadcast automation system"
 authors = ["Nebula Broadcast <info@nebulabroadcast.com>"]
 
