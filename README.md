@@ -123,7 +123,7 @@ See the GNU General Public License for more details.
 Need help?
 ----------
 
- - Join [Open Source Broadcasting](https://discord.gg/WXaaHYGQ) group on Discord
+ - Join [Open Source Broadcasting](https://discord.gg/3UxJ4WKfy9) group on Discord
  - Professional support for Nebula is provided by [Nebula Broadcast](https://nebulabroadcast.com)
  - User documentation is available on [our website](https://nebulabroadcast.com/doc/nebula)
  - Found a bug? Please [create an issue](https://github.com/nebulabroadcast/nebula/issues)
