@@ -49,7 +49,7 @@ const ApplySchedulingTemplate = ({ loadEvents, date, loading, setLoading }) => {
     }
 
     try {
-      nebula.request('apply-scheduling-template', {
+      await nebula.request('apply-scheduling-template', {
         template_name,
         id_channel,
         date,
