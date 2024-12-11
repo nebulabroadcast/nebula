@@ -94,12 +94,18 @@ const Scheduler = ({ draggedObjects }) => {
       // and trigger a dialog to fill in the metadata
       const title = `Edit event: ${event.title || 'Untitled'}`
       const fields = [{ name: 'start' }, ...channelConfig.fields]
+      const initialData = {}
+      for (const field of fields) {
+        const key = field.name
+        if (event[key] !== undefined) initialData[key] = event[key]
+      }
       try {
         const r = await showDialog('metadata', title, {
           fields,
-          initialData: { start: event.start },
+          initialData,
         })
         payload.meta = r
+        if (r.start) payload.start = r.start
       } catch (e) {
         return
       }

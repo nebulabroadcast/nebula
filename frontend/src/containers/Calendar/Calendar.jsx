@@ -287,10 +287,25 @@ const Calendar = ({
     } else if (draggedEvent.current && cursorTime.current) {
       console.debug('Dropped event', draggedEvent.current, cursorTime.current)
 
-      saveEvent({
-        id: draggedEvent.current.id,
-        start: Math.floor(cursorTime.current.getTime() / 1000),
-      })
+      // handle control key for copying events
+      if (e.ctrlKey) {
+        console.log('Copying event', draggedEvent.current)
+        saveEvent({
+          id: null,
+          is_empty_event: true,
+          start: Math.floor(cursorTime.current.getTime() / 1000),
+          // TODO: copy metadata based on channel config
+          title: draggedEvent.current.title,
+          subtitle: draggedEvent.current.subtitle,
+          duration: draggedEvent.current.duration,
+          color: draggedEvent.current.color,
+        })
+      } else {
+        saveEvent({
+          id: draggedEvent.current.id,
+          start: Math.floor(cursorTime.current.getTime() / 1000),
+        })
+      }
     }
 
     draggedEvent.current = null
