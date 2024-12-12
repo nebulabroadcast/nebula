@@ -21,6 +21,7 @@ const Calendar = ({
   draggedAsset,
   events,
   saveEvent,
+  copyEvent,
   contextMenu,
 }) => {
   const navigate = useNavigate()
@@ -290,16 +291,8 @@ const Calendar = ({
       // handle control key for copying events
       if (e.ctrlKey) {
         console.log('Copying event', draggedEvent.current)
-        saveEvent({
-          id: null,
-          is_empty_event: true,
-          start: Math.floor(cursorTime.current.getTime() / 1000),
-          // TODO: copy metadata based on channel config
-          title: draggedEvent.current.title,
-          subtitle: draggedEvent.current.subtitle,
-          duration: draggedEvent.current.duration,
-          color: draggedEvent.current.color,
-        })
+        const newTs = Math.floor(cursorTime.current.getTime() / 1000)
+        copyEvent(draggedEvent.current.id, newTs)
       } else {
         saveEvent({
           id: draggedEvent.current.id,

@@ -6,13 +6,17 @@ const formatRundownSymbol = (rowData) => {
   }
 
   const style = {}
+  //style.fontSize = '18px'
   let icon = ''
   if (rowData.id_asset) {
     const folder = nebula.settings.folders.find(
       (f) => f.id === rowData.id_folder
     )
     style.color = folder?.color
-    icon = 'fiber_manual_record'
+    // icon = rowData.is_primary
+    //   ? 'radio_button_checked'
+    //   : 'radio_button_unchecked'
+    icon = rowData.is_primary ? 'star' : 'fiber_manual_record'
   } else if (rowData.item_role === 'placeholder') {
     icon = 'expand'
   } else if (rowData.item_role === 'live') {
