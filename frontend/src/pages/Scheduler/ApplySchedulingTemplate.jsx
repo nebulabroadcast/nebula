@@ -29,7 +29,6 @@ const ApplySchedulingTemplate = ({ loadEvents, date, loading, setLoading }) => {
         if (b.name === channelConfig.default_template) return 1
         return a.title.localeCompare(b.title)
       })
-      console.log(templates)
       setTemplates(templates)
     })
   }

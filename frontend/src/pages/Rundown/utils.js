@@ -7,6 +7,7 @@ const getRunModeOptions = (object_type, selection, func) => {
       {
         label: 'Run: Auto',
         icon: 'play_arrow',
+        separator: true,
         onClick: () => func('event', selection, 0),
       },
       {
@@ -29,17 +30,18 @@ const getRunModeOptions = (object_type, selection, func) => {
   if (object_type === 'item') {
     return [
       {
-        label: 'Run: Auto',
+        label: 'Run auto',
         icon: 'play_arrow',
+        separator: true,
         onClick: () => func('item', selection, 0),
       },
       {
-        label: 'Run: Manual',
+        label: 'Manual',
         icon: 'hand_gesture',
         onClick: () => func('item', selection, 1),
       },
       {
-        label: 'Run: Skip',
+        label: 'Skip',
         icon: 'skip_next',
         onClick: () => func('item', selection, 4),
       },

@@ -106,6 +106,39 @@ const RundownTable = ({
       .catch(() => {})
   }
 
+  const onSetPrimary = async () => {
+    const id_asset = focusedObject.id_asset
+    const id_event = focusedObject.id_event
+    try {
+      const res = await nebula.request('get', {
+        object_type: 'asset',
+        ids: [id_asset],
+      })
+      console.log('Asset:', res.data.data)
+      if (!res.data?.data?.length) {
+        console.error('Asset not found:', id_asset)
+        return
+      }
+      const meta = res.data.data[0]
+      const emeta = {}
+      for (const field of channelConfig.fields) {
+        const key = field.name
+        emeta[key] = meta[key] || null
+      }
+      emeta.id_asset = id_asset
+      await nebula.request('set', {
+        object_type: 'event',
+        id: id_event,
+        data: emeta,
+      })
+
+      loadRundown()
+    } catch (err) {
+      onError(err)
+      return
+    }
+  }
+
   const onSolve = (solver) => {
     const items = data
       .filter(
@@ -126,17 +159,28 @@ const RundownTable = ({
     updateObject(object_type, id, { run_mode })
   }
 
-  const editObject = (object_type, id) => {
-    const objectData = data.find(
-      (row) => row.id === id && row.type === object_type
-    )
-    if (!objectData) return // this should never happen
+  const editObject = async (object_type, id) => {
+    let objectData = {}
+    try {
+      const res = await nebula.request('get', {
+        object_type,
+        ids: [id],
+      })
+      objectData = res.data.data[0]
+    } catch (err) {
+      onError(err)
+      return
+    }
+
+    // Create a field list based on the object type
 
     let fields
-    if (objectData.type === 'event') {
+    if (object_type === 'event') {
       fields = [...channelConfig.fields]
     } else if (objectData.item_role === 'placeholder') {
       fields = [{ name: 'title' }, { name: 'duration' }]
+    } else if (['lead_in', 'lead_out'].includes(objectData.item_role)) {
+      return
     } else if (objectData.id_asset) {
       fields = [
         { name: 'title' },
@@ -145,24 +189,44 @@ const RundownTable = ({
         { name: 'mark_in' },
         { name: 'mark_out' },
       ]
-    } else if (['lead_in', 'lead_out'].includes(objectData.item_role)) {
-      return
     } else {
       return
     }
 
-    const title = `Edit ${objectData.type}: ${objectData.title}`
+    // if the object is item with asset, we need to get the asset data
 
+    if (object_type === 'item' && objectData.id_asset) {
+      try {
+        const res = await nebula.request('get', {
+          object_type: 'asset',
+          ids: [objectData.id_asset],
+        })
+        const assetData = res.data.data[0]
+        for (const field of fields) {
+          const key = field.name
+          if (!objectData.key) objectData[key] = assetData[key]
+        }
+      } catch (err) {
+        onError(err)
+        return
+      }
+    }
+
+    // construct the form title and initial data
+
+    const title = `Edit ${object_type}: ${objectData.title}`
     const initialData = {}
     for (const field of fields) {
       initialData[field.name] = objectData[field.name]
     }
 
-    showDialog('metadata', title, { fields, initialData })
-      .then((newData) => {
-        updateObject(objectData.type, objectData.id, newData)
+    try {
+      const newData = await showDialog('metadata', title, {
+        fields,
+        initialData,
       })
-      .catch(() => {})
+      updateObject(object_type, id, newData)
+    } catch {}
   }
 
   //
@@ -263,21 +327,26 @@ const RundownTable = ({
     const res = []
     if (selectedItems.length) {
       if (selectedItems.length === 1) {
-        res.push(...getRunModeOptions('item', selectedItems[0], setRunMode))
         res.push({
           label: 'Edit item',
           icon: 'edit',
-          separator: true,
           onClick: () => editObject('item', selectedItems[0]),
         })
-      }
-      if (focusedObject.id_asset) {
+        if (focusedObject.id_asset) {
+          res.push({
+            label: 'Set as primary',
+            icon: 'star',
+            onClick: onSetPrimary,
+          })
+        }
+
         res.push({
           label: 'Send to...',
           icon: 'send',
           onClick: onSendTo,
         })
       }
+
       if (focusedObject.item_role === 'placeholder') {
         for (const solver of channelConfig.solvers) {
           res.push({
@@ -287,6 +356,9 @@ const RundownTable = ({
           })
         }
       }
+
+      res.push(...getRunModeOptions('item', selectedItems[0], setRunMode))
+
       res.push({
         label: 'Delete',
         icon: 'delete',
@@ -296,13 +368,12 @@ const RundownTable = ({
       })
       return res
     } else if (selectedEvents.length === 1) {
-      res.push(...getRunModeOptions('event', selectedEvents[0], setRunMode))
       res.push({
         label: 'Edit event',
         icon: 'edit',
-        separator: true,
         onClick: () => editObject('event', selectedEvents[0]),
       })
+      res.push(...getRunModeOptions('event', selectedEvents[0], setRunMode))
     }
     return res
   }

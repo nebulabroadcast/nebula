@@ -12,10 +12,12 @@ const formatObjectTitle = (rowData, key) => {
   const title = rowData[key]
   const subtitle = rowData.subtitle
   const note = rowData.note
+  const tstyle = {}
+  if (rowData.is_primary) tstyle.fontWeight = 'bold'
   return (
     <td>
       <div>
-        <span>{title}</span>
+        <span style={tstyle}>{title}</span>
         {subtitle && (
           <span style={{ color: 'var(--color-text-dim)' }}>
             {nebula.settings.system.subtitle_separator}
