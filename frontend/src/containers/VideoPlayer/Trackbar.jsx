@@ -90,19 +90,6 @@ const Trackbar = ({
     ctx.lineTo(markOutX, height - 1)
     ctx.stroke()
 
-    // Draw the poster frame
-
-    if (auxMarks.poster_frame) {
-      const posterFrameX = (auxMarks.poster_frame / duration) * width
-      ctx.fillStyle = '#ff00ff'
-      ctx.beginPath()
-      ctx.moveTo(posterFrameX - 4, 0)
-      ctx.lineTo(posterFrameX + 4, 0)
-      ctx.lineTo(posterFrameX, 4)
-      ctx.closePath()
-      ctx.fill()
-    }
-
     //
     // Draw the handle
     //
@@ -124,13 +111,27 @@ const Trackbar = ({
     ctx.beginPath()
     ctx.fillRect(progressX - 1, 0, handleWidth, height)
     ctx.fill()
-  }, [currentTime, duration, markIn, markOut])
+
+    // Draw the poster frame
+
+    if (auxMarks.poster_frame) {
+      const posterFrameX =
+        (auxMarks.poster_frame / duration) * width + frameWidth / 2
+      ctx.fillStyle = '#ff00ff'
+      ctx.beginPath()
+      ctx.moveTo(posterFrameX - 4, 0)
+      ctx.lineTo(posterFrameX + 4, 0)
+      ctx.lineTo(posterFrameX, 4)
+      ctx.closePath()
+      ctx.fill()
+    }
+  }, [currentTime, duration, markIn, markOut, marks])
 
   // Events
 
   useEffect(() => {
     drawSlider()
-  }, [currentTime, duration, markIn, markOut])
+  }, [currentTime, duration, markIn, markOut, marks])
 
   // Dragging
 
