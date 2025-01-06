@@ -2,7 +2,7 @@ NEBULA
 ======
 
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/nebulabroadcast/nebula?style=for-the-badge)
-![Maintenance](https://img.shields.io/maintenance/yes/2024?style=for-the-badge)
+![Maintenance](https://img.shields.io/maintenance/yes/2025?style=for-the-badge)
 ![Last commit](https://img.shields.io/github/last-commit/nebulabroadcast/nebula?style=for-the-badge)
 ![Python version](https://img.shields.io/badge/python-3.11-blue?style=for-the-badge)
 
@@ -26,13 +26,16 @@ Key features
 
 ### Media Asset Management
 
+![Metadata editor](https://nebulabroadcast.com/screenshots/nb_screenshot_browser.jpg)
+
 Simple and fast media catalog based on [EBU&nbsp;Core](https://tech.ebu.ch/MetadataEbuCore) includes a description of asset
 genre, editorial format, atmosphere, rights, relations, and technical metadata,
 while its very fast search engine makes navigation among media files very easy.
 
+
 The low-resolution preview allows for editorial review, trimming, and the creation of sub-clips.
 
-![Metadata editor](https://nebulabroadcast.com/static/img/nebula-metadata-editor.webp)
+![Video preview](https://nebulabroadcast.com/screenshots/nb_screenshot_preview.jpg)
 
 ### Video and audio cross-conversion and normalization
 
@@ -43,11 +46,13 @@ smart frame rate and size normalization and [EBU R128](https://tech.ebu.ch/docs/
 Automatic cross-conversion servers transcode files for playout, web, low-res proxies, customer previews, etc.
 For **h.264** and **HEVC**, Nebula can take advantage of NVIDIA nvenc and leverage the speed of transcoding using GPUs.
 
+![Jonbs view](https://nebulabroadcast.com/screenshots/nb_screenshot_jobs.jpg)
+
 It is possible to start conversions automatically (rule-based) or trigger them from the user interface.
 
 ### Linear scheduling
 
-Firefly client provides a simple and user-friendly way to schedule linear broadcasting.
+Nebula provides a simple and user-friendly way to schedule linear broadcasting.
 Macro- and micro-scheduling patterns are finished intuitively using drag&drop, including live events.
 
 Nebula has also the ability to schedule for playback assets, which aren't finished yet.
@@ -59,8 +64,7 @@ depending on the particular broadcast scheme, Dramatica selects and automaticall
 It is the way to create a playlist for a music station where an algorithm automatically creates a playlist based on a predefined scheme.
 Each clip in the rundown is picked by its editorial format, genre, tempo, atmosphere, etc.
 
-![Detail of a scheduler panel in the Firefly application](https://nebulabroadcast.com/static/img/nebula-scheduler.webp)
-
+![Detail of a scheduler panel in the web interface](https://nebulabroadcast.com/screenshots/nb_screenshot_scheduling.jpg)
 
 ### Playout control
 
@@ -69,12 +73,12 @@ For linear broadcasting, Nebula can control
 Broadcasting can run autonomously with and option of starting blocks at a specified time.
 
 Users - master control room operators - can interfere with the rundown using [Firefly client](https://github.com/nebulabroadcast/firefly),
-executing graphics or change run order until the last moment.
+or the web interface, executing graphics or change run order until the last moment.
 
 Playout control module offers a plug-in interface for secondary events execution such as CG, router or studio control,
 recorders control and so on. Right at the operator's fingertips.
 
-![Detail of a rundown panel with playout control interface](https://nebulabroadcast.com/static/img/nebula-playout-control.webp)
+![Detail of a rundown panel with playout control interface](https://nebulabroadcast.com/screenshots/nb_screenshot_rundown.jpg)
 
 ### Publishing
 
