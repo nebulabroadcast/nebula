@@ -1,7 +1,6 @@
 import asyncio
 import contextlib
 import os
-import subprocess
 import time
 from typing import Any
 
@@ -12,11 +11,22 @@ from server.background import BackgroundTask
 
 
 async def exec_mount(cmd: str) -> bool:
-    # TODO: use asyncio.subprocess
-    proc = subprocess.Popen(cmd, shell=True)  # noqa
-    while proc.poll() is None:
-        await asyncio.sleep(0.1)
-    return not proc.returncode
+    """Execute a mount command asynchronously.
+
+    Returns:
+        bool: True if the command executed successfully, False otherwise.
+    """
+    proc = await asyncio.create_subprocess_shell(
+        cmd,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
+    )
+    stdout, stderr = await proc.communicate()
+    if proc.returncode != 0:
+        nebula.log.error(f"Mount failed with return code {proc.returncode}")
+        nebula.log.error(f"stderr: {stderr.decode()}")
+        return False
+    return True
 
 
 # def handle_nfs_storage(storage: Storage):
