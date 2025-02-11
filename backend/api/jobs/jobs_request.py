@@ -261,7 +261,7 @@ class JobsRequest(APIRequest):
         LEFT JOIN services as s ON s.id = j.id_service
         LEFT JOIN users as u ON u.id = j.id_user
         LEFT JOIN actions as ac ON ac.id = j.id_action
-        {('WHERE ' + (' AND '.join(conds))) if conds else ''}
+        {("WHERE " + (" AND ".join(conds))) if conds else ""}
         ORDER BY
             j.progress DESC NULLS LAST,
             j.end_time DESC,

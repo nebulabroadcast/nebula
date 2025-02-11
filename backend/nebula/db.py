@@ -1,6 +1,7 @@
 __all__ = ["db", "DB", "DatabaseConnection"]
 
-from typing import Any, AsyncGenerator
+from collections.abc import AsyncGenerator
+from typing import Any
 
 import asyncpg
 import asyncpg.pool

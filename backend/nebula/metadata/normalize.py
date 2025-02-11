@@ -23,7 +23,7 @@ def is_serializable(value: Any) -> bool:
 
     This is used to check if a value can be stored in the database.
     """
-    return bool(isinstance(value, (str, int, float, bool, dict, list, tuple)))
+    return bool(isinstance(value, str | int | float | bool | dict | list | tuple))
 
 
 def normalize_meta(key: str, value: Any) -> Any:
@@ -38,9 +38,9 @@ def normalize_meta(key: str, value: Any) -> Any:
 
     # If there's no matching metatype, just return the value
     if key not in settings.metatypes:
-        assert is_serializable(
-            value
-        ), f"Value {value} set to unknown key {key} is not supported."
+        assert is_serializable(value), (
+            f"Value {value} set to unknown key {key} is not supported."
+        )
         return value
 
     meta_type = settings.metatypes[key]
@@ -76,9 +76,9 @@ def normalize_meta(key: str, value: Any) -> Any:
             return float(value)
 
         case MetaClass.OBJECT:
-            assert is_serializable(
-                value
-            ), f"Value {value} of key {key} is not supported."
+            assert is_serializable(value), (
+                f"Value {value} of key {key} is not supported."
+            )
             return value
 
         case MetaClass.FRACTION:
