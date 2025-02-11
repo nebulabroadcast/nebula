@@ -1,6 +1,6 @@
 import nebula from '/src/nebula'
 
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useEffect, useState, useMemo } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { toast } from 'react-toastify'
@@ -72,6 +72,7 @@ const AssetEditor = () => {
   const [originalData, setOriginalData] = useState({})
   const [loading, setLoading] = useState(false)
   const [editorMode, setEditorMode] = useLocalStorage('editorMode', 'metadata')
+  const [searchParams, setSearchParams] = useSearchParams()
 
   const showDialog = useDialog()
 
@@ -84,7 +85,11 @@ const AssetEditor = () => {
       .then((response) => {
         setAssetData(response.data.data[0] || {})
         setOriginalData(response.data.data[0] || {})
-        navigate({ pathname: `/mam/editor`, search: `?asset=${id_asset}` })
+        //navigate({ pathname: `/mam/editor`, search: `?asset=${id_asset}` })
+        setSearchParams((o) => {
+          o.set('asset', id_asset)
+          return o
+        })
       })
       .catch((error) => {
         toast.error(

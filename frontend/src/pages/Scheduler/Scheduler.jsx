@@ -69,6 +69,41 @@ const Scheduler = ({ draggedObjects }) => {
 
   // Saving events to the server
 
+  const copyEvent = async (id, newTs) => {
+    const fields = [{ name: 'start' }, ...channelConfig.fields]
+    const initialData = {}
+    const finalData = {}
+
+    try {
+      const res = await nebula.request('get', {
+        object_type: 'event',
+        ids: [id],
+      })
+      const edata = res.data.data[0]
+      for (const field of fields) {
+        initialData[field.name] = edata[field.name]
+      }
+      finalData.id_asset = edata.id_asset
+    } catch (e) {
+      console.error('Unable to load event', e)
+      return
+    }
+    initialData.start = newTs
+
+    try {
+      const title = `Copy event: ${initialData.title || 'Untitled'}`
+      const res = await showDialog('metadata', title, { fields, initialData })
+      console.log('res', res)
+      for (const field of fields) {
+        finalData[field.name] = res[field.name] || null
+      }
+    } catch (e) {
+      //
+    }
+    console.log('finalData', finalData)
+    saveEvent(finalData)
+  }
+
   const saveEvent = async (event) => {
     const payload = {
       start: event.start,
@@ -128,17 +163,32 @@ const Scheduler = ({ draggedObjects }) => {
   // Context menu
   //
 
-  const editEvent = (event) => {
+  const editEvent = async (event) => {
     const title = `Edit event: ${event.title || 'Untitled'}`
     const fields = [{ name: 'start' }, ...channelConfig.fields]
-    showDialog('metadata', title, { fields, initialData: event })
-      .then((data) => {
-        console.log('Saving', data)
-        saveEvent({ ...data })
-      })
-      .catch(() => {
-        console.log('Cancelled')
-      })
+
+    const initialData = {}
+    if (event.id) {
+      try {
+        const res = await nebula.request('get', {
+          object_type: 'event',
+          ids: [event.id],
+        })
+        const edata = res.data.data[0]
+        for (const field of fields) {
+          initialData[field.name] = edata[field.name]
+        }
+      } catch (e) {
+        console.error('Failed to load event', e)
+      }
+    }
+
+    try {
+      const r = await showDialog('metadata', title, { fields, initialData })
+      saveEvent({ ...r, id: event.id })
+    } catch (e) {
+      //
+    }
   }
 
   const deleteEvent = (eventId) => {
@@ -201,6 +251,7 @@ const Scheduler = ({ draggedObjects }) => {
             startTime={startTime}
             events={events}
             saveEvent={saveEvent}
+            copyEvent={copyEvent}
             draggedAsset={draggedAsset}
             contextMenu={contextMenu}
           />
