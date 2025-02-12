@@ -29,7 +29,8 @@ def markdown2email(text: str) -> MIMEMultipart | MIMEText:
         msg = MIMEMultipart("alternative")
         html = mistune.html(text)
         part1 = MIMEText(text, "plain")
-        part2 = MIMEText(html, "html")
+        if isinstance(html, str):  # mistune hack
+            part2 = MIMEText(html, "html")
         msg.attach(part1)
         msg.attach(part2)
         return msg

@@ -64,9 +64,9 @@ async def set_rundown_order(
                     affected_bins.append(item["id_bin"])
 
             elif obj.type == "asset":
-                assert (
-                    obj.id is not None
-                ), "Asset ID must not be None when inserting asset to rundown"
+                assert obj.id is not None, (
+                    "Asset ID must not be None when inserting asset to rundown"
+                )
                 asset = await nebula.Asset.load(
                     obj.id,
                     connection=conn,
@@ -74,15 +74,14 @@ async def set_rundown_order(
                 )
                 if not asset:
                     nebula.log.error(
-                        f"Unable to append {obj.type} ID {obj.id}. " f"Asset not found",
+                        f"Unable to append {obj.type} ID {obj.id}. Asset not found",
                         user=user.name,
                     )
                     continue
 
                 if not can_append(asset, channel.rundown_accepts):
                     nebula.log.error(
-                        f"Unable to append {obj.type} ID {obj.id}. "
-                        f"Asset not allowed",
+                        f"Unable to append {obj.type} ID {obj.id}. Asset not allowed",
                         user=user.name,
                     )
                     continue

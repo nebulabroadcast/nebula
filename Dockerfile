@@ -11,26 +11,22 @@ COPY ./frontend/public /frontend/public
 WORKDIR /frontend
 RUN yarn install && yarn build
 
-FROM python:3.12-bullseye
+FROM python:3.12-slim
 ENV PYTHONBUFFERED=1
 
 RUN \
   apt-get update \
-  && apt-get -yqq upgrade \
   && apt-get -yqq install \
-  cifs-utils
+  cifs-utils \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
 
-RUN mkdir /backend
 WORKDIR /backend
-COPY ./backend/pyproject.toml /backend/pyproject.toml
+COPY ./backend/pyproject.toml /backend/uv.lock .
+RUN --mount=from=ghcr.io/astral-sh/uv,source=/uv,target=/bin/uv \
+    uv pip install -r pyproject.toml --system
 
-RUN \
-  pip install -U pip && \
-  pip install poetry && \
-  poetry config virtualenvs.create false && \
-  poetry install --no-interaction --no-ansi --only main
-
-COPY ./backend /backend
+COPY ./backend .
 COPY --from=build /frontend/dist/ /frontend
 
 CMD ["/bin/bash", "manage", "start"]

@@ -18,7 +18,7 @@ from nebula.settings.common import LanguageCode
 
 
 def hash_password(password: str) -> str:
-    if config.password_hashing == "legacy":
+    if config.password_hashing == "legacy":  # noqa: S105
         return hashlib.sha256(password.encode("ascii")).hexdigest()
     raise NotImplementedException("Hashing method not available")
 

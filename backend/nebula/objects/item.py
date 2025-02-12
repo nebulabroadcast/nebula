@@ -49,9 +49,9 @@ class Item(BaseObject):
         assert isinstance(asset, Asset), "Asset must be an instance of Asset"
         if self["id_asset"] is None:
             self["id_asset"] = asset.id
-        assert (
-            asset.id == self["id_asset"]
-        ), f"Asset id must match item id_asset: {asset.id} != {self['id_asset']}"
+        assert asset.id == self["id_asset"], (
+            f"Asset id must match item id_asset: {asset.id} != {self['id_asset']}"
+        )
         self._asset = asset
 
         # BIG NO-NO - if needed, do that manually!!!
