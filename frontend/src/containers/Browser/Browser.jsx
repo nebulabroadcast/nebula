@@ -106,7 +106,7 @@ const BrowserTable = ({ isDragging }) => {
           if (colName == 'subtitle') continue; // added automatically
           cols.push({
             name: colName,
-            title: nebula.metaHeader(colName),
+            title: nebula.metaType(colName).header,
             formatter: getFormatter(colName),
             width: getColumnWidth(colName),
           });

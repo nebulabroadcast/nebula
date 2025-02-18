@@ -1,4 +1,4 @@
-from typing import Annotated, Any, get_args
+from typing import Annotated, Any, Literal, get_args
 
 import fastapi
 from pydantic import Field
@@ -13,6 +13,36 @@ from server.models import ResponseModel
 from server.request import APIRequest
 
 from .client_settings import ClientSettingsModel, get_client_settings
+
+PermissionValue = Literal[True] | Literal[False] | list[int]
+
+
+class UserPermissionModel(ResponseModel):
+    """User permission model."""
+    asset_view: PermissionValue = False
+    asset_edit: PermissionValue = False
+    rundown_view: PermissionValue = False
+    rundown_edit: PermissionValue = False
+    scheduler_view: PermissionValue = False
+    scheduler_edit: PermissionValue = False
+    service_control: PermissionValue = False
+    mcr: PermissionValue = False
+    job_control: PermissionValue = False
+
+
+class UserInfoModel(ResponseModel):
+    id: int
+    login: str
+    ctime: float
+    mtime: float
+
+    email: str | None = None
+    full_name: str | None = None
+
+    local_network_only: bool = False
+    is_admin: bool = False
+    is_limited: bool = False
+    permissions: UserPermissionModel = Field(default_factory=UserPermissionModel)
 
 
 class InitResponseModel(ResponseModel):
@@ -33,7 +63,7 @@ class InitResponseModel(ResponseModel):
     ] = None
 
     user: Annotated[
-        dict[str, Any] | None,
+        UserInfoModel | None,
         Field(
             title="User data",
             description="User data if user is logged in",
@@ -127,10 +157,22 @@ class InitRequest(APIRequest):
         client_settings.server_url = f"{request.url.scheme}://{request.url.netloc}"
         plugins = get_frontend_plugins()
 
+        nebula.log.info(f"init {user}")
+        udata: dict[str, Any] = {
+            "permissions": {},
+        }
+        for key, value in user.meta.items():
+            if key.startswith("can/"):
+                udata["permissions"][key[4:]] = value
+            else:
+                udata[key] = value
+
+        nebula.log.info(f"init {udata}")
+
         return InitResponseModel(
             installed=True,
             motd=motd,
-            user=user.meta,
+            user=UserInfoModel(**udata),
             settings=client_settings,
             frontend_plugins=plugins,
             scoped_endpoints=server_context.scoped_endpoints,

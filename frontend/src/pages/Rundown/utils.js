@@ -66,7 +66,7 @@ const RUNDOWN_COLUMNS = [
 const getRundownColumns = () => {
   return RUNDOWN_COLUMNS.map((key) => {
     return {
-      title: nebula.metaHeader(key),
+      title: nebula.metaType(key).header,
       name: key,
       width: getColumnWidth(key),
       formatter: getFormatter(key),

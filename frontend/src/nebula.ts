@@ -6,18 +6,21 @@ import type {
   ClientMetaTypeModel,
   ClientCsItemModel,
   FolderSettings,
+  UserInfoModel,
+  PluginItemModel,
+  ScopedEndpoint,
+  BasePlayoutChannelSettings,
 } from './client';
 
 const nebula = {
   // Settings
 
   settings: undefined as ClientSettingsModel | undefined,
-  user: {},
-  plugins: [],
-  scopedEndpoints: {},
+  user: undefined as UserInfoModel | undefined,
+  plugins: [] as PluginItemModel[],
+  scopedEndpoints: [] as ScopedEndpoint[],
   language: 'en',
   senderId: uuidv4(),
-  users: [],
   experimental: false,
   locale: typeof window !== 'undefined' ? navigator.language || 'en-US' : 'en-US',
 
@@ -32,7 +35,8 @@ const nebula = {
     return typeof header === 'string' ? header.replace('Bearer ', '') : '';
   },
 
-  // Metadata helpers
+  // Metadata
+
   metaType(key: string): ClientMetaTypeModel {
     return (
       this.settings?.metatypes[key] || {
@@ -42,18 +46,6 @@ const nebula = {
         type: 'string',
       }
     );
-  },
-
-  metaTitle(key: string): string {
-    return this.settings?.metatypes[key]?.title || key;
-  },
-
-  metaHeader(key: string): string | null {
-    return this.settings?.metatypes[key]?.header || '';
-  },
-
-  metaDescription(key: string): string | null {
-    return this.settings?.metatypes[key]?.header || null;
   },
 
   csOptions(key: string): ClientCsItemModel[] {
@@ -70,7 +62,9 @@ const nebula = {
     return result;
   },
 
-  getPlayoutChannel(id_channel: number) {
+  // Settings
+
+  getPlayoutChannel(id_channel: number): BasePlayoutChannelSettings | undefined {
     for (const channel of this.settings?.playout_channels || []) {
       if (channel.id === id_channel) return channel;
     }
@@ -89,7 +83,7 @@ const nebula = {
     return undefined;
   },
 
-  getScopedEndpoints(scope: string) {
+  getScopedEndpoints(scope: string): ScopedEndpoint[] {
     const result = [];
     for (const scopedEndpoint of this.scopedEndpoints || {}) {
       if (scopedEndpoint.scopes.includes(scope)) result.push(scopedEndpoint);
@@ -97,7 +91,7 @@ const nebula = {
     return result;
   },
 
-  getWritableFolders() {
+  getWritableFolders(): FolderSettings[] {
     return (this.settings?.folders || []).filter((folder: FolderSettings) => {
       if (this.user.is_admin) return true;
       if (this.user['can/asset_edit'] === true) return true;
@@ -110,27 +104,28 @@ const nebula = {
     });
   },
 
-  can(permission: string, value, anyval = false): boolean {
+  // User access
+
+  can(permission: string, value: string | boolean | number[], anyval = false): boolean {
     if (this.user.is_admin) {
       return true;
     }
-    const key = `can/${permission}`;
-    if (this.user[key] === false) {
+    if (this.user.permissions[permission] === false) {
       return false;
     }
     if (anyval) {
       return true;
     }
-    if (this.user[key] === true) {
+    if (this.user.permissions[permission] === true) {
       return true;
     }
-    if (this.user[key] === value) {
+    if (this.user.permissions[permission] === value) {
       return true;
     }
-    return this.user[key].includes(value);
+    return this.user.permissions[permission].includes(value);
   },
 
-  logout() {
+  logout(): void {
     this.request('logout')
       .then(() => {
         window.location.href = '/';

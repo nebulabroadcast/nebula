@@ -13,7 +13,7 @@ const MetadataDetail = ({ assetData }) => {
             else if (typeof value === 'object') value = JSON.stringify(value);
 
             return (
-              <FormRow key={key} title={nebula.metaTitle(key)}>
+              <FormRow key={key} title={nebula.metaType(key).title}>
                 <InputText value={value} readOnly />
               </FormRow>
             );

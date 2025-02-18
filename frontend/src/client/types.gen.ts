@@ -342,9 +342,7 @@ export type InitResponseModel = {
   /**
    * User data if user is logged in
    */
-  user?: {
-    [key: string]: unknown;
-  } | null;
+  user?: UserInfoModel | null;
   settings?: ClientSettingsModel | null;
   /**
    * List of plugins available for the web frontend
@@ -815,6 +813,19 @@ export type UserInfo = {
   full_name?: string | null;
 };
 
+export type UserInfoModel = {
+  id: number;
+  login: string;
+  ctime: number;
+  mtime: number;
+  email?: string | null;
+  full_name?: string | null;
+  local_network_only?: boolean;
+  is_admin?: boolean;
+  is_limited?: boolean;
+  permissions?: UserPermissionModel;
+};
+
 export type UserModel = {
   id?: number | null;
   login: string;
@@ -863,6 +874,21 @@ export type UserModel = {
   can_service_control?: boolean | Array<number>;
 };
 
+/**
+ * User permission model.
+ */
+export type UserPermissionModel = {
+  asset_view?: true | false | Array<number>;
+  asset_edit?: true | false | Array<number>;
+  rundown_view?: true | false | Array<number>;
+  rundown_edit?: true | false | Array<number>;
+  scheduler_view?: true | false | Array<number>;
+  scheduler_edit?: true | false | Array<number>;
+  service_control?: true | false | Array<number>;
+  mcr?: true | false | Array<number>;
+  job_control?: true | false | Array<number>;
+};
+
 export type ValidationError = {
   loc: Array<string | number>;
   msg: string;
@@ -879,502 +905,6 @@ export type ViewSettings = {
   conditions?: Array<string> | null;
   separator?: boolean;
 };
-
-export type GetData = {
-  body: GetRequestModel;
-  headers?: {
-    authorization?: string | null;
-    'x-api-key'?: string | null;
-  };
-  path?: never;
-  query?: {
-    token?: string | null;
-    api_key?: string | null;
-  };
-  url: '/api/get';
-};
-
-export type GetErrors = {
-  /**
-   * Validation Error
-   */
-  422: HttpValidationError;
-};
-
-export type GetError = GetErrors[keyof GetErrors];
-
-export type GetResponses = {
-  /**
-   * Successful Response
-   */
-  200: GetResponseModel;
-};
-
-export type GetResponse = GetResponses[keyof GetResponses];
-
-export type ApplySchedulingTemplateData = {
-  body: ApplyTemplateRequestModel;
-  headers?: {
-    authorization?: string | null;
-    'x-api-key'?: string | null;
-    'x-client-id'?: string | null;
-  };
-  path?: never;
-  query?: {
-    token?: string | null;
-    api_key?: string | null;
-  };
-  url: '/api/apply-scheduling-template';
-};
-
-export type ApplySchedulingTemplateErrors = {
-  /**
-   * Validation Error
-   */
-  422: HttpValidationError;
-};
-
-export type ApplySchedulingTemplateError =
-  ApplySchedulingTemplateErrors[keyof ApplySchedulingTemplateErrors];
-
-export type ApplySchedulingTemplateResponses = {
-  /**
-   * Successful Response
-   */
-  200: unknown;
-};
-
-export type ListSchedulingTemplatesData = {
-  body?: never;
-  headers?: {
-    'x-client-id'?: string | null;
-  };
-  path?: never;
-  query?: never;
-  url: '/api/list-scheduling-templates';
-};
-
-export type ListSchedulingTemplatesErrors = {
-  /**
-   * Validation Error
-   */
-  422: HttpValidationError;
-};
-
-export type ListSchedulingTemplatesError =
-  ListSchedulingTemplatesErrors[keyof ListSchedulingTemplatesErrors];
-
-export type ListSchedulingTemplatesResponses = {
-  /**
-   * Successful Response
-   */
-  200: ListTemplatesResponseModel;
-};
-
-export type ListSchedulingTemplatesResponse =
-  ListSchedulingTemplatesResponses[keyof ListSchedulingTemplatesResponses];
-
-export type OpsData = {
-  body: OperationsRequestModel;
-  headers?: {
-    authorization?: string | null;
-    'x-api-key'?: string | null;
-  };
-  path?: never;
-  query?: {
-    token?: string | null;
-    api_key?: string | null;
-  };
-  url: '/api/ops';
-};
-
-export type OpsErrors = {
-  /**
-   * Validation Error
-   */
-  422: HttpValidationError;
-};
-
-export type OpsError = OpsErrors[keyof OpsErrors];
-
-export type OpsResponses = {
-  /**
-   * Successful Response
-   */
-  200: OperationsResponseModel;
-};
-
-export type OpsResponse = OpsResponses[keyof OpsResponses];
-
-export type SetData = {
-  body: OperationModel;
-  headers?: {
-    authorization?: string | null;
-    'x-api-key'?: string | null;
-  };
-  path?: never;
-  query?: {
-    token?: string | null;
-    api_key?: string | null;
-  };
-  url: '/api/set';
-};
-
-export type SetErrors = {
-  /**
-   * Validation Error
-   */
-  422: HttpValidationError;
-};
-
-export type SetError = SetErrors[keyof SetErrors];
-
-export type SetResponses = {
-  /**
-   * Successful Response
-   */
-  200: OperationResponseModel;
-};
-
-export type SetResponse = SetResponses[keyof SetResponses];
-
-export type SchedulerData = {
-  body: SchedulerRequestModel;
-  headers?: {
-    authorization?: string | null;
-    'x-api-key'?: string | null;
-    'x-client-id'?: string | null;
-  };
-  path?: never;
-  query?: {
-    token?: string | null;
-    api_key?: string | null;
-  };
-  url: '/api/scheduler';
-};
-
-export type SchedulerErrors = {
-  /**
-   * Validation Error
-   */
-  422: HttpValidationError;
-};
-
-export type SchedulerError = SchedulerErrors[keyof SchedulerErrors];
-
-export type SchedulerResponses = {
-  /**
-   * Successful Response
-   */
-  200: SchedulerResponseModel;
-};
-
-export type SchedulerResponse = SchedulerResponses[keyof SchedulerResponses];
-
-export type BrowseData = {
-  body: BrowseRequestModel;
-  headers?: {
-    authorization?: string | null;
-    'x-api-key'?: string | null;
-  };
-  path?: never;
-  query?: {
-    token?: string | null;
-    api_key?: string | null;
-  };
-  url: '/api/browse';
-};
-
-export type BrowseErrors = {
-  /**
-   * Validation Error
-   */
-  422: HttpValidationError;
-};
-
-export type BrowseError = BrowseErrors[keyof BrowseErrors];
-
-export type BrowseResponses = {
-  /**
-   * Successful Response
-   */
-  200: BrowseResponseModel;
-};
-
-export type BrowseResponse = BrowseResponses[keyof BrowseResponses];
-
-export type InvalidateSessionData = {
-  body: InvalidateSessionRequestModel;
-  headers?: {
-    authorization?: string | null;
-    'x-api-key'?: string | null;
-  };
-  path?: never;
-  query?: {
-    token?: string | null;
-    api_key?: string | null;
-  };
-  url: '/api/invalidate_session';
-};
-
-export type InvalidateSessionErrors = {
-  /**
-   * Validation Error
-   */
-  422: HttpValidationError;
-};
-
-export type InvalidateSessionError =
-  InvalidateSessionErrors[keyof InvalidateSessionErrors];
-
-export type InvalidateSessionResponses = {
-  /**
-   * Successful Response
-   */
-  200: unknown;
-};
-
-export type SessionsData = {
-  body: ListSessionsRequestModel;
-  headers?: {
-    authorization?: string | null;
-    'x-api-key'?: string | null;
-  };
-  path?: never;
-  query?: {
-    token?: string | null;
-    api_key?: string | null;
-  };
-  url: '/api/sessions';
-};
-
-export type SessionsErrors = {
-  /**
-   * Validation Error
-   */
-  422: HttpValidationError;
-};
-
-export type SessionsError = SessionsErrors[keyof SessionsErrors];
-
-export type SessionsResponses = {
-  /**
-   * Successful Response
-   */
-  200: Array<SessionModel>;
-};
-
-export type SessionsResponse = SessionsResponses[keyof SessionsResponses];
-
-export type UploadData = {
-  body?: never;
-  headers?: {
-    authorization?: string | null;
-    'x-api-key'?: string | null;
-  };
-  path: {
-    id_asset: number;
-  };
-  query?: {
-    token?: string | null;
-    api_key?: string | null;
-  };
-  url: '/upload/{id_asset}';
-};
-
-export type UploadErrors = {
-  /**
-   * Validation Error
-   */
-  422: HttpValidationError;
-};
-
-export type UploadError = UploadErrors[keyof UploadErrors];
-
-export type UploadResponses = {
-  /**
-   * Successful Response
-   */
-  200: unknown;
-};
-
-export type LoginData = {
-  body: LoginRequestModel;
-  path?: never;
-  query?: never;
-  url: '/api/login';
-};
-
-export type LoginErrors = {
-  /**
-   * Validation Error
-   */
-  422: HttpValidationError;
-};
-
-export type LoginError = LoginErrors[keyof LoginErrors];
-
-export type LoginResponses = {
-  /**
-   * Successful Response
-   */
-  200: LoginResponseModel;
-};
-
-export type LoginResponse = LoginResponses[keyof LoginResponses];
-
-export type LogoutData = {
-  body?: never;
-  headers?: {
-    authorization?: string | null;
-  };
-  path?: never;
-  query?: never;
-  url: '/api/logout';
-};
-
-export type LogoutErrors = {
-  /**
-   * Validation Error
-   */
-  422: HttpValidationError;
-};
-
-export type LogoutError = LogoutErrors[keyof LogoutErrors];
-
-export type LogoutResponses = {
-  /**
-   * Successful Response
-   */
-  200: unknown;
-};
-
-export type PasswordData = {
-  body: PasswordRequestModel;
-  headers?: {
-    authorization?: string | null;
-    'x-api-key'?: string | null;
-  };
-  path?: never;
-  query?: {
-    token?: string | null;
-    api_key?: string | null;
-  };
-  url: '/api/password';
-};
-
-export type PasswordErrors = {
-  /**
-   * Validation Error
-   */
-  422: HttpValidationError;
-};
-
-export type PasswordError = PasswordErrors[keyof PasswordErrors];
-
-export type PasswordResponses = {
-  /**
-   * Successful Response
-   */
-  200: unknown;
-};
-
-export type OrderData = {
-  body: OrderRequestModel;
-  headers?: {
-    authorization?: string | null;
-    'x-api-key'?: string | null;
-    'x-client-id'?: string | null;
-  };
-  path?: never;
-  query?: {
-    token?: string | null;
-    api_key?: string | null;
-  };
-  url: '/api/order';
-};
-
-export type OrderErrors = {
-  /**
-   * Validation Error
-   */
-  422: HttpValidationError;
-};
-
-export type OrderError = OrderErrors[keyof OrderErrors];
-
-export type OrderResponses = {
-  /**
-   * Successful Response
-   */
-  200: OrderResponseModel;
-};
-
-export type OrderResponse = OrderResponses[keyof OrderResponses];
-
-export type RundownData = {
-  body: RundownRequestModel;
-  headers?: {
-    authorization?: string | null;
-    'x-api-key'?: string | null;
-  };
-  path?: never;
-  query?: {
-    token?: string | null;
-    api_key?: string | null;
-  };
-  url: '/api/rundown';
-};
-
-export type RundownErrors = {
-  /**
-   * Validation Error
-   */
-  422: HttpValidationError;
-};
-
-export type RundownError = RundownErrors[keyof RundownErrors];
-
-export type RundownResponses = {
-  /**
-   * Successful Response
-   */
-  200: RundownResponseModel;
-};
-
-export type RundownResponse = RundownResponses[keyof RundownResponses];
-
-export type PlayoutData = {
-  body: PlayoutRequestModel;
-  headers?: {
-    authorization?: string | null;
-    'x-api-key'?: string | null;
-  };
-  path?: never;
-  query?: {
-    token?: string | null;
-    api_key?: string | null;
-  };
-  url: '/api/playout';
-};
-
-export type PlayoutErrors = {
-  /**
-   * Validation Error
-   */
-  422: HttpValidationError;
-};
-
-export type PlayoutError = PlayoutErrors[keyof PlayoutErrors];
-
-export type PlayoutResponses = {
-  /**
-   * Successful Response
-   */
-  200: PlayoutResponseModel;
-};
-
-export type PlayoutResponse = PlayoutResponses[keyof PlayoutResponses];
 
 export type DeleteData = {
   body: DeleteRequestModel;
@@ -1469,6 +999,213 @@ export type SaveUserResponses = {
   200: unknown;
 };
 
+export type InitData = {
+  body?: never;
+  headers?: {
+    authorization?: string | null;
+  };
+  path?: never;
+  query?: {
+    token?: string | null;
+  };
+  url: '/api/init';
+};
+
+export type InitErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type InitError = InitErrors[keyof InitErrors];
+
+export type InitResponses = {
+  /**
+   * Successful Response
+   */
+  200: InitResponseModel;
+};
+
+export type InitResponse = InitResponses[keyof InitResponses];
+
+export type BrowseData = {
+  body: BrowseRequestModel;
+  headers?: {
+    authorization?: string | null;
+    'x-api-key'?: string | null;
+  };
+  path?: never;
+  query?: {
+    token?: string | null;
+    api_key?: string | null;
+  };
+  url: '/api/browse';
+};
+
+export type BrowseErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type BrowseError = BrowseErrors[keyof BrowseErrors];
+
+export type BrowseResponses = {
+  /**
+   * Successful Response
+   */
+  200: BrowseResponseModel;
+};
+
+export type BrowseResponse = BrowseResponses[keyof BrowseResponses];
+
+export type GetData = {
+  body: GetRequestModel;
+  headers?: {
+    authorization?: string | null;
+    'x-api-key'?: string | null;
+  };
+  path?: never;
+  query?: {
+    token?: string | null;
+    api_key?: string | null;
+  };
+  url: '/api/get';
+};
+
+export type GetErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type GetError = GetErrors[keyof GetErrors];
+
+export type GetResponses = {
+  /**
+   * Successful Response
+   */
+  200: GetResponseModel;
+};
+
+export type GetResponse = GetResponses[keyof GetResponses];
+
+export type LoginData = {
+  body: LoginRequestModel;
+  path?: never;
+  query?: never;
+  url: '/api/login';
+};
+
+export type LoginErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type LoginError = LoginErrors[keyof LoginErrors];
+
+export type LoginResponses = {
+  /**
+   * Successful Response
+   */
+  200: LoginResponseModel;
+};
+
+export type LoginResponse = LoginResponses[keyof LoginResponses];
+
+export type LogoutData = {
+  body?: never;
+  headers?: {
+    authorization?: string | null;
+  };
+  path?: never;
+  query?: never;
+  url: '/api/logout';
+};
+
+export type LogoutErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type LogoutError = LogoutErrors[keyof LogoutErrors];
+
+export type LogoutResponses = {
+  /**
+   * Successful Response
+   */
+  200: unknown;
+};
+
+export type PasswordData = {
+  body: PasswordRequestModel;
+  headers?: {
+    authorization?: string | null;
+    'x-api-key'?: string | null;
+  };
+  path?: never;
+  query?: {
+    token?: string | null;
+    api_key?: string | null;
+  };
+  url: '/api/password';
+};
+
+export type PasswordErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type PasswordError = PasswordErrors[keyof PasswordErrors];
+
+export type PasswordResponses = {
+  /**
+   * Successful Response
+   */
+  200: unknown;
+};
+
+export type RundownData = {
+  body: RundownRequestModel;
+  headers?: {
+    authorization?: string | null;
+    'x-api-key'?: string | null;
+  };
+  path?: never;
+  query?: {
+    token?: string | null;
+    api_key?: string | null;
+  };
+  url: '/api/rundown';
+};
+
+export type RundownErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type RundownError = RundownErrors[keyof RundownErrors];
+
+export type RundownResponses = {
+  /**
+   * Successful Response
+   */
+  200: RundownResponseModel;
+};
+
+export type RundownResponse = RundownResponses[keyof RundownResponses];
+
 export type ServicesData = {
   body: ServiceRequestModel;
   headers?: {
@@ -1501,8 +1238,8 @@ export type ServicesResponses = {
 
 export type ServicesResponse = ServicesResponses[keyof ServicesResponses];
 
-export type SolveData = {
-  body: SolveRequestModel;
+export type OpsData = {
+  body: OperationsRequestModel;
   headers?: {
     authorization?: string | null;
     'x-api-key'?: string | null;
@@ -1512,54 +1249,251 @@ export type SolveData = {
     token?: string | null;
     api_key?: string | null;
   };
-  url: '/api/solve';
+  url: '/api/ops';
 };
 
-export type SolveErrors = {
+export type OpsErrors = {
   /**
    * Validation Error
    */
   422: HttpValidationError;
 };
 
-export type SolveError = SolveErrors[keyof SolveErrors];
+export type OpsError = OpsErrors[keyof OpsErrors];
 
-export type SolveResponses = {
+export type OpsResponses = {
+  /**
+   * Successful Response
+   */
+  200: OperationsResponseModel;
+};
+
+export type OpsResponse = OpsResponses[keyof OpsResponses];
+
+export type SetData = {
+  body: OperationModel;
+  headers?: {
+    authorization?: string | null;
+    'x-api-key'?: string | null;
+  };
+  path?: never;
+  query?: {
+    token?: string | null;
+    api_key?: string | null;
+  };
+  url: '/api/set';
+};
+
+export type SetErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type SetError = SetErrors[keyof SetErrors];
+
+export type SetResponses = {
+  /**
+   * Successful Response
+   */
+  200: OperationResponseModel;
+};
+
+export type SetResponse = SetResponses[keyof SetResponses];
+
+export type PlayoutData = {
+  body: PlayoutRequestModel;
+  headers?: {
+    authorization?: string | null;
+    'x-api-key'?: string | null;
+  };
+  path?: never;
+  query?: {
+    token?: string | null;
+    api_key?: string | null;
+  };
+  url: '/api/playout';
+};
+
+export type PlayoutErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type PlayoutError = PlayoutErrors[keyof PlayoutErrors];
+
+export type PlayoutResponses = {
+  /**
+   * Successful Response
+   */
+  200: PlayoutResponseModel;
+};
+
+export type PlayoutResponse = PlayoutResponses[keyof PlayoutResponses];
+
+export type SchedulerData = {
+  body: SchedulerRequestModel;
+  headers?: {
+    authorization?: string | null;
+    'x-api-key'?: string | null;
+    'x-client-id'?: string | null;
+  };
+  path?: never;
+  query?: {
+    token?: string | null;
+    api_key?: string | null;
+  };
+  url: '/api/scheduler';
+};
+
+export type SchedulerErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type SchedulerError = SchedulerErrors[keyof SchedulerErrors];
+
+export type SchedulerResponses = {
+  /**
+   * Successful Response
+   */
+  200: SchedulerResponseModel;
+};
+
+export type SchedulerResponse = SchedulerResponses[keyof SchedulerResponses];
+
+export type UploadData = {
+  body?: never;
+  headers?: {
+    authorization?: string | null;
+    'x-api-key'?: string | null;
+  };
+  path: {
+    id_asset: number;
+  };
+  query?: {
+    token?: string | null;
+    api_key?: string | null;
+  };
+  url: '/upload/{id_asset}';
+};
+
+export type UploadErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type UploadError = UploadErrors[keyof UploadErrors];
+
+export type UploadResponses = {
   /**
    * Successful Response
    */
   200: unknown;
 };
 
-export type InitData = {
-  body?: never;
+export type OrderData = {
+  body: OrderRequestModel;
   headers?: {
     authorization?: string | null;
+    'x-api-key'?: string | null;
+    'x-client-id'?: string | null;
   };
   path?: never;
   query?: {
     token?: string | null;
+    api_key?: string | null;
   };
-  url: '/api/init';
+  url: '/api/order';
 };
 
-export type InitErrors = {
+export type OrderErrors = {
   /**
    * Validation Error
    */
   422: HttpValidationError;
 };
 
-export type InitError = InitErrors[keyof InitErrors];
+export type OrderError = OrderErrors[keyof OrderErrors];
 
-export type InitResponses = {
+export type OrderResponses = {
   /**
    * Successful Response
    */
-  200: InitResponseModel;
+  200: OrderResponseModel;
 };
 
-export type InitResponse = InitResponses[keyof InitResponses];
+export type OrderResponse = OrderResponses[keyof OrderResponses];
+
+export type InvalidateSessionData = {
+  body: InvalidateSessionRequestModel;
+  headers?: {
+    authorization?: string | null;
+    'x-api-key'?: string | null;
+  };
+  path?: never;
+  query?: {
+    token?: string | null;
+    api_key?: string | null;
+  };
+  url: '/api/invalidate_session';
+};
+
+export type InvalidateSessionErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type InvalidateSessionError =
+  InvalidateSessionErrors[keyof InvalidateSessionErrors];
+
+export type InvalidateSessionResponses = {
+  /**
+   * Successful Response
+   */
+  200: unknown;
+};
+
+export type SessionsData = {
+  body: ListSessionsRequestModel;
+  headers?: {
+    authorization?: string | null;
+    'x-api-key'?: string | null;
+  };
+  path?: never;
+  query?: {
+    token?: string | null;
+    api_key?: string | null;
+  };
+  url: '/api/sessions';
+};
+
+export type SessionsErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type SessionsError = SessionsErrors[keyof SessionsErrors];
+
+export type SessionsResponses = {
+  /**
+   * Successful Response
+   */
+  200: Array<SessionModel>;
+};
+
+export type SessionsResponse = SessionsResponses[keyof SessionsResponses];
 
 export type ActionsData = {
   body: ActionsRequestModel;
@@ -1657,6 +1591,68 @@ export type SendResponses = {
 
 export type SendResponse = SendResponses[keyof SendResponses];
 
+export type ApplySchedulingTemplateData = {
+  body: ApplyTemplateRequestModel;
+  headers?: {
+    authorization?: string | null;
+    'x-api-key'?: string | null;
+    'x-client-id'?: string | null;
+  };
+  path?: never;
+  query?: {
+    token?: string | null;
+    api_key?: string | null;
+  };
+  url: '/api/apply-scheduling-template';
+};
+
+export type ApplySchedulingTemplateErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type ApplySchedulingTemplateError =
+  ApplySchedulingTemplateErrors[keyof ApplySchedulingTemplateErrors];
+
+export type ApplySchedulingTemplateResponses = {
+  /**
+   * Successful Response
+   */
+  200: unknown;
+};
+
+export type ListSchedulingTemplatesData = {
+  body?: never;
+  headers?: {
+    'x-client-id'?: string | null;
+  };
+  path?: never;
+  query?: never;
+  url: '/api/list-scheduling-templates';
+};
+
+export type ListSchedulingTemplatesErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type ListSchedulingTemplatesError =
+  ListSchedulingTemplatesErrors[keyof ListSchedulingTemplatesErrors];
+
+export type ListSchedulingTemplatesResponses = {
+  /**
+   * Successful Response
+   */
+  200: ListTemplatesResponseModel;
+};
+
+export type ListSchedulingTemplatesResponse =
+  ListSchedulingTemplatesResponses[keyof ListSchedulingTemplatesResponses];
+
 export type ProxyData = {
   body?: never;
   headers?: {
@@ -1689,8 +1685,8 @@ export type ProxyResponses = {
   200: unknown;
 };
 
-export type TestCtxData = {
-  body: ContextTestRequest;
+export type SolveData = {
+  body: SolveRequestModel;
   headers?: {
     authorization?: string | null;
     'x-api-key'?: string | null;
@@ -1700,49 +1696,19 @@ export type TestCtxData = {
     token?: string | null;
     api_key?: string | null;
   };
-  url: '/api/test_ctx';
+  url: '/api/solve';
 };
 
-export type TestCtxErrors = {
+export type SolveErrors = {
   /**
    * Validation Error
    */
   422: HttpValidationError;
 };
 
-export type TestCtxError = TestCtxErrors[keyof TestCtxErrors];
+export type SolveError = SolveErrors[keyof SolveErrors];
 
-export type TestCtxResponses = {
-  /**
-   * Successful Response
-   */
-  200: unknown;
-};
-
-export type MetricsData = {
-  body?: never;
-  headers?: {
-    authorization?: string | null;
-    'x-api-key'?: string | null;
-  };
-  path?: never;
-  query?: {
-    token?: string | null;
-    api_key?: string | null;
-  };
-  url: '/api/metrics';
-};
-
-export type MetricsErrors = {
-  /**
-   * Validation Error
-   */
-  422: HttpValidationError;
-};
-
-export type MetricsError = MetricsErrors[keyof MetricsErrors];
-
-export type MetricsResponses = {
+export type SolveResponses = {
   /**
    * Successful Response
    */
@@ -1779,32 +1745,60 @@ export type AssignmentsResponses = {
   200: unknown;
 };
 
-export type AdsUtilizationData = {
-  body?: never;
+export type TestCtxData = {
+  body: ContextTestRequest;
   headers?: {
     authorization?: string | null;
     'x-api-key'?: string | null;
   };
   path?: never;
   query?: {
-    date?: string | null;
-    id_channel?: number;
     token?: string | null;
     api_key?: string | null;
   };
-  url: '/api/ads_utilization';
+  url: '/api/test_ctx';
 };
 
-export type AdsUtilizationErrors = {
+export type TestCtxErrors = {
   /**
    * Validation Error
    */
   422: HttpValidationError;
 };
 
-export type AdsUtilizationError = AdsUtilizationErrors[keyof AdsUtilizationErrors];
+export type TestCtxError = TestCtxErrors[keyof TestCtxErrors];
 
-export type AdsUtilizationResponses = {
+export type TestCtxResponses = {
+  /**
+   * Successful Response
+   */
+  200: unknown;
+};
+
+export type AssetRunsData = {
+  body: ContextTestRequest;
+  headers?: {
+    authorization?: string | null;
+    'x-api-key'?: string | null;
+  };
+  path?: never;
+  query?: {
+    token?: string | null;
+    api_key?: string | null;
+  };
+  url: '/api/asset_runs';
+};
+
+export type AssetRunsErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type AssetRunsError = AssetRunsErrors[keyof AssetRunsErrors];
+
+export type AssetRunsResponses = {
   /**
    * Successful Response
    */
@@ -1812,5 +1806,5 @@ export type AdsUtilizationResponses = {
 };
 
 export type ClientOptions = {
-  baseUrl: 'https://dev.nbla.cloud' | (string & {});
+  baseUrl: 'http://localhost:4455' | (string & {});
 };
