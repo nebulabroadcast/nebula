@@ -1,24 +1,17 @@
 import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 
-interface MetaType {
-  title: string;
-  header: string | null;
-  description: string | null;
-  type: string;
-}
-
-interface CSOption {
-  value: string;
-  title: string;
-  description: string | null;
-  role: string;
-}
+import type {
+  ClientSettingsModel,
+  ClientMetaTypeModel,
+  ClientCsItemModel,
+  FolderSettings,
+} from './client';
 
 const nebula = {
   // Settings
 
-  settings: {},
+  settings: undefined as ClientSettingsModel | undefined,
   user: {},
   plugins: [],
   scopedEndpoints: {},
@@ -40,17 +33,15 @@ const nebula = {
   },
 
   // Metadata helpers
-
-  metaType(key: string): MetaType {
-    const metaType = this.settings?.metatypes[key];
-    if (!metaType)
-      return {
+  metaType(key: string): ClientMetaTypeModel {
+    return (
+      this.settings?.metatypes[key] || {
         title: key,
         header: key,
         description: null,
         type: 'string',
-      };
-    return metaType;
+      }
+    );
   },
 
   metaTitle(key: string): string {
@@ -65,7 +56,7 @@ const nebula = {
     return this.settings?.metatypes[key]?.header || null;
   },
 
-  csOptions(key: string): CSOption[] {
+  csOptions(key: string): ClientCsItemModel[] {
     const cs = this.settings?.cs[key] || {};
     const result = [];
     for (const value in cs) {
@@ -98,7 +89,7 @@ const nebula = {
     return undefined;
   },
 
-  getScopedEndpoints(scope) {
+  getScopedEndpoints(scope: string) {
     const result = [];
     for (const scopedEndpoint of this.scopedEndpoints || {}) {
       if (scopedEndpoint.scopes.includes(scope)) result.push(scopedEndpoint);
@@ -107,7 +98,7 @@ const nebula = {
   },
 
   getWritableFolders() {
-    return (this.settings?.folders || []).filter((folder) => {
+    return (this.settings?.folders || []).filter((folder: FolderSettings) => {
       if (this.user.is_admin) return true;
       if (this.user['can/asset_edit'] === true) return true;
       if (

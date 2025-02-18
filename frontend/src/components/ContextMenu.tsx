@@ -40,7 +40,20 @@ const ContextMenuWrapper = styled.div`
   }
 `;
 
-const ContextMenu = ({ target, options }) => {
+interface ContextMenuOption {
+  label: string;
+  icon?: string;
+  hlColor?: string;
+  separator?: boolean;
+  onClick?: (contextData: { posX: number; posY: number }) => void;
+}
+
+interface ContextMenuProps {
+  target: React.RefObject<HTMLElement>;
+  options: () => ContextMenuOption[];
+}
+
+const ContextMenu: React.FC<ContextMenuProps> = ({ target, options }) => {
   const [contextData, setContextData] = useState({
     visible: false,
     posX: 0,
@@ -49,9 +62,9 @@ const ContextMenu = ({ target, options }) => {
   const contextRef = useRef(null);
 
   useEffect(() => {
-    const contextMenuEventHandler = (event) => {
+    const contextMenuEventHandler = (event: MouseEvent) => {
       const targetElement = target.current;
-      if (targetElement && targetElement.contains(event.target)) {
+      if (targetElement && targetElement.contains(event.target as Node)) {
         event.preventDefault();
         setTimeout(() => {
           setContextData({
@@ -60,13 +73,16 @@ const ContextMenu = ({ target, options }) => {
             posY: event.clientY,
           });
         }, 0);
-      } else if (contextRef.current && !contextRef.current.contains(event.target)) {
+      } else if (
+        contextRef.current &&
+        !contextRef.current.contains(event.target as Node)
+      ) {
         setContextData({ ...contextData, visible: false });
       }
     };
 
-    const offClickHandler = (event) => {
-      if (contextRef.current && !contextRef.current.contains(event.target)) {
+    const offClickHandler = (event: MouseEvent) => {
+      if (contextRef.current && !contextRef.current.contains(event.target as Node)) {
         setContextData({ ...contextData, visible: false });
       }
     };
@@ -112,7 +128,7 @@ const ContextMenu = ({ target, options }) => {
             iconStyle={option.hlColor ? { color: option.hlColor } : {}}
             onClick={() => {
               setContextData({ ...contextData, visible: false });
-              option.onClick && option.onClick(contextData);
+              if (option.onClick) option.onClick(contextData);
             }}
           />
         </span>

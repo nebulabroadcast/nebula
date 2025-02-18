@@ -83,32 +83,41 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>((props: ButtonProps, ref) => {
-  const _buttonStyle = { ...(props.style || {}) };
-  const _iconStyle = { ...(props.iconStyle || {}) };
+  const {
+    hlColor,
+    style,
+    icon,
+    iconStyle,
+    className,
+    label,
+    active,
+    tooltip,
+    iconOnRight,
+    ...buttonProps
+  } = props;
 
-  if (props.hlColor) {
+  const _buttonStyle = style || {};
+  const _iconStyle = iconStyle || {};
+
+  if (hlColor) {
     _buttonStyle.borderBottom = `1px solid ${props.hlColor}`;
   }
 
   return (
     <BaseButton
-      className={clsx(
-        props.className,
-        props.active && 'active',
-        !props.label && 'icon-only'
-      )}
+      className={clsx(className, active && 'active', !label && 'icon-only')}
       style={_buttonStyle}
-      title={props.tooltip}
+      title={tooltip}
       ref={ref}
-      {...props}
+      {...buttonProps}
     >
-      {props.label && props.iconOnRight && <span>{props.label}</span>}
-      {props.icon && (
+      {label && iconOnRight && <span>{label}</span>}
+      {icon && (
         <span className="icon material-symbols-outlined" style={_iconStyle}>
-          {props.icon}
+          {icon}
         </span>
       )}
-      {!props.iconOnRight && props.label && <span>{props.label}</span>}
+      {!iconOnRight && label && <span>{label}</span>}
     </BaseButton>
   );
 });
