@@ -7,13 +7,7 @@ interface ConfigEnv {
 
 export default ({ mode }: ConfigEnv) => {
   Object.assign(process?.env, loadEnv(mode, process?.cwd(), ''));
-
-  let SERVER_URL = 'http://localhost:4455';
-
-  // use .env if valid
-  if (process?.env?.SERVER_URL) {
-    SERVER_URL = process.env.SERVER_URL;
-  }
+  const SERVER_URL = process?.env?.SERVER_URL || 'http://localhost:4455';
 
   return defineConfig({
     server: {

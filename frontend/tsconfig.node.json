@@ -21,7 +21,7 @@
     "noUncheckedSideEffectImports": true,
 
     "allowJs": true,
-    "checkJs": false
+    "checkJs": true
   },
   "include": ["vite.config.ts"]
 }
