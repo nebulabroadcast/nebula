@@ -25,10 +25,23 @@ const Row = styled.div`
   gap: 8px;
 `;
 
+const VideoSpace = styled.div`
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const VideoContainer = styled.div`
+  position: relative;
+  height: 100%;
+  padding: 0 8px;
+`;
+
 const Video = styled.video`
+  height: 100%;
   width: 100%;
-  aspect-ratio: 16 / 9;
-  background-color: black;
+  object-fit: contain;
 `;
 
 const VideoPlayerBody = ({ ...props }) => {
@@ -94,10 +107,11 @@ const VideoPlayerBody = ({ ...props }) => {
     const updateVideoDimensions = () => {
       const width = videoRef.current.clientWidth;
       const height = videoRef.current.clientHeight;
+      console.log('Video dimensions', width, height);
       setVideoDimensions({ width, height });
     };
 
-    const parentElement = videoRef.current.parentElement;
+    const parentElement = videoRef.current;
     const resizeObserver = new ResizeObserver(updateVideoDimensions);
     resizeObserver.observe(parentElement);
 
@@ -228,18 +242,10 @@ const VideoPlayerBody = ({ ...props }) => {
         <InputTimecode value={duration} readOnly={true} tooltip="Asset duration" />
       </Navbar>
 
-      <section className="row">
+      <section className="row grow">
         <VUMeter gainNodes={leftNodes} audioContext={audioContext} />
-        <div
-          style={{
-            position: 'relative',
-            flexGrow: 1,
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
-          <div style={{ position: 'relative', width: '100%' }}>
+        <VideoSpace>
+          <VideoContainer>
             <Video
               ref={videoRef}
               controls={false}
@@ -251,15 +257,14 @@ const VideoPlayerBody = ({ ...props }) => {
               onProgress={handleProgress}
               onTimeUpdate={handlePosition}
               src={props.src}
-              style={{ outline: showOverlay ? '1px solid silver' : 'none' }}
             />
             <VideoOverlay
               videoWidth={videoDimensions.width}
               videoHeight={videoDimensions.height}
               showOverlay={showOverlay}
             />
-          </div>
-        </div>
+          </VideoContainer>
+        </VideoSpace>
         <VUMeter gainNodes={rightNodes} audioContext={audioContext} />
       </section>
 

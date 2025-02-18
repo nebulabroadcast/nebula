@@ -122,7 +122,10 @@ const VUMeter = ({ gainNodes, audioContext }) => {
   return (
     <Canvas
       ref={canvasRef}
-      style={{ width: gainNodes.length * (barWidth + spacing) }}
+      style={{
+        width: gainNodes.length * (barWidth + spacing),
+        backgroundColor: COLOR_BKG,
+      }}
       onDraw={() => setRedrawTrigger(redrawTrigger + 1)}
     />
   );

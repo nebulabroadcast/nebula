@@ -142,8 +142,12 @@ const MAMPage = () => {
   }, [module, draggedObjects]);
 
   // eslint-disable-next-line no-unused-vars
-  const onResize = (gutter, size) => {
+  const onResizeStart = (gutter) => {
+    document.body.style.userSelect = 'none';
+  };
+  const onResizeEnd = (gutter, size) => {
     setSplitterSizes(size);
+    document.body.style.userSelect = '';
   };
 
   //
@@ -184,7 +188,8 @@ const MAMPage = () => {
       >
         <Splitter
           direction={SplitDirection.Horizontal}
-          onResizeFinished={onResize}
+          onResizeStarted={onResizeStart}
+          onResizeFinished={onResizeEnd}
           initialSizes={splitterSizes}
         >
           <Browser isDragging={isDragging} />

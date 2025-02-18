@@ -47,10 +47,10 @@ const VideoOverlay = ({ videoWidth, videoHeight, showOverlay }) => {
     <canvas
       ref={canvasRef}
       width={videoWidth}
-      height={videoHeight}
+      height={(videoWidth * 9) / 16}
       style={{
         position: 'absolute',
-        top: 0,
+        top: videoHeight / 2 - (videoWidth * 9) / 32,
         left: 0,
       }}
     />
