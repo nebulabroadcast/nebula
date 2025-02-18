@@ -1,6 +1,6 @@
-import { useMemo } from 'react'
+import { useMemo } from 'react';
 
-import nebula from '/src/nebula'
+import nebula from '/src/nebula';
 import {
   Form,
   FormRow,
@@ -12,75 +12,63 @@ import {
   InputTimecode,
   Select,
   TextArea,
-} from '/src/components'
+} from '/src/components';
 
-const EditorField = ({
-  field,
-  value,
-  originalValue,
-  onFieldChanged,
-  disabled,
-}) => {
-  const metaType = { ...nebula.metaType(field.name), ...field }
+const EditorField = ({ field, value, originalValue, onFieldChanged, disabled }) => {
+  const metaType = { ...nebula.metaType(field.name), ...field };
 
   // Memoize options for select and list fields
 
   const options = useMemo(() => {
-    if (!metaType.cs) return []
+    if (!metaType.cs) return [];
     if (metaType.filter) {
       return nebula
         .csOptions(metaType.cs)
-        .filter(
-          (opt) => opt.value.match(metaType.filter) || opt.value === value
-        )
+        .filter((opt) => opt.value.match(metaType.filter) || opt.value === value);
     }
-    return nebula.csOptions(metaType.cs)
-  }, [metaType])
+    return nebula.csOptions(metaType.cs);
+  }, [metaType]);
 
   // Memoize original value (for changed indicator)
 
   const originalValueParsed = useMemo(() => {
-    if (originalValue) return originalValue
-    if (metaType.default) return metaType.default
+    if (originalValue) return originalValue;
+    if (metaType.default) return metaType.default;
 
     switch (metaType.type) {
       case 'string':
-        return ''
+        return '';
       case 'number':
-        return 0
+        return 0;
       case 'boolean':
-        return false
+        return false;
       case 'color':
-        return 0
+        return 0;
       default:
-        return undefined
+        return undefined;
     }
-  }, [originalValue, metaType])
+  }, [originalValue, metaType]);
 
   // Don't blame me for this one, it's a mess
 
-  const changed = !(!originalValue && !value) && originalValueParsed !== value
+  const changed = !(!originalValue && !value) && originalValueParsed !== value;
 
   // When a field is changed, update the asset data
 
   const onChange = (value) => {
-    onFieldChanged(field.name, value)
-  }
+    onFieldChanged(field.name, value);
+  };
 
   // Decide which editor to use for this field
 
-  let editor
+  let editor;
   switch (metaType.type) {
     case 'string':
-      editor = (
-        <InputText value={value} onChange={onChange} disabled={disabled} />
-      )
-      break
+      editor = <InputText value={value} onChange={onChange} disabled={disabled} />;
+      break;
     case 'text':
-      editor = (
-        <TextArea value={value} onChange={onChange} disabled={disabled} />
-      )
-      break
+      editor = <TextArea value={value} onChange={onChange} disabled={disabled} />;
+      break;
     case 'select':
       editor = (
         <Select
@@ -89,8 +77,8 @@ const EditorField = ({
           selectionMode="single"
           onChange={onChange}
         />
-      )
-      break
+      );
+      break;
     case 'list':
       editor = (
         <Select
@@ -99,8 +87,8 @@ const EditorField = ({
           selectionMode="multiple"
           onChange={onChange}
         />
-      )
-      break
+      );
+      break;
     case 'datetime':
       editor = (
         <InputDatetime
@@ -109,38 +97,26 @@ const EditorField = ({
           disabled={disabled}
           mode={metaType.mode}
         />
-      )
-      break
+      );
+      break;
     case 'timecode':
       editor = (
-        <InputTimecode
-          value={value || ''}
-          onChange={onChange}
-          disabled={disabled}
-        />
-      )
-      break
+        <InputTimecode value={value || ''} onChange={onChange} disabled={disabled} />
+      );
+      break;
     case 'boolean':
       editor = (
-        <InputSwitch
-          value={value || false}
-          onChange={onChange}
-          disabled={disabled}
-        />
-      )
-      break
+        <InputSwitch value={value || false} onChange={onChange} disabled={disabled} />
+      );
+      break;
     case 'integer':
-      editor = (
-        <InputInteger value={value} onChange={onChange} disabled={disabled} />
-      )
-      break
+      editor = <InputInteger value={value} onChange={onChange} disabled={disabled} />;
+      break;
     case 'color':
-      editor = (
-        <InputColor value={value} onChange={onChange} disabled={disabled} />
-      )
-      break
+      editor = <InputColor value={value} onChange={onChange} disabled={disabled} />;
+      break;
     default:
-      editor = <InputText value={value} onChange={onChange} disabled={true} />
+      editor = <InputText value={value} onChange={onChange} disabled={true} />;
   }
 
   // Render the form row
@@ -153,8 +129,8 @@ const EditorField = ({
     >
       {editor}
     </FormRow>
-  )
-}
+  );
+};
 
 const MetadataEditor = ({
   originalData,
@@ -166,14 +142,14 @@ const MetadataEditor = ({
 }) => {
   const onFieldChanged = (key, value) =>
     setObjectData((o) => {
-      return { ...o, [key]: value }
-    })
+      return { ...o, [key]: value };
+    });
 
   function handleKeyDown(event) {
-    if (!onSave) return
+    if (!onSave) return;
     if (event.ctrlKey && event.key === 's') {
-      event.preventDefault() // prevent default browser behavior (saving the page)
-      onSave()
+      event.preventDefault(); // prevent default browser behavior (saving the page)
+      onSave();
     }
   }
 
@@ -190,7 +166,7 @@ const MetadataEditor = ({
         />
       ))}
     </Form>
-  )
-}
+  );
+};
 
-export default MetadataEditor
+export default MetadataEditor;

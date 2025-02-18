@@ -1,7 +1,7 @@
-import { useEffect, useCallback, useRef } from 'react'
-import { useAudioContext } from './AudioContext'
+import { useEffect, useCallback, useRef } from 'react';
+import { useAudioContext } from './AudioContext';
 
-import { Button, InputTimecode, Navbar } from '/src/components'
+import { Button, InputTimecode, Navbar } from '/src/components';
 
 const VideoPlayerControls = ({
   markIn,
@@ -11,91 +11,91 @@ const VideoPlayerControls = ({
   isPlaying,
   frameRate,
 }) => {
-  const { videoRef } = useAudioContext()
+  const { videoRef } = useAudioContext();
 
-  const markInRef = useRef(markIn)
-  const markOutRef = useRef(markOut)
+  const markInRef = useRef(markIn);
+  const markOutRef = useRef(markOut);
 
   useEffect(() => {
-    markInRef.current = markIn
-    markOutRef.current = markOut
-  }, [markIn, markOut])
+    markInRef.current = markIn;
+    markOutRef.current = markOut;
+  }, [markIn, markOut]);
 
-  const frameLength = 1 / frameRate
+  const frameLength = 1 / frameRate;
 
   const handlePlayPause = () => {
     if (videoRef.current.paused) {
-      videoRef.current.play()
+      videoRef.current.play();
     } else {
-      videoRef.current.pause()
+      videoRef.current.pause();
     }
-  }
+  };
 
   const handleGoToStart = () => {
-    videoRef.current.currentTime = 0
-  }
+    videoRef.current.currentTime = 0;
+  };
   const handleGoToEnd = () => {
-    videoRef.current.currentTime = videoRef.current.duration
-  }
+    videoRef.current.currentTime = videoRef.current.duration;
+  };
 
   const handleGoBack1 = () => {
-    videoRef.current.currentTime -= frameLength
-  }
+    videoRef.current.currentTime -= frameLength;
+  };
   const handleGoForward1 = () => {
-    videoRef.current.currentTime += frameLength
-  }
+    videoRef.current.currentTime += frameLength;
+  };
 
   const handleGoBack5 = () => {
-    videoRef.current.currentTime -= 5 * frameLength
-  }
+    videoRef.current.currentTime -= 5 * frameLength;
+  };
   const handleGoForward5 = () => {
-    videoRef.current.currentTime += 5 * frameLength
-  }
+    videoRef.current.currentTime += 5 * frameLength;
+  };
 
   // Create mark in/out
 
   const handleMarkIn = useCallback(() => {
-    if (setMarkIn) setMarkIn(videoRef.current.currentTime)
-  }, [videoRef, setMarkIn])
+    if (setMarkIn) setMarkIn(videoRef.current.currentTime);
+  }, [videoRef, setMarkIn]);
 
   const handleMarkOut = useCallback(() => {
-    if (setMarkOut) setMarkOut(videoRef.current.currentTime)
-  }, [videoRef, setMarkOut])
+    if (setMarkOut) setMarkOut(videoRef.current.currentTime);
+  }, [videoRef, setMarkOut]);
 
   // Go to mark in/out
 
   const handleGoToMarkIn = useCallback(() => {
     if (!markInRef.current) {
-      console.log('No mark in set')
-      return
+      console.log('No mark in set');
+      return;
     }
-    console.log('Going to mark in', markInRef.current)
-    videoRef.current.currentTime = markInRef.current
-  }, [markInRef, videoRef])
+    console.log('Going to mark in', markInRef.current);
+    videoRef.current.currentTime = markInRef.current;
+  }, [markInRef, videoRef]);
 
   const handleGoToMarkOut = useCallback(() => {
     if (!markOutRef.current) {
-      console.log('No mark out set')
-      return
+      console.log('No mark out set');
+      return;
     }
-    console.log('Going to mark out', markOutRef.current)
-    videoRef.current.currentTime = markOutRef.current
-  }, [markOutRef, videoRef])
+    console.log('Going to mark out', markOutRef.current);
+    videoRef.current.currentTime = markOutRef.current;
+  }, [markOutRef, videoRef]);
 
   // Clear mark in/out
 
   const handleClearMarkIn = () => {
-    if (setMarkIn) setMarkIn(null)
-  }
+    if (setMarkIn) setMarkIn(null);
+  };
 
   const handleClearMarkOut = () => {
-    if (setMarkOut) setMarkOut(null)
-  }
+    if (setMarkOut) setMarkOut(null);
+  };
 
   const handleClearMarks = () => {
-    if (setMarkIn) setMarkIn(null)
-    if (setMarkOut) setMarkOut(null)
-  }
+    if (setMarkIn) setMarkIn(null);
+    if (setMarkOut) setMarkOut(null);
+  };
 
   //
   // Keyboard shortcuts
@@ -104,102 +104,102 @@ const VideoPlayerControls = ({
   useEffect(() => {
     const handleKeyDown = (e) => {
       // abort if modifier keys are pressed
-      if (e.ctrlKey || e.altKey || e.metaKey) return
+      if (e.ctrlKey || e.altKey || e.metaKey) return;
       // abort when shift key is pressed
-      if (e.shiftKey) return
+      if (e.shiftKey) return;
 
       switch (e.key) {
         // Idiomatically play/pause with space
         case ' ':
-          handlePlayPause()
-          e.preventDefault()
-          break
+          handlePlayPause();
+          e.preventDefault();
+          break;
         case 'ArrowLeft':
-          handleGoBack1()
-          e.preventDefault()
-          break
+          handleGoBack1();
+          e.preventDefault();
+          break;
         case 'ArrowRight':
-          handleGoForward1()
-          e.preventDefault()
-          break
+          handleGoForward1();
+          e.preventDefault();
+          break;
 
         // Go to start/end
         case 'a':
-          handleGoToStart()
-          break
+          handleGoToStart();
+          break;
         case 's':
-          handleGoToEnd()
-          break
+          handleGoToEnd();
+          break;
 
         // Fast seek
         case 'j':
-          handleGoBack5()
-          break
+          handleGoBack5();
+          break;
         case 'k':
-          handlePlayPause()
-          break
+          handlePlayPause();
+          break;
         case 'l':
-          handleGoForward5()
-          break
+          handleGoForward5();
+          break;
 
         // Avid-style seeking
         case '1':
-          handleGoBack5()
-          break
+          handleGoBack5();
+          break;
         case '2':
-          handleGoForward5()
-          break
+          handleGoForward5();
+          break;
         case '3':
-          handleGoBack1()
-          break
+          handleGoBack1();
+          break;
         case '4':
-          handleGoForward1()
-          break
+          handleGoForward1();
+          break;
 
         // Mark in/out
         case 'e':
-          handleMarkIn()
-          break
+          handleMarkIn();
+          break;
         case 'r':
-          handleMarkOut()
-          break
+          handleMarkOut();
+          break;
         case 'i':
-          handleMarkIn()
-          break
+          handleMarkIn();
+          break;
         case 'o':
-          handleMarkOut()
-          break
+          handleMarkOut();
+          break;
 
         // Go to mark in/out
         case 'q':
-          handleGoToMarkIn()
-          break
+          handleGoToMarkIn();
+          break;
         case 'w':
-          handleGoToMarkOut()
-          break
+          handleGoToMarkOut();
+          break;
 
         // Clear mark in/out
         case 'd':
-          handleClearMarkIn()
-          break
+          handleClearMarkIn();
+          break;
         case 'f':
-          handleClearMarkOut()
-          break
+          handleClearMarkOut();
+          break;
         case 'g':
-          handleClearMarks()
-          break
+          handleClearMarks();
+          break;
 
         default:
-          break
+          break;
       }
-    }
+    };
 
-    window.addEventListener('keydown', handleKeyDown)
+    window.addEventListener('keydown', handleKeyDown);
 
     return () => {
-      window.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [])
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
 
   return (
     <Navbar tabIndex={1}>
@@ -237,11 +237,7 @@ const VideoPlayerControls = ({
         onClick={handleGoBack5}
       />
 
-      <Button
-        icon="chevron_left"
-        tooltip="Go back 1 frame"
-        onClick={handleGoBack1}
-      />
+      <Button icon="chevron_left" tooltip="Go back 1 frame" onClick={handleGoBack1} />
 
       <Button
         icon={isPlaying ? 'pause' : 'play_arrow'}
@@ -267,19 +263,11 @@ const VideoPlayerControls = ({
         onClick={handleGoToMarkOut}
       />
 
-      <Button
-        icon="skip_next"
-        tooltip="Go to the last frame"
-        onClick={handleGoToEnd}
-      />
+      <Button icon="skip_next" tooltip="Go to the last frame" onClick={handleGoToEnd} />
 
       <div style={{ flex: 1 }} />
 
-      <Button
-        tooltip="Set selection end"
-        icon="line_end"
-        onClick={handleMarkOut}
-      />
+      <Button tooltip="Set selection end" icon="line_end" onClick={handleMarkOut} />
 
       <Button
         tooltip="Clear selection end"
@@ -289,7 +277,7 @@ const VideoPlayerControls = ({
 
       <InputTimecode value={markOut} tooltip="Selection end" />
     </Navbar>
-  )
-}
+  );
+};
 
-export default VideoPlayerControls
+export default VideoPlayerControls;

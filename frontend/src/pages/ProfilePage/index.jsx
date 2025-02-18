@@ -1,2 +1,2 @@
-import ProfilePage from './ProfilePage'
-export default ProfilePage
+import ProfilePage from './ProfilePage';
+export default ProfilePage;

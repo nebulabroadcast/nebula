@@ -1,4 +1,4 @@
-import { RangeSlider, Icon } from '/src/components'
+import { RangeSlider, Icon } from '/src/components';
 
 const ZoomControl = ({ zoom, setZoom }) => {
   const divStyle = {
@@ -8,11 +8,11 @@ const ZoomControl = ({ zoom, setZoom }) => {
     justifyContent: 'center',
     gap: '5px',
     width: 200,
-  }
+  };
 
   const iconStyle = {
     fontSize: '1rem',
-  }
+  };
 
   return (
     <div style={divStyle}>
@@ -26,7 +26,7 @@ const ZoomControl = ({ zoom, setZoom }) => {
       />
       <Icon icon="zoom_in_map" style={iconStyle} />
     </div>
-  )
-}
+  );
+};
 
-export default ZoomControl
+export default ZoomControl;

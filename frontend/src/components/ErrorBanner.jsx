@@ -1,4 +1,4 @@
-import styled from 'styled-components'
+import styled from 'styled-components';
 
 const ErrorBanner = styled.div`
   padding: 20px;
@@ -11,6 +11,6 @@ const ErrorBanner = styled.div`
   justify-content: center;
   font-size: 14px;
   font-weight: 700;
-`
+`;
 
-export default ErrorBanner
+export default ErrorBanner;

@@ -1,4 +1,4 @@
-import styled from 'styled-components'
+import styled from 'styled-components';
 
 const RundownTableWrapper = styled.section`
   tbody {
@@ -26,6 +26,6 @@ const RundownTableWrapper = styled.section`
       }
     }
   }
-`
+`;
 
-export default RundownTableWrapper
+export default RundownTableWrapper;

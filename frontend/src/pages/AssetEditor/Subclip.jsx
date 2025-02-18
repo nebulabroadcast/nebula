@@ -1,15 +1,9 @@
-import styled from 'styled-components'
-import { Timecode } from '@wfoxall/timeframe'
+import styled from 'styled-components';
+import { Timecode } from '@wfoxall/timeframe';
 
-import { toast } from 'react-toastify'
-import { useState, useEffect, useCallback } from 'react'
-import {
-  Dropdown,
-  Spacer,
-  InputText,
-  InputTimecode,
-  Button,
-} from '/src/components'
+import { toast } from 'react-toastify';
+import { useState, useEffect, useCallback } from 'react';
+import { Dropdown, Spacer, InputText, InputTimecode, Button } from '/src/components';
 
 const SubclipRow = styled.div`
   display: flex;
@@ -18,7 +12,7 @@ const SubclipRow = styled.div`
   align-items: center;
   justify-content: center;
   border-bottom: 1px solid var(--color-border);
-`
+`;
 
 const SubclipContainer = styled.div`
   display: flex;
@@ -34,7 +28,7 @@ const SubclipContainer = styled.div`
     margin: 0;
     padding: 4px;
   }
-`
+`;
 
 const Subclip = ({
   index,
@@ -48,30 +42,30 @@ const Subclip = ({
 }) => {
   const onSetMarks = (marks) => {
     setSubclips((subclips) => {
-      const newSubclips = [...subclips]
-      newSubclips[index] = { ...newSubclips[index], ...marks }
-      return newSubclips
-    })
-  }
+      const newSubclips = [...subclips];
+      newSubclips[index] = { ...newSubclips[index], ...marks };
+      return newSubclips;
+    });
+  };
 
   const onTitleChange = (e) => {
     setSubclips((subclips) => {
-      const newSubclips = [...subclips]
-      newSubclips[index] = { ...newSubclips[index], title: e }
-      return newSubclips
-    })
-  }
+      const newSubclips = [...subclips];
+      newSubclips[index] = { ...newSubclips[index], title: e };
+      return newSubclips;
+    });
+  };
 
   const onRemove = () => {
     setSubclips((subclips) => {
-      const newSubclips = [...subclips]
-      newSubclips.splice(index, 1)
-      return newSubclips
-    })
-  }
+      const newSubclips = [...subclips];
+      newSubclips.splice(index, 1);
+      return newSubclips;
+    });
+  };
 
-  const startTC = new Timecode(Math.floor(mark_in * fps), fps)
-  const endTC = new Timecode(Math.floor(mark_out * fps), fps)
+  const startTC = new Timecode(Math.floor(mark_in * fps), fps);
+  const endTC = new Timecode(Math.floor(mark_out * fps), fps);
 
   return (
     <SubclipContainer>
@@ -80,11 +74,7 @@ const Subclip = ({
       </h3>
       <SubclipRow>
         <InputText value={title} onChange={onTitleChange} style={{ flex: 1 }} />
-        <Button
-          icon="delete"
-          tooltip="Delete subclip"
-          onClick={() => onRemove()}
-        />
+        <Button icon="delete" tooltip="Delete subclip" onClick={() => onRemove()} />
         <Button
           icon="screenshot_region"
           tooltip="Update subclip from selection"
@@ -102,7 +92,7 @@ const Subclip = ({
         />
       </SubclipRow>
     </SubclipContainer>
-  )
-}
+  );
+};
 
-export default Subclip
+export default Subclip;

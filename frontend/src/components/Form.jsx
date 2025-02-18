@@ -1,4 +1,4 @@
-import styled from 'styled-components'
+import styled from 'styled-components';
 
 const Form = styled.div`
   display: flex;
@@ -34,7 +34,7 @@ const Form = styled.div`
       }
     }
   }
-`
+`;
 
 const FormRow = ({ title, tooltip, section, children, ...props }) => {
   return (
@@ -47,7 +47,7 @@ const FormRow = ({ title, tooltip, section, children, ...props }) => {
         <div className="form-control">{children}</div>
       </div>
     </>
-  )
-}
+  );
+};
 
-export { Form, FormRow }
+export { Form, FormRow };

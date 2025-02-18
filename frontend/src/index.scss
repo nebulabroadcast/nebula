@@ -57,7 +57,11 @@
 }
 
 .material-symbols-outlined {
-  font-variation-settings: 'FILL' 0, 'wght' 100, 'GRAD' 200, 'opsz' 20;
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 100,
+    'GRAD' 200,
+    'opsz' 20;
   vertical-align: bottom;
   //position: relative;
 }
@@ -112,7 +116,7 @@ main {
   }
 }
 
-section {
+section:not(.Toastify) {
   display: flex;
   padding: 12px;
   border-radius: 5px;

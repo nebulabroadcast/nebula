@@ -1,30 +1,23 @@
-import nebula from '/src/nebula'
-import { useState, useEffect, useMemo } from 'react'
+import nebula from '/src/nebula';
+import { useState, useEffect, useMemo } from 'react';
 
-import {
-  Icon,
-  Select,
-  InputSwitch,
-  PanelHeader,
-  Form,
-  FormRow,
-} from '/src/components'
+import { Icon, Select, InputSwitch, PanelHeader, Form, FormRow } from '/src/components';
 
 const AllOrList = ({ value, setValue, options, disabled }) => {
-  const [all, setAll] = useState(false)
-  const [values, setValues] = useState([])
+  const [all, setAll] = useState(false);
+  const [values, setValues] = useState([]);
 
   useEffect(() => {
     if (value === true) {
-      setAll(true)
+      setAll(true);
     } else if (value === false) {
-      setAll(false)
-      setValues([])
+      setAll(false);
+      setValues([]);
     } else {
-      setAll(false)
-      setValues(value)
+      setAll(false);
+      setValues(value);
     }
-  }, [value])
+  }, [value]);
 
   return (
     <div className="row" style={{ flexGrow: 1, gap: 12, alignItems: 'center' }}>
@@ -32,9 +25,9 @@ const AllOrList = ({ value, setValue, options, disabled }) => {
         options={options}
         value={values}
         onChange={(v) => {
-          const m = v.map((i) => parseInt(i))
-          setValues(m)
-          setValue(m.length === 0 ? false : m)
+          const m = v.map((i) => parseInt(i));
+          setValues(m);
+          setValue(m.length === 0 ? false : m);
         }}
         disabled={all || disabled}
         selectionMode="multiple"
@@ -44,32 +37,32 @@ const AllOrList = ({ value, setValue, options, disabled }) => {
       <InputSwitch
         value={all}
         onChange={(v) => {
-          setAll(v)
-          setValue(v ? true : values)
+          setAll(v);
+          setValue(v ? true : values);
         }}
         title="All"
         disabled={disabled}
       />
     </div>
-  )
-}
+  );
+};
 
 const AccessControl = ({ userData, setValue }) => {
   const folderOptions = useMemo(() => {
     return nebula.settings.folders.map((folder) => ({
       title: folder.name,
       value: folder.id,
-    }))
-  }, [])
+    }));
+  }, []);
 
   const channelOptions = useMemo(() => {
     return nebula.settings.playout_channels.map((channel) => ({
       title: channel.name,
       value: channel.id,
-    }))
-  }, [])
+    }));
+  }, []);
 
-  const isAdmin = userData?.is_admin || false
+  const isAdmin = userData?.is_admin || false;
 
   return (
     <Form>
@@ -157,7 +150,7 @@ const AccessControl = ({ userData, setValue }) => {
         />
       </FormRow>
     </Form>
-  )
-}
+  );
+};
 
-export default AccessControl
+export default AccessControl;

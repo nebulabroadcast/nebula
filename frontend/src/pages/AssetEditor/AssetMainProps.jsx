@@ -1,8 +1,8 @@
-import nebula from '/src/nebula'
+import nebula from '/src/nebula';
 
-import { useDispatch } from 'react-redux'
-import { useState, useMemo } from 'react'
-import { setCurrentViewId, setSearchQuery } from '/src/actions'
+import { useDispatch } from 'react-redux';
+import { useState, useMemo } from 'react';
+import { setCurrentViewId, setSearchQuery } from '/src/actions';
 
 import {
   Navbar,
@@ -12,43 +12,43 @@ import {
   ToolbarSeparator,
   InputTimecode,
   Dialog,
-} from '/src/components'
+} from '/src/components';
 
-import { UploadButton } from '/src/containers/Upload'
-import { useDialog } from '/src/hooks'
+import { UploadButton } from '/src/containers/Upload';
+import { useDialog } from '/src/hooks';
 
-import MetadataDetail from './MetadataDetail'
-import ContextActionResult from './ContextAction'
-import AssigneesButton from './AssigneesButton'
+import MetadataDetail from './MetadataDetail';
+import ContextActionResult from './ContextAction';
+import AssigneesButton from './AssigneesButton';
 
-import contentType from 'content-type'
+import contentType from 'content-type';
 
 const AssetEditorNav = ({ assetData, setMeta, enabledActions }) => {
-  const [detailsVisible, setDetailsVisible] = useState(false)
-  const [contextActionResult, setContextActionResult] = useState(null)
-  const dispatch = useDispatch()
-  const showDialog = useDialog()
+  const [detailsVisible, setDetailsVisible] = useState(false);
+  const [contextActionResult, setContextActionResult] = useState(null);
+  const dispatch = useDispatch();
+  const showDialog = useDialog();
 
   const currentFolder = useMemo(() => {
-    if (!nebula.settings.folders) return null
+    if (!nebula.settings.folders) return null;
     for (const f of nebula.settings.folders) {
-      if (f.id !== assetData?.id_folder) continue
-      return f
+      if (f.id !== assetData?.id_folder) continue;
+      return f;
     }
-  }, [{ ...assetData }])
+  }, [{ ...assetData }]);
 
   const folderOptions = useMemo(() => {
     return nebula.getWritableFolders().map((f) => ({
       label: f.name,
       style: { borderLeft: `4px solid ${f.color}` },
       onClick: () => setMeta('id_folder', f.id),
-    }))
-  }, [])
+    }));
+  }, []);
 
   // Actions
 
   const scopedEndpoints = useMemo(() => {
-    const result = []
+    const result = [];
     for (const scopedEndpoints of nebula.getScopedEndpoints('asset')) {
       result.push({
         label: scopedEndpoints.title,
@@ -57,36 +57,35 @@ const AssetEditorNav = ({ assetData, setMeta, enabledActions }) => {
             .request(scopedEndpoints.endpoint, { id_asset: assetData.id })
             .then((response) => {
               setContextActionResult({
-                contentType: contentType.parse(response.headers['content-type'])
-                  .type,
+                contentType: contentType.parse(response.headers['content-type']).type,
                 payload: response.data,
-              })
-            })
+              });
+            });
         },
-      })
+      });
     }
-    return result
-  }, [assetData.id])
+    return result;
+  }, [assetData.id]);
 
   const linkOptions = useMemo(() => {
-    if (!currentFolder) return []
+    if (!currentFolder) return [];
 
     return currentFolder.links.map((l) => ({
       label: l.name,
       disabled: !assetData[l['source_key']],
       onClick: () => {
-        const query = `${l['target_key']}:${assetData[l['source_key']]}`
-        dispatch(setCurrentViewId(l.view))
-        dispatch(setSearchQuery(query))
+        const query = `${l['target_key']}:${assetData[l['source_key']]}`;
+        dispatch(setCurrentViewId(l.view));
+        dispatch(setSearchQuery(query));
       },
-    }))
-  }, [currentFolder])
+    }));
+  }, [currentFolder]);
 
   const sendTo = () => {
     showDialog('sendto', 'Send to...', { assets: [assetData.id] })
       .then(() => {})
-      .catch(() => {})
-  }
+      .catch(() => {});
+  };
 
   const assetActions = useMemo(() => {
     const result = [
@@ -96,19 +95,19 @@ const AssetEditorNav = ({ assetData, setMeta, enabledActions }) => {
       },
       ...scopedEndpoints,
       ...linkOptions,
-    ]
+    ];
     if (result.length > 1) {
-      result[1].separator = true
+      result[1].separator = true;
     }
-    return result
-  }, [scopedEndpoints, linkOptions])
+    return result;
+  }, [scopedEndpoints, linkOptions]);
 
   // End actions
 
   const fps = useMemo(() => {
-    if (!assetData) return 25
-    return assetData['video/fps_f'] || 25
-  }, [assetData['video/fps_f']])
+    if (!assetData) return 25;
+    return assetData['video/fps_f'] || 25;
+  }, [assetData['video/fps_f']]);
 
   return (
     <Navbar>
@@ -178,7 +177,7 @@ const AssetEditorNav = ({ assetData, setMeta, enabledActions }) => {
         <UploadButton assetData={assetData} disabled={!enabledActions.upload} />
       )}
     </Navbar>
-  )
-}
+  );
+};
 
-export default AssetEditorNav
+export default AssetEditorNav;

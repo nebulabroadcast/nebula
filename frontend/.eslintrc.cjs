@@ -1,27 +1,33 @@
 module.exports = {
-    "env": {
-        "browser": true,
-        "es2021": true
+  root: true,
+  parser: '@typescript-eslint/parser',
+  parserOptions: {
+    ecmaFeatures: {
+      jsx: true,
     },
-    "extends": [
-        "eslint:recommended",
-        "plugin:react/recommended",
-        "prettier"
-    ],
-    "overrides": [
-    ],
-    "parserOptions": {
-        "ecmaVersion": "latest",
-        "sourceType": "module"
+  },
+  settings: {
+    react: {
+      version: 'detect',
     },
-    "plugins": [
-        "react",
-        "react-hooks",
-        "prettier",
-        "simple-import-sort"
-    ],
-    "rules": {
-      "react/react-in-jsx-scope": "off",
-      "react/prop-types": "off",
-    }
-}
+  },
+  env: {
+    browser: true,
+    es2021: true,
+  },
+  extends: [
+    'eslint:recommended',
+    'plugin:@typescript-eslint/recommended',
+    'plugin:react/recommended',
+    'plugin:react-hooks/recommended',
+    'prettier', // This makes sure prettier overrides conflicting rules
+  ],
+  plugins: ['@typescript-eslint', 'react', 'react-hooks'],
+  rules: {
+    // Add your custom rules here if needed. For example:
+    'no-unused-vars': 'warn', // Or 'error'
+    '@typescript-eslint/explicit-function-return-type': 'off', // Example: Often useful during development
+    'react/jsx-no-useless-fragment': 'warn',
+    'react/self-closing-comp': 'warn',
+  },
+};

@@ -1,4 +1,4 @@
-import styled from 'styled-components'
+import styled from 'styled-components';
 
 const CalendarWrapper = styled.div`
   display: flex;
@@ -41,5 +41,5 @@ const CalendarWrapper = styled.div`
       overflow-y: scroll;
     }
   }
-`
-export default CalendarWrapper
+`;
+export default CalendarWrapper;

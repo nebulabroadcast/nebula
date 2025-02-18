@@ -1,5 +1,5 @@
-import { Form, FormRow, InputText } from '/src/components'
-import nebula from '/src/nebula'
+import { Form, FormRow, InputText } from '/src/components';
+import nebula from '/src/nebula';
 
 const MetadataDetail = ({ assetData }) => {
   return (
@@ -7,19 +7,19 @@ const MetadataDetail = ({ assetData }) => {
       <Form>
         {assetData &&
           Object.keys(assetData).map((key) => {
-            let value = assetData[key]
+            let value = assetData[key];
             if (['object', 'list'].includes(nebula.metaType(key)))
-              value = JSON.stringify(value)
-            else if (typeof value === 'object') value = JSON.stringify(value)
+              value = JSON.stringify(value);
+            else if (typeof value === 'object') value = JSON.stringify(value);
 
             return (
               <FormRow key={key} title={nebula.metaTitle(key)}>
                 <InputText value={value} readOnly />
               </FormRow>
-            )
+            );
           })}
       </Form>
     </div>
-  )
-}
-export default MetadataDetail
+  );
+};
+export default MetadataDetail;

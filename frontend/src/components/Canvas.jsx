@@ -1,5 +1,5 @@
-import { useEffect, forwardRef } from 'react'
-import styled from 'styled-components'
+import { useEffect, forwardRef } from 'react';
+import styled from 'styled-components';
 
 const CanvasContainer = styled.div`
   position: relative;
@@ -13,36 +13,36 @@ const CanvasContainer = styled.div`
     bottom: 0;
     right: 0;
   }
-`
+`;
 
 const Canvas = forwardRef(({ style, onDraw, ...props }, ref) => {
   useEffect(() => {
-    if (!ref.current) return
-    const canvas = ref.current
+    if (!ref.current) return;
+    const canvas = ref.current;
 
     const handleResize = () => {
-      canvas.width = canvas.parentElement.clientWidth
-      canvas.height = canvas.parentElement.clientHeight
+      canvas.width = canvas.parentElement.clientWidth;
+      canvas.height = canvas.parentElement.clientHeight;
       if (onDraw) {
-        onDraw({ target: canvas })
+        onDraw({ target: canvas });
       }
-    }
+    };
 
-    handleResize()
+    handleResize();
 
-    const parentElement = canvas.parentElement
-    const resizeObserver = new ResizeObserver(handleResize)
-    resizeObserver.observe(parentElement)
+    const parentElement = canvas.parentElement;
+    const resizeObserver = new ResizeObserver(handleResize);
+    resizeObserver.observe(parentElement);
 
-    return () => resizeObserver.unobserve(parentElement)
-  }, [ref])
+    return () => resizeObserver.unobserve(parentElement);
+  }, [ref]);
 
   return (
     <CanvasContainer style={style}>
       <canvas ref={ref} {...props} />
     </CanvasContainer>
-  )
-})
-Canvas.displayName = 'Canvas'
+  );
+});
+Canvas.displayName = 'Canvas';
 
-export default Canvas
+export default Canvas;

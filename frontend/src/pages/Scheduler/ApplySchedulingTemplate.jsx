@@ -1,50 +1,50 @@
-import { useState, useEffect, useMemo } from 'react'
-import { useSelector } from 'react-redux'
+import { useState, useEffect, useMemo } from 'react';
+import { useSelector } from 'react-redux';
 
-import nebula from '/src/nebula'
-import { useDialog } from '/src/hooks'
-import { Dropdown } from '/src/components'
+import nebula from '/src/nebula';
+import { useDialog } from '/src/hooks';
+import { Dropdown } from '/src/components';
 
 const dmessage = `
 Are you sure you want to apply this template?
 Template will be merged with existing events.
 
 This operation cannot be undone.
-`
+`;
 
 const ApplySchedulingTemplate = ({ loadEvents, date, loading, setLoading }) => {
-  const currentChannel = useSelector((state) => state.context.currentChannel)
-  const [templates, setTemplates] = useState([])
-  const showDialog = useDialog()
+  const currentChannel = useSelector((state) => state.context.currentChannel);
+  const [templates, setTemplates] = useState([]);
+  const showDialog = useDialog();
 
   const channelConfig = useMemo(() => {
-    return nebula.getPlayoutChannel(currentChannel)
-  }, [currentChannel])
+    return nebula.getPlayoutChannel(currentChannel);
+  }, [currentChannel]);
 
   const loadTemplates = () => {
     nebula.request('list-scheduling-templates', {}).then((response) => {
-      const templates = response.data.templates
+      const templates = response.data.templates;
       templates.sort((a, b) => {
-        if (a.name === channelConfig.default_template) return -1
-        if (b.name === channelConfig.default_template) return 1
-        return a.title.localeCompare(b.title)
-      })
-      setTemplates(templates)
-    })
-  }
+        if (a.name === channelConfig.default_template) return -1;
+        if (b.name === channelConfig.default_template) return 1;
+        return a.title.localeCompare(b.title);
+      });
+      setTemplates(templates);
+    });
+  };
 
-  useEffect(() => loadTemplates(), [channelConfig])
+  useEffect(() => loadTemplates(), [channelConfig]);
 
   const applyTemplate = async (value) => {
-    setLoading(true)
-    const template_name = value
-    const id_channel = currentChannel
-    const dtitle = `Apply template "${value}"?`
+    setLoading(true);
+    const template_name = value;
+    const id_channel = currentChannel;
+    const dtitle = `Apply template "${value}"?`;
     try {
-      const res = await showDialog('confirm', dtitle, { message: dmessage })
+      const res = await showDialog('confirm', dtitle, { message: dmessage });
     } catch {
-      setLoading(false)
-      return
+      setLoading(false);
+      return;
     }
 
     try {
@@ -52,24 +52,24 @@ const ApplySchedulingTemplate = ({ loadEvents, date, loading, setLoading }) => {
         template_name,
         id_channel,
         date,
-      })
-      loadEvents()
+      });
+      loadEvents();
     } catch (error) {
       // noop
     }
-    setLoading(false)
-  }
+    setLoading(false);
+  };
 
   const dropdownOptions = useMemo(() => {
     return templates.map((template) => ({
       value: template.name,
       label: template.title,
       onClick: () => applyTemplate(template.name),
-    }))
-  }, [templates])
+    }));
+  }, [templates]);
 
   if (templates.length === 0) {
-    return null
+    return null;
   }
 
   return (
@@ -82,7 +82,7 @@ const ApplySchedulingTemplate = ({ loadEvents, date, loading, setLoading }) => {
         disabled={loading}
       />
     </>
-  )
-}
+  );
+};
 
-export default ApplySchedulingTemplate
+export default ApplySchedulingTemplate;

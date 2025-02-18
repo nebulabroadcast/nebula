@@ -1,2 +1,2 @@
-import UsersPage from './UsersPage'
-export default UsersPage
+import UsersPage from './UsersPage';
+export default UsersPage;

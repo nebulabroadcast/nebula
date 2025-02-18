@@ -1,2 +1,2 @@
-import JobsPage from './JobsPage'
-export default JobsPage
+import JobsPage from './JobsPage';
+export default JobsPage;

@@ -1,4 +1,4 @@
-import { Navbar, Button, Spacer } from '/src/components'
+import { Navbar, Button, Spacer } from '/src/components';
 
 const Pagination = ({ page, setPage, hasMore }) => {
   if (page > 1 || hasMore)
@@ -16,8 +16,8 @@ const Pagination = ({ page, setPage, hasMore }) => {
           onClick={() => setPage(page + 1)}
         />
       </Navbar>
-    )
-  return null
-}
+    );
+  return null;
+};
 
-export default Pagination
+export default Pagination;

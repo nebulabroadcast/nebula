@@ -1,10 +1,10 @@
-import axios from 'axios'
+import axios from 'axios';
 
-import { useState, useEffect, useRef } from 'react'
-import { toast } from 'react-toastify'
-import { Button, InputText, InputPassword } from '/src/components'
-import NebulaLogo from '/src/svg/logo-wide.svg'
-import styled from 'styled-components'
+import { useState, useEffect, useRef } from 'react';
+import { toast } from 'react-toastify';
+import { Button, InputText, InputPassword } from '/src/components';
+import NebulaLogo from '/src/svg/logo-wide.svg';
+import styled from 'styled-components';
 
 const LoginContainer = styled.div`
   position: absolute;
@@ -23,7 +23,7 @@ const LoginContainer = styled.div`
     font-style: italic;
     color: var(--color-text-dim);
   }
-`
+`;
 
 const LoginForm = styled.form`
   padding: 30px;
@@ -50,26 +50,26 @@ const LoginForm = styled.form`
       margin-bottom: 2em;
     }
   }
-`
+`;
 
 const LoginPage = ({ motd, onLogin }) => {
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
 
-  const loginRef = useRef()
-  const passwordRef = useRef()
-  const buttonRef = useRef()
+  const loginRef = useRef();
+  const passwordRef = useRef();
+  const buttonRef = useRef();
 
   useEffect(() => {
-    loginRef.current.focus()
-  }, [])
+    loginRef.current.focus();
+  }, []);
 
   const onSubmit = (event) => {
-    event.preventDefault()
+    event.preventDefault();
     axios
       .post('/api/login', { username, password })
       .then((response) => {
-        onLogin(response.data.access_token)
+        onLogin(response.data.access_token);
       })
       .catch((err) => {
         if (err.response.status === 422) {
@@ -80,8 +80,8 @@ const LoginPage = ({ motd, onLogin }) => {
               </p>
               <p>Invalid request</p>
             </>
-          )
-          return
+          );
+          return;
         }
 
         toast.error(
@@ -91,11 +91,11 @@ const LoginPage = ({ motd, onLogin }) => {
             </p>
             <p>{err.response.data?.detail || 'Unknown error'}</p>
           </>
-        )
-      })
-  }
+        );
+      });
+  };
 
-  const loginDisabled = !username || !password
+  const loginDisabled = !username || !password;
 
   return (
     <main>
@@ -129,7 +129,7 @@ const LoginPage = ({ motd, onLogin }) => {
         {motd && <small>{motd}</small>}
       </LoginContainer>
     </main>
-  )
-}
+  );
+};
 
-export default LoginPage
+export default LoginPage;

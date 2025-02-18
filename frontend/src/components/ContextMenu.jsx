@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef, useLayoutEffect } from 'react'
-import styled from 'styled-components'
-import Button from './Button'
+import { useState, useEffect, useRef, useLayoutEffect } from 'react';
+import styled from 'styled-components';
+import Button from './Button';
 
 const ContextMenuWrapper = styled.div`
   position: fixed;
@@ -38,70 +38,61 @@ const ContextMenuWrapper = styled.div`
       color: var(--color-text-dim);
     }
   }
-`
+`;
 
 const ContextMenu = ({ target, options }) => {
   const [contextData, setContextData] = useState({
     visible: false,
     posX: 0,
     posY: 0,
-  })
-  const contextRef = useRef(null)
+  });
+  const contextRef = useRef(null);
 
   useEffect(() => {
     const contextMenuEventHandler = (event) => {
-      const targetElement = target.current
+      const targetElement = target.current;
       if (targetElement && targetElement.contains(event.target)) {
-        event.preventDefault()
+        event.preventDefault();
         setTimeout(() => {
           setContextData({
             visible: true,
             posX: event.clientX,
             posY: event.clientY,
-          })
-        }, 0)
-      } else if (
-        contextRef.current &&
-        !contextRef.current.contains(event.target)
-      ) {
-        setContextData({ ...contextData, visible: false })
+          });
+        }, 0);
+      } else if (contextRef.current && !contextRef.current.contains(event.target)) {
+        setContextData({ ...contextData, visible: false });
       }
-    }
+    };
 
     const offClickHandler = (event) => {
       if (contextRef.current && !contextRef.current.contains(event.target)) {
-        setContextData({ ...contextData, visible: false })
+        setContextData({ ...contextData, visible: false });
       }
-    }
+    };
 
-    document.addEventListener('contextmenu', contextMenuEventHandler)
-    document.addEventListener('click', offClickHandler)
+    document.addEventListener('contextmenu', contextMenuEventHandler);
+    document.addEventListener('click', offClickHandler);
     return () => {
-      document.removeEventListener('contextmenu', contextMenuEventHandler)
-      document.removeEventListener('click', offClickHandler)
-    }
-  }, [contextData, target])
+      document.removeEventListener('contextmenu', contextMenuEventHandler);
+      document.removeEventListener('click', offClickHandler);
+    };
+  }, [contextData, target]);
 
   useLayoutEffect(() => {
-    if (
-      contextData.posX + contextRef.current?.offsetWidth >
-      window.innerWidth
-    ) {
+    if (contextData.posX + contextRef.current?.offsetWidth > window.innerWidth) {
       setContextData({
         ...contextData,
         posX: contextData.posX - contextRef.current?.offsetWidth,
-      })
+      });
     }
-    if (
-      contextData.posY + contextRef.current?.offsetHeight >
-      window.innerHeight
-    ) {
+    if (contextData.posY + contextRef.current?.offsetHeight > window.innerHeight) {
       setContextData({
         ...contextData,
         posY: contextData.posY - contextRef.current?.offsetHeight,
-      })
+      });
     }
-  }, [contextData])
+  }, [contextData]);
 
   return (
     <ContextMenuWrapper
@@ -120,14 +111,14 @@ const ContextMenu = ({ target, options }) => {
             icon={option.icon}
             iconStyle={option.hlColor ? { color: option.hlColor } : {}}
             onClick={() => {
-              setContextData({ ...contextData, visible: false })
-              option.onClick && option.onClick(contextData)
+              setContextData({ ...contextData, visible: false });
+              option.onClick && option.onClick(contextData);
             }}
           />
         </span>
       ))}
     </ContextMenuWrapper>
-  )
-}
+  );
+};
 
-export default ContextMenu
+export default ContextMenu;

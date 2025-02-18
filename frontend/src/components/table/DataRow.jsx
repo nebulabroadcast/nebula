@@ -1,8 +1,8 @@
-import { useMemo } from 'react'
-import { useDraggable } from '@dnd-kit/core'
-import clsx from 'clsx'
+import { useMemo } from 'react';
+import { useDraggable } from '@dnd-kit/core';
+import clsx from 'clsx';
 
-import BodyCell from './BodyCell'
+import BodyCell from './BodyCell';
 
 const DataRow = ({
   rowData,
@@ -16,54 +16,52 @@ const DataRow = ({
   selected = false,
   draggableItems,
 }) => {
-  const { attributes, listeners, setNodeRef, transform, isDragging } =
-    useDraggable({
-      id: rowData.id,
-      data:
-        draggableItems?.length &&
-        draggableItems.filter(
-          (item) =>
-            item.id === rowData.id && (item.type === rowData.type || 'asset')
-        ).length
-          ? draggableItems
-          : [
-              {
-                id: rowData.id,
-                type: rowData.type || 'asset',
-                title: rowData.title,
-                subtitle: rowData.subtitle,
-                duration: rowData.duration,
-                mark_in: rowData.mark_in,
-                mark_out: rowData.mark_out,
-              },
-            ],
-    })
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+    id: rowData.id,
+    data:
+      draggableItems?.length &&
+      draggableItems.filter(
+        (item) => item.id === rowData.id && (item.type === rowData.type || 'asset')
+      ).length
+        ? draggableItems
+        : [
+            {
+              id: rowData.id,
+              type: rowData.type || 'asset',
+              title: rowData.title,
+              subtitle: rowData.subtitle,
+              duration: rowData.duration,
+              mark_in: rowData.mark_in,
+              mark_out: rowData.mark_out,
+            },
+          ],
+  });
 
   const handleClick = (event) => {
     if (event.type === 'contextmenu' || event.button === 2) {
       // if we're right-clicking, and the row is already selected,
       // don't change the selection - just show the context menu
-      if (selected) return
+      if (selected) return;
     }
-    if (onRowClick) onRowClick(rowData, event)
-  }
+    if (onRowClick) onRowClick(rowData, event);
+  };
 
-  const rowStyle = {}
-  let rowClassName = ''
+  const rowStyle = {};
+  let rowClassName = '';
 
   // Left-border highlight color
-  let highlightColor = null
-  let highlightStyle = null
-  if (rowHighlightColor) highlightColor = rowHighlightColor(rowData)
-  if (rowHighlightStyle) highlightStyle = rowHighlightStyle(rowData)
-  if (rowClass) rowClassName = rowClass(rowData)
-  if (highlightColor) rowStyle['borderLeftColor'] = highlightColor
-  if (highlightStyle) rowStyle['borderLeftStyle'] = highlightStyle
+  let highlightColor = null;
+  let highlightStyle = null;
+  if (rowHighlightColor) highlightColor = rowHighlightColor(rowData);
+  if (rowHighlightStyle) highlightStyle = rowHighlightStyle(rowData);
+  if (rowClass) rowClassName = rowClass(rowData);
+  if (highlightColor) rowStyle['borderLeftColor'] = highlightColor;
+  if (highlightStyle) rowStyle['borderLeftStyle'] = highlightStyle;
 
   // Embedded progress bar
   if (rowData.progress && 100 > rowData.progress > 0) {
-    rowStyle['--progress'] = rowData.progress + '%'
-    rowStyle['--progress-opacity'] = 0.2
+    rowStyle['--progress'] = rowData.progress + '%';
+    rowStyle['--progress-opacity'] = 0.2;
   }
 
   //
@@ -82,8 +80,8 @@ const DataRow = ({
           />
         ))}
       </>
-    )
-  }, [columns, rowData])
+    );
+  }, [columns, rowData]);
 
   return (
     <tr
@@ -99,7 +97,7 @@ const DataRow = ({
     >
       {rowContent}
     </tr>
-  )
-}
+  );
+};
 
-export default DataRow
+export default DataRow;

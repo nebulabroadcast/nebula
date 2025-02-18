@@ -1,13 +1,13 @@
-import ReactMarkdown from 'react-markdown'
-import { Dialog, Table, Button } from '/src/components'
-import styled from 'styled-components'
-import { toast } from 'react-toastify'
-import { formatTimeString } from '/src/utils'
-import formatMetaDatetime from '/src/tableFormat/formatMetaDatetime'
+import ReactMarkdown from 'react-markdown';
+import { Dialog, Table, Button } from '/src/components';
+import styled from 'styled-components';
+import { toast } from 'react-toastify';
+import { formatTimeString } from '/src/utils';
+import formatMetaDatetime from '/src/tableFormat/formatMetaDatetime';
 
 const MarkdownWrapper = styled.div`
   padding: 12px;
-`
+`;
 
 const UriWrapper = styled.div`
   display: inline-flex;
@@ -36,7 +36,7 @@ const UriWrapper = styled.div`
     width: 10px;
     height: 10px;
   }
-`
+`;
 
 const UriComponent = ({ children, ...props }) => {
   return (
@@ -44,54 +44,54 @@ const UriComponent = ({ children, ...props }) => {
       <a {...props}>{children}</a>
       <button
         onClick={() => {
-          navigator.clipboard.writeText(props.href)
-          toast.success('Copied to clipboard')
+          navigator.clipboard.writeText(props.href);
+          toast.success('Copied to clipboard');
         }}
       >
         <span className="icon material-symbols-outlined">content_copy</span>
       </button>
     </UriWrapper>
-  )
-}
+  );
+};
 
 const TableDialog = ({ onHide, dialogStyle, header, payload }) => {
   const columns = payload.columns.map((column) => {
     if (column.type === 'datetime') {
-      column.formatter = formatMetaDatetime
+      column.formatter = formatMetaDatetime;
     }
-    return column
-  })
+    return column;
+  });
 
   const onCopy = () => {
     const data = payload.data.map((row) => {
-      const newRow = {}
+      const newRow = {};
       columns.forEach((column) => {
         if (column.type === 'datetime') {
-          newRow[column.name] = formatTimeString(row[column.name])
+          newRow[column.name] = formatTimeString(row[column.name]);
         } else {
-          newRow[column.name] = row[column.name]
+          newRow[column.name] = row[column.name];
         }
-      })
-      return newRow
-    })
+      });
+      return newRow;
+    });
 
-    const columnHeaders = columns.map((column) => column.title)
-    const columnHeadersString = columnHeaders.join('\t')
+    const columnHeaders = columns.map((column) => column.title);
+    const columnHeadersString = columnHeaders.join('\t');
     const dataString = data
       .map((row) => {
         return columns
           .map((column) => {
-            return row[column.name]
+            return row[column.name];
           })
-          .join('\t')
+          .join('\t');
       })
-      .join('\n')
+      .join('\n');
 
-    const clipboardData = new DataTransfer()
-    clipboardData.setData('text/plain', columnHeadersString + '\n' + dataString)
-    navigator.clipboard.writeText(clipboardData.getData('text/plain'))
-    toast.success('Copied to clipboard')
-  }
+    const clipboardData = new DataTransfer();
+    clipboardData.setData('text/plain', columnHeadersString + '\n' + dataString);
+    navigator.clipboard.writeText(clipboardData.getData('text/plain'));
+    toast.success('Copied to clipboard');
+  };
 
   return (
     <Dialog
@@ -100,11 +100,7 @@ const TableDialog = ({ onHide, dialogStyle, header, payload }) => {
       header={header}
       footer={
         <>
-          <Button
-            onClick={onCopy}
-            icon="content_copy"
-            label="Copy to clipboard"
-          />
+          <Button onClick={onCopy} icon="content_copy" label="Copy to clipboard" />
           <Button onClick={() => onHide()} icon="close" label="Cancel" />
         </>
       }
@@ -113,21 +109,21 @@ const TableDialog = ({ onHide, dialogStyle, header, payload }) => {
         <Table columns={columns} data={payload.data} className="contained" />
       </div>
     </Dialog>
-  )
-}
+  );
+};
 
 const ContextActionResult = ({ mime, payload, onHide }) => {
   if (mime === 'text/markdown') {
     const components = {
       a: UriComponent,
-    }
+    };
     return (
       <Dialog onHide={onHide}>
         <MarkdownWrapper>
           <ReactMarkdown components={components}>{payload}</ReactMarkdown>
         </MarkdownWrapper>
       </Dialog>
-    )
+    );
   } // End of text/markdown
 
   if (mime === 'application/json') {
@@ -139,9 +135,9 @@ const ContextActionResult = ({ mime, payload, onHide }) => {
           dialogStyle={payload.dialog_style}
           payload={payload.payload}
         />
-      )
+      );
     } // End of table mode
   } // End of application/json
-}
+};
 
-export default ContextActionResult
+export default ContextActionResult;

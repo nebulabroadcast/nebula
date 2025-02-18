@@ -1,10 +1,10 @@
-import ReactMarkdown from 'react-markdown'
+import ReactMarkdown from 'react-markdown';
 
-import { Button, Dialog } from '/src/components'
+import { Button, Dialog } from '/src/components';
 
 const ConfirmDialog = (props) => {
-  const onCancel = () => props.handleCancel()
-  const onConfirm = () => props.handleConfirm()
+  const onCancel = () => props.handleCancel();
+  const onConfirm = () => props.handleConfirm();
 
   const footer = (
     <>
@@ -21,13 +21,13 @@ const ConfirmDialog = (props) => {
         hlColor="var(--color-green)"
       />
     </>
-  )
+  );
 
   return (
     <Dialog onHide={onCancel} header={props.title} footer={footer}>
       <ReactMarkdown>{props.message}</ReactMarkdown>
     </Dialog>
-  )
-}
+  );
+};
 
-export default ConfirmDialog
+export default ConfirmDialog;

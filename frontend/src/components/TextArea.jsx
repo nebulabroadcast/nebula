@@ -1,4 +1,4 @@
-import BaseInput from './BaseInput'
+import BaseInput from './BaseInput';
 
 const TextArea = ({ value, onChange, tooltip, ...props }) => {
   return (
@@ -10,7 +10,7 @@ const TextArea = ({ value, onChange, tooltip, ...props }) => {
       onChange={(e) => onChange(e.target.value)}
       {...props}
     />
-  )
-}
+  );
+};
 
-export default TextArea
+export default TextArea;
