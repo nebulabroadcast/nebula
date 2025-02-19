@@ -1,5 +1,4 @@
-import { useEffect, useCallback, useRef } from 'react';
-import { useAudioContext } from './AudioContext';
+import { useEffect, useCallback, useRef, use } from 'react';
 
 import { Button, InputTimecode, Navbar } from '/src/components';
 
@@ -8,79 +7,87 @@ const VideoPlayerControls = ({
   markOut,
   setMarkIn,
   setMarkOut,
+  currentTime,
+  duration,
+  seekToTime,
   isPlaying,
+  onPlayPause,
   frameRate,
 }) => {
-  const { videoRef } = useAudioContext();
-
   const markInRef = useRef(markIn);
   const markOutRef = useRef(markOut);
+  const currentTimeRef = useRef(currentTime);
+  const durationRef = useRef(duration);
 
   useEffect(() => {
     markInRef.current = markIn;
     markOutRef.current = markOut;
   }, [markIn, markOut]);
 
+  useEffect(() => {
+    currentTimeRef.current = currentTime;
+  }, [currentTime]);
+
+  useEffect(() => {
+    durationRef.current = duration;
+  }, [duration]);
+
   const frameLength = 1 / frameRate;
 
   const handlePlayPause = () => {
-    if (videoRef.current.paused) {
-      videoRef.current.play();
-    } else {
-      videoRef.current.pause();
-    }
+    onPlayPause();
   };
 
   const handleGoToStart = () => {
-    videoRef.current.currentTime = 0;
+    seekToTime(0);
   };
   const handleGoToEnd = () => {
-    videoRef.current.currentTime = videoRef.current.duration;
+    seekToTime(durationRef.current);
   };
 
   const handleGoBack1 = () => {
-    videoRef.current.currentTime -= frameLength;
+    seekToTime(currentTimeRef.current - frameLength);
   };
   const handleGoForward1 = () => {
-    videoRef.current.currentTime += frameLength;
+    seekToTime(currentTimeRef.current + frameLength);
   };
 
   const handleGoBack5 = () => {
-    videoRef.current.currentTime -= 5 * frameLength;
+    seekToTime(currentTimeRef.current - 5 * frameLength);
   };
   const handleGoForward5 = () => {
-    videoRef.current.currentTime += 5 * frameLength;
+    seekToTime(currentTimeRef.current + 5 * frameLength);
   };
 
   // Create mark in/out
 
-  const handleMarkIn = useCallback(() => {
-    if (setMarkIn) setMarkIn(videoRef.current.currentTime);
-  }, [videoRef, setMarkIn]);
+  const handleMarkIn = () => {
+    if (setMarkIn) setMarkIn(currentTimeRef.current);
+  };
 
-  const handleMarkOut = useCallback(() => {
-    if (setMarkOut) setMarkOut(videoRef.current.currentTime);
-  }, [videoRef, setMarkOut]);
+  const handleMarkOut = () => {
+    if (setMarkOut) setMarkOut(currentTimeRef.current);
+  };
 
   // Go to mark in/out
 
-  const handleGoToMarkIn = useCallback(() => {
+  const handleGoToMarkIn = () => {
     if (!markInRef.current) {
       console.log('No mark in set');
       return;
     }
     console.log('Going to mark in', markInRef.current);
-    videoRef.current.currentTime = markInRef.current;
-  }, [markInRef, videoRef]);
+    seekToTime(markInRef.current);
+  };
 
-  const handleGoToMarkOut = useCallback(() => {
+  const handleGoToMarkOut = () => {
     if (!markOutRef.current) {
       console.log('No mark out set');
       return;
     }
     console.log('Going to mark out', markOutRef.current);
-    videoRef.current.currentTime = markOutRef.current;
-  }, [markOutRef, videoRef]);
+    seekToTime(markOutRef.current);
+  };
 
   // Clear mark in/out
 

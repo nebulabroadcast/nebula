@@ -61,6 +61,7 @@ const VideoPlayerBody = ({ ...props }) => {
   const [markOut, setMarkOut] = useState();
 
   const desiredFrame = useRef(0);
+  const frameLength = 1 / props.frameRate;
 
   useEffect(() => {
     if (props.setPosition) {
@@ -118,25 +119,38 @@ const VideoPlayerBody = ({ ...props }) => {
     return () => resizeObserver.unobserve(parentElement);
   }, [videoRef]);
 
+  const normalizeTime = (time) => {
+    const currentFrame = Math.round(time * props.frameRate);
+    return currentFrame / props.frameRate;
+  };
+
+  const setNormalizedTime = () => {
+    if (videoRef.current.currentTime === currentTime) return;
+
+    const actualDuration = videoRef.current.duration;
+    if (actualDuration !== duration) {
+      setDuration(actualDuration);
+    }
+    const boundTime = Math.min(
+      videoRef.current?.currentTime || 0,
+      actualDuration - frameLength
+    );
+    const currentFrame = Math.floor(boundTime * props.frameRate);
+    const correctTime = currentFrame / props.frameRate;
+
+    setCurrentTime(correctTime);
+    desiredFrame.current = currentFrame;
+  };
+
   useEffect(() => {
     if (!videoRef.current) return;
-    const frameLength = 1 / props.frameRate;
     const updateTime = () => {
-      const actualDuration = videoRef.current.duration;
-      if (actualDuration !== duration) {
-        setDuration(actualDuration);
-      }
-      const actualTime = Math.min(
-        videoRef.current?.currentTime || 0,
-        actualDuration - frameLength
-      );
       if (isPlaying) {
-        setCurrentTime(actualTime);
+        setNormalizedTime();
         setTimeout(() => requestAnimationFrame(updateTime), 40);
       } else {
-        setCurrentTime(actualTime);
+        setNormalizedTime();
       }
-      desiredFrame.current = Math.floor(actualTime * props.frameRate);
     };
     updateTime();
   }, [videoRef, isPlaying, duration]);
@@ -144,16 +158,11 @@ const VideoPlayerBody = ({ ...props }) => {
   const seekToTime = (newTime) => {
     const videoElement = videoRef.current;
     if (!videoElement) return;
-    if (videoElement.currentTime === newTime) return;
-    videoElement.currentTime = newTime;
+    const newNormalizedTime = normalizeTime(newTime);
+    if (videoElement.currentTime === newNormalizedTime) return;
+    videoElement.currentTime = newNormalizedTime;
     desiredFrame.current = Math.floor(newTime * props.frameRate);
     setCurrentTime(newTime);
-  };
-
-  const handlePosition = () => {
-    if (videoRef.current.currentTime === currentTime) return;
-    setCurrentTime(videoRef.current.currentTime);
-    desiredFrame.current = Math.floor(videoRef.current.currentTime * props.frameRate);
   };
 
   const handleLoad = () => {
@@ -176,10 +185,11 @@ const VideoPlayerBody = ({ ...props }) => {
   };
 
   const handlePause = () => {
-    seekToTime(desiredFrame.current / props.frameRate);
+    //seekToTime(desiredFrame.current / props.frameRate);
     setTimeout(() => {
       if (videoRef.current?.paused) {
-        seekToTime(desiredFrame.current / props.frameRate);
+        //seekToTime(desiredFrame.current / props.frameRate);
+        seekToTime(currentTime);
         setIsPlaying(false);
       }
     }, 20);
@@ -209,12 +219,12 @@ const VideoPlayerBody = ({ ...props }) => {
     setBufferedRanges(bufferedRanges);
   };
 
-  const handleScrub = (newTime) => {
-    desiredFrame.current = Math.floor(newTime * props.frameRate);
-    const desiredTime = desiredFrame.current / props.frameRate;
-    if (desiredTime === videoRef.current?.currentTime) return;
-    videoRef.current?.pause();
-    seekToTime(desiredTime);
+  const onPlayPause = () => {
+    if (videoRef.current.paused) {
+      videoRef.current.play();
+    } else {
+      videoRef.current.pause();
+    }
   };
 
   // half of the nodes will be on the left, the other half on the right
@@ -224,7 +234,11 @@ const VideoPlayerBody = ({ ...props }) => {
   return (
     <VideoPlayerContainer style={{ display: videoRef.current ? 'flex' : 'none' }}>
       <Navbar>
-        <InputTimecode value={currentTime} tooltip="Current position" />
+        <InputTimecode
+          value={currentTime}
+          tooltip="Current position"
+          fps={props.frameRate}
+        />
         <ChannelSelect gainNodes={gainNodes} />
         <div style={{ flex: 1 }} />
         <Button
@@ -239,7 +253,12 @@ const VideoPlayerBody = ({ ...props }) => {
           onClick={() => setShowOverlay(!showOverlay)}
           active={showOverlay}
         />
-        <InputTimecode value={duration} readOnly={true} tooltip="Asset duration" />
+        <InputTimecode
+          value={duration}
+          fps={props.frameRate}
+          readOnly={true}
+          tooltip="Asset duration"
+        />
       </Navbar>
 
       <section className="row grow">
@@ -255,7 +274,7 @@ const VideoPlayerBody = ({ ...props }) => {
               onPlay={handlePlay}
               onPause={handlePause}
               onProgress={handleProgress}
-              onTimeUpdate={handlePosition}
+              onTimeUpdate={setNormalizedTime}
               src={props.src}
             />
             <VideoOverlay
@@ -273,7 +292,7 @@ const VideoPlayerBody = ({ ...props }) => {
         frameRate={props.frameRate}
         isPlaying={isPlaying}
         currentTime={currentTime}
-        onScrub={handleScrub}
+        onScrub={seekToTime}
         markIn={markIn}
         markOut={markOut}
         bufferedRanges={bufferedRanges}
@@ -286,6 +305,10 @@ const VideoPlayerBody = ({ ...props }) => {
         setMarkIn={setMarkIn}
         markOut={markOut}
         setMarkOut={setMarkOut}
+        seekToTime={seekToTime}
+        currentTime={currentTime}
+        onPlayPause={onPlayPause}
+        duration={duration}
         isPlaying={isPlaying}
       />
     </VideoPlayerContainer>
