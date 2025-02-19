@@ -1,4 +1,4 @@
-from typing import Annotated, Any, Literal, get_args
+from typing import Annotated, Any, get_args
 
 import fastapi
 from pydantic import Field
@@ -9,40 +9,10 @@ from nebula.settings import load_settings
 from nebula.settings.common import LanguageCode
 from server.context import ScopedEndpoint, server_context
 from server.dependencies import CurrentUserOptional
-from server.models import ResponseModel
+from server.models import ResponseModel, UserModel
 from server.request import APIRequest
 
 from .client_settings import ClientSettingsModel, get_client_settings
-
-PermissionValue = Literal[True] | Literal[False] | list[int]
-
-
-class UserPermissionModel(ResponseModel):
-    """User permission model."""
-    asset_view: PermissionValue = False
-    asset_edit: PermissionValue = False
-    rundown_view: PermissionValue = False
-    rundown_edit: PermissionValue = False
-    scheduler_view: PermissionValue = False
-    scheduler_edit: PermissionValue = False
-    service_control: PermissionValue = False
-    mcr: PermissionValue = False
-    job_control: PermissionValue = False
-
-
-class UserInfoModel(ResponseModel):
-    id: int
-    login: str
-    ctime: float
-    mtime: float
-
-    email: str | None = None
-    full_name: str | None = None
-
-    local_network_only: bool = False
-    is_admin: bool = False
-    is_limited: bool = False
-    permissions: UserPermissionModel = Field(default_factory=UserPermissionModel)
 
 
 class InitResponseModel(ResponseModel):
@@ -63,9 +33,9 @@ class InitResponseModel(ResponseModel):
     ] = None
 
     user: Annotated[
-        UserInfoModel | None,
+        UserModel | None,
         Field(
-            title="User data",
+            title="Current user",
             description="User data if user is logged in",
         ),
     ] = None
@@ -115,7 +85,7 @@ class InitRequest(APIRequest):
     """
 
     name = "init"
-    title = "Login"
+    title = "Init"
     response_model = InitResponseModel
 
     async def handle(
@@ -157,21 +127,12 @@ class InitRequest(APIRequest):
         client_settings.server_url = f"{request.url.scheme}://{request.url.netloc}"
         plugins = get_frontend_plugins()
 
-        # User data
-
-        udata: dict[str, Any] = {"permissions": {}}
-        for key, value in user.meta.items():
-            if key.startswith("can/"):
-                udata["permissions"][key[4:]] = value
-            else:
-                udata[key] = value
-
         # Return response
 
         return InitResponseModel(
             installed=True,
             motd=motd,
-            user=UserInfoModel(**udata),
+            user=UserModel.from_meta(user.meta),
             settings=client_settings,
             frontend_plugins=plugins,
             scoped_endpoints=server_context.scoped_endpoints,

@@ -1,4 +1,5 @@
 import nebula from '/src/nebula';
+import { isEqual } from 'lodash';
 import { useState, useEffect, useMemo } from 'react';
 
 import { Icon, Select, InputSwitch, PanelHeader, Form, FormRow } from '/src/components';
@@ -48,6 +49,17 @@ const AllOrList = ({ value, setValue, options, disabled }) => {
 };
 
 const AccessControl = ({ userData, setValue }) => {
+  const [permissions, setPermissions] = useState({});
+
+  useEffect(() => {
+    setPermissions(userData?.permissions || {});
+  }, [userData.permissions]);
+
+  useEffect(() => {
+    if (isEqual(permissions, userData.permissions)) return;
+    setValue('permissions', permissions);
+  }, [permissions]);
+
   const folderOptions = useMemo(() => {
     return nebula.settings.folders.map((folder) => ({
       title: folder.name,
@@ -61,6 +73,10 @@ const AccessControl = ({ userData, setValue }) => {
       value: channel.id,
     }));
   }, []);
+
+  const setPermission = (key, value) => {
+    setPermissions((prev) => ({ ...prev, [key]: value }));
+  };
 
   const isAdmin = userData?.is_admin || false;
 
@@ -81,64 +97,64 @@ const AccessControl = ({ userData, setValue }) => {
       </FormRow>
       <FormRow title="Asset view">
         <AllOrList
-          value={userData?.can_asset_view || false}
-          setValue={(value) => setValue('can_asset_view', value)}
+          value={permissions.asset_view || false}
+          setValue={(value) => setPermission('asset_view', value)}
           options={folderOptions}
           disabled={isAdmin}
         />
       </FormRow>
       <FormRow title="Asset edit">
         <AllOrList
-          value={userData?.can_asset_edit || false}
-          setValue={(value) => setValue('can_asset_edit', value)}
+          value={permissions.asset_edit || false}
+          setValue={(value) => setPermission('asset_edit', value)}
           options={folderOptions}
           disabled={isAdmin}
         />
       </FormRow>
       <FormRow title="Scheduler view">
         <AllOrList
-          value={userData?.can_scheduler_view || false}
-          setValue={(value) => setValue('can_scheduler_view', value)}
+          value={permissions.scheduler_view || false}
+          setValue={(value) => setPermission('scheduler_view', value)}
           options={channelOptions}
           disabled={isAdmin}
         />
       </FormRow>
       <FormRow title="Scheduler edit">
         <AllOrList
-          value={userData?.can_scheduler_edit || false}
-          setValue={(value) => setValue('can_scheduler_edit', value)}
+          value={permissions.scheduler_edit || false}
+          setValue={(value) => setPermission('scheduler_edit', value)}
           options={channelOptions}
           disabled={isAdmin}
         />
       </FormRow>
       <FormRow title="Rundown view">
         <AllOrList
-          value={userData?.can_rundown_view || false}
-          setValue={(value) => setValue('can_rundown_view', value)}
+          value={permissions.rundown_view || false}
+          setValue={(value) => setPermission('rundown_view', value)}
           options={channelOptions}
           disabled={isAdmin}
         />
       </FormRow>
       <FormRow title="Rundown edit">
         <AllOrList
-          value={userData?.can_rundown_edit || false}
-          setValue={(value) => setValue('can_rundown_edit', value)}
+          value={permissions.rundown_edit || false}
+          setValue={(value) => setPermission('rundown_edit', value)}
           options={channelOptions}
           disabled={isAdmin}
         />
       </FormRow>
       <FormRow title="Playout control">
         <AllOrList
-          value={userData?.can_mcr || false}
-          setValue={(value) => setValue('can_mcr', value)}
+          value={permissions.mcr || false}
+          setValue={(value) => setPermission('mcr', value)}
           options={channelOptions}
           disabled={isAdmin}
         />
       </FormRow>
       <FormRow title="Jobs control">
         <InputSwitch
-          value={userData?.can_job_control || false}
-          onChange={(value) => setValue('can_job_control', value)}
+          value={permissions.job_control || false}
+          onChange={(value) => setPermission('job_control', value)}
           disabled={isAdmin}
         />
       </FormRow>

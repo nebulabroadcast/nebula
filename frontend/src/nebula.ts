@@ -6,7 +6,7 @@ import type {
   ClientMetaTypeModel,
   ClientCsItemModel,
   FolderSettings,
-  UserInfoModel,
+  UserModel,
   PluginItemModel,
   ScopedEndpoint,
   BasePlayoutChannelSettings,
@@ -16,7 +16,7 @@ const nebula = {
   // Settings
 
   settings: undefined as ClientSettingsModel | undefined,
-  user: undefined as UserInfoModel | undefined,
+  user: undefined as UserModel | undefined,
   plugins: [] as PluginItemModel[],
   scopedEndpoints: [] as ScopedEndpoint[],
   language: 'en',
@@ -36,10 +36,9 @@ const nebula = {
   },
 
   // Metadata
-
   metaType(key: string): ClientMetaTypeModel {
     return (
-      this.settings?.metatypes[key] || {
+      this.settings?.metatypes?.[key] || {
         title: key,
         header: key,
         description: null,
@@ -49,7 +48,7 @@ const nebula = {
   },
 
   csOptions(key: string): ClientCsItemModel[] {
-    const cs = this.settings?.cs[key] || {};
+    const cs = this.settings?.cs?.[key] || {};
     const result = [];
     for (const value in cs) {
       result.push({
@@ -78,7 +77,7 @@ const nebula = {
 
   getUserName(id_user: number): string | undefined {
     for (const user of this.settings?.users || []) {
-      if (user.id === id_user) return user.full_name;
+      if (user.id === id_user) return user.full_name || undefined;
     }
     return undefined;
   },
@@ -92,37 +91,35 @@ const nebula = {
   },
 
   getWritableFolders(): FolderSettings[] {
+    if (!this.user) return [];
     return (this.settings?.folders || []).filter((folder: FolderSettings) => {
-      if (this.user.is_admin) return true;
-      if (this.user['can/asset_edit'] === true) return true;
-      if (
-        Array.isArray(this.user['can/asset_edit']) &&
-        this.user['can/asset_edit'].includes(folder.id)
-      )
-        return true;
+      if (this.can('asset_edit', folder.id)) return true;
       return false;
     });
   },
 
   // User access
 
-  can(permission: string, value: string | boolean | number[], anyval = false): boolean {
-    if (this.user.is_admin) {
-      return true;
+  can(permission: string, value: string | boolean | number, anyval = false): boolean {
+    if (!this.user) return false;
+    if (this.user.is_admin) return true;
+    const userPermissions = this.user.permissions || {};
+    if (!Object.keys(userPermissions).includes(permission)) {
+      return false;
     }
-    if (this.user.permissions[permission] === false) {
+    if (!userPermissions[permission]) {
       return false;
     }
     if (anyval) {
       return true;
     }
-    if (this.user.permissions[permission] === true) {
+    if (userPermissions[permission] === true) {
       return true;
     }
-    if (this.user.permissions[permission] === value) {
+    if (userPermissions[permission] === value) {
       return true;
     }
-    return this.user.permissions[permission].includes(value);
+    return userPermissions[permission].includes(value);
   },
 
   logout(): void {

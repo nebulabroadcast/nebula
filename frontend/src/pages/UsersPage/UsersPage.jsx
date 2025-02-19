@@ -27,7 +27,7 @@ const UsersPage = () => {
   const loadUsers = () => {
     setLoading(true);
     nebula
-      .request('user_list')
+      .request('list-users')
       .then((res) => {
         setUsers(
           res.data.users.map((user) => ({
@@ -63,7 +63,7 @@ const UsersPage = () => {
 
   const onSave = () => {
     nebula
-      .request('save_user', userData)
+      .request('save-user', userData)
       .then(() => {
         loadUsers();
       })

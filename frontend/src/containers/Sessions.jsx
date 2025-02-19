@@ -40,7 +40,7 @@ const Sessions = ({ userId }) => {
     if (!userId) return;
     setLoading(true);
     nebula
-      .request('sessions', { id_user: userId })
+      .request('list-sessions', { id_user: userId })
       .then((res) => {
         setSessions(res.data);
       })
@@ -53,7 +53,7 @@ const Sessions = ({ userId }) => {
 
   const invalidateSession = (token) => {
     nebula
-      .request('invalidate_session', { token })
+      .request('invalidate-session', { token })
       .then(() => {
         loadSessions();
       })

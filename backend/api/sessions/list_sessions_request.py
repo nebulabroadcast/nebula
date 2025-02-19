@@ -14,7 +14,7 @@ class ListSessionsRequestModel(RequestModel):
 class ListSessionsRequest(APIRequest):
     """List user sessions."""
 
-    name = "sessions"
+    name = "list-sessions"
     title = "List sessions"
 
     async def handle(

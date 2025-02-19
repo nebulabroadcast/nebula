@@ -342,7 +342,7 @@ export type InitResponseModel = {
   /**
    * User data if user is logged in
    */
-  user?: UserInfoModel | null;
+  user?: UserModel | null;
   settings?: ClientSettingsModel | null;
   /**
    * List of plugins available for the web frontend
@@ -813,8 +813,8 @@ export type UserInfo = {
   full_name?: string | null;
 };
 
-export type UserInfoModel = {
-  id: number;
+export type UserModel = {
+  id?: number | null;
   login: string;
   ctime: number;
   mtime: number;
@@ -823,70 +823,51 @@ export type UserInfoModel = {
   local_network_only?: boolean;
   is_admin?: boolean;
   is_limited?: boolean;
-  permissions?: UserPermissionModel;
-};
-
-export type UserModel = {
-  id?: number | null;
-  login: string;
-  full_name?: string | null;
-  email?: string | null;
-  is_admin?: boolean;
-  is_limited?: boolean;
-  local_network_only?: boolean;
+  permissions?: UserPermissionsModel;
   password?: string | null;
   api_key?: string | null;
-  /**
-   * List of folder IDs user can view. Use 'true' for all folders
-   */
-  can_asset_view?: boolean | Array<number>;
-  /**
-   * List of folder IDs user can edit. Use 'true' for all folders
-   */
-  can_asset_edit?: boolean | Array<number>;
-  /**
-   * List of channel IDs user can view. Use 'true' for all channels
-   */
-  can_scheduler_view?: boolean | Array<number>;
-  /**
-   * List of channel IDs user can edit. Use 'true' for all channels
-   */
-  can_scheduler_edit?: boolean | Array<number>;
-  /**
-   * List of channel IDs user can view. Use 'true' for all channels
-   */
-  can_rundown_view?: boolean | Array<number>;
-  /**
-   * List of channel IDs user can edit. Use 'true' for all channels
-   */
-  can_rundown_edit?: boolean | Array<number>;
-  /**
-   * List of channel IDs user can control
-   */
-  can_mcr?: boolean | Array<number>;
-  /**
-   * Use list of action IDs to grant access to specific actions
-   */
-  can_job_control?: boolean | Array<number>;
-  /**
-   * List of service IDs user can control
-   */
-  can_service_control?: boolean | Array<number>;
 };
 
 /**
  * User permission model.
  */
-export type UserPermissionModel = {
-  asset_view?: true | false | Array<number>;
-  asset_edit?: true | false | Array<number>;
-  rundown_view?: true | false | Array<number>;
-  rundown_edit?: true | false | Array<number>;
-  scheduler_view?: true | false | Array<number>;
-  scheduler_edit?: true | false | Array<number>;
-  service_control?: true | false | Array<number>;
-  mcr?: true | false | Array<number>;
-  job_control?: true | false | Array<number>;
+export type UserPermissionsModel = {
+  /**
+   * List of folder IDs user can view. Use 'true' for all folders
+   */
+  asset_view?: boolean | Array<number>;
+  /**
+   * List of folder IDs user can edit. Use 'true' for all folders
+   */
+  asset_edit?: boolean | Array<number>;
+  /**
+   * List of channel IDs user can view. 'true' for all channels
+   */
+  rundown_view?: boolean | Array<number>;
+  /**
+   * List of channel IDs user can edit. 'true' for all channels
+   */
+  rundown_edit?: boolean | Array<number>;
+  /**
+   * List of channel IDs user can view. 'true' for all channels
+   */
+  scheduler_view?: boolean | Array<number>;
+  /**
+   * List of channel IDs user can edit. 'true' for all channels
+   */
+  scheduler_edit?: boolean | Array<number>;
+  /**
+   * List of service IDs user can control
+   */
+  service_control?: boolean | Array<number>;
+  /**
+   * List of channel IDs user can control
+   */
+  mcr?: boolean | Array<number>;
+  /**
+   * Use list of action IDs to grant access to specific actions
+   */
+  job_control?: boolean | Array<number>;
 };
 
 export type ValidationError = {
@@ -937,7 +918,7 @@ export type DeleteResponses = {
   200: unknown;
 };
 
-export type UserListData = {
+export type ListUsersData = {
   body?: never;
   headers?: {
     authorization?: string | null;
@@ -948,26 +929,26 @@ export type UserListData = {
     token?: string | null;
     api_key?: string | null;
   };
-  url: '/api/user_list';
+  url: '/api/list-users';
 };
 
-export type UserListErrors = {
+export type ListUsersErrors = {
   /**
    * Validation Error
    */
   422: HttpValidationError;
 };
 
-export type UserListError = UserListErrors[keyof UserListErrors];
+export type ListUsersError = ListUsersErrors[keyof ListUsersErrors];
 
-export type UserListResponses = {
+export type ListUsersResponses = {
   /**
    * Successful Response
    */
   200: ListUsersResponseModel;
 };
 
-export type UserListResponse = UserListResponses[keyof UserListResponses];
+export type ListUsersResponse = ListUsersResponses[keyof ListUsersResponses];
 
 export type SaveUserData = {
   body: UserModel;
@@ -980,7 +961,7 @@ export type SaveUserData = {
     token?: string | null;
     api_key?: string | null;
   };
-  url: '/api/save_user';
+  url: '/api/save-user';
 };
 
 export type SaveUserErrors = {
