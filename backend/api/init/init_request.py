@@ -157,17 +157,16 @@ class InitRequest(APIRequest):
         client_settings.server_url = f"{request.url.scheme}://{request.url.netloc}"
         plugins = get_frontend_plugins()
 
-        nebula.log.info(f"init {user}")
-        udata: dict[str, Any] = {
-            "permissions": {},
-        }
+        # User data
+
+        udata: dict[str, Any] = {"permissions": {}}
         for key, value in user.meta.items():
             if key.startswith("can/"):
                 udata["permissions"][key[4:]] = value
             else:
                 udata[key] = value
 
-        nebula.log.info(f"init {udata}")
+        # Return response
 
         return InitResponseModel(
             installed=True,
