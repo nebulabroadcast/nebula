@@ -111,8 +111,13 @@ const nebula = {
       return false;
     }
     if (anyval) {
-      return true;
+      const pval = userPermissions[permission];
+      if (!pval) return false;
+      if (typeof pval === 'boolean' && userPermissions[permission]) return true;
+      if (pval?.length) return true;
+      return false;
     }
+
     if (userPermissions[permission] === true) {
       return true;
     }
