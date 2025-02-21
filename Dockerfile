@@ -17,7 +17,9 @@ ENV PYTHONBUFFERED=1
 RUN \
   apt-get update \
   && apt-get -yqq install \
+  curl \
   cifs-utils \
+  procps \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
