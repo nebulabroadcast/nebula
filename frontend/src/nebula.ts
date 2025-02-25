@@ -103,28 +103,36 @@ const nebula = {
   can(permission: string, value: string | boolean | number, anyval = false): boolean {
     if (!this.user) return false;
     if (this.user.is_admin) return true;
-    const userPermissions = this.user.permissions || {};
+
+    const userPermissions: {
+      [key: string]: boolean | string | number | (string | number | boolean)[];
+    } = this.user.permissions || {};
+
     if (!Object.keys(userPermissions).includes(permission)) {
       return false;
     }
-    if (!userPermissions[permission]) {
-      return false;
-    }
+
+    const pval = userPermissions[permission];
+    if (!pval) return false;
+
     if (anyval) {
-      const pval = userPermissions[permission];
-      if (!pval) return false;
-      if (typeof pval === 'boolean' && userPermissions[permission]) return true;
-      if (pval?.length) return true;
+      if (typeof pval === 'boolean' && pval) return true;
+      if (Array.isArray(pval) && pval.length > 0) return true;
       return false;
     }
 
-    if (userPermissions[permission] === true) {
+    if (pval === true) {
       return true;
     }
-    if (userPermissions[permission] === value) {
+    if (pval === value) {
       return true;
     }
-    return userPermissions[permission].includes(value);
+
+    if (Array.isArray(pval) && pval.includes(value)) {
+      return true;
+    }
+
+    return false;
   },
 
   logout(): void {

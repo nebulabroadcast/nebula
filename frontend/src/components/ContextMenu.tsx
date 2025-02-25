@@ -75,14 +75,17 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ target, options }) => {
         }, 0);
       } else if (
         contextRef.current &&
-        !contextRef.current.contains(event.target as Node)
+        (contextRef.current as HTMLElement).contains(event.target as Node)
       ) {
         setContextData({ ...contextData, visible: false });
       }
     };
 
     const offClickHandler = (event: MouseEvent) => {
-      if (contextRef.current && !contextRef.current.contains(event.target as Node)) {
+      if (
+        contextRef.current &&
+        !(contextRef.current as HTMLElement).contains(event.target as Node)
+      ) {
         setContextData({ ...contextData, visible: false });
       }
     };
@@ -96,16 +99,19 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ target, options }) => {
   }, [contextData, target]);
 
   useLayoutEffect(() => {
-    if (contextData.posX + contextRef.current?.offsetWidth > window.innerWidth) {
+    if (!contextRef?.current) return;
+    const element = contextRef.current as HTMLElement;
+
+    if (contextData.posX + element.offsetWidth > window.innerWidth) {
       setContextData({
         ...contextData,
-        posX: contextData.posX - contextRef.current?.offsetWidth,
+        posX: contextData.posX - element.offsetWidth,
       });
     }
-    if (contextData.posY + contextRef.current?.offsetHeight > window.innerHeight) {
+    if (contextData.posY + element.offsetHeight > window.innerHeight) {
       setContextData({
         ...contextData,
-        posY: contextData.posY - contextRef.current?.offsetHeight,
+        posY: contextData.posY - element.offsetHeight,
       });
     }
   }, [contextData]);

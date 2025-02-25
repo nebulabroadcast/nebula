@@ -1,15 +1,17 @@
 FROM node:latest AS build
 
-RUN mkdir /frontend
+WORKDIR /frontend
 
-COPY ./frontend/index.html /frontend/index.html
-COPY ./frontend/package.json /frontend/package.json
-COPY ./frontend/vite.config.js /frontend/vite.config.js
-COPY ./frontend/src /frontend/src
+COPY ./frontend/index.html .
+COPY ./frontend/package.json .
+COPY ./frontend/vite.config.ts .
+COPY ./frontend/tsconfig.json .
+COPY ./frontend/tsconfig.node.json .
 COPY ./frontend/public /frontend/public
 
-WORKDIR /frontend
-RUN yarn install && yarn build
+RUN yarn install
+COPY ./frontend/src /frontend/src
+RUN yarn build
 
 FROM python:3.12-slim
 ENV PYTHONBUFFERED=1

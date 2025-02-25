@@ -23,16 +23,7 @@
     "baseUrl": "src",
     "paths": {
       "@containers/*": ["./containers/*"],
-      "@hooks/*": ["./hooks/*"],
       "@components/*": ["./components/*"],
-      "@api/*": ["./api/*"],
-      "@api": ["./api"],
-      "@types": ["./types"],
-      "@queries/*": ["./services/*"],
-      "@pages/*": ["./pages/*"],
-      "@context/*": ["./context/*"],
-      "@state/*": ["./features/*"],
-      "@helpers/*": ["./helpers/*"],
       "@/*": ["./*"]
     }
   },
