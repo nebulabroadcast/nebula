@@ -79,7 +79,7 @@ const AssetEditorNav = ({ assetData, setMeta, enabledActions }) => {
         dispatch(setSearchQuery(query));
       },
     }));
-  }, [currentFolder]);
+  }, [assetData.id]); // dependency could be currentFolder, but only if assetData is a ref
 
   const sendTo = () => {
     showDialog('sendto', 'Send to...', { assets: [assetData.id] })
