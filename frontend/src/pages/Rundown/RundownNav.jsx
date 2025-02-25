@@ -16,7 +16,7 @@ const RundownNav = ({ setStartTime, rundownMode, setRundownMode }) => {
   }, [currentChannel]);
 
   const onDateChange = (date) => {
-    const [dsHH, dsMM] = channelConfig.day_start;
+    const [dsHH, dsMM] = channelConfig?.day_start || [7, 0];
 
     const newDate = new Date(date);
     newDate.setHours(dsHH, dsMM, 0, 0);

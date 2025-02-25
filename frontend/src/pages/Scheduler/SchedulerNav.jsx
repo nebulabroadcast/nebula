@@ -39,7 +39,7 @@ const SchedulerNav = ({
   }, [currentChannel]);
 
   const onDateChange = (date) => {
-    const [dsHH, dsMM] = channelConfig.day_start;
+    const [dsHH, dsMM] = channelConfig?.day_start || [7, 0];
 
     const newDate = new Date(date);
     const dayOfWeek = newDate.getDay();
@@ -47,7 +47,7 @@ const SchedulerNav = ({
     const weekStart = new Date(newDate.setDate(diff));
     weekStart.setHours(dsHH, dsMM, 0, 0);
 
-    const pageTitle = createTitle(weekStart, channelConfig.name);
+    const pageTitle = createTitle(weekStart, channelConfig?.name || 'Unknown channel');
     dispatch(setPageTitle({ title: pageTitle }));
     setStartTime(weekStart);
     setDate(date);
