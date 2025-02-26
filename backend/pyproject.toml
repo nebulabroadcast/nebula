@@ -10,7 +10,6 @@ dependencies = [
     "email-validator >=2.1.1",
     "fastapi >=0.115.0",
     "geoip2 >=4.8.0",
-    "granian >=1.6.0",
     "gunicorn >=22.0.0",
     "httpx >=0.27.2",
     "mistune >=3.0.1",
@@ -22,6 +21,7 @@ dependencies = [
     "rich >=13.8.0",
     "shortuuid >=1.0.12",
     "user-agents >=2.2.0",
+    "uvicorn-worker>=0.3.0",
     "uvicorn[standard] >=0.31.0",
 ]
 
