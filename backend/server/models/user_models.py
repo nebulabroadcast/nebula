@@ -1,3 +1,4 @@
+import time
 from typing import Annotated, Any
 
 from pydantic import BaseModel, Field
@@ -76,8 +77,8 @@ class UserPermissionsModel(BaseModel):
 class UserModel(BaseModel):
     id: int | None = None
     login: str
-    ctime: float
-    mtime: float
+    ctime: float = Field(default_factory=lambda: int(time.time()))
+    mtime: float = Field(default_factory=lambda: int(time.time()))
 
     email: str | None = None
     full_name: str | None = None
