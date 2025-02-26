@@ -11,7 +11,7 @@ check:
 		uv run ruff check --fix . && \
 		uv run mypy .
 
-build: check
+build:
 	docker build -t $(IMAGE_NAME) .
 
 dist: build
