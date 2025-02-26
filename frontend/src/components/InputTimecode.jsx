@@ -4,7 +4,8 @@ import BaseInput from './BaseInput';
 import clsx from 'clsx';
 
 const InputTimecode = ({
-  value = null,
+  value = null, // in seconds
+  frame = null, // in frames
   fps = 25,
   onChange = () => {},
   tooltip = null,
@@ -17,16 +18,27 @@ const InputTimecode = ({
 
   useEffect(() => {
     setInvalid(false);
-    if (value === null || value === undefined || isNaN(value)) {
+    let frames = undefined;
+    if (typeof value === 'number') {
+      frames = value * fps;
+    } else if (typeof frame === 'number') {
+      frames = frame;
+    } else {
       setText('');
       return;
     }
-    const tc = new Timecode(Math.floor(value * fps), fps);
+
+    if (isNaN(frames)) {
+      setText('');
+      return;
+    }
+
+    const tc = new Timecode(frames, fps);
     let str = tc.toString();
     str = str.replace(/;/g, ':');
     str = str.substring(0, 11);
     setText(str);
-  }, [value]);
+  }, [value, frame]);
 
   const onChangeHandler = (e) => {
     let res = e.target.value;
@@ -60,7 +72,8 @@ const InputTimecode = ({
       const tcobj = new Timecode(str, fps);
       setInvalid(false);
       setText(str);
-      onChange(tcobj.frames / fps);
+      if (frame) onChange(tcobj.frames);
+      else if (value) onChange(tcobj.frames / fps);
     } catch (e) {
       setInvalid(true);
     }

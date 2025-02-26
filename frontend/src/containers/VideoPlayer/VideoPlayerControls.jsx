@@ -7,16 +7,16 @@ const VideoPlayerControls = ({
   markOut,
   setMarkIn,
   setMarkOut,
-  currentTime,
+  currentFrame,
   duration,
-  seekToTime,
+  seekToFrame,
   isPlaying,
   onPlayPause,
   frameRate,
 }) => {
   const markInRef = useRef(markIn);
   const markOutRef = useRef(markOut);
-  const currentTimeRef = useRef(currentTime);
+  const currentFrameRef = useRef(currentFrame);
   const durationRef = useRef(duration);
 
   useEffect(() => {
@@ -25,14 +25,12 @@ const VideoPlayerControls = ({
   }, [markIn, markOut]);
 
   useEffect(() => {
-    currentTimeRef.current = currentTime;
-  }, [currentTime]);
+    currentFrameRef.current = currentFrame;
+  }, [currentFrame]);
 
   useEffect(() => {
     durationRef.current = duration;
   }, [duration]);
-
-  const frameLength = 1 / frameRate;
 
   const handlePlayPause = () => {
     onPlayPause();
@@ -42,31 +40,31 @@ const VideoPlayerControls = ({
     seekToTime(0);
   };
   const handleGoToEnd = () => {
-    seekToTime(durationRef.current);
+    seekToFrame(durationRef.current);
   };
 
   const handleGoBack1 = () => {
-    seekToTime(currentTimeRef.current - frameLength);
+    seekToFrame(currentFrameRef.current - 1);
   };
   const handleGoForward1 = () => {
-    seekToTime(currentTimeRef.current + frameLength);
+    seekToFrame(currentFrameRef.current + 1);
   };
 
   const handleGoBack5 = () => {
-    seekToTime(currentTimeRef.current - 5 * frameLength);
+    seekToFrame(currentFrameRef.current - 5);
   };
   const handleGoForward5 = () => {
-    seekToTime(currentTimeRef.current + 5 * frameLength);
+    seekToFrame(currentFrameRef.current + 5);
   };
 
   // Create mark in/out
 
   const handleMarkIn = () => {
-    if (setMarkIn) setMarkIn(currentTimeRef.current);
+    if (setMarkIn) setMarkIn(currentFrameRef.current);
   };
 
   const handleMarkOut = () => {
-    if (setMarkOut) setMarkOut(currentTimeRef.current);
+    if (setMarkOut) setMarkOut(currentFrameRef.current);
   };
 
   // Go to mark in/out
@@ -210,7 +208,7 @@ const VideoPlayerControls = ({
 
   return (
     <Navbar tabIndex={1}>
-      <InputTimecode value={markIn} tooltip="Selection start" />
+      <InputTimecode frame={markIn} tooltip="Selection start" />
 
       <Button
         tooltip="Clear selection start"
@@ -282,7 +280,7 @@ const VideoPlayerControls = ({
         onClick={handleClearMarkOut}
       />
 
-      <InputTimecode value={markOut} tooltip="Selection end" />
+      <InputTimecode frame={markOut} tooltip="Selection end" />
     </Navbar>
   );
 };
