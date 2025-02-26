@@ -35,7 +35,6 @@ const VideoSpace = styled.div`
 const VideoContainer = styled.div`
   position: relative;
   height: 100%;
-  padding: 0 8px;
 `;
 
 const Video = styled.video`
