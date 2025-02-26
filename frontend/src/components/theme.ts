@@ -1,4 +1,4 @@
-const colors = {
+const colors: { [key: string]: string } = {
   surface01: '#19161f',
   surface02: '#1f1e26',
   surface03: '#24202e',
@@ -18,9 +18,20 @@ const colors = {
   yellow: '#ec9e00',
   red: '#ff5f5f',
   green: '#5fff5f',
-}
+};
 
-const defaultTheme = {
+const defaultTheme: {
+  colors: { [key: string]: string };
+  inputHeight: string;
+  inputBorder: number;
+  inputBorderRadius: string;
+  inputPadding: string;
+  inputBackground: string;
+  fontSize: string;
+  gapSize: string;
+  sectionGap: string;
+  navBorderRadius: string;
+} = {
   colors,
   inputHeight: '30px',
   inputBorder: 0,
@@ -31,11 +42,11 @@ const defaultTheme = {
   gapSize: '4px',
   sectionGap: '6px',
   navBorderRadius: '6px',
-}
+};
 
-const getTheme = () => {
-  return defaultTheme
-}
+const getTheme = (): typeof defaultTheme => {
+  return defaultTheme;
+};
 
-export default defaultTheme
-export { getTheme }
+export default defaultTheme;
+export { getTheme };

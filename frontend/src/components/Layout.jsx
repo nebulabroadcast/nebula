@@ -1,5 +1,5 @@
-import styled from 'styled-components'
-import { getTheme } from './theme'
+import styled from 'styled-components';
+import { getTheme } from './theme';
 
 const Navbar = styled.nav`
   display: flex;
@@ -50,19 +50,19 @@ const Navbar = styled.nav`
     justify-content: flex-end;
     align-items: center;
   }
-`
+`;
 const Spacer = styled.div`
   flex-grow: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-`
+`;
 
 const ToolbarSeparator = styled.div`
   border-left: 1px solid ${getTheme().colors.surface04};
   height: 100%;
   margin: 0 4px;
-`
+`;
 
 const PanelHeader = styled.h2`
   padding: 0;
@@ -76,6 +76,6 @@ const PanelHeader = styled.h2`
   align-items: center;
   justify-content: flex-start;
   gap: 8px;
-`
+`;
 
-export { Navbar, Spacer, ToolbarSeparator, PanelHeader }
+export { Navbar, Spacer, ToolbarSeparator, PanelHeader };

@@ -1,2 +1,2 @@
-import Rundown from './Rundown'
-export default Rundown
+import Rundown from './Rundown';
+export default Rundown;

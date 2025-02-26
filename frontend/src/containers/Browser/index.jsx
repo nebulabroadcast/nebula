@@ -1,2 +1,2 @@
-import Browser from './Browser'
-export default Browser
+import Browser from './Browser';
+export default Browser;

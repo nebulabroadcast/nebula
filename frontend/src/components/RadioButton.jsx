@@ -1,7 +1,7 @@
-import clsx from 'clsx'
-import styled from 'styled-components'
+import clsx from 'clsx';
+import styled from 'styled-components';
 
-import Button from './Button'
+import Button from './Button';
 
 const RadioContainer = styled.div`
   display: flex;
@@ -23,7 +23,7 @@ const RadioContainer = styled.div`
       border-bottom-right-radius: 4px;
     }
 
-`
+`;
 
 const RadioButton = ({ options, value, onChange }) => {
   return (
@@ -40,7 +40,7 @@ const RadioButton = ({ options, value, onChange }) => {
         />
       ))}
     </RadioContainer>
-  )
-}
+  );
+};
 
-export default RadioButton
+export default RadioButton;

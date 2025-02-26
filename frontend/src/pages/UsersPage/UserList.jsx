@@ -1,6 +1,6 @@
-import nebula from '/src/nebula'
-import { useEffect, useState } from 'react'
-import { Table } from '/src/components'
+import nebula from '/src/nebula';
+import { useEffect, useState } from 'react';
+import { Table } from '/src/components';
 
 const UserList = ({ onSelect, users, currentId, loading }) => {
   return (
@@ -20,7 +20,7 @@ const UserList = ({ onSelect, users, currentId, loading }) => {
         ]}
       />
     </section>
-  )
-}
+  );
+};
 
-export default UserList
+export default UserList;

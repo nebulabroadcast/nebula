@@ -1,53 +1,46 @@
-import { useEffect, useState, useRef } from 'react'
-import { useSelector, useDispatch } from 'react-redux'
-import { toast } from 'react-toastify'
-import { debounce } from 'lodash'
-import clsx from 'clsx'
+import { useEffect, useState, useRef } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { toast } from 'react-toastify';
+import { debounce } from 'lodash';
+import clsx from 'clsx';
 
-import nebula from '/src/nebula'
-import { Table } from '/src/components'
-import Pagination from '/src/containers/Pagination'
+import nebula from '/src/nebula';
+import { Table } from '/src/components';
+import Pagination from '/src/containers/Pagination';
 
-import {
-  setCurrentView,
-  setSelectedAssets,
-  setFocusedAsset,
-} from '/src/actions'
+import { setCurrentView, setSelectedAssets, setFocusedAsset } from '/src/actions';
 
-import { useLocalStorage, useDialog } from '/src/hooks'
-import BrowserNav from './BrowserNav'
+import { useLocalStorage, useDialog } from '/src/hooks';
+import BrowserNav from './BrowserNav';
 import {
   getColumnWidth,
   getFormatter,
   formatRowHighlightColor,
   formatRowHighlightStyle,
-} from '/src/tableFormat'
+} from '/src/tableFormat';
 
-const ROWS_PER_PAGE = 200
+const ROWS_PER_PAGE = 200;
 
 const BrowserTable = ({ isDragging }) => {
-  const currentView = useSelector((state) => state.context.currentView?.id)
-  const searchQuery = useSelector((state) => state.context.searchQuery)
-  const selectedAssets = useSelector((state) => state.context.selectedAssets)
-  const focusedAsset = useSelector((state) => state.context.focusedAsset)
-  const browserRefresh = useSelector((state) => state.context.browserRefresh)
+  const currentView = useSelector((state) => state.context.currentView?.id);
+  const searchQuery = useSelector((state) => state.context.searchQuery);
+  const selectedAssets = useSelector((state) => state.context.selectedAssets);
+  const focusedAsset = useSelector((state) => state.context.focusedAsset);
+  const browserRefresh = useSelector((state) => state.context.browserRefresh);
 
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
 
-  const [columns, setColumns] = useState([])
-  const [data, setData] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [sortBy, setSortBy] = useLocalStorage('sortBy', 'ctime')
-  const [sortDirection, setSortDirection] = useLocalStorage(
-    'sortDirection',
-    'desc'
-  )
-  const [page, setPage] = useState(1)
-  const [hasMore, setHasMore] = useState(false)
-  const showDialog = useDialog()
+  const [columns, setColumns] = useState([]);
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [sortBy, setSortBy] = useLocalStorage('sortBy', 'ctime');
+  const [sortDirection, setSortDirection] = useLocalStorage('sortDirection', 'desc');
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const showDialog = useDialog();
 
-  const dataRef = useRef(data)
-  const requestParamsRef = useRef(null)
+  const dataRef = useRef(data);
+  const requestParamsRef = useRef(null);
 
   //
   // References
@@ -56,17 +49,17 @@ const BrowserTable = ({ isDragging }) => {
   useEffect(() => {
     // Save the data to a ref - it is used by the pubsub event handler
     // to match the changed objects with the current data
-    dataRef.current = data
-  }, [data])
+    dataRef.current = data;
+  }, [data]);
 
   useEffect(() => {
     // User changed view or search query
     if (!currentView) {
       // No view selected, load the first available view
       if (nebula.settings.views.length) {
-        dispatch(setCurrentView(nebula.settings.views[0]))
+        dispatch(setCurrentView(nebula.settings.views[0]));
       }
-      return
+      return;
     }
 
     // Save the request params - we will use them to load the data
@@ -79,17 +72,17 @@ const BrowserTable = ({ isDragging }) => {
       offset: page ? (page - 1) * ROWS_PER_PAGE : 0,
       order_by: sortBy,
       order_dir: sortDirection,
-    }
+    };
 
     // show loading indicator only if the user initiated the refresh
-    setLoading(true)
-    loadData()
-  }, [currentView, searchQuery, sortBy, sortDirection, page, browserRefresh])
+    setLoading(true);
+    loadData();
+  }, [currentView, searchQuery, sortBy, sortDirection, page, browserRefresh]);
 
   useEffect(() => {
     // Reset page when view or search query changes
-    setPage(1)
-  }, [currentView, searchQuery, sortBy, sortDirection])
+    setPage(1);
+  }, [currentView, searchQuery, sortBy, sortDirection]);
 
   //
   // Data loading
@@ -97,152 +90,152 @@ const BrowserTable = ({ isDragging }) => {
 
   const loadData = () => {
     // Use current value of requestParamsRef to avoid stale data
-    const params = requestParamsRef.current
+    const params = requestParamsRef.current;
     nebula
       .request('browse', params)
       .then((response) => {
-        const hasMore = response.data.data.length > ROWS_PER_PAGE
-        const rows = response.data.data.slice(0, ROWS_PER_PAGE)
-        setData(rows)
-        if (response.data.order_by !== sortBy) setSortBy(response.data.order_by)
+        const hasMore = response.data.data.length > ROWS_PER_PAGE;
+        const rows = response.data.data.slice(0, ROWS_PER_PAGE);
+        setData(rows);
+        if (response.data.order_by !== sortBy) setSortBy(response.data.order_by);
         if (response.data.order_dir !== sortDirection)
-          setSortDirection(response.data.order_dir)
+          setSortDirection(response.data.order_dir);
 
-        let cols = []
+        let cols = [];
         for (const colName of response.data.columns) {
-          if (colName == 'subtitle') continue // added automatically
+          if (colName == 'subtitle') continue; // added automatically
           cols.push({
             name: colName,
-            title: nebula.metaHeader(colName),
+            title: nebula.metaType(colName).header,
             formatter: getFormatter(colName),
             width: getColumnWidth(colName),
-          })
+          });
         }
-        setColumns(cols)
-        setHasMore(hasMore)
+        setColumns(cols);
+        setHasMore(hasMore);
       })
-      .finally(() => setLoading(false))
-  }
+      .finally(() => setLoading(false));
+  };
 
   // Debounce the loadData function to avoid multiple requests
   // when multiple objects are changed at the same time
-  const debouncingLoadData = debounce(loadData, 100)
+  const debouncingLoadData = debounce(loadData, 100);
 
   //
   // Subscribe to objects_changed pubsub event
   //
 
   const handlePubSub = (topic, message) => {
-    if (topic !== 'objects_changed') return
-    if (message.object_type !== 'asset') return
-    let changed = false
+    if (topic !== 'objects_changed') return;
+    if (message.object_type !== 'asset') return;
+    let changed = false;
     for (const obj of message.objects) {
       if (dataRef.current.find((row) => row.id === obj)) {
-        changed = true
-        break
+        changed = true;
+        break;
       }
     }
     if (changed) {
-      debouncingLoadData()
+      debouncingLoadData();
     }
-  }
+  };
 
   useEffect(() => {
     // eslint-disable-next-line no-undef
-    const token = PubSub.subscribe('objects_changed', handlePubSub)
+    const token = PubSub.subscribe('objects_changed', handlePubSub);
     // eslint-disable-next-line no-undef
-    return () => PubSub.unsubscribe(token)
-  }, [])
+    return () => PubSub.unsubscribe(token);
+  }, []);
 
   //
   // User interaction
   //
 
   const onRowClick = (rowData, event) => {
-    let newSelectedAssets = []
+    let newSelectedAssets = [];
     if (event.ctrlKey) {
       if (selectedAssets.includes(rowData.id)) {
-        newSelectedAssets = selectedAssets.filter((obj) => obj !== rowData.id)
+        newSelectedAssets = selectedAssets.filter((obj) => obj !== rowData.id);
       } else {
-        newSelectedAssets = [...selectedAssets, rowData.id]
+        newSelectedAssets = [...selectedAssets, rowData.id];
       }
     } else if (event.shiftKey) {
-      const clickedIndex = data.findIndex((row) => row.id === rowData.id)
+      const clickedIndex = data.findIndex((row) => row.id === rowData.id);
       const focusedIndex =
         data.findIndex((row) => row.id === focusedAsset) ||
         data.findIndex((row) => selectedAssets.includes(row.id)) ||
         clickedIndex ||
-        0
+        0;
 
-      const min = Math.min(clickedIndex, focusedIndex)
-      const max = Math.max(clickedIndex, focusedIndex)
+      const min = Math.min(clickedIndex, focusedIndex);
+      const max = Math.max(clickedIndex, focusedIndex);
 
       // Get the ids of the rows in the range
-      const rangeIds = data.slice(min, max + 1).map((row) => row.id)
+      const rangeIds = data.slice(min, max + 1).map((row) => row.id);
 
-      newSelectedAssets = [...new Set([...selectedAssets, ...rangeIds])]
+      newSelectedAssets = [...new Set([...selectedAssets, ...rangeIds])];
     } else {
-      newSelectedAssets = [rowData.id]
+      newSelectedAssets = [rowData.id];
     }
 
-    dispatch(setSelectedAssets(newSelectedAssets))
-    dispatch(setFocusedAsset(rowData.id))
-  }
+    dispatch(setSelectedAssets(newSelectedAssets));
+    dispatch(setFocusedAsset(rowData.id));
+  };
 
   const focusNext = (offset) => {
-    if (!focusedAsset) return
-    const nextIndex = data.findIndex((row) => row.id === focusedAsset) + offset
+    if (!focusedAsset) return;
+    const nextIndex = data.findIndex((row) => row.id === focusedAsset) + offset;
     if (nextIndex < data.length) {
-      const nextRow = data[nextIndex]
-      dispatch(setSelectedAssets([nextRow.id]))
-      dispatch(setFocusedAsset(nextRow.id))
+      const nextRow = data[nextIndex];
+      dispatch(setSelectedAssets([nextRow.id]));
+      dispatch(setFocusedAsset(nextRow.id));
     }
-  }
+  };
 
   const onKeyDown = (e) => {
     if (e.key === 'ArrowDown') {
-      focusNext(1)
-      e.preventDefault()
+      focusNext(1);
+      e.preventDefault();
     }
     if (e.key === 'ArrowUp') {
-      focusNext(-1)
-      e.preventDefault()
+      focusNext(-1);
+      e.preventDefault();
     }
-  }
+  };
 
   const saveSelectionStatus = (status) => {
     const operations = selectedAssets.map((id) => ({
       id,
       data: { status },
-    }))
+    }));
     nebula
       .request('ops', { operations })
       .then(() => {
-        toast.success('Status updated')
+        toast.success('Status updated');
         //dispatch(reloadBrowser())
       })
       .catch((error) => {
-        console.error(error)
-        toast.error(error.response?.detail)
-      })
-  }
+        console.error(error);
+        toast.error(error.response?.detail);
+      });
+  };
 
   const setSelectionStatus = (status, question) => {
     // Change asset status of the selected assets
     if (question) {
       showDialog('confirm', 'Are you sure?', { message: question })
         .then(() => saveSelectionStatus(status))
-        .catch(() => {})
+        .catch(() => {});
     } else {
-      saveSelectionStatus(status)
+      saveSelectionStatus(status);
     }
-  }
+  };
 
   const sendTo = () => {
     showDialog('sendto', 'Send to...', { assets: selectedAssets })
       .then(() => {})
-      .catch(() => {})
-  }
+      .catch(() => {});
+  };
 
   const contextMenu = () => [
     {
@@ -254,20 +247,14 @@ const BrowserTable = ({ isDragging }) => {
       label: 'Reset',
       icon: 'undo',
       onClick: () =>
-        setSelectionStatus(
-          5,
-          'Do you want to reload selected assets metadata?'
-        ),
+        setSelectionStatus(5, 'Do you want to reload selected assets metadata?'),
     },
     {
       label: 'Archive',
       separator: true,
       icon: 'archive',
       onClick: () =>
-        setSelectionStatus(
-          4,
-          'Do you want to move selected assets to archive?'
-        ),
+        setSelectionStatus(4, 'Do you want to move selected assets to archive?'),
     },
     {
       label: 'Trash',
@@ -276,9 +263,9 @@ const BrowserTable = ({ isDragging }) => {
       onClick: () =>
         setSelectionStatus(3, 'Do you want to move selected assets to trash?'),
     },
-  ]
+  ];
 
-  const tableClass = clsx('contained', isDragging && 'no-scroll')
+  const tableClass = clsx('contained', isDragging && 'no-scroll');
 
   return (
     <>
@@ -298,15 +285,15 @@ const BrowserTable = ({ isDragging }) => {
           sortDirection={sortDirection}
           contextMenu={contextMenu}
           onSort={(sortBy, sortDirection) => {
-            setSortBy(sortBy)
-            setSortDirection(sortDirection)
+            setSortBy(sortBy);
+            setSortDirection(sortDirection);
           }}
         />
       </section>
       <Pagination page={page} setPage={setPage} hasMore={hasMore} />
     </>
-  )
-}
+  );
+};
 
 const Browser = ({ isDragging }) => {
   return (
@@ -314,7 +301,7 @@ const Browser = ({ isDragging }) => {
       <BrowserNav />
       <BrowserTable isDragging={isDragging} />
     </>
-  )
-}
+  );
+};
 
-export default Browser
+export default Browser;

@@ -1,35 +1,31 @@
-import { useState, useEffect, useMemo } from 'react'
-import { toast } from 'react-toastify'
+import { useState, useEffect, useMemo } from 'react';
+import { toast } from 'react-toastify';
 
-import nebula from '/src/nebula'
-import { Button, Dialog, ErrorBanner } from '/src/components'
+import nebula from '/src/nebula';
+import { Button, Dialog, ErrorBanner } from '/src/components';
 
 const SendToDialog = (props) => {
-  const [sendToOptions, setSendToOptions] = useState(null)
+  const [sendToOptions, setSendToOptions] = useState(null);
 
-  const onCancel = () => props.handleCancel()
+  const onCancel = () => props.handleCancel();
   const onConfirm = (action) => {
     nebula
       .request('send', { ids: props.assets, id_action: action })
       .then(() => {
-        toast.success('Job request accepted')
+        toast.success('Job request accepted');
       })
       .catch((error) => {
-        toast.error(error.response.detail)
+        toast.error(error.response.detail);
       })
       .finally(() => {
-        props.handleConfirm()
-      })
-  }
+        props.handleConfirm();
+      });
+  };
 
   const body = useMemo(() => {
-    if (!sendToOptions) return null
+    if (!sendToOptions) return null;
     if (sendToOptions.length === 0) {
-      return (
-        <ErrorBanner>
-          No actions available for the current selection
-        </ErrorBanner>
-      )
+      return <ErrorBanner>No actions available for the current selection</ErrorBanner>;
     }
     return (
       <>
@@ -40,25 +36,25 @@ const SendToDialog = (props) => {
               label={option.name}
               onClick={() => onConfirm(option.id)}
             />
-          )
+          );
         })}
       </>
-    )
-  }, [sendToOptions])
+    );
+  }, [sendToOptions]);
 
   const loadOptions = () => {
     nebula
       .request('actions', { ids: props.assets })
       .then((response) => {
-        setSendToOptions(response.data.actions)
+        setSendToOptions(response.data.actions);
       })
       .catch(() => {
-        sendToOptions([])
-      })
-  }
+        sendToOptions([]);
+      });
+  };
   useEffect(() => {
-    loadOptions()
-  }, [props.assets])
+    loadOptions();
+  }, [props.assets]);
 
   const footer = (
     <>
@@ -69,13 +65,13 @@ const SendToDialog = (props) => {
         hlColor="var(--color-red)"
       />
     </>
-  )
+  );
 
   return (
     <Dialog onHide={onCancel} header={props.title} footer={footer}>
       {body}
     </Dialog>
-  )
-}
+  );
+};
 
-export default SendToDialog
+export default SendToDialog;

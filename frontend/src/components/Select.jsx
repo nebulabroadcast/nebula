@@ -1,11 +1,11 @@
-import { useState, useMemo } from 'react'
-import styled from 'styled-components'
+import { useState, useMemo } from 'react';
+import styled from 'styled-components';
 
-import InputText from './InputText'
-import Button from './Button'
-import SelectDialog from './SelectDialog'
+import InputText from './InputText';
+import Button from './Button';
+import SelectDialog from './SelectDialog';
 
-import { getTheme } from './theme'
+import { getTheme } from './theme';
 
 // Styled dialog-based select component.
 
@@ -29,7 +29,7 @@ const DialogBasedSelect = styled.div`
       gap: 3px;
     }
   }
-`
+`;
 
 // When there is just a few items in the list, we can use a dropdown.
 const StyledHTMLSelect = styled.select`
@@ -61,7 +61,7 @@ const StyledHTMLSelect = styled.select`
   &.error {
     outline: 1px solid ${getTheme().colors.red} !important;
   }
-`
+`;
 
 const Select = ({
   options,
@@ -72,28 +72,28 @@ const Select = ({
   disabled,
   selectionMode = 'single',
 }) => {
-  const [dialogVisible, setDialogVisible] = useState(false)
+  const [dialogVisible, setDialogVisible] = useState(false);
 
   const displayValue = useMemo(() => {
-    let result = []
-    if (!value) return
+    let result = [];
+    if (!value) return;
     for (const opt of options) {
       if (selectionMode === 'single' && value === opt.value) {
-        result.push(opt.title)
-        break
+        result.push(opt.title);
+        break;
       } else if (selectionMode === 'multiple' && value.includes(opt.value))
-        result.push(opt.title)
+        result.push(opt.title);
     }
-    return result.join(', ')
-  }, [options, value])
+    return result.join(', ');
+  }, [options, value]);
 
   const onDialogClose = (value) => {
-    onChange(value)
-    setDialogVisible(false)
-  }
+    onChange(value);
+    setDialogVisible(false);
+  };
 
   let dialog = useMemo(() => {
-    if (!dialogVisible) return <></>
+    if (!dialogVisible) return <></>;
     return (
       <SelectDialog
         options={options}
@@ -101,15 +101,15 @@ const Select = ({
         initialValue={value}
         onHide={onDialogClose}
       />
-    )
-  }, [dialogVisible])
+    );
+  }, [dialogVisible]);
 
   if (selectionMode === 'single' && options.length < 10) {
     return (
       <StyledHTMLSelect
         value={value || ''}
         onChange={(e) => {
-          onChange(e.target.value || null)
+          onChange(e.target.value || null);
         }}
         style={style}
       >
@@ -120,7 +120,7 @@ const Select = ({
           </option>
         ))}
       </StyledHTMLSelect>
-    )
+    );
   }
 
   return (
@@ -133,20 +133,16 @@ const Select = ({
         disabled={disabled}
         style={{ flexGrow: 1 }}
         onDoubleClick={() => {
-          !disabled && setDialogVisible(true)
+          !disabled && setDialogVisible(true);
         }}
         onChange={() => {}}
         onKeyDown={(e) => {
-          if (e.key === 'Enter') setDialogVisible(true)
+          if (e.key === 'Enter') setDialogVisible(true);
         }}
       />
-      <Button
-        label="..."
-        onClick={() => setDialogVisible(true)}
-        disabled={disabled}
-      />
+      <Button label="..." onClick={() => setDialogVisible(true)} disabled={disabled} />
     </DialogBasedSelect>
-  )
-}
+  );
+};
 
-export default Select
+export default Select;

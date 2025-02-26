@@ -1,5 +1,5 @@
-import styled from 'styled-components'
-import { useSelector } from 'react-redux'
+import styled from 'styled-components';
+import { useSelector } from 'react-redux';
 
 const BasePageTitle = styled.div`
   font-size: 1.1rem;
@@ -17,20 +17,18 @@ const BasePageTitle = styled.div`
   .icon {
     font-size: 2.1rem;
   }
-`
+`;
 
 const PageTitle = () => {
-  const pageTitle = useSelector((state) => state.context.pageTitle)
-  const pageIcon = useSelector((state) => state.context.pageIcon)
+  const pageTitle = useSelector((state) => state.context.pageTitle);
+  const pageIcon = useSelector((state) => state.context.pageIcon);
 
   return (
     <BasePageTitle>
-      {pageIcon && (
-        <span className="icon material-symbols-outlined">{pageIcon}</span>
-      )}
+      {pageIcon && <span className="icon material-symbols-outlined">{pageIcon}</span>}
       <span className="text">{pageTitle}</span>
     </BasePageTitle>
-  )
-}
+  );
+};
 
-export default PageTitle
+export default PageTitle;

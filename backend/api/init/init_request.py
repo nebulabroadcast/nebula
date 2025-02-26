@@ -9,7 +9,7 @@ from nebula.settings import load_settings
 from nebula.settings.common import LanguageCode
 from server.context import ScopedEndpoint, server_context
 from server.dependencies import CurrentUserOptional
-from server.models import ResponseModel
+from server.models import ResponseModel, UserModel
 from server.request import APIRequest
 
 from .client_settings import ClientSettingsModel, get_client_settings
@@ -33,9 +33,9 @@ class InitResponseModel(ResponseModel):
     ] = None
 
     user: Annotated[
-        dict[str, Any] | None,
+        UserModel | None,
         Field(
-            title="User data",
+            title="Current user",
             description="User data if user is logged in",
         ),
     ] = None
@@ -85,7 +85,7 @@ class InitRequest(APIRequest):
     """
 
     name = "init"
-    title = "Login"
+    title = "Init"
     response_model = InitResponseModel
 
     async def handle(
@@ -127,10 +127,12 @@ class InitRequest(APIRequest):
         client_settings.server_url = f"{request.url.scheme}://{request.url.netloc}"
         plugins = get_frontend_plugins()
 
+        # Return response
+
         return InitResponseModel(
             installed=True,
             motd=motd,
-            user=user.meta,
+            user=UserModel.from_meta(user.meta),
             settings=client_settings,
             frontend_plugins=plugins,
             scoped_endpoints=server_context.scoped_endpoints,

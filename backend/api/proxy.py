@@ -21,13 +21,40 @@ def get_file_size(file_name: str) -> int:
     return os.stat(file_name).st_size
 
 
-async def get_bytes_range(file_name: str, start: int, end: int) -> bytes:
+async def get_bytes_range2(file_name: str, start: int, end: int) -> bytes:
     """Get a range of bytes from a file"""
     async with aiofiles.open(file_name, mode="rb") as f:
         await f.seek(start)
         pos = start
         read_size = end - pos + 1
         return await f.read(read_size)
+
+
+async def get_bytes_range(
+    file_name: str, start: int, end: int, request: Request
+) -> bytes:
+    """Get a range of bytes from a file"""
+    async with aiofiles.open(file_name, mode="rb") as f:
+        await f.seek(start)
+        pos = start
+        read_size = end - pos + 1
+        chunk_size = 1024 * 64  # Read in chunks of 64KB
+        data = bytearray()
+
+        while read_size > 0:
+            if await request.is_disconnected():
+                raise HTTPException(
+                    status_code=status.HTTP_499_CLIENT_CLOSED_REQUEST,
+                    detail="Client disconnected",
+                )
+
+            chunk = await f.read(min(chunk_size, read_size))
+            if not chunk:
+                break
+            data.extend(chunk)
+            read_size -= len(chunk)
+
+        return bytes(data)
 
 
 def _get_range_header(range_header: str, file_size: int) -> tuple[int, int]:
@@ -114,7 +141,7 @@ async def range_requests_response(
         else:
             status_code = status.HTTP_206_PARTIAL_CONTENT
 
-    payload = await get_bytes_range(file_path, start, end)
+    payload = await get_bytes_range(file_path, start, end, request)
 
     if status_code == status.HTTP_200_OK:
         headers["cache-control"] = "private, max-age=600"

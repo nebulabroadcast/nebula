@@ -1,43 +1,42 @@
-import { toast } from 'react-toastify'
-import { useState, useMemo } from 'react'
-import styled from 'styled-components'
+import { toast } from 'react-toastify';
+import { useState, useMemo } from 'react';
+import styled from 'styled-components';
 
-import { Dialog, InputText, Button } from '/src/components'
+import { Dialog, InputText, Button } from '/src/components';
 
 const SubRow = styled.div`
   display: flex;
   flex-direction: row;
   gap: 8px;
   align-items: center;
-`
+`;
 
 const createApiKey = () => {
-  const prefix = 'nb'
-  const segmentCount = 4
-  const segmentLength = 12
-  const characters =
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_'
-  const segments = []
+  const prefix = 'nb';
+  const segmentCount = 4;
+  const segmentLength = 12;
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_';
+  const segments = [];
 
   for (let i = 0; i < segmentCount; i++) {
-    let segment = ''
+    let segment = '';
     for (let j = 0; j < segmentLength; j++) {
-      const randomIndex = Math.floor(Math.random() * characters.length)
-      segment += characters[randomIndex]
+      const randomIndex = Math.floor(Math.random() * characters.length);
+      segment += characters[randomIndex];
     }
-    segments.push(segment)
+    segments.push(segment);
   }
 
-  return `${prefix}.${segments.join('.')}`
-}
+  return `${prefix}.${segments.join('.')}`;
+};
 
 const ApiKeyPicker = ({ setApiKey, apiKeyPreview }) => {
-  const [dialogVisible, setDialogVisible] = useState(false)
+  const [dialogVisible, setDialogVisible] = useState(false);
 
   const dialog = useMemo(() => {
-    if (!dialogVisible) return null
+    if (!dialogVisible) return null;
 
-    const newKey = createApiKey()
+    const newKey = createApiKey();
     return (
       <Dialog
         onHide={() => setDialogVisible(false)}
@@ -54,17 +53,17 @@ const ApiKeyPicker = ({ setApiKey, apiKeyPreview }) => {
               icon="check"
               label="Store"
               onClick={() => {
-                setApiKey(newKey)
-                setDialogVisible(false)
+                setApiKey(newKey);
+                setDialogVisible(false);
               }}
             />
           </>
         }
       >
         <p>
-          This API key will be used to authenticate your requests to the server.
-          Copy it to your clipboard and store it in a safe place. You will not
-          be able to retrieve it later.
+          This API key will be used to authenticate your requests to the server. Copy it
+          to your clipboard and store it in a safe place. You will not be able to
+          retrieve it later.
         </p>
 
         <SubRow>
@@ -83,14 +82,14 @@ const ApiKeyPicker = ({ setApiKey, apiKeyPreview }) => {
             icon="content_copy"
             tooltip="Copy to clipboard"
             onClick={() => {
-              navigator.clipboard.writeText(newKey)
-              toast.success('Copied to clipboard')
+              navigator.clipboard.writeText(newKey);
+              toast.success('Copied to clipboard');
             }}
           />
         </SubRow>
       </Dialog>
-    )
-  }, [dialogVisible])
+    );
+  }, [dialogVisible]);
 
   return (
     <>
@@ -113,7 +112,7 @@ const ApiKeyPicker = ({ setApiKey, apiKeyPreview }) => {
       </SubRow>
       {dialog}
     </>
-  )
-}
+  );
+};
 
-export default ApiKeyPicker
+export default ApiKeyPicker;

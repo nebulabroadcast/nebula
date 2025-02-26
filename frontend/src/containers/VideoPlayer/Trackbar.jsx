@@ -1,5 +1,5 @@
-import { useRef, useEffect, useState, useCallback, useMemo } from 'react'
-import { Canvas, Navbar } from '/src/components'
+import { useRef, useEffect, useState, useCallback, useMemo } from 'react';
+import { Canvas, Navbar } from '/src/components';
 
 const Trackbar = ({
   duration,
@@ -12,183 +12,183 @@ const Trackbar = ({
   frameRate,
   marks,
 }) => {
-  const canvasRef = useRef(null)
-  const resizeObserverRef = useRef(null)
-  const [isDragging, setIsDragging] = useState(false)
+  const canvasRef = useRef(null);
+  const resizeObserverRef = useRef(null);
+  const [isDragging, setIsDragging] = useState(false);
 
-  const auxMarks = marks || {}
+  const auxMarks = marks || {};
 
   const numFrames = useMemo(
     () => Math.floor(duration * frameRate),
     [frameRate, duration]
-  )
+  );
   // DRAW
 
   const drawSlider = useCallback(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const ctx = canvas.getContext('2d')
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
 
-    const width = ctx.canvas.width
-    const height = ctx.canvas.height
+    const width = ctx.canvas.width;
+    const height = ctx.canvas.height;
 
     // Clear the canvas
-    ctx.clearRect(0, 0, width, height)
+    ctx.clearRect(0, 0, width, height);
 
     // Draw the background of the slider
-    ctx.fillStyle = '#19161f'
-    ctx.fillRect(0, 0, width, height)
+    ctx.fillStyle = '#19161f';
+    ctx.fillRect(0, 0, width, height);
 
-    const frameWidth = numFrames >= width ? 2 : width / numFrames
-    const handleWidth = Math.max(frameWidth, 2)
+    const frameWidth = numFrames >= width ? 2 : width / numFrames;
+    const handleWidth = Math.max(frameWidth, 2);
 
     if (numFrames < width / 4) {
       for (let i = 1; i < numFrames; i++) {
-        const x = (i / numFrames) * width
-        ctx.strokeStyle = '#303030'
-        ctx.beginPath()
-        ctx.moveTo(x, 0)
-        ctx.lineTo(x, height)
-        ctx.stroke()
+        const x = (i / numFrames) * width;
+        ctx.strokeStyle = '#303030';
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, height);
+        ctx.stroke();
       }
     }
 
     // Draw the buffered ranges
     for (const range of bufferedRanges) {
-      const start = (range.start / duration) * width
-      const end = (range.end / duration) * width
-      ctx.strokeStyle = '#885bff'
-      ctx.beginPath()
-      ctx.moveTo(start, 0)
-      ctx.lineTo(end, 0)
-      ctx.stroke()
+      const start = (range.start / duration) * width;
+      const end = (range.end / duration) * width;
+      ctx.strokeStyle = '#885bff';
+      ctx.beginPath();
+      ctx.moveTo(start, 0);
+      ctx.lineTo(end, 0);
+      ctx.stroke();
     }
 
-    let markInX = 0
+    let markInX = 0;
     if (markIn) {
-      markInX = (markIn / duration) * width
-      ctx.strokeStyle = 'green'
-      ctx.beginPath()
-      ctx.moveTo(markInX, 0)
-      ctx.lineTo(markInX, height)
-      ctx.stroke()
+      markInX = (markIn / duration) * width;
+      ctx.strokeStyle = 'green';
+      ctx.beginPath();
+      ctx.moveTo(markInX, 0);
+      ctx.lineTo(markInX, height);
+      ctx.stroke();
     }
 
-    let markOutX = width
+    let markOutX = width;
     if (markOut) {
-      markOutX = (markOut / duration) * width
-      ctx.strokeStyle = 'red'
-      ctx.beginPath()
-      ctx.moveTo(markOutX, 0)
-      ctx.lineTo(markOutX, height)
-      ctx.stroke()
+      markOutX = (markOut / duration) * width;
+      ctx.strokeStyle = 'red';
+      ctx.beginPath();
+      ctx.moveTo(markOutX, 0);
+      ctx.lineTo(markOutX, height);
+      ctx.stroke();
     }
 
-    ctx.strokeStyle = markOutX > markInX ? '#0ed3fe' : 'red'
-    ctx.beginPath()
-    ctx.moveTo(markInX, height - 1)
-    ctx.lineTo(markOutX, height - 1)
-    ctx.stroke()
+    ctx.strokeStyle = markOutX > markInX ? '#0ed3fe' : 'red';
+    ctx.beginPath();
+    ctx.moveTo(markInX, height - 1);
+    ctx.lineTo(markOutX, height - 1);
+    ctx.stroke();
 
     //
     // Draw the handle
     //
 
-    let currentFrame
+    let currentFrame;
     if (isPlaying) {
-      currentFrame = Math.floor(currentTime * frameRate)
+      currentFrame = Math.floor(currentTime * frameRate);
       if (currentFrame >= numFrames) {
-        currentFrame = numFrames - 1
+        currentFrame = numFrames - 1;
       }
     } else {
-      currentFrame = Math.floor(currentTime * frameRate)
+      currentFrame = Math.floor(currentTime * frameRate);
     }
 
     const progressX =
-      currentFrame >= numFrames ? width : (currentFrame / numFrames) * width
+      currentFrame >= numFrames ? width : (currentFrame / numFrames) * width;
 
-    ctx.fillStyle = '#0ed3fe'
-    ctx.beginPath()
-    ctx.fillRect(progressX - 1, 0, handleWidth, height)
-    ctx.fill()
+    ctx.fillStyle = '#0ed3fe';
+    ctx.beginPath();
+    ctx.fillRect(progressX - 1, 0, handleWidth, height);
+    ctx.fill();
 
     // Draw the poster frame
 
     if (auxMarks.poster_frame) {
-      const posterFrameX =
-        (auxMarks.poster_frame / duration) * width + frameWidth / 2
-      ctx.fillStyle = '#ff00ff'
-      ctx.beginPath()
-      ctx.moveTo(posterFrameX - 4, 0)
-      ctx.lineTo(posterFrameX + 4, 0)
-      ctx.lineTo(posterFrameX, 4)
-      ctx.closePath()
-      ctx.fill()
+      const posterFrameX = (auxMarks.poster_frame / duration) * width + frameWidth / 2;
+      ctx.fillStyle = '#ff00ff';
+      ctx.beginPath();
+      ctx.moveTo(posterFrameX - 4, 0);
+      ctx.lineTo(posterFrameX + 4, 0);
+      ctx.lineTo(posterFrameX, 4);
+      ctx.closePath();
+      ctx.fill();
     }
-  }, [currentTime, duration, markIn, markOut, marks])
+  }, [currentTime, duration, markIn, markOut, marks]);
 
   // Events
 
   useEffect(() => {
-    drawSlider()
-  }, [currentTime, duration, markIn, markOut, marks])
+    drawSlider();
+  }, [currentTime, duration, markIn, markOut, marks]);
 
   // Dragging
 
   const handleMouseMove = (e) => {
-    if (!isDragging) return
-    const rect = canvasRef.current.getBoundingClientRect()
-    const x = e.clientX - rect.left
-    const newTime = (x / rect.width) * duration
-    onScrub(newTime)
-  }
+    if (!isDragging) return;
+    e.preventDefault();
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const newTime = (x / rect.width) * duration;
+    onScrub(newTime);
+  };
 
   const handleMouseUp = () => {
-    setIsDragging(false)
-  }
+    setIsDragging(false);
+  };
 
   useEffect(() => {
     if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove)
-      document.addEventListener('mouseup', handleMouseUp)
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
     } else {
-      document.removeEventListener('mousemove', handleMouseMove)
-      document.removeEventListener('mouseup', handleMouseUp)
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
     }
 
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove)
-      document.removeEventListener('mouseup', handleMouseUp)
-    }
-  }, [isDragging])
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging]);
 
   const handleMouseDown = (e) => {
-    setIsDragging(true)
-    handleMouseMove(e)
-  }
+    setIsDragging(true);
+    handleMouseMove(e);
+  };
 
   const handleClick = (e) => {
-    const rect = canvasRef.current.getBoundingClientRect()
-    const x = e.clientX - rect.left
-    const newTime = (x / rect.width) * duration
-    onScrub(newTime)
-  }
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const newTime = (x / rect.width) * duration;
+    onScrub(newTime);
+  };
 
   useEffect(() => {
-    if (!canvasRef.current) return
+    if (!canvasRef.current) return;
 
     resizeObserverRef.current = new ResizeObserver(() => {
-      drawSlider()
-    })
+      drawSlider();
+    });
 
-    resizeObserverRef.current.observe(canvasRef.current)
+    resizeObserverRef.current.observe(canvasRef.current);
 
     return () => {
       if (resizeObserverRef.current) {
-        resizeObserverRef.current.disconnect()
+        resizeObserverRef.current.disconnect();
       }
-    }
-  }, [drawSlider])
+    };
+  }, [drawSlider]);
 
   return (
     <Navbar>
@@ -200,7 +200,7 @@ const Trackbar = ({
         onDraw={drawSlider}
       />
     </Navbar>
-  )
-}
+  );
+};
 
-export default Trackbar
+export default Trackbar;

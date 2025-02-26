@@ -1,5 +1,5 @@
-import { forwardRef } from 'react'
-import BaseInput from './BaseInput'
+import { forwardRef } from 'react';
+import BaseInput from './BaseInput';
 
 const InputText = forwardRef(({ value, onChange, tooltip, ...props }, ref) => {
   return (
@@ -11,8 +11,8 @@ const InputText = forwardRef(({ value, onChange, tooltip, ...props }, ref) => {
       onChange={(e) => onChange(e.target.value)}
       {...props}
     />
-  )
-})
-InputText.displayName = 'InputText'
+  );
+});
+InputText.displayName = 'InputText';
 
-export default InputText
+export default InputText;

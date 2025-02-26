@@ -1,5 +1,5 @@
-import { Navbar } from '/src/components'
-import DraggableIcon from '/src/containers/DraggableIcon'
+import { Navbar } from '/src/components';
+import DraggableIcon from '/src/containers/DraggableIcon';
 
 const dragIcons = [
   {
@@ -44,7 +44,7 @@ const dragIcons = [
       title: 'Lead Out',
     },
   },
-]
+];
 
 const RundownEditTools = () => {
   return (
@@ -59,7 +59,7 @@ const RundownEditTools = () => {
         />
       ))}
     </Navbar>
-  )
-}
+  );
+};
 
-export default RundownEditTools
+export default RundownEditTools;

@@ -1,4 +1,4 @@
-import styled from 'styled-components'
+import styled from 'styled-components';
 
 const LogoSVG = styled.svg`
   margin-right: 1rem;
@@ -7,19 +7,13 @@ const LogoSVG = styled.svg`
     stroke: var(--color-text-dim);
     stroke-width: 0.5;
   }
-`
+`;
 
 const Logo = () => (
   <LogoSVG width="28" height="28" viewBox="0 0 93 93" version="1.1">
     <g id="layer2" transform="translate(0,-30.95625)">
-      <g
-        id="g325"
-        transform="matrix(1.6803343,0,0,1.6803343,-44.612547,-16.493951)"
-      >
-        <g
-          id="g75"
-          transform="matrix(0.97722424,0,0,0.98554268,0.60352361,0.16142272)"
-        >
+      <g id="g325" transform="matrix(1.6803343,0,0,1.6803343,-44.612547,-16.493951)">
+        <g id="g75" transform="matrix(0.97722424,0,0,0.98554268,0.60352361,0.16142272)">
           <path
             id="path73"
             d="M 82.946,84.408 H 26.551 V 28.489 h 56.395 z m -55.395,-1 H 81.946 V 29.489 H 27.551 Z"
@@ -30,6 +24,6 @@ const Logo = () => (
       </g>
     </g>
   </LogoSVG>
-)
+);
 
-export default Logo
+export default Logo;
