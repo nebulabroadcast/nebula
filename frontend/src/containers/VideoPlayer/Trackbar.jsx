@@ -136,6 +136,7 @@ const Trackbar = ({
 
   const handleMouseMove = (e) => {
     if (!isDragging) return;
+    e.preventDefault();
     const rect = canvasRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const newTime = (x / rect.width) * duration;
