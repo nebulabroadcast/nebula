@@ -1,5 +1,3 @@
-import nebula from '/src/nebula';
-import { useEffect, useState } from 'react';
 import { Table } from '/src/components';
 
 const UserList = ({ onSelect, users, currentId, loading }) => {

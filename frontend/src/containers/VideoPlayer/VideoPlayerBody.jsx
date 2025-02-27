@@ -1,7 +1,7 @@
 import styled from 'styled-components';
-import { debounce } from 'lodash';
 
 import { useAudioContext } from './AudioContext';
+
 import { useState, useEffect, useRef } from 'react';
 
 import VUMeter from './VUMeter';
@@ -16,13 +16,6 @@ const VideoPlayerContainer = styled.div`
   display: flex;
   flex-grow: 1;
   flex-direction: column;
-  gap: 8px;
-`;
-
-const Row = styled.div`
-  position: relative;
-  display: flex;
-  flex-direction: row;
   gap: 8px;
 `;
 
@@ -141,19 +134,12 @@ const VideoPlayerBody = ({ ...props }) => {
     updatePosMon();
   }, [videoRef, isPlaying, durFrames]);
 
-  const seekToTime = debounce((time) => {
-    const videoElement = videoRef.current;
-    if (!videoElement) return;
-    videoElement.currentTime = time;
-  }, 40);
-
   const seekToFrame = (frame) => {
     // console.log('seekToFrame', frame);
     const videoElement = videoRef.current;
     if (!videoElement) return;
     const newTime = frames2time(frame, props.frameRate);
     videoElement.currentTime = newTime;
-    //seekToTime(newTime);
   };
 
   const onScrubFinished = (atTime) => {
@@ -231,7 +217,8 @@ const VideoPlayerBody = ({ ...props }) => {
     <VideoPlayerContainer style={{ display: videoRef.current ? 'flex' : 'none' }}>
       <Navbar>
         <InputTimecode
-          frame={posFrames}
+          value={posFrames}
+          mode="frames"
           tooltip="Current position"
           fps={props.frameRate}
         />
@@ -250,7 +237,8 @@ const VideoPlayerBody = ({ ...props }) => {
           active={showOverlay}
         />
         <InputTimecode
-          frame={durFrames}
+          value={durFrames}
+          mode="frames"
           fps={props.frameRate}
           readOnly={true}
           tooltip="Asset duration"

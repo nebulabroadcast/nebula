@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Button, Dialog } from '/src/components';
 
+import { Button, Dialog } from '/src/components';
 import MetadataEditor from '/src/containers/MetadataEditor';
 
 const MetadataDialog = (props) => {

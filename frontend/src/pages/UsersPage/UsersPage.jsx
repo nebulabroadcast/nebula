@@ -1,13 +1,13 @@
-import { toast } from 'react-toastify';
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 import nebula from '/src/nebula';
 import { Navbar, Button, Spacer } from '/src/components';
-
 import Sessions from '/src/containers/Sessions';
-import UserList from './UserList';
+
 import UserForm from './UserForm';
+import UserList from './UserList';
 
 const UsersPage = () => {
   const { id } = useParams();

@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useRef, use } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { Button, InputTimecode, Navbar } from '/src/components';
 
@@ -37,7 +37,7 @@ const VideoPlayerControls = ({
   };
 
   const handleGoToStart = () => {
-    seekToTime(0);
+    seekToFrame(0);
   };
   const handleGoToEnd = () => {
     seekToFrame(durationRef.current);
@@ -75,7 +75,7 @@ const VideoPlayerControls = ({
       return;
     }
     console.log('Going to mark in', markInRef.current);
-    seekToTime(markInRef.current);
+    seekToFrame(markInRef.current);
   };
 
   const handleGoToMarkOut = () => {
@@ -84,7 +84,7 @@ const VideoPlayerControls = ({
       return;
     }
     console.log('Going to mark out', markOutRef.current);
-    seekToTime(markOutRef.current);
+    seekToFrame(markOutRef.current);
   };
 
   // Clear mark in/out
@@ -208,7 +208,12 @@ const VideoPlayerControls = ({
 
   return (
     <Navbar tabIndex={1}>
-      <InputTimecode frame={markIn} tooltip="Selection start" />
+      <InputTimecode
+        value={markIn}
+        mode="frames"
+        tooltip="Selection start"
+        fps={frameRate}
+      />
 
       <Button
         tooltip="Clear selection start"
@@ -280,7 +285,12 @@ const VideoPlayerControls = ({
         onClick={handleClearMarkOut}
       />
 
-      <InputTimecode frame={markOut} tooltip="Selection end" />
+      <InputTimecode
+        value={markOut}
+        mode="frames"
+        tooltip="Selection end"
+        fps={frameRate}
+      />
     </Navbar>
   );
 };

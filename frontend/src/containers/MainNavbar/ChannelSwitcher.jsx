@@ -3,7 +3,6 @@ import { useSelector, useDispatch } from 'react-redux';
 
 import { setCurrentChannel } from '/src/actions';
 import nebula from '/src/nebula';
-
 import { Dropdown } from '/src/components';
 
 const ChannelSwitcher = () => {

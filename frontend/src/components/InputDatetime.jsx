@@ -1,12 +1,12 @@
 import clsx from 'clsx';
-import styled from 'styled-components';
-import { useState, useEffect, useRef } from 'react';
 import { DateTime } from 'luxon';
+import { useState, useEffect, useRef } from 'react';
 import DatePicker from 'react-datepicker';
+import styled from 'styled-components';
 
-import Dialog from './Dialog';
 import BaseInput from './BaseInput';
 import Button from './Button';
+import Dialog from './Dialog';
 
 const timeRegex = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/;
 const dateRegex = /^(\d{4})-(\d{2})-(\d{2})$/;
@@ -150,7 +150,8 @@ const InputDatetime = ({ value, onChange, placeholder, mode, className }) => {
         title={`Please enter a valid time in the format ${timestampFormat}`}
         onBlur={onSubmit}
         onFocus={(e) => {
-          e.target.select(), setIsFocused(true);
+          e.target.select();
+          setIsFocused(true);
         }}
         onKeyDown={onKeyDown}
       />

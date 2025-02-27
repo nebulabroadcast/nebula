@@ -1,11 +1,11 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 
-import { Loader, LoaderWrapper } from '../Loader';
 import ContextMenu from '../ContextMenu';
+import { Loader, LoaderWrapper } from '../Loader';
 
-import TableWrapper from './TableWrapper';
-import HeaderCell from './HeaderCell';
 import DataRow from './DataRow';
+import HeaderCell from './HeaderCell';
+import TableWrapper from './TableWrapper';
 
 const Table = ({
   data,

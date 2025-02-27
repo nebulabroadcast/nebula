@@ -1,4 +1,5 @@
 import nebula from '/src/nebula';
+
 import { createSlice } from '@reduxjs/toolkit';
 import { isNaN } from 'lodash';
 
@@ -33,6 +34,7 @@ const contextSlice = createSlice({
     },
 
     reloadBrowser: (state, action) => {
+      const _a = action;
       state.browserRefresh = state.browserRefresh + 1;
       return state;
     },

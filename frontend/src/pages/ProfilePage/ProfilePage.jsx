@@ -1,7 +1,9 @@
 import nebula from '/src/nebula';
+
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useState } from 'react';
+
 import {
   Form,
   FormRow,
@@ -11,7 +13,6 @@ import {
   Button,
   PanelHeader,
 } from '/src/components';
-
 import Sessions from '/src/containers/Sessions.jsx';
 
 const ProfileForm = () => {

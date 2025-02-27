@@ -1,6 +1,6 @@
+import clsx from 'clsx';
 import { useEffect, useRef } from 'react';
 import styled from 'styled-components';
-import clsx from 'clsx';
 
 const StyledDialog = styled.dialog`
   color: var(--color-text);

@@ -1,6 +1,5 @@
-import styled from 'styled-components';
-
 import { useDraggable } from '@dnd-kit/core';
+import styled from 'styled-components';
 
 const StyledDraggableIcon = styled.div`
   width: 30px;
@@ -18,7 +17,7 @@ const StyledDraggableIcon = styled.div`
 `;
 
 const DraggableIcon = ({ name, icon, tooltip, data }) => {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+  const { attributes, listeners } = useDraggable({
     id: name,
     data: [data],
   });

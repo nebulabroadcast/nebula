@@ -1,11 +1,12 @@
-import { useState, useEffect, useRef } from 'react';
 import { Timecode } from '@wfoxall/timeframe';
-import BaseInput from './BaseInput';
 import clsx from 'clsx';
+import { useState, useEffect, useRef } from 'react';
+
+import BaseInput from './BaseInput';
 
 const InputTimecode = ({
   value = null, // in seconds
-  frame = null, // in frames
+  mode = 'time', // time or frames
   fps = 25,
   onChange = () => {},
   tooltip = null,
@@ -19,10 +20,10 @@ const InputTimecode = ({
   useEffect(() => {
     setInvalid(false);
     let frames = undefined;
-    if (typeof value === 'number') {
+    if (mode === 'time' && typeof value === 'number') {
       frames = value * fps;
-    } else if (typeof frame === 'number') {
-      frames = frame;
+    } else if (mode === 'frames' && typeof value === 'number') {
+      frames = value;
     } else {
       setText('');
       return;
@@ -38,7 +39,7 @@ const InputTimecode = ({
     str = str.replace(/;/g, ':');
     str = str.substring(0, 11);
     setText(str);
-  }, [value, frame]);
+  }, [value, mode, fps]);
 
   const onChangeHandler = (e) => {
     let res = e.target.value;
@@ -72,9 +73,10 @@ const InputTimecode = ({
       const tcobj = new Timecode(str, fps);
       setInvalid(false);
       setText(str);
-      if (frame) onChange(tcobj.frames);
-      else if (value) onChange(tcobj.frames / fps);
-    } catch (e) {
+      if (mode === 'time') onChange(tcobj.frames / fps);
+      else if (mode === 'frames') onChange(tcobj.frames);
+      else throw new Error('Invalid mode');
+    } catch {
       setInvalid(true);
     }
   };

@@ -1,23 +1,17 @@
+import Splitter, { SplitDirection } from '@devbookhq/splitter';
+import { DndContext, MouseSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { useMemo, useEffect, useState, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useParams, useSearchParams } from 'react-router-dom';
-import Splitter, { SplitDirection } from '@devbookhq/splitter';
 import styled from 'styled-components';
 
 import { useLocalStorage } from '/src/hooks';
 import { setFocusedAsset, setSelectedAssets } from '/src/actions';
-
 import Browser from '/src/containers/Browser';
 import AssetEditor from '/src/pages/AssetEditor';
 import Scheduler from '/src/pages/Scheduler';
+
 import Rundown from './Rundown';
-import {
-  DndContext,
-  DragOverlay,
-  MouseSensor,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core';
 
 const MAMContainer = styled.div`
   flex-grow: 1;
@@ -141,8 +135,8 @@ const MAMPage = () => {
     return 'Not implemented';
   }, [module, draggedObjects]);
 
-  // eslint-disable-next-line no-unused-vars
   const onResizeStart = (gutter) => {
+    const _gutter = gutter;
     document.body.style.userSelect = 'none';
   };
   const onResizeEnd = (gutter, size) => {

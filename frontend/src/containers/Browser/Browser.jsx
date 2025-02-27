@@ -7,11 +7,11 @@ import clsx from 'clsx';
 import nebula from '/src/nebula';
 import { Table } from '/src/components';
 import Pagination from '/src/containers/Pagination';
-
 import { setCurrentView, setSelectedAssets, setFocusedAsset } from '/src/actions';
-
 import { useLocalStorage, useDialog } from '/src/hooks';
+
 import BrowserNav from './BrowserNav';
+
 import {
   getColumnWidth,
   getFormatter,

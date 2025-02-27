@@ -1,5 +1,6 @@
 import clsx from 'clsx';
 import styled from 'styled-components';
+
 import { getTheme } from './theme';
 
 const BaseSwitch = ({ style, className, value, onChange, disabled }) => (

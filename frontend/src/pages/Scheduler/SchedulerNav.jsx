@@ -2,14 +2,14 @@ import { useState, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 
 import nebula from '/src/nebula';
-import { createTitle } from './utils';
-import { setPageTitle } from '/src/actions';
 
+import ApplySchedulingTemplate from './ApplySchedulingTemplate';
+import { createTitle } from './utils';
+
+import { setPageTitle } from '/src/actions';
 import { Navbar, Button, Spacer } from '/src/components';
 import DateNav from '/src/containers/DateNav';
 import DraggableIcon from '/src/containers/DraggableIcon';
-
-import ApplySchedulingTemplate from './ApplySchedulingTemplate';
 
 const dragIcons = [
   {

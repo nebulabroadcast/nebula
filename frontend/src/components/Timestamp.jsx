@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+
 import { getTheme } from './theme';
 
 const TimestampWrapper = styled.div`
