@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom';
+
 import { Navbar, InputText, Button, Spacer } from '/src/components';
 
 const JobsNav = ({ searchQuery, setSearchQuery }) => {

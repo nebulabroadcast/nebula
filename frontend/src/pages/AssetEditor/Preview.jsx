@@ -1,11 +1,13 @@
 import nebula from '/src/nebula';
-import styled from 'styled-components';
 
 import { toast } from 'react-toastify';
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+
 import { Dropdown, Spacer, InputTimecode, Navbar, Button } from '/src/components';
 import VideoPlayer from '/src/containers/VideoPlayer';
+
 import Subclip from './Subclip';
+
 import { useKeyDown } from '/src/hooks';
 
 const SubclipsPanel = ({ subclips, setSubclips, selection, setSelection, fps }) => {
@@ -69,7 +71,7 @@ const Preview = ({ assetData, setAssetData }) => {
       mark_out: assetData.mark_out,
     });
     setSubclips(assetData.subclips || []);
-  }, [assetData?.id]);
+  }, [assetData?.id]); //eslint-disable-line
 
   useEffect(() => {
     // when subclip list changes, update it in asset data
@@ -77,7 +79,7 @@ const Preview = ({ assetData, setAssetData }) => {
     if ((assetData.subclips || []) !== subclips) {
       patchAsset({ subclips: subclips.length ? subclips : null });
     }
-  }, [subclips]);
+  }, [subclips, assetData]);
 
   // Dropdown menu options for poster frame
 

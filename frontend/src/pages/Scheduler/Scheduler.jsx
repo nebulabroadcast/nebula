@@ -1,14 +1,13 @@
-import styled from 'styled-components';
-import { toast } from 'react-toastify';
 import { DateTime } from 'luxon';
-
 import { useState, useEffect, useMemo } from 'react';
 import { useSelector } from 'react-redux';
+import { toast } from 'react-toastify';
 
 import nebula from '/src/nebula';
 import { useDialog } from '/src/hooks';
 import { Loader, LoaderWrapper } from '/src/components';
 import Calendar from '/src/containers/Calendar';
+
 import SchedulerNav from './SchedulerNav';
 
 const Scheduler = ({ draggedObjects }) => {
@@ -97,7 +96,7 @@ const Scheduler = ({ draggedObjects }) => {
       for (const field of fields) {
         finalData[field.name] = res[field.name] || null;
       }
-    } catch (e) {
+    } catch {
       //
     }
     console.log('finalData', finalData);
@@ -141,7 +140,7 @@ const Scheduler = ({ draggedObjects }) => {
         });
         payload.meta = r;
         if (r.start) payload.start = r.start;
-      } catch (e) {
+      } catch {
         return;
       }
     } else {
@@ -186,7 +185,7 @@ const Scheduler = ({ draggedObjects }) => {
     try {
       const r = await showDialog('metadata', title, { fields, initialData });
       saveEvent({ ...r, id: event.id });
-    } catch (e) {
+    } catch {
       //
     }
   };

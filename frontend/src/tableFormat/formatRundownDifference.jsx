@@ -1,6 +1,7 @@
 import { Timecode } from '@wfoxall/timeframe';
 
 const formatRundownDifference = (rowData, key) => {
+  const _key = key;
   const scheduled = rowData['scheduled_time'];
   const broadcast = rowData['broadcast_time'];
   const diff = scheduled - broadcast;

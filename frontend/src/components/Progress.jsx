@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import styled from 'styled-components';
+
 import { getTheme } from './theme';
 
 const BaseProgress = styled.div`

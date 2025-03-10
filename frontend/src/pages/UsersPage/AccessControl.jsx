@@ -1,8 +1,9 @@
 import nebula from '/src/nebula';
+
 import { isEqual } from 'lodash';
 import { useState, useEffect, useMemo } from 'react';
 
-import { Icon, Select, InputSwitch, PanelHeader, Form, FormRow } from '/src/components';
+import { Select, InputSwitch, Form, FormRow } from '/src/components';
 
 const AllOrList = ({ value, setValue, options, disabled }) => {
   const [all, setAll] = useState(false);

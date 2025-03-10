@@ -1,5 +1,7 @@
 import styled from 'styled-components';
+
 import nebula from '/src/nebula';
+
 import { Spacer } from '../components';
 
 const TitleNote = styled.span`

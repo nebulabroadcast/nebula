@@ -1,7 +1,9 @@
 import nebula from '/src/nebula';
+
 import { DateTime } from 'luxon';
 
 const createTitle = (startTime, channelName) => {
+  const _channelName = channelName;
   const dparams = {
     locale: nebula.locale,
     month: 'long',

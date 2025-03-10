@@ -1,12 +1,17 @@
 import nebula from '/src/nebula';
+
 import styled from 'styled-components';
 import { useRef, useMemo, useEffect, useState, useCallback } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
+
 import CalendarWrapper from './CalendarWrapper';
 import ZoomControl from './ZoomControl';
+
 import ContextMenu from '/src/components/ContextMenu';
+
 import drawMarks from './drawMarks';
 import drawEvents from './drawEvents';
+
 import { useLocalStorage } from '/src/hooks';
 
 const CalendarCanvas = styled.canvas`

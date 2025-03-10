@@ -2,8 +2,8 @@ import nebula from '/src/nebula';
 
 import { useDispatch } from 'react-redux';
 import { useState, useMemo } from 'react';
-import { setCurrentViewId, setSearchQuery } from '/src/actions';
 
+import { setCurrentViewId, setSearchQuery } from '/src/actions';
 import {
   Navbar,
   Button,
@@ -13,7 +13,6 @@ import {
   InputTimecode,
   Dialog,
 } from '/src/components';
-
 import { UploadButton } from '/src/containers/Upload';
 import { useDialog } from '/src/hooks';
 

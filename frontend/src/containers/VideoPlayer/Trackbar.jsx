@@ -1,4 +1,5 @@
 import { useRef, useEffect, useState, useCallback, useMemo } from 'react';
+
 import { Canvas, Navbar } from '/src/components';
 
 const Trackbar = ({
@@ -6,6 +7,7 @@ const Trackbar = ({
   currentTime,
   isPlaying,
   onScrub,
+  onScrubFinished,
   markIn,
   markOut,
   bufferedRanges,
@@ -15,11 +17,12 @@ const Trackbar = ({
   const canvasRef = useRef(null);
   const resizeObserverRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
+  const targetTimeRef = useRef(null);
 
   const auxMarks = marks || {};
 
   const numFrames = useMemo(
-    () => Math.floor(duration * frameRate),
+    () => Math.round(duration * frameRate),
     [frameRate, duration]
   );
   // DRAW
@@ -96,12 +99,12 @@ const Trackbar = ({
 
     let currentFrame;
     if (isPlaying) {
-      currentFrame = Math.floor(currentTime * frameRate);
+      currentFrame = Math.round(currentTime * frameRate);
       if (currentFrame >= numFrames) {
         currentFrame = numFrames - 1;
       }
     } else {
-      currentFrame = Math.floor(currentTime * frameRate);
+      currentFrame = Math.round(currentTime * frameRate);
     }
 
     const progressX =
@@ -135,16 +138,19 @@ const Trackbar = ({
   // Dragging
 
   const handleMouseMove = (e) => {
-    if (!isDragging) return;
-    e.preventDefault();
     const rect = canvasRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const newTime = (x / rect.width) * duration;
+    targetTimeRef.current = newTime;
+    if (!isDragging) return;
     onScrub(newTime);
   };
 
   const handleMouseUp = () => {
     setIsDragging(false);
+    if (onScrubFinished) {
+      onScrubFinished(targetTimeRef.current);
+    }
   };
 
   useEffect(() => {
@@ -171,6 +177,7 @@ const Trackbar = ({
     const rect = canvasRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const newTime = (x / rect.width) * duration;
+    targetTimeRef.current = newTime;
     onScrub(newTime);
   };
 

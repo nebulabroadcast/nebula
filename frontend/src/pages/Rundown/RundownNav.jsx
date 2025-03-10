@@ -4,7 +4,6 @@ import { useSelector, useDispatch } from 'react-redux';
 import nebula from '/src/nebula';
 import { Navbar, Spacer, RadioButton } from '/src/components';
 import DateNav from '/src/containers/DateNav';
-
 import { setPageTitle } from '/src/actions';
 
 const RundownNav = ({ setStartTime, rundownMode, setRundownMode }) => {

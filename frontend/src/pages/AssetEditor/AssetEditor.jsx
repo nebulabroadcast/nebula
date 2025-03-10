@@ -1,6 +1,6 @@
 import nebula from '/src/nebula';
 
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { useEffect, useState, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
@@ -18,7 +18,9 @@ import { Loader } from '/src/components';
 
 import AssetEditorNav from './EditorNav';
 import AssetMainProps from './AssetMainProps';
+
 import MetadataEditor from '/src/containers/MetadataEditor';
+
 import Preview from './Preview';
 
 const getEnabledActions = ({ assetData, isChanged }) => {
@@ -66,13 +68,12 @@ const getEnabledActions = ({ assetData, isChanged }) => {
 
 const AssetEditor = () => {
   const focusedAsset = useSelector((state) => state.context.focusedAsset);
-  const navigate = useNavigate();
   const dispatch = useDispatch();
   const [assetData, setAssetData] = useState({});
   const [originalData, setOriginalData] = useState({});
   const [loading, setLoading] = useState(false);
   const [editorMode, setEditorMode] = useLocalStorage('editorMode', 'metadata');
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [_searchParams, setSearchParams] = useSearchParams();
 
   const showDialog = useDialog();
 
@@ -197,7 +198,10 @@ const AssetEditor = () => {
           nebula
             .request('set', { id: assetData.id, data: assetData })
             .then(() => {
-              assetData.id || dispatch(reloadBrowser());
+              // reload browser if it's a new asset
+              // (if it already exists, it will be updated over ws,
+              // but new assets won't be displayed until the browser is reloaded)
+              if (!assetData.id) dispatch(reloadBrowser());
             })
             .catch((error) => {
               toast.error(
@@ -274,7 +278,7 @@ const AssetEditor = () => {
       .request('set', { id: assetData.id, data: payload || assetData })
       .then((response) => {
         //reload browser if it's a new asset
-        assetData.id || dispatch(reloadBrowser());
+        if (!assetData.id) dispatch(reloadBrowser());
         loadAsset(response.data.id);
       })
       .catch((error) => {

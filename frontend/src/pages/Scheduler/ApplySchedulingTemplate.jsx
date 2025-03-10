@@ -41,7 +41,7 @@ const ApplySchedulingTemplate = ({ loadEvents, date, loading, setLoading }) => {
     const id_channel = currentChannel;
     const dtitle = `Apply template "${value}"?`;
     try {
-      const res = await showDialog('confirm', dtitle, { message: dmessage });
+      const _res = await showDialog('confirm', dtitle, { message: dmessage });
     } catch {
       setLoading(false);
       return;
@@ -54,7 +54,7 @@ const ApplySchedulingTemplate = ({ loadEvents, date, loading, setLoading }) => {
         date,
       });
       loadEvents();
-    } catch (error) {
+    } catch {
       // noop
     }
     setLoading(false);

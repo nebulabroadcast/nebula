@@ -1,7 +1,8 @@
-import styled from 'styled-components';
-import { getTheme } from './theme';
-import { forwardRef } from 'react';
 import clsx from 'clsx';
+import { forwardRef } from 'react';
+import styled from 'styled-components';
+
+import { getTheme } from './theme';
 
 const BaseButton = styled.button`
   border: 0;

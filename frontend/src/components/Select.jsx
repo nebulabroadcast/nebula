@@ -1,10 +1,9 @@
 import { useState, useMemo } from 'react';
 import styled from 'styled-components';
 
-import InputText from './InputText';
 import Button from './Button';
+import InputText from './InputText';
 import SelectDialog from './SelectDialog';
-
 import { getTheme } from './theme';
 
 // Styled dialog-based select component.
@@ -133,7 +132,8 @@ const Select = ({
         disabled={disabled}
         style={{ flexGrow: 1 }}
         onDoubleClick={() => {
-          !disabled && setDialogVisible(true);
+          if (disabled) return;
+          setDialogVisible(true);
         }}
         onChange={() => {}}
         onKeyDown={(e) => {

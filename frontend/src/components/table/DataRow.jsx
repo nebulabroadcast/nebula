@@ -1,6 +1,6 @@
-import { useMemo } from 'react';
 import { useDraggable } from '@dnd-kit/core';
 import clsx from 'clsx';
+import { useMemo } from 'react';
 
 import BodyCell from './BodyCell';
 
@@ -16,7 +16,7 @@ const DataRow = ({
   selected = false,
   draggableItems,
 }) => {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+  const { attributes, listeners, setNodeRef } = useDraggable({
     id: rowData.id,
     data:
       draggableItems?.length &&

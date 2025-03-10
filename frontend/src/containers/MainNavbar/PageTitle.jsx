@@ -1,5 +1,5 @@
-import styled from 'styled-components';
 import { useSelector } from 'react-redux';
+import styled from 'styled-components';
 
 const BasePageTitle = styled.div`
   font-size: 1.1rem;

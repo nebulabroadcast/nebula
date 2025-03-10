@@ -1,5 +1,5 @@
 import { useMemo, useRef, useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useSearchParams, useLocation } from 'react-router-dom';
 
 import nebula from '/src/nebula';
@@ -27,7 +27,7 @@ const RundownTable = ({
   loadRundown,
   onError,
 }) => {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [_searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
   const lastHash = useRef('');
   const currentChannel = useSelector((state) => state.context.currentChannel);
@@ -222,7 +222,9 @@ const RundownTable = ({
         initialData,
       });
       updateObject(object_type, id, newData);
-    } catch {}
+    } catch {
+      // dialog was cancelled
+    }
   };
 
   //

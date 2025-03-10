@@ -1,4 +1,3 @@
-import nebula from '/src/nebula';
 import {
   Icon,
   InputText,

@@ -1,5 +1,5 @@
 const drawMarks = (ctx, drawParams) => {
-  const { dayWidth, hourHeight, startTime, pos2time, time2pos } = drawParams.current;
+  const { dayWidth, hourHeight, startTime, time2pos } = drawParams.current;
 
   const startHour = startTime?.getHours() || 0;
   const startMinute = startTime?.getMinutes() || 0;

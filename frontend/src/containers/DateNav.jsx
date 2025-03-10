@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useDialog } from '/src/hooks';
 
+import { useDialog } from '/src/hooks';
 import { Button } from '/src/components';
 
 const DateNav = ({ onChange, skipBy = 1 }) => {
@@ -47,7 +47,9 @@ const DateNav = ({ onChange, skipBy = 1 }) => {
         o.set('date', newDate);
         return o;
       });
-    } catch {}
+    } catch {
+      // Do nothing
+    }
   };
 
   // Render
