@@ -86,10 +86,13 @@ const VideoPlayerBody = ({ ...props }) => {
         seekToFrame(time2frames(props.markIn, props.frameRate));
       }
     }
+  }, [props.markIn]);
+
+  useEffect(() => {
     if (props.markOut || null !== markOut) {
       setMarkOut(props.markOut);
     }
-  }, [props.markIn, props.markOut]);
+  }, [props.markOut]);
 
   useEffect(() => {
     if (isPlaying) isPlayingRef.current = true;

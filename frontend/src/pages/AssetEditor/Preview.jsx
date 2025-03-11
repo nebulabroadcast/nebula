@@ -9,6 +9,7 @@ import VideoPlayer from '/src/containers/VideoPlayer';
 import Subclip from './Subclip';
 
 import { useKeyDown } from '/src/hooks';
+import { arrayEquals } from '/src/utils';
 
 const SubclipsPanel = ({ subclips, setSubclips, selection, setSelection, fps }) => {
   return (
@@ -60,6 +61,7 @@ const Preview = ({ assetData, setAssetData }) => {
 
   const patchAsset = (data) => {
     // helper function to update asset data
+    if (!data) return;
     setAssetData((o) => {
       return { ...o, ...data };
     });
@@ -76,7 +78,8 @@ const Preview = ({ assetData, setAssetData }) => {
   useEffect(() => {
     // when subclip list changes, update it in asset data
     if (!assetData) return;
-    if ((assetData.subclips || []) !== subclips) {
+    const existingSubclips = [];
+    if (!arrayEquals(existingSubclips, subclips)) {
       patchAsset({ subclips: subclips.length ? subclips : null });
     }
   }, [subclips, assetData]);
@@ -106,6 +109,7 @@ const Preview = ({ assetData, setAssetData }) => {
   const onSetMarks = () => {
     // Set asset mark_in and mark_out values
     // (content primary selection)
+    console.log('Setting margs');
     patchAsset({
       mark_in: selection.mark_in || null,
       mark_out: selection.mark_out || null,
