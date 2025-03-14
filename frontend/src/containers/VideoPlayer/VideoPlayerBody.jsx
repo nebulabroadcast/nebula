@@ -50,9 +50,13 @@ const VideoPlayerBody = ({ ...props }) => {
   const [durFrames, setDurFrames] = useState(0);
   const [markIn, setMarkIn] = useState();
   const [markOut, setMarkOut] = useState();
-
   const [isPlaying, setIsPlaying] = useState(false);
+
   const isPlayingRef = useRef(isPlaying);
+  const durFramesRef = useRef(durFrames);
+  const markInRef = useRef(markIn);
+  const markOutRef = useRef(markOut);
+
   const [loop, setLoop] = useState(false);
   const [videoDimensions, setVideoDimensions] = useState(DEFAULT_VIDEO_DIMENSIONS);
   const [showOverlay, setShowOverlay] = useState(false);
@@ -63,14 +67,20 @@ const VideoPlayerBody = ({ ...props }) => {
     props.setPosition(frames2time(posFrames, props.frameRate));
   }, [posFrames]);
 
+  useEffect(() => {
+    durFramesRef.current = durFrames;
+  }, [durFrames]);
+
   // Propagating markIn and markOut to parent component
 
   useEffect(() => {
     if (props.setMarkIn) {
       props.setMarkIn(markIn);
+      markInRef.current = markIn;
     }
     if (props.setMarkOut) {
       props.setMarkOut(markOut);
+      markOutRef.current = markOut;
     }
   }, [markIn, markOut]);
 
@@ -120,7 +130,19 @@ const VideoPlayerBody = ({ ...props }) => {
   // Position
   //
   const updatePos = () => {
-    setPosFrames(time2frames(videoRef.current.currentTime, props.frameRate));
+    const video = videoRef.current;
+    const atFrame = time2frames(video.currentTime, props.frameRate);
+    setPosFrames(atFrame);
+    if (!isPlayingRef.current) return;
+    if (!loop) return;
+
+    const markOutFrame =
+      time2frames(markOutRef.current, props.frameRate) || durFramesRef.current - 1;
+
+    if (atFrame === markOutFrame) {
+      videoRef.current.currentTime = markInRef.current || 0;
+      videoRef.current.play();
+    }
   };
 
   const updatePosMon = () => {
@@ -135,21 +157,20 @@ const VideoPlayerBody = ({ ...props }) => {
 
   useEffect(() => {
     updatePosMon();
-  }, [videoRef, isPlaying, durFrames]);
+  }, [videoRef, isPlaying, loop]);
 
   const seekToFrame = (frame) => {
-    // console.log('seekToFrame', frame);
     const videoElement = videoRef.current;
     if (!videoElement) return;
-    const newTime = frames2time(frame, props.frameRate);
+    const correctedFrame = Math.max(0, Math.min(frame, durFramesRef.current - 1));
+    const newTime = frames2time(correctedFrame, props.frameRate);
     videoElement.currentTime = newTime;
   };
 
   const onScrubFinished = (atTime) => {
     setTimeout(() => {
       const fr = time2frames(atTime, props.frameRate);
-      // console.log('onScrubFinished', fr);
-      seekToFrame(fr + 1);
+      seekToFrame(fr);
     }, 40);
   };
 
@@ -184,12 +205,7 @@ const VideoPlayerBody = ({ ...props }) => {
   };
 
   const handleEnded = () => {
-    if (!isPlaying) return;
-    setIsPlaying(loop);
-    if (loop) {
-      videoRef.current.currentTime = 0;
-      videoRef.current.play();
-    }
+    // unused
   };
 
   const handleProgress = (e) => {

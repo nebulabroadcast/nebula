@@ -79,7 +79,7 @@ const Trackbar = ({
 
     let markOutX = width;
     if (markOut) {
-      markOutX = (markOut / duration) * width;
+      markOutX = (markOut / duration) * width + frameWidth;
       ctx.strokeStyle = 'red';
       ctx.beginPath();
       ctx.moveTo(markOutX, 0);
