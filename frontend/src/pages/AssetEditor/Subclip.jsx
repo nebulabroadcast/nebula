@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { toast } from 'react-toastify';
 import { Timecode } from '@wfoxall/timeframe';
 
 import { InputText, Button } from '/src/components';
@@ -65,29 +66,45 @@ const Subclip = ({
   const startTC = new Timecode(Math.floor(mark_in * fps), fps);
   const endTC = new Timecode(Math.floor(mark_out * fps), fps);
 
+  const updateSubclip = () => {
+    if (!(selection.mark_in && selection.mark_out)) {
+      toast.error('Please select a region first');
+      return;
+    }
+
+    if (selection.mark_in >= selection.mark_out) {
+      toast.error('Please select a valid region');
+      return;
+    }
+
+    if (selection.mark_out - selection.mark_in < 2) {
+      toast.error('Region must be at least 2 frames long');
+      return;
+    }
+    onSetMarks(selection);
+  };
+
+  const showSubclip = () => {
+    setSelection({
+      mark_in: mark_in || null,
+      mark_out: mark_out || null,
+    });
+  };
+
   return (
     <SubclipContainer>
       <h3>
         {startTC.toString()} - {endTC.toString()}
       </h3>
       <SubclipRow>
-        <InputText value={title} onChange={onTitleChange} style={{ flex: 1 }} />
-        <Button icon="delete" tooltip="Delete subclip" onClick={() => onRemove()} />
         <Button
           icon="screenshot_region"
           tooltip="Update subclip from selection"
-          onClick={() => onSetMarks(selection)}
+          onClick={updateSubclip}
         />
-        <Button
-          icon="frame_inspect"
-          tooltip="Select region"
-          onClick={() =>
-            setSelection({
-              mark_in: mark_in || null,
-              mark_out: mark_out || null,
-            })
-          }
-        />
+        <Button icon="delete" tooltip="Delete subclip" onClick={() => onRemove()} />
+        <InputText value={title} onChange={onTitleChange} style={{ flex: 1 }} />
+        <Button icon="frame_inspect" tooltip="Select region" onClick={showSubclip} />
       </SubclipRow>
     </SubclipContainer>
   );

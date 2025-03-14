@@ -2,6 +2,8 @@ import { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 
 import { Canvas, Navbar } from '/src/components';
 
+const MARK_SIZE = 7;
+
 const Trackbar = ({
   duration,
   currentTime,
@@ -72,8 +74,10 @@ const Trackbar = ({
       markInX = (markIn / duration) * width;
       ctx.strokeStyle = 'green';
       ctx.beginPath();
-      ctx.moveTo(markInX, 0);
-      ctx.lineTo(markInX, height);
+      ctx.moveTo(markInX, height - MARK_SIZE);
+      ctx.lineTo(markInX, height - 1);
+      ctx.lineTo(markInX - MARK_SIZE, height - 1);
+      ctx.lineTo(markInX, height - MARK_SIZE);
       ctx.stroke();
     }
 
@@ -82,8 +86,10 @@ const Trackbar = ({
       markOutX = (markOut / duration) * width + frameWidth;
       ctx.strokeStyle = 'red';
       ctx.beginPath();
-      ctx.moveTo(markOutX, 0);
-      ctx.lineTo(markOutX, height);
+      ctx.moveTo(markOutX, height - MARK_SIZE);
+      ctx.lineTo(markOutX, height - 1);
+      ctx.lineTo(markOutX + MARK_SIZE, height - 1);
+      ctx.lineTo(markOutX, height - MARK_SIZE);
       ctx.stroke();
     }
 

@@ -55,7 +55,6 @@ const Preview = ({ assetData, setAssetData }) => {
   );
   const frameRate = useMemo(() => {
     const fps = assetData['video/fps_f'] || 25.0;
-    //console.log('fps', fps)
     return fps;
   }, [assetData]);
 
@@ -82,7 +81,7 @@ const Preview = ({ assetData, setAssetData }) => {
     if (!arrayEquals(existingSubclips, subclips)) {
       patchAsset({ subclips: subclips.length ? subclips : null });
     }
-  }, [subclips, assetData]);
+  }, [subclips]);
 
   // Dropdown menu options for poster frame
 
@@ -109,7 +108,6 @@ const Preview = ({ assetData, setAssetData }) => {
   const onSetMarks = () => {
     // Set asset mark_in and mark_out values
     // (content primary selection)
-    console.log('Setting margs');
     patchAsset({
       mark_in: selection.mark_in || null,
       mark_out: selection.mark_out || null,
@@ -124,6 +122,11 @@ const Preview = ({ assetData, setAssetData }) => {
 
     if (selection.mark_in >= selection.mark_out) {
       toast.error('Please select a valid region');
+      return;
+    }
+
+    if (selection.mark_out - selection.mark_in < 2) {
+      toast.error('Region must be at least 2 frames long');
       return;
     }
 

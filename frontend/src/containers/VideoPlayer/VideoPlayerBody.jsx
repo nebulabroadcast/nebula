@@ -128,7 +128,7 @@ const VideoPlayerBody = ({ ...props }) => {
   }, [videoRef]);
 
   // Position
-  //
+
   const updatePos = () => {
     const video = videoRef.current;
     const atFrame = time2frames(video.currentTime, props.frameRate);
@@ -139,7 +139,7 @@ const VideoPlayerBody = ({ ...props }) => {
     const markOutFrame =
       time2frames(markOutRef.current, props.frameRate) || durFramesRef.current - 1;
 
-    if (atFrame === markOutFrame) {
+    if (atFrame >= markOutFrame && atFrame < markOutFrame + 4) {
       videoRef.current.currentTime = markInRef.current || 0;
       videoRef.current.play();
     }
@@ -157,7 +157,7 @@ const VideoPlayerBody = ({ ...props }) => {
 
   useEffect(() => {
     updatePosMon();
-  }, [videoRef, isPlaying, loop]);
+  }, [videoRef, isPlaying]);
 
   const seekToFrame = (frame) => {
     const videoElement = videoRef.current;
