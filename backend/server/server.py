@@ -8,6 +8,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.websockets import WebSocket, WebSocketDisconnect
+from starlette.middleware.sessions import SessionMiddleware
 
 import nebula
 from nebula.exceptions import NebulaException
@@ -16,6 +17,16 @@ from nebula.settings import load_settings
 from server.endpoints import install_endpoints
 from server.storage_monitor import storage_monitor
 from server.websocket import messaging
+
+
+
+def get_session_key() -> str:
+    SESSION_KEY_PATH = "/tmp/nebula-session-key"
+    if not os.path.exists(SESSION_KEY_PATH):
+        with open(SESSION_KEY_PATH, "w") as f:
+            f.write(os.urandom(32).hex())
+    with open(SESSION_KEY_PATH) as f:
+        return f.read()
 
 
 @asynccontextmanager
@@ -52,6 +63,8 @@ app = FastAPI(
         "url": "https://www.gnu.org/licenses/gpl-3.0.en.html",
     },
 )
+app.add_middleware(SessionMiddleware, secret_key=get_session_key())
+
 
 #
 # Error handlers
