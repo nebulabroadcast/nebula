@@ -19,7 +19,6 @@ from server.storage_monitor import storage_monitor
 from server.websocket import messaging
 
 
-
 def get_session_key() -> str:
     SESSION_KEY_PATH = "/tmp/nebula-session-key"
     if not os.path.exists(SESSION_KEY_PATH):

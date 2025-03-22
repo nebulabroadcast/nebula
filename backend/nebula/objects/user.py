@@ -95,7 +95,7 @@ class User(BaseObject):
             """
             SELECT meta FROM users WHERE LOWER(meta->>'email') = $1
             """,
-            email.lower()
+            email.lower(),
         )
         if not row:
             raise NotFoundException(f"User with email {email} not found")
@@ -124,7 +124,6 @@ class User(BaseObject):
                 log=f"Invalid logging attempted with name '{username}'",
             )
         return cls(meta=res[0]["meta"])
-
 
     def set_password(self, password: str) -> None:
         self.meta["password"] = hash_password(password)

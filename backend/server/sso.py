@@ -1,4 +1,5 @@
 import json
+
 from authlib.integrations.starlette_client import OAuth
 
 import nebula
@@ -32,9 +33,7 @@ class NebulaSSO:
         cls._oauth.register(
             name="google",
             server_metadata_url=CONF_URL,
-            client_kwargs={
-                "scope": "openid email profile"
-            }
+            client_kwargs={"scope": "openid email profile"},
         )
 
     @classmethod
@@ -45,5 +44,5 @@ class NebulaSSO:
         return cls._oauth
 
     @classmethod
-    def client(cls):
-        return cls.get_oauth().google
+    def client(cls, provider: str):
+        return cls.get_oauth().create_client(provider)

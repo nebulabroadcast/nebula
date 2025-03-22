@@ -7,6 +7,12 @@ from server.session import Session
 
 
 class TokenExchangeRequest(APIRequest):
+    """Exachange a transient access token for a normal one
+
+    This request will exchange an access token for a new one.
+    The original access token will be invalidated.
+    """
+
     name: str = "token-exchange"
     response_model = LoginResponseModel
 
@@ -15,7 +21,7 @@ class TokenExchangeRequest(APIRequest):
         request: Request,
         payload: TokenExchangeRequestModel,
     ) -> LoginResponseModel:
-        session = await Session.check(payload.access_token, request)
+        session = await Session.check(payload.access_token, request, transient=True)
         if not session:
             raise nebula.UnauthorizedException("Invalid token")
         user_id = session.user["id"]
@@ -25,4 +31,3 @@ class TokenExchangeRequest(APIRequest):
         await Session.delete(payload.access_token)
         session = await Session.create(user, request)
         return LoginResponseModel(access_token=new_session.token)
-
