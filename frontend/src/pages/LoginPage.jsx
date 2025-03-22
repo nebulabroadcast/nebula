@@ -65,6 +65,7 @@ const SSOOptions = () => {
 };
 
 const LoginPage = ({ motd, onLogin }) => {
+  const [initialized, setInitialized] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
@@ -73,10 +74,10 @@ const LoginPage = ({ motd, onLogin }) => {
   const buttonRef = useRef();
 
   useEffect(() => {
-    loginRef.current.focus();
     // check if there's authorize field in query params
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('authorize');
+    const error = urlParams.get('error');
     // clear token from url
     window.history.replaceState({}, document.title, window.location.pathname);
     if (token) {
@@ -84,8 +85,17 @@ const LoginPage = ({ motd, onLogin }) => {
       axios.post('/api/token-exchange', { access_token: token }).then((response) => {
         onLogin(response.data.access_token);
       });
+    } else if (error) {
+      toast.error(error);
+    } else {
+      setInitialized(true);
     }
   }, []);
+
+  useEffect(() => {
+    if (!loginRef.current) return;
+    loginRef.current.focus();
+  }, [loginRef.current]);
 
   const onSubmit = (event) => {
     event.preventDefault();
@@ -108,17 +118,19 @@ const LoginPage = ({ motd, onLogin }) => {
         }
 
         toast.error(
-          <>
-            <p>
-              <strong>Login failed</strong>
-            </p>
+          <div>
+            <strong>Login failed</strong>
             <p>{err.response.data?.detail || 'Unknown error'}</p>
-          </>
+          </div>
         );
       });
   };
 
   const loginDisabled = !username || !password;
+
+  if (!initialized) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <main>
