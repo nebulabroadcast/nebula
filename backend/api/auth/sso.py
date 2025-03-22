@@ -1,3 +1,5 @@
+from urllib.parse import urlparse
+
 from authlib.integrations.starlette_client import OAuthError
 from fastapi import Request
 from fastapi.responses import RedirectResponse
@@ -18,7 +20,18 @@ class SSOLoginRequest(APIRequest):
 
         oauth = NebulaSSO.get_oauth()
 
-        redirect_uri = request.url_for("sso_callback", provider=provider)
+        referer = request.headers.get("referer")
+        if referer:
+            parsed_url = urlparse(referer)
+            base_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
+        else:
+            base_url = "http://localhost:4455"
+
+        # We cannot use request.url_for here because it screws the frontend
+        # dev server proxy
+
+        redirect_uri = f"{base_url}/api/sso/callback/{provider}"
+        nebula.log.debug(f"Redirect URI: {redirect_uri}")
         return await oauth.google.authorize_redirect(request, redirect_uri)
 
 

@@ -53,6 +53,17 @@ const LoginForm = styled.form`
   }
 `;
 
+const SSOOptions = () => {
+  return (
+    <>
+      <hr />
+      <a href="/api/sso/login/google" className="btn btn-primary">
+        Login with Google
+      </a>
+    </>
+  );
+};
+
 const LoginPage = ({ motd, onLogin }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -63,6 +74,17 @@ const LoginPage = ({ motd, onLogin }) => {
 
   useEffect(() => {
     loginRef.current.focus();
+    // check if there's authorize field in query params
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('authorize');
+    // clear token from url
+    window.history.replaceState({}, document.title, window.location.pathname);
+    if (token) {
+      // exchange tokens
+      axios.post('/api/token-exchange', { access_token: token }).then((response) => {
+        onLogin(response.data.access_token);
+      });
+    }
   }, []);
 
   const onSubmit = (event) => {
@@ -127,6 +149,7 @@ const LoginPage = ({ motd, onLogin }) => {
             disabled={loginDisabled}
           />
         </LoginForm>
+        <SSOOptions />
         {motd && <small>{motd}</small>}
       </LoginContainer>
     </main>

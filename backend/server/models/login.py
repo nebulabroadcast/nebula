@@ -26,3 +26,10 @@ class LoginResponseModel(ResponseModel):
         "for the subsequent requests",
     )
 
+
+class TokenExchangeRequestModel(RequestModel):
+    access_token: str = Field(
+        ...,
+        title="Access token",
+        description="Access token to be exchanged for a new one",
+    )

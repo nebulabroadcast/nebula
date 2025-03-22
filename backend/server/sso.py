@@ -1,6 +1,8 @@
 import json
 from authlib.integrations.starlette_client import OAuth
 
+import nebula
+
 CONF_URL = "https://accounts.google.com/.well-known/openid-configuration"
 
 
@@ -13,7 +15,8 @@ class NebulaSSOConfig:
             with open("/mnt/nebula_01/googleauth.json") as f:
                 data = json.load(f)
                 self.data["GOOGLE_CLIENT_ID"] = data["web"]["client_id"]
-                self.data["GOOGLE_CLIENT_SECRET"] = data
+                self.data["GOOGLE_CLIENT_SECRET"] = data["web"]["client_secret"]
+            nebula.log.info(f"SSO config: {self.data}")
         assert self.data is not None, "SSO config is not initialized"
         return self.data.get(key, default)
 
