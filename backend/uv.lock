@@ -661,6 +661,7 @@ dev = [
     { name = "pytest-asyncio" },
     { name = "ruff" },
     { name = "types-aiofiles" },
+    { name = "types-authlib" },
     { name = "types-requests" },
 ]
 
@@ -696,6 +697,7 @@ dev = [
     { name = "pytest-asyncio", specifier = ">=0.20.3" },
     { name = "ruff", specifier = ">=0.6.8" },
     { name = "types-aiofiles", specifier = ">=23.2.0.20240311" },
+    { name = "types-authlib", specifier = ">=1.4.0.20241230" },
     { name = "types-requests", specifier = ">=2.31.0.20240311" },
 ]
 
@@ -1006,6 +1008,18 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/ab/5e/f984b9ddc7eecdf31e683e692d933f3672276ed95aad6adb9aea9ecbdc29/types_aiofiles-24.1.0.20241221.tar.gz", hash = "sha256:c40f6c290b0af9e902f7f3fa91213cf5bb67f37086fb21dc0ff458253586ad55", size = 14081 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/ff/da/77902220df98ce920444cf3611fa0b1cf0dc2cfa5a137c55e93829aa458e/types_aiofiles-24.1.0.20241221-py3-none-any.whl", hash = "sha256:11d4e102af0627c02e8c1d17736caa3c39de1058bea37e2f4de6ef11a5b652ab", size = 14162 },
+]
+
+[[package]]
+name = "types-authlib"
+version = "1.4.0.20241230"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "cryptography" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/bd/c9/6d9ec803cad45b95aa795d34ac5b5ade28da46c1ae1dfdd5e9c0a4ef26aa/types_authlib-1.4.0.20241230.tar.gz", hash = "sha256:b37f9192ddeac19d83855ccf8ecab04a4e6a039612289a4d9ac710600f5242f6", size = 33328 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ed/e5/9c808763c06bcffb707236b08aaf858d33e60d7e32719e78550224867b23/types_Authlib-1.4.0.20241230-py3-none-any.whl", hash = "sha256:e7944767b3f308a77eb10fb98fbed43b27e31e9b9a791561f92578d8f8c5ea16", size = 73389 },
 ]
 
 [[package]]

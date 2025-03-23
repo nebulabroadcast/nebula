@@ -1,3 +1,4 @@
+from authlib.integrations.httpx_client import AsyncOAuth2Client
 from authlib.integrations.starlette_client import OAuth
 
 import nebula
@@ -41,6 +42,7 @@ class NebulaSSO:
                 server_metadata_url=provider.entrypoint,
                 client_kwargs={"scope": "openid email profile"},
             )
+        return cls._oauth
 
     @classmethod
     def get_oauth(cls) -> OAuth:
@@ -50,9 +52,8 @@ class NebulaSSO:
         return cls._oauth
 
     @classmethod
-    def client(cls, provider: str):
+    def client(cls, provider: str) -> AsyncOAuth2Client:
         return cls.get_oauth().create_client(provider)
-
 
     @classmethod
     async def options(cls) -> list[SSOOption]:
@@ -61,9 +62,7 @@ class NebulaSSO:
             result.append(
                 SSOOption(
                     name=provider.name,
-                    title=provider.title or provider.name.capitalize()
+                    title=provider.title or provider.name.capitalize(),
                 )
             )
         return result
-
-

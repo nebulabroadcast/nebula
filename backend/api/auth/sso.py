@@ -13,7 +13,6 @@ from server.sso import NebulaSSO
 class SSOLoginRequest(APIRequest):
     name = "sso_login"
     path = "/api/sso/login/{provider}"
-    response_model = RedirectResponse
     methods = ["GET"]
 
     async def handle(self, request: Request, provider: str) -> RedirectResponse:
@@ -38,7 +37,6 @@ class SSOLoginCallback(APIRequest):
     name = "sso_callback"
     path = "/api/sso/callback/{provider}"
     methods = ["GET"]
-    response_model = RedirectResponse
 
     async def handle(self, request: Request, provider: str) -> RedirectResponse:
         client = NebulaSSO.client(provider)

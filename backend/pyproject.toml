@@ -35,6 +35,7 @@ dev = [
     "pytest-asyncio >=0.20.3",
     "ruff >=0.6.8",
     "types-aiofiles >=23.2.0.20240311",
+    "types-authlib>=1.4.0.20241230",
     "types-requests >=2.31.0.20240311",
 ]
 
