@@ -1,4 +1,4 @@
-from typing import Annotated, Any, get_args
+from typing import Annotated, get_args
 
 import fastapi
 from pydantic import Field
@@ -11,6 +11,7 @@ from server.context import ScopedEndpoint, server_context
 from server.dependencies import CurrentUserOptional
 from server.models import ResponseModel, UserModel
 from server.request import APIRequest
+from server.sso import NebulaSSO, SSOOption
 
 from .client_settings import ClientSettingsModel, get_client_settings
 
@@ -63,10 +64,10 @@ class InitResponseModel(ResponseModel):
         ),
     ] = None
 
-    oauth2_options: Annotated[
-        list[dict[str, Any]] | None,
+    sso_options: Annotated[
+        list[SSOOption] | None,
         Field(
-            title="OAuth2 options",
+            title="SSO options",
         ),
     ] = None
 
@@ -104,10 +105,11 @@ class InitRequest(APIRequest):
                 return InitResponseModel(installed=False)
 
         # Not logged in. Only return motd and oauth2 options.
-        # TODO: return oauth2 options
         if user is None:
+            sso_options = await NebulaSSO.options() or None
             return InitResponseModel(
                 motd=motd,
+                sso_options=sso_options,
                 experimental=nebula.config.enable_experimental or None,
             )
 

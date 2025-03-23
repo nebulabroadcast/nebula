@@ -1,24 +1,29 @@
-import json
-
 from authlib.integrations.starlette_client import OAuth
 
 import nebula
+from server.models import ResponseModel
 
-CONF_URL = "https://accounts.google.com/.well-known/openid-configuration"
+
+class SSOOption(ResponseModel):
+    name: str
+    title: str
 
 
 class NebulaSSOConfig:
-    data: dict[str, str] | None = None
+    _data: dict[str, str] | None = None
 
-    def get(self, key: str, default: str = None) -> str:
-        if self.data is None:
-            self.data = {}
-            with open("/mnt/nebula_01/googleauth.json") as f:
-                data = json.load(f)
-                self.data["GOOGLE_CLIENT_ID"] = data["web"]["client_id"]
-                self.data["GOOGLE_CLIENT_SECRET"] = data["web"]["client_secret"]
-            nebula.log.info(f"SSO config: {self.data}")
-        assert self.data is not None, "SSO config is not initialized"
+    @property
+    def data(self) -> dict[str, str]:
+        if self._data is None:
+            data = {}
+            for provider in nebula.settings.system.sso_providers:
+                provider_prefix = provider.name.upper()
+                data[f"{provider_prefix}_CLIENT_ID"] = provider.client_id
+                data[f"{provider_prefix}_CLIENT_SECRET"] = provider.client_secret
+            self._data = data
+        return self._data
+
+    def get(self, key: str, default: str | None = None) -> str | None:
         return self.data.get(key, default)
 
 
@@ -30,11 +35,12 @@ class NebulaSSO:
         ssoconfig = NebulaSSOConfig()
         cls._oauth = OAuth(ssoconfig)
         assert cls._oauth is not None, "OAuth is not initialized"
-        cls._oauth.register(
-            name="google",
-            server_metadata_url=CONF_URL,
-            client_kwargs={"scope": "openid email profile"},
-        )
+        for provider in nebula.settings.system.sso_providers:
+            cls._oauth.register(
+                name=provider.name,
+                server_metadata_url=provider.entrypoint,
+                client_kwargs={"scope": "openid email profile"},
+            )
 
     @classmethod
     def get_oauth(cls) -> OAuth:
@@ -46,3 +52,18 @@ class NebulaSSO:
     @classmethod
     def client(cls, provider: str):
         return cls.get_oauth().create_client(provider)
+
+
+    @classmethod
+    async def options(cls) -> list[SSOOption]:
+        result = []
+        for provider in nebula.settings.system.sso_providers:
+            result.append(
+                SSOOption(
+                    name=provider.name,
+                    title=provider.title or provider.name.capitalize()
+                )
+            )
+        return result
+
+

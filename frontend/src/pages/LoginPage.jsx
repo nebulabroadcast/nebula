@@ -39,6 +39,12 @@ const LoginForm = styled.form`
   max-height: 85%;
   position: relative;
 
+  hr {
+    border: none;
+    border-top: 1px solid var(--color-surface-04);
+    margin: 12px 0;
+  }
+
   .logo-container {
     width: 100%;
     display: flex;
@@ -53,18 +59,23 @@ const LoginForm = styled.form`
   }
 `;
 
-const SSOOptions = () => {
+const SSOOptions = ({ ssoOptions }) => {
   return (
     <>
       <hr />
-      <a href="/api/sso/login/google" className="btn btn-primary">
-        Login with Google
-      </a>
+      {ssoOptions.map((option) => (
+        <Button
+          key={option.id}
+          as="a"
+          href={`/api/sso/login/${option.name}`}
+          label={option.title}
+        />
+      ))}
     </>
   );
 };
 
-const LoginPage = ({ motd, onLogin }) => {
+const LoginPage = ({ motd, onLogin, ssoOptions }) => {
   const [initialized, setInitialized] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -160,8 +171,8 @@ const LoginPage = ({ motd, onLogin }) => {
             ref={buttonRef}
             disabled={loginDisabled}
           />
+          {ssoOptions && <SSOOptions ssoOptions={ssoOptions} />}
         </LoginForm>
-        <SSOOptions />
         {motd && <small>{motd}</small>}
       </LoginContainer>
     </main>

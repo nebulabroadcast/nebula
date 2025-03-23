@@ -49,6 +49,7 @@ const BaseButton = styled.button`
   &:hover {
     background: ${getTheme().colors.surface06};
     color: ${getTheme().colors.text};
+    text-decoration: none; // when rendered as a
   }
 
   &:invalid,
