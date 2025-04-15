@@ -46,7 +46,6 @@ const App = () => {
             return response;
           },
           (error) => {
-            console.error(error);
             if (error.response.status === 401 && window.location.pathname !== '/') {
               window.location.href = '/';
             }
@@ -67,7 +66,13 @@ const App = () => {
     return <main className="center">nebula is not installed</main>;
 
   if (!initData.user)
-    return <LoginPage motd={initData.motd} onLogin={setAccessToken} />;
+    return (
+      <LoginPage
+        motd={initData.motd}
+        onLogin={setAccessToken}
+        ssoOptions={initData.sso_options}
+      />
+    );
 
   return (
     <Suspense fallback={<LoadingPage />}>

@@ -7,6 +7,8 @@ import NebulaLogo from '/src/svg/logo-wide.svg';
 
 import styled from 'styled-components';
 
+import LoadingPage from './LoadingPage';
+
 const LoginContainer = styled.div`
   position: absolute;
   top: 0;
@@ -39,6 +41,12 @@ const LoginForm = styled.form`
   max-height: 85%;
   position: relative;
 
+  hr {
+    border: none;
+    border-top: 1px solid var(--color-surface-04);
+    margin: 12px 0;
+  }
+
   .logo-container {
     width: 100%;
     display: flex;
@@ -53,17 +61,53 @@ const LoginForm = styled.form`
   }
 `;
 
-const LoginPage = ({ motd, onLogin }) => {
+const SSOOptions = ({ ssoOptions }) => {
+  return (
+    <>
+      <hr />
+      {ssoOptions.map((option) => (
+        <Button
+          key={option.name}
+          as="a"
+          href={`/api/sso/login/${option.name}`}
+          label={option.title}
+        />
+      ))}
+    </>
+  );
+};
+
+const LoginPage = ({ motd, onLogin, ssoOptions }) => {
+  const [initialized, setInitialized] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [loginInput, setLoginInput] = useState(null);
 
-  const loginRef = useRef();
   const passwordRef = useRef();
   const buttonRef = useRef();
 
   useEffect(() => {
-    loginRef.current.focus();
-  }, []);
+    // check if there's authorize field in query params
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('authorize');
+    const error = urlParams.get('error');
+    // clear token from url
+    window.history.replaceState({}, document.title, window.location.pathname);
+    if (token) {
+      // exchange tokens
+      axios.post('/api/token-exchange', { access_token: token }).then((response) => {
+        onLogin(response.data.access_token);
+      });
+    } else if (error) {
+      toast.error(error);
+    } else {
+      setInitialized(true);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    loginInput?.focus();
+  }, [loginInput]);
 
   const onSubmit = (event) => {
     event.preventDefault();
@@ -86,17 +130,19 @@ const LoginPage = ({ motd, onLogin }) => {
         }
 
         toast.error(
-          <>
-            <p>
-              <strong>Login failed</strong>
-            </p>
+          <div>
+            <strong>Login failed</strong>
             <p>{err.response.data?.detail || 'Unknown error'}</p>
-          </>
+          </div>
         );
       });
   };
 
   const loginDisabled = !username || !password;
+
+  if (!initialized) {
+    return <LoadingPage />;
+  }
 
   return (
     <main>
@@ -110,7 +156,7 @@ const LoginPage = ({ motd, onLogin }) => {
             name="username"
             value={username}
             onChange={setUsername}
-            ref={loginRef}
+            ref={setLoginInput}
           />
           <InputPassword
             type="password"
@@ -126,6 +172,7 @@ const LoginPage = ({ motd, onLogin }) => {
             ref={buttonRef}
             disabled={loginDisabled}
           />
+          {ssoOptions && <SSOOptions ssoOptions={ssoOptions} />}
         </LoginForm>
         {motd && <small>{motd}</small>}
       </LoginContainer>

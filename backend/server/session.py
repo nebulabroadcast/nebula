@@ -20,6 +20,7 @@ class SessionModel(BaseModel):
     created: float = Field(..., description="Creation timestamp")
     accessed: float = Field(..., description="Last access timestamp")
     client_info: ClientInfo | None = Field(None, description="Client info")
+    transient: bool = False
 
 
 class Session:
@@ -32,7 +33,10 @@ class Session:
 
     @classmethod
     async def check(
-        cls, token: str, request: Request | None = None
+        cls,
+        token: str,
+        request: Request | None = None,
+        transient: bool = False,
     ) -> SessionModel | None:
         """Return a session corresponding to a given access token.
 
@@ -51,6 +55,9 @@ class Session:
         if time.time() - session.accessed > cls.ttl:
             # TODO: some logging here?
             await nebula.redis.delete(cls.ns, token)
+            return None
+
+        if not transient and session.transient:
             return None
 
         if request:
@@ -84,6 +91,7 @@ class Session:
         cls,
         user: nebula.User,
         request: Request | None = None,
+        transient: bool = False,
     ) -> SessionModel:
         """Create a new session for a given user."""
         client_info = get_client_info(request) if request else None
@@ -101,6 +109,7 @@ class Session:
             created=time.time(),
             accessed=time.time(),
             client_info=client_info,
+            transient=transient,
         )
         await nebula.redis.set_json(cls.ns, token, session)
         return session

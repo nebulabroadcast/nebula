@@ -93,6 +93,14 @@ class BaseSystemSettings(SettingsModel):
     )
 
 
+class SSOProvider(SettingsModel):
+    name: str
+    title: str | None = None
+    entrypoint: str
+    client_id: str
+    client_secret: str
+
+
 class SystemSettings(BaseSystemSettings):
     """System settings.
 
@@ -107,6 +115,7 @@ class SystemSettings(BaseSystemSettings):
     upload_storage: int | None = Field(default=None)
     upload_dir: str | None = Field(default=None)
     upload_base_name: str = Field(default="{id}")
+    sso_providers: list[SSOProvider] = Field(default_factory=list)
 
     smtp_host: str | None = Field(
         default=None,
