@@ -7,6 +7,8 @@ import NebulaLogo from '/src/svg/logo-wide.svg';
 
 import styled from 'styled-components';
 
+import LoadingPage from './LoadingPage';
+
 const LoginContainer = styled.div`
   position: absolute;
   top: 0;
@@ -65,7 +67,7 @@ const SSOOptions = ({ ssoOptions }) => {
       <hr />
       {ssoOptions.map((option) => (
         <Button
-          key={option.id}
+          key={option.name}
           as="a"
           href={`/api/sso/login/${option.name}`}
           label={option.title}
@@ -79,8 +81,8 @@ const LoginPage = ({ motd, onLogin, ssoOptions }) => {
   const [initialized, setInitialized] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [loginInput, setLoginInput] = useState(null);
 
-  const loginRef = useRef();
   const passwordRef = useRef();
   const buttonRef = useRef();
 
@@ -101,12 +103,11 @@ const LoginPage = ({ motd, onLogin, ssoOptions }) => {
     } else {
       setInitialized(true);
     }
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (!loginRef.current) return;
-    loginRef.current.focus();
-  }, [loginRef.current]);
+    loginInput?.focus();
+  }, [loginInput]);
 
   const onSubmit = (event) => {
     event.preventDefault();
@@ -140,7 +141,7 @@ const LoginPage = ({ motd, onLogin, ssoOptions }) => {
   const loginDisabled = !username || !password;
 
   if (!initialized) {
-    return <div>Loading...</div>;
+    return <LoadingPage />;
   }
 
   return (
@@ -155,7 +156,7 @@ const LoginPage = ({ motd, onLogin, ssoOptions }) => {
             name="username"
             value={username}
             onChange={setUsername}
-            ref={loginRef}
+            ref={setLoginInput}
           />
           <InputPassword
             type="password"
