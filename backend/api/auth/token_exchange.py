@@ -26,8 +26,7 @@ class TokenExchangeRequest(APIRequest):
             raise nebula.UnauthorizedException("Invalid token")
         user_id = session.user["id"]
         user = await nebula.User.load(user_id)
-        new_session = await Session.create(user, None)
+        session = await Session.create(user, request)
         nebula.log.debug(f"{user} token exchanged")
         await Session.delete(payload.access_token)
-        session = await Session.create(user, request)
-        return LoginResponseModel(access_token=new_session.token)
+        return LoginResponseModel(access_token=session.token)
