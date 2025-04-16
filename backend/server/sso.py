@@ -1,8 +1,25 @@
+from typing import Any
+
 from authlib.integrations.httpx_client import AsyncOAuth2Client
 from authlib.integrations.starlette_client import OAuth
 
 import nebula
 from server.models import ResponseModel
+
+PROFILES = {
+    "github": {
+        "api_base_url": "https://api.github.com/",
+        "access_token_url": "https://github.com/login/oauth/access_token",
+        "authorize_url": "https://github.com/login/oauth/authorize",
+        "client_kwargs": {"scope": "user:email"},
+        "userinfo_endpoint": "https://api.github.com/user",
+    },
+    "google": {
+        "api_base_url": "https://www.googleapis.com/",
+        "server_metadata_url": "https://accounts.google.com/.well-known/openid-configuration",
+        "client_kwargs": {"scope": "openid email profile"},
+    },
+}
 
 
 class SSOOption(ResponseModel):
@@ -37,11 +54,15 @@ class NebulaSSO:
         cls._oauth = OAuth(ssoconfig)
         assert cls._oauth is not None, "OAuth is not initialized"
         for provider in nebula.settings.system.sso_providers:
-            cls._oauth.register(
-                name=provider.name,
-                server_metadata_url=provider.entrypoint,
-                client_kwargs={"scope": "openid email profile"},
-            )
+            kw: dict[str, Any]
+            if provider.profile:
+                kw = PROFILES[provider.profile]
+            else:
+                kw = {
+                    "server_metadata_url": provider.entrypoint,
+                    "client_kwargs": {"scope": "openid email profile"},
+                }
+            cls._oauth.register(name=provider.name, **kw)
         return cls._oauth
 
     @classmethod
