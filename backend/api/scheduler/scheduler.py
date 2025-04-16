@@ -48,9 +48,9 @@ async def scheduler(
         if (event_at_position is not None) and event_at_position.id != event_data.id:
             # Replace event at position
 
-            assert (
-                event_at_position.id is not None
-            ), "Event at position returned event without ID. This should not happen."
+            assert event_at_position.id is not None, (
+                "Event at position returned event without ID. This should not happen."
+            )
             affected_events.append(event_at_position.id)
 
             if event_data.id_asset:
@@ -88,9 +88,9 @@ async def scheduler(
                     new_item["mark_out"] = asset["mark_out"]
                     await new_item.save()
                     ex_bin.items.append(new_item)
-                    assert (
-                        ex_bin.id is not None
-                    ), "Bin ID should not be None at this point"
+                    assert ex_bin.id is not None, (
+                        "Bin ID should not be None at this point"
+                    )
                     affected_bins.append(ex_bin.id)
 
                 # update the event

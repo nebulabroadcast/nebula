@@ -1,11 +1,11 @@
-import { useState, useMemo, useRef, useEffect } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react';
 
-import { Loader, LoaderWrapper } from '../Loader'
-import ContextMenu from '../ContextMenu'
+import ContextMenu from '../ContextMenu';
+import { Loader, LoaderWrapper } from '../Loader';
 
-import TableWrapper from './TableWrapper'
-import HeaderCell from './HeaderCell'
-import DataRow from './DataRow'
+import DataRow from './DataRow';
+import HeaderCell from './HeaderCell';
+import TableWrapper from './TableWrapper';
 
 const Table = ({
   data,
@@ -28,10 +28,10 @@ const Table = ({
   onDrop,
   loading = false,
 }) => {
-  const tableRef = useRef(null)
-  const droppableRef = useRef(null)
-  const dropIndexRef = useRef(null)
-  const [dropHl, setDropHl] = useState(null)
+  const tableRef = useRef(null);
+  const droppableRef = useRef(null);
+  const dropIndexRef = useRef(null);
+  const [dropHl, setDropHl] = useState(null);
 
   const head = useMemo(() => {
     return (
@@ -47,25 +47,25 @@ const Table = ({
           ))}
         </tr>
       </thead>
-    )
-  }, [columns, sortBy, sortDirection, onSort])
+    );
+  }, [columns, sortBy, sortDirection, onSort]);
 
   const handleKeyDown = (event) => {
     if (onKeyDown) {
-      onKeyDown(event)
+      onKeyDown(event);
     }
-  }
+  };
 
   useEffect(() => {
-    droppableRef.current = droppable
-    if (!droppableRef.current) setDropHl(null)
-  }, [droppable])
+    droppableRef.current = droppable;
+    if (!droppableRef.current) setDropHl(null);
+  }, [droppable]);
 
   const body = useMemo(() => {
-    const draggableItems = []
+    const draggableItems = [];
     if (selection?.length > 0) {
       for (let i = 0; i < data.length; i++) {
-        const row = data[i]
+        const row = data[i];
         if (selection.includes(keyField ? row[keyField] : i)) {
           draggableItems.push({
             id: row.id,
@@ -76,7 +76,7 @@ const Table = ({
             mark_in: row.mark_in,
             mark_out: row.mark_out,
             subclips: row.subclips,
-          })
+          });
         }
       }
     }
@@ -92,8 +92,7 @@ const Table = ({
             rowHighlightStyle={rowHighlightStyle}
             rowClass={rowClass}
             selected={
-              selection &&
-              selection.includes(keyField ? rowData[keyField] : idx)
+              selection && selection.includes(keyField ? rowData[keyField] : idx)
             }
             key={keyField ? rowData[keyField] : idx}
             ident={keyField ? rowData[keyField] : idx}
@@ -102,51 +101,48 @@ const Table = ({
           />
         ))}
       </tbody>
-    )
-  }, [columns, data, selection, keyField, rowHighlightColor, droppable])
+    );
+  }, [columns, data, selection, keyField, rowHighlightColor, droppable]);
 
   const handleScroll = (event) => {
-    if (!onLoadMore) return
-    const container = event.target
-    if (
-      container.scrollHeight - container.scrollTop ===
-      container.clientHeight
-    ) {
-      onLoadMore()
+    if (!onLoadMore) return;
+    const container = event.target;
+    if (container.scrollHeight - container.scrollTop === container.clientHeight) {
+      onLoadMore();
     }
-  }
+  };
 
   const onMouseMove = (event) => {
-    if (!droppableRef.current) return
-    const target = event.target
-    if (!target) return
+    if (!droppableRef.current) return;
+    const target = event.target;
+    if (!target) return;
     // find the closest row
-    const row = target.closest('tr')
-    const index = row ? row.getAttribute('data-index') : null
-    dropIndexRef.current = index
-    setDropHl(index)
-  }
+    const row = target.closest('tr');
+    const index = row ? row.getAttribute('data-index') : null;
+    dropIndexRef.current = index;
+    setDropHl(index);
+  };
 
   const onMouseUp = (event) => {
     // are we dragging?
-    if (!droppableRef.current) return
+    if (!droppableRef.current) return;
     // ensure mouse up event is triggered on the child element of the table
-    if (!tableRef.current.contains(event.target)) return
-    if (onDrop) onDrop(droppableRef.current, dropIndexRef.current)
-    droppableRef.current = null
-    setDropHl(null)
-  }
+    if (!tableRef.current.contains(event.target)) return;
+    if (onDrop) onDrop(droppableRef.current, dropIndexRef.current);
+    droppableRef.current = null;
+    setDropHl(null);
+  };
 
   useEffect(() => {
-    if (!tableRef.current) return
-    tableRef.current.addEventListener('mousemove', onMouseMove)
-    document.addEventListener('mouseup', onMouseUp)
+    if (!tableRef.current) return;
+    tableRef.current.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
     return () => {
-      if (!tableRef.current) return
-      tableRef.current.removeEventListener('mousemove', onMouseMove)
-      document.removeEventListener('mouseup', onMouseUp)
-    }
-  }, [tableRef.current])
+      if (!tableRef.current) return;
+      tableRef.current.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    };
+  }, [tableRef.current]);
 
   return (
     <TableWrapper
@@ -168,7 +164,7 @@ const Table = ({
       </table>
       {contextMenu && <ContextMenu target={tableRef} options={contextMenu} />}
     </TableWrapper>
-  )
-}
+  );
+};
 
-export default Table
+export default Table;

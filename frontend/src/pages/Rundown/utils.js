@@ -1,5 +1,5 @@
-import nebula from '/src/nebula'
-import { getColumnWidth, getFormatter } from '/src/tableFormat'
+import nebula from '/src/nebula';
+import { getColumnWidth, getFormatter } from '/src/tableFormat';
 
 const getRunModeOptions = (object_type, selection, func) => {
   if (object_type === 'event') {
@@ -7,6 +7,7 @@ const getRunModeOptions = (object_type, selection, func) => {
       {
         label: 'Run: Auto',
         icon: 'play_arrow',
+        separator: true,
         onClick: () => func('event', selection, 0),
       },
       {
@@ -24,28 +25,29 @@ const getRunModeOptions = (object_type, selection, func) => {
         icon: 'hourglass_bottom',
         onClick: () => func('event', selection, 3),
       },
-    ]
+    ];
   }
   if (object_type === 'item') {
     return [
       {
-        label: 'Run: Auto',
+        label: 'Run auto',
         icon: 'play_arrow',
+        separator: true,
         onClick: () => func('item', selection, 0),
       },
       {
-        label: 'Run: Manual',
+        label: 'Manual',
         icon: 'hand_gesture',
         onClick: () => func('item', selection, 1),
       },
       {
-        label: 'Run: Skip',
+        label: 'Skip',
         icon: 'skip_next',
         onClick: () => func('item', selection, 4),
       },
-    ]
+    ];
   }
-}
+};
 
 const RUNDOWN_COLUMNS = [
   'rundown_symbol',
@@ -59,17 +61,17 @@ const RUNDOWN_COLUMNS = [
   'rundown_difference',
   'mark_in',
   'mark_out',
-]
+];
 
 const getRundownColumns = () => {
   return RUNDOWN_COLUMNS.map((key) => {
     return {
-      title: nebula.metaHeader(key),
+      title: nebula.metaType(key).header,
       name: key,
       width: getColumnWidth(key),
       formatter: getFormatter(key),
-    }
-  })
-}
+    };
+  });
+};
 
-export { getRunModeOptions, getRundownColumns }
+export { getRunModeOptions, getRundownColumns };

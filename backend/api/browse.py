@@ -115,9 +115,9 @@ def sanitize_value(value: SerializableValue) -> str:
 def build_conditions(conditions: list[ConditionModel]) -> list[str]:
     cond_list: list[str] = []
     for condition in conditions:
-        assert (
-            condition.key in nebula.settings.metatypes
-        ), f"Invalid meta key {condition.key}"
+        assert condition.key in nebula.settings.metatypes, (
+            f"Invalid meta key {condition.key}"
+        )
         condition.value = normalize_meta(condition.key, condition.value)
         if condition.operator in ["IN", "NOT IN"]:
             assert isinstance(condition.value, list), "Value must be a list"

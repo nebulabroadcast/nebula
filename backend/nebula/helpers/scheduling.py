@@ -136,7 +136,7 @@ def can_append(asset: nebula.Asset, conditions: "AcceptModel") -> bool:
         asset["content_type"] not in conditions.content_types
     ):
         nebula.log.warn(
-            f"Content type {asset['content_type']}" " not in {conditions.content_types}"
+            f"Content type {asset['content_type']} not in {{conditions.content_types}}"
         )
         return False
     return True

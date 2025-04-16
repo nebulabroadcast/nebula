@@ -1,14 +1,14 @@
-import { useState } from 'react'
-import { Button, Dialog } from '/src/components'
+import { useState } from 'react';
 
-import MetadataEditor from '/src/containers/MetadataEditor'
+import { Button, Dialog } from '/src/components';
+import MetadataEditor from '/src/containers/MetadataEditor';
 
 const MetadataDialog = (props) => {
-  const [data, setData] = useState(props.initialData)
+  const [data, setData] = useState(props.initialData);
 
-  const onReset = () => setData(props.initialData)
-  const onCancel = () => props.handleCancel()
-  const onConfirm = () => props.handleConfirm(data)
+  const onReset = () => setData(props.initialData);
+  const onCancel = () => props.handleCancel();
+  const onConfirm = () => props.handleConfirm(data);
 
   const footer = (
     <>
@@ -26,7 +26,7 @@ const MetadataDialog = (props) => {
         hlColor="var(--color-green)"
       />
     </>
-  )
+  );
 
   return (
     <Dialog onHide={onCancel} header={props.title} footer={footer}>
@@ -38,7 +38,7 @@ const MetadataDialog = (props) => {
         onSave={onConfirm}
       />
     </Dialog>
-  )
-}
+  );
+};
 
-export default MetadataDialog
+export default MetadataDialog;

@@ -1,4 +1,3 @@
-import nebula from '/src/nebula'
 import {
   Icon,
   InputText,
@@ -8,21 +7,21 @@ import {
   FormRow,
   InputSwitch,
   ScrollBox,
-} from '/src/components'
+} from '/src/components';
 
-import AccessControl from './AccessControl'
-import ApiKeyPicker from './ApiKeyPicker'
+import AccessControl from './AccessControl';
+import ApiKeyPicker from './ApiKeyPicker';
 
 const apiKeyPreview = (apiKey) => {
-  const start = apiKey.substring(0, 4)
-  const end = apiKey.substring(apiKey.length - 4)
-  return start + '*******' + end
-}
+  const start = apiKey.substring(0, 4);
+  const end = apiKey.substring(apiKey.length - 4);
+  return start + '*******' + end;
+};
 
 const UserForm = ({ userData, setUserData }) => {
   const setValue = (key, value) => {
-    setUserData((prev) => ({ ...prev, [key]: value }))
-  }
+    setUserData((prev) => ({ ...prev, [key]: value }));
+  };
 
   return (
     <ScrollBox style={{ minWidth: 600 }}>
@@ -72,8 +71,8 @@ const UserForm = ({ userData, setUserData }) => {
           <FormRow title="API Key">
             <ApiKeyPicker
               setApiKey={(value) => {
-                setValue('api_key', value)
-                setValue('api_key_preview', apiKeyPreview(value))
+                setValue('api_key', value);
+                setValue('api_key_preview', apiKeyPreview(value));
               }}
               apiKeyPreview={userData?.api_key_preview}
             />
@@ -95,7 +94,7 @@ const UserForm = ({ userData, setUserData }) => {
         <AccessControl userData={userData} setValue={setValue} />
       </section>
     </ScrollBox>
-  )
-}
+  );
+};
 
-export default UserForm
+export default UserForm;

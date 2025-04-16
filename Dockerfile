@@ -1,36 +1,36 @@
 FROM node:latest AS build
 
-RUN mkdir /frontend
+WORKDIR /frontend
 
-COPY ./frontend/index.html /frontend/index.html
-COPY ./frontend/package.json /frontend/package.json
-COPY ./frontend/vite.config.js /frontend/vite.config.js
-COPY ./frontend/src /frontend/src
+COPY ./frontend/index.html .
+COPY ./frontend/package.json .
+COPY ./frontend/vite.config.ts .
+COPY ./frontend/tsconfig.json .
+COPY ./frontend/tsconfig.node.json .
 COPY ./frontend/public /frontend/public
 
-WORKDIR /frontend
-RUN yarn install && yarn build
+RUN yarn install
+COPY ./frontend/src /frontend/src
+RUN yarn build
 
-FROM python:3.12-bullseye
+FROM python:3.12-slim
 ENV PYTHONBUFFERED=1
 
 RUN \
   apt-get update \
-  && apt-get -yqq upgrade \
   && apt-get -yqq install \
-  cifs-utils
+  curl \
+  cifs-utils \
+  procps \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
 
-RUN mkdir /backend
 WORKDIR /backend
-COPY ./backend/pyproject.toml /backend/pyproject.toml
+COPY ./backend/pyproject.toml /backend/uv.lock .
+RUN --mount=from=ghcr.io/astral-sh/uv,source=/uv,target=/bin/uv \
+    uv pip install -r pyproject.toml --system
 
-RUN \
-  pip install -U pip && \
-  pip install poetry && \
-  poetry config virtualenvs.create false && \
-  poetry install --no-interaction --no-ansi --only main
-
-COPY ./backend /backend
+COPY ./backend .
 COPY --from=build /frontend/dist/ /frontend
 
 CMD ["/bin/bash", "manage", "start"]

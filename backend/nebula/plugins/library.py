@@ -1,7 +1,6 @@
 import os
-from typing import Any
-
 import tomllib
+from typing import Any
 
 from nebula.common import classes_from_module, import_module
 from nebula.config import config

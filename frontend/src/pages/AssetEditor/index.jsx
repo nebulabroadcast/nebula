@@ -1,2 +1,2 @@
-import AssetEditor from './AssetEditor'
-export default AssetEditor
+import AssetEditor from './AssetEditor';
+export default AssetEditor;

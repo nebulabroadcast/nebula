@@ -1,5 +1,5 @@
 import time
-from typing import Any, Type, TypeVar
+from typing import Any, TypeVar
 
 import asyncpg
 from nxtools import slugify
@@ -65,7 +65,7 @@ class BaseObject:
         username: str | None = None,
     ) -> None:
         if connection is not None:
-            assert isinstance(connection, (asyncpg.pool.PoolConnectionProxy, DB))
+            assert isinstance(connection, asyncpg.pool.PoolConnectionProxy | DB)
             self.connection = connection
         else:
             self.connection = db
@@ -154,7 +154,7 @@ class BaseObject:
 
     @classmethod
     async def load(
-        cls: Type[T],
+        cls: type[T],
         id: int,
         connection: DatabaseConnection | None = None,
         username: str | None = None,
@@ -168,7 +168,7 @@ class BaseObject:
 
     @classmethod
     def from_row(
-        cls: Type[T],
+        cls: type[T],
         row: asyncpg.Record,
         connection: DatabaseConnection | None = None,
         username: str | None = None,
@@ -183,7 +183,7 @@ class BaseObject:
 
     @classmethod
     def from_meta(
-        cls: Type[T],
+        cls: type[T],
         meta: dict[str, Any],
         connection: DatabaseConnection | None = None,
         username: str | None = None,
@@ -197,7 +197,7 @@ class BaseObject:
 
     @classmethod
     def from_untrusted(
-        cls: Type[T],
+        cls: type[T],
         meta: dict[str, Any],
         connection: DatabaseConnection | None = None,
         username: str | None = None,
@@ -307,7 +307,7 @@ class BaseObject:
             ["$" + str(i) for i in range(1, len(self.db_columns) + 2)]
         )
         query = f"""
-            INSERT INTO {self.object_type}s ({','.join(self.db_columns)}, meta)
+            INSERT INTO {self.object_type}s ({",".join(self.db_columns)}, meta)
             VALUES ({placeholders}) RETURNING id
             """
         qargs = [self.meta[col] for col in self.db_columns] + [self.meta]

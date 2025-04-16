@@ -1,8 +1,7 @@
-import styled from 'styled-components'
+import styled from 'styled-components';
 
 const TableWrapper = styled.div`
-  --progress: 0%
-  --progress-opacity: 0;
+  --progress: 0% --progress-opacity: 0;
   overflow: auto;
 
   [data-key='${(props) => props.$drophl || 'default'}'] {
@@ -15,7 +14,8 @@ const TableWrapper = styled.div`
     width: 100%;
     border-collapse: collapse;
 
-    &:focus, &:focus-visible {
+    &:focus,
+    &:focus-visible {
       outline: none;
     }
 
@@ -24,7 +24,8 @@ const TableWrapper = styled.div`
       outline: none !important;
     }
 
-    td, th {
+    td,
+    th {
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -58,7 +59,6 @@ const TableWrapper = styled.div`
       align-items: center;
     }
 
-
     thead {
       tr {
         background-color: var(--color-surface-03);
@@ -83,18 +83,19 @@ const TableWrapper = styled.div`
         border-right: 0;
       }
 
-      tr:before{
+      tr:before {
         position: absolute;
         display: block;
         z-index: 0;
         width: 0;
         opacity: 0;
-        content: "";
+        content: '';
       }
     }
 
     tbody {
-      &:focus, &:focus-visible {
+      &:focus,
+      &:focus-visible {
         outline: none;
       }
 
@@ -103,7 +104,6 @@ const TableWrapper = styled.div`
       }
 
       td {
-
         hr {
           margin: 0;
           border: 0;
@@ -150,7 +150,7 @@ const TableWrapper = styled.div`
           z-index: 0;
           width: var(--progress);
           opacity: var(--progress-opacity);
-          content: "";
+          content: '';
           height: 28px;
           background-color: var(--color-violet);
           transition: width 1s linear;
@@ -158,6 +158,6 @@ const TableWrapper = styled.div`
       }
     }
   }
-`
+`;
 
-export default TableWrapper
+export default TableWrapper;

@@ -1,13 +1,14 @@
-import { useState, useMemo, useRef, useEffect } from 'react'
-import clsx from 'clsx'
+import clsx from 'clsx';
+import { useState, useMemo, useRef, useEffect } from 'react';
+import styled from 'styled-components';
 
-import Dialog from './Dialog'
-import InputText from './InputText'
-import Button from './Button'
+import Button from './Button';
+import Dialog from './Dialog';
+import InputText from './InputText';
 
-import { sortByKey } from '/src/utils'
-import styled from 'styled-components'
-import { getTheme } from './theme'
+import { sortByKey } from '/src/utils';
+
+import { getTheme } from './theme';
 
 const BaseOption = styled.div`
   padding: 3px;
@@ -29,116 +30,107 @@ const BaseOption = styled.div`
   &.header {
     font-weight: bold;
   }
-`
+`;
 
 const Option = ({ option, selected, onClick }) => {
   return (
     <BaseOption
-      className={clsx(
-        selected && 'selected',
-        option.role === 'label' && 'label'
-      )}
+      className={clsx(selected && 'selected', option.role === 'label' && 'label')}
       style={{ paddingLeft: option.level * 15 }}
       onClick={option.role === 'label' ? undefined : onClick}
       title={option.description}
     >
       {option.title}
     </BaseOption>
-  )
-}
+  );
+};
 
 function filterHierarchy(array, query, currentSelection) {
-  const queryLower = query.toLowerCase()
-  const result = []
-  const set = new Set()
+  const queryLower = query.toLowerCase();
+  const result = [];
+  const set = new Set();
   for (const item of array) {
-    if (typeof item.value !== 'string') item.level = 1
-    else item.level = item.value.split('.').length
+    if (typeof item.value !== 'string') item.level = 1;
+    else item.level = item.value.split('.').length;
     if (
       item.title.toLowerCase().includes(queryLower) ||
       item.value in currentSelection
     ) {
       if (item.role === 'hidden') {
-        continue
+        continue;
       }
-      result.push(item)
-      set.add(item.value)
-      let value = item.value
+      result.push(item);
+      set.add(item.value);
+      let value = item.value;
       while (value) {
-        const parts = typeof value === 'string' ? value.split('.') : [value]
+        const parts = typeof value === 'string' ? value.split('.') : [value];
         if (parts.length === 1) {
-          value = ''
+          value = '';
         } else {
-          parts.pop()
-          value = parts.join('.')
-          const parent = array.find((i) => i.value === value)
+          parts.pop();
+          value = parts.join('.');
+          const parent = array.find((i) => i.value === value);
           if (item.role !== 'hidden' && parent && !set.has(parent.value)) {
-            result.push(parent)
-            set.add(parent.value)
+            result.push(parent);
+            set.add(parent.value);
           }
         }
       }
     }
   }
-  return sortByKey(result, 'value')
+  return sortByKey(result, 'value');
 }
 
-const SelectDialog = ({
-  options,
-  onHide,
-  selectionMode,
-  initialValue,
-  title,
-}) => {
-  const [filter, setFilter] = useState('')
-  const [selection, setSelection] = useState({})
+const SelectDialog = ({ options, onHide, selectionMode, initialValue, title }) => {
+  const [filter, setFilter] = useState('');
+  const [selection, setSelection] = useState({});
 
   // Cannot be used rn - InputText does not support forwardRef yet
-  const filterRef = useRef(null)
+  const filterRef = useRef(null);
   useEffect(() => {
     if (filterRef.current) {
-      filterRef.current.focus()
+      filterRef.current.focus();
     }
-  }, [filterRef.current])
+  }, [filterRef.current]);
 
   // Create the selection object from the given initial Value.
 
   useEffect(() => {
     if (selectionMode === 'single') {
-      setSelection({ [initialValue]: true })
-      return
+      setSelection({ [initialValue]: true });
+      return;
     }
-    const result = {}
-    for (const r of initialValue || []) result[r] = true
-    setSelection(result)
-  }, [initialValue])
+    const result = {};
+    for (const r of initialValue || []) result[r] = true;
+    setSelection(result);
+  }, [initialValue]);
 
   const filteredOptions = useMemo(() => {
-    return filterHierarchy(options, filter, selection)
-  }, [options, filter, selection])
+    return filterHierarchy(options, filter, selection);
+  }, [options, filter, selection]);
 
   const onToggle = (key) => {
     setSelection((os) => {
-      if (selectionMode === 'single') return { [key]: true }
-      const result = { ...os }
-      result[key] = !os[key]
-      return result
-    })
-  }
+      if (selectionMode === 'single') return { [key]: true };
+      const result = { ...os };
+      result[key] = !os[key];
+      return result;
+    });
+  };
 
   const onClose = () => {
-    onHide(initialValue)
-  }
+    onHide(initialValue);
+  };
 
   const onUnset = () => {
-    onHide(null)
-  }
+    onHide(null);
+  };
 
   const onApply = () => {
-    let value = Object.keys(selection).filter((key) => selection[key])
-    if (selectionMode === 'single') value = value.length ? value[0] : null
-    onHide(value)
-  }
+    let value = Object.keys(selection).filter((key) => selection[key]);
+    if (selectionMode === 'single') value = value.length ? value[0] : null;
+    onHide(value);
+  };
 
   const header = (
     <div
@@ -150,9 +142,7 @@ const SelectDialog = ({
     >
       {title && (
         <div style={{ width: '100%' }}>
-          <h3 style={{ padding: 0, marginTop: 0, marginBottom: 10 }}>
-            {title}
-          </h3>
+          <h3 style={{ padding: 0, marginTop: 0, marginBottom: 10 }}>{title}</h3>
         </div>
       )}
 
@@ -171,14 +161,10 @@ const SelectDialog = ({
           ref={filterRef}
           style={{ flexGrow: 1 }}
         />
-        <Button
-          onClick={() => setFilter('')}
-          icon="backspace"
-          title="Clear filter"
-        />
+        <Button onClick={() => setFilter('')} icon="backspace" title="Clear filter" />
       </div>
     </div>
-  )
+  );
 
   const footer = (
     <>
@@ -186,7 +172,7 @@ const SelectDialog = ({
       <Button onClick={() => onClose()} label="Cancel" icon="close" />
       <Button onClick={() => onApply()} label="Apply" icon="check" />
     </>
-  )
+  );
 
   return (
     <Dialog
@@ -208,7 +194,7 @@ const SelectDialog = ({
         </div>
       </div>
     </Dialog>
-  )
-}
+  );
+};
 
-export default SelectDialog
+export default SelectDialog;

@@ -1,6 +1,7 @@
-import Button from './Button'
-import styled from 'styled-components'
-import clsx from 'clsx'
+import clsx from 'clsx';
+import styled from 'styled-components';
+
+import Button from './Button';
 
 const DropdownContainer = styled.div`
   position: relative;
@@ -58,7 +59,7 @@ const DropdownContainer = styled.div`
   &:not(.disabled):hover .dropdown-content {
     display: block;
   }
-`
+`;
 
 const DropdownOption = ({
   currentValue,
@@ -77,13 +78,14 @@ const DropdownOption = ({
       <Button
         label={label}
         icon={icon}
+        style={style}
         iconStyle={hlColor ? { color: hlColor } : {}}
         disabled={disabled || currentValue === value}
         onClick={() => onClick(value)}
       />
     </span>
-  )
-}
+  );
+};
 
 const Dropdown = ({
   options,
@@ -94,10 +96,9 @@ const Dropdown = ({
   contentStyle = {},
   value = null,
   disabled = false,
-  defaultValue = null,
   iconOnRigth = false,
 }) => {
-  if (align === 'right') contentStyle['right'] = 0
+  if (align === 'right') contentStyle['right'] = 0;
 
   return (
     <DropdownContainer className={clsx({ disabled })}>
@@ -116,7 +117,7 @@ const Dropdown = ({
           ))}
       </div>
     </DropdownContainer>
-  )
-}
+  );
+};
 
-export default Dropdown
+export default Dropdown;

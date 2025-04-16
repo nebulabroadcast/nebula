@@ -1,8 +1,9 @@
-import styled from 'styled-components'
-import { useState, useEffect } from 'react'
-import { Dialog, Button } from '/src/components'
-import DatePicker from 'react-datepicker'
-import { DateTime } from 'luxon'
+import { DateTime } from 'luxon';
+import { useState, useEffect } from 'react';
+import DatePicker from 'react-datepicker';
+import styled from 'styled-components';
+
+import { Dialog, Button } from '/src/components';
 
 const DatePickerWrapper = styled.div`
   display: flex;
@@ -11,20 +12,20 @@ const DatePickerWrapper = styled.div`
   justify-content: flex-start;
   min-width: 200px;
   min-height: 250px;
-`
+`;
 
 const DatePickerDialog = (props) => {
-  const [value, setValue] = useState()
-  const onCancel = () => props.handleCancel()
+  const [value, setValue] = useState();
+  const onCancel = () => props.handleCancel();
   const onConfirm = () => {
-    const t = value.toFormat('yyyy-MM-dd')
-    props.handleConfirm(t)
-  }
+    const t = value.toFormat('yyyy-MM-dd');
+    props.handleConfirm(t);
+  };
 
   useEffect(() => {
-    const date = DateTime.fromFormat(props.value, 'yyyy-MM-dd')
-    setValue(date)
-  }, [props.value])
+    const date = DateTime.fromFormat(props.value, 'yyyy-MM-dd');
+    setValue(date);
+  }, [props.value]);
 
   const footer = (
     <>
@@ -41,7 +42,7 @@ const DatePickerDialog = (props) => {
         hlColor="var(--color-green)"
       />
     </>
-  )
+  );
 
   return (
     <Dialog onHide={onCancel} header={props.title} footer={footer}>
@@ -56,7 +57,7 @@ const DatePickerDialog = (props) => {
         )}
       </DatePickerWrapper>
     </Dialog>
-  )
-}
+  );
+};
 
-export default DatePickerDialog
+export default DatePickerDialog;

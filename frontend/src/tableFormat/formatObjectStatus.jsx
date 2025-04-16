@@ -1,4 +1,4 @@
-import clsx from 'clsx'
+import clsx from 'clsx';
 
 const STATUSES = [
   'offline',
@@ -13,15 +13,15 @@ const STATUSES = [
   'aired',
   'onair',
   'retrieving',
-]
+];
 
 const formatObjectStatus = (rowData, key) => {
   //
   // virtual rundown items don't have status
-  if (rowData.item_role) return <td></td>
+  if (rowData.item_role) return <td></td>;
 
-  const status = STATUSES[rowData[key]]
-  return <td className={clsx('status', status)}>{status}</td>
-}
+  const status = STATUSES[rowData[key]];
+  return <td className={clsx('status', status)}>{status}</td>;
+};
 
-export default formatObjectStatus
+export default formatObjectStatus;

@@ -1,5 +1,6 @@
 import json
-from typing import Any, AsyncGenerator
+from collections.abc import AsyncGenerator
+from typing import Any
 
 from pydantic import BaseModel
 from redis import asyncio as aioredis
@@ -88,7 +89,7 @@ class Redis:
         """Increment a value in Redis"""
         if not cls.connected:
             await cls.connect()
-        res = await cls.redis_pool.incr(f"{namespace}-{key}")
+        res: int = await cls.redis_pool.incr(f"{namespace}-{key}")
         return res
 
     @classmethod

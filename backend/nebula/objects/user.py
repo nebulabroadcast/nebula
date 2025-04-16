@@ -18,7 +18,7 @@ from nebula.settings.common import LanguageCode
 
 
 def hash_password(password: str) -> str:
-    if config.password_hashing == "legacy":
+    if config.password_hashing == "legacy":  # noqa: S105
         return hashlib.sha256(password.encode("ascii")).hexdigest()
     raise NotImplementedException("Hashing method not available")
 
@@ -86,6 +86,19 @@ class User(BaseObject):
         )
         if not row:
             raise NotFoundException(f"User with API key {api_key} not found")
+        return cls.from_row(row[0])
+
+    @classmethod
+    async def by_email(cls, email: str) -> "User":
+        """Return the user with the given email."""
+        row = await db.fetch(
+            """
+            SELECT meta FROM users WHERE LOWER(meta->>'email') = $1
+            """,
+            email.lower(),
+        )
+        if not row:
+            raise NotFoundException(f"User with email {email} not found")
         return cls.from_row(row[0])
 
     @classmethod

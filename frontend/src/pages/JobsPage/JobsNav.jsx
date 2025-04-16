@@ -1,5 +1,6 @@
-import { NavLink } from 'react-router-dom'
-import { Navbar, InputText, Button, Spacer } from '/src/components'
+import { NavLink } from 'react-router-dom';
+
+import { Navbar, InputText, Button, Spacer } from '/src/components';
 
 const JobsNav = ({ searchQuery, setSearchQuery }) => {
   return (
@@ -8,14 +9,10 @@ const JobsNav = ({ searchQuery, setSearchQuery }) => {
       <NavLink to="/jobs/finished">Finished</NavLink>
       <NavLink to="/jobs/failed">Failed</NavLink>
       <Spacer />
-      <InputText
-        placeholder="Search"
-        value={searchQuery}
-        onChange={setSearchQuery}
-      />
+      <InputText placeholder="Search" value={searchQuery} onChange={setSearchQuery} />
       <Button icon="close" onClick={() => setSearchQuery('')} />
     </Navbar>
-  )
-}
+  );
+};
 
-export default JobsNav
+export default JobsNav;

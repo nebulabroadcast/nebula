@@ -93,6 +93,58 @@ class BaseSystemSettings(SettingsModel):
     )
 
 
+class SSOProvider(SettingsModel):
+    name: Annotated[
+        str,
+        Field(
+            title="Name",
+            example="myoauth",
+        ),
+    ]
+
+    title: Annotated[
+        str,
+        Field(
+            title="Title",
+            description="Used on the SSO button on the login page",
+            example="Log in using MyOauth",
+        ),
+    ]
+
+    profile: Annotated[
+        Literal["google", "github"] | None,
+        Field(
+            title="Profile",
+            description="Configuration preset if entrypoint is not provided",
+        ),
+    ] = None
+
+    entrypoint: Annotated[
+        str | None,
+        Field(
+            title="Entrypoint",
+            description="URL to the SSO provider configuration endpoint",
+            example="https://iam.example.com/realms/nebula/.well-known/openid-configuration",
+        ),
+    ] = None
+
+    client_id: Annotated[
+        str,
+        Field(
+            title="Client ID",
+            example="myclientid",
+        ),
+    ]
+
+    client_secret: Annotated[
+        str,
+        Field(
+            title="Client secret",
+            example="myclientsecret",
+        ),
+    ]
+
+
 class SystemSettings(BaseSystemSettings):
     """System settings.
 
@@ -107,6 +159,7 @@ class SystemSettings(BaseSystemSettings):
     upload_storage: int | None = Field(default=None)
     upload_dir: str | None = Field(default=None)
     upload_base_name: str = Field(default="{id}")
+    sso_providers: list[SSOProvider] = Field(default_factory=list)
 
     smtp_host: str | None = Field(
         default=None,

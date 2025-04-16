@@ -1,6 +1,5 @@
-import styled from 'styled-components'
-
-import { useDraggable } from '@dnd-kit/core'
+import { useDraggable } from '@dnd-kit/core';
+import styled from 'styled-components';
 
 const StyledDraggableIcon = styled.div`
   width: 30px;
@@ -15,17 +14,19 @@ const StyledDraggableIcon = styled.div`
   color: var(--color-surface-text);
   cursor: grab;
   user-select: none;
-`
+`;
 
 const DraggableIcon = ({ name, icon, tooltip, data }) => {
-  const { attributes, listeners, setNodeRef, transform, isDragging } =
-    useDraggable({ id: name, data: [data] })
+  const { attributes, listeners } = useDraggable({
+    id: name,
+    data: [data],
+  });
 
   return (
     <StyledDraggableIcon title={tooltip} {...attributes} {...listeners}>
       <span className="icon material-symbols-outlined">{icon}</span>
     </StyledDraggableIcon>
-  )
-}
+  );
+};
 
-export default DraggableIcon
+export default DraggableIcon;

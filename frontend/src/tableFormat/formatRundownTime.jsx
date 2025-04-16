@@ -1,4 +1,4 @@
-import { Timestamp } from '/src/components'
+import { Timestamp } from '/src/components';
 
 const formatRundownTime = (rowData, key) => {
   if (
@@ -10,14 +10,14 @@ const formatRundownTime = (rowData, key) => {
       <td>
         <hr />
       </td>
-    )
+    );
   }
 
   return (
     <td>
       <Timestamp timestamp={rowData[key]} mode="time" />
     </td>
-  )
-}
+  );
+};
 
-export default formatRundownTime
+export default formatRundownTime;

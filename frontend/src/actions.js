@@ -1,6 +1,7 @@
-import nebula from '/src/nebula'
-import { createSlice } from '@reduxjs/toolkit'
-import { isNaN } from 'lodash'
+import nebula from '/src/nebula';
+
+import { createSlice } from '@reduxjs/toolkit';
+import { isNaN } from 'lodash';
 
 const initialState = {
   browserRefresh: 0,
@@ -10,7 +11,7 @@ const initialState = {
   focusedAsset: null,
   pageTitle: '',
   currentChannel: JSON.parse(localStorage.getItem('currentChannel') || 'null'),
-}
+};
 
 const contextSlice = createSlice({
   name: 'context',
@@ -18,55 +19,55 @@ const contextSlice = createSlice({
 
   reducers: {
     setCurrentView: (state, action) => {
-      state.currentView = action.payload
-      localStorage.setItem('currentView', JSON.stringify(action.payload))
-      return state
+      state.currentView = action.payload;
+      localStorage.setItem('currentView', JSON.stringify(action.payload));
+      return state;
     },
 
     setCurrentViewId: (state, action) => {
-      const view = nebula.settings.views.find((v) => v.id === action.payload)
+      const view = nebula.settings.views.find((v) => v.id === action.payload);
       if (view) {
-        state.currentView = view
-        localStorage.setItem('currentView', JSON.stringify(view))
+        state.currentView = view;
+        localStorage.setItem('currentView', JSON.stringify(view));
       }
-      return state
+      return state;
     },
 
-    // eslint-disable-next-line no-unused-vars
     reloadBrowser: (state, action) => {
-      state.browserRefresh = state.browserRefresh + 1
-      return state
+      const _a = action;
+      state.browserRefresh = state.browserRefresh + 1;
+      return state;
     },
 
     setSearchQuery: (state, action) => {
-      state.searchQuery = action.payload
-      localStorage.setItem('searchQuery', JSON.stringify(action.payload))
-      return state
+      state.searchQuery = action.payload;
+      localStorage.setItem('searchQuery', JSON.stringify(action.payload));
+      return state;
     },
 
     setSelectedAssets: (state, action) => {
-      state.selectedAssets = action.payload
-      return state
+      state.selectedAssets = action.payload;
+      return state;
     },
 
     setFocusedAsset: (state, action) => {
-      if (isNaN(action.payload)) return
-      state.focusedAsset = action.payload
+      if (isNaN(action.payload)) return;
+      state.focusedAsset = action.payload;
     },
 
     setPageTitle: (state, action) => {
-      state.pageTitle = action.payload.title
-      state.pageIcon = action.payload.icon
-      window.document.title = `${action.payload.title} | NEBULA`
+      state.pageTitle = action.payload.title;
+      state.pageIcon = action.payload.icon;
+      window.document.title = `${action.payload.title} | NEBULA`;
     },
 
     setCurrentChannel: (state, action) => {
-      state.currentChannel = action.payload
-      localStorage.setItem('currentChannel', JSON.stringify(action.payload))
-      return state
+      state.currentChannel = action.payload;
+      localStorage.setItem('currentChannel', JSON.stringify(action.payload));
+      return state;
     },
   },
-})
+});
 
 export const {
   reloadBrowser,
@@ -77,6 +78,6 @@ export const {
   setFocusedAsset,
   setPageTitle,
   setCurrentChannel,
-} = contextSlice.actions
+} = contextSlice.actions;
 
-export default contextSlice.reducer
+export default contextSlice.reducer;

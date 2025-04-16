@@ -1,33 +1,33 @@
-import { toast } from 'react-toastify'
-import { useState, useEffect, useMemo } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useState, useEffect, useMemo } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
-import nebula from '/src/nebula'
-import { Navbar, Button, Spacer } from '/src/components'
+import nebula from '/src/nebula';
+import { Navbar, Button, Spacer } from '/src/components';
+import Sessions from '/src/containers/Sessions';
 
-import Sessions from '/src/containers/Sessions'
-import UserList from './UserList'
-import UserForm from './UserForm'
+import UserForm from './UserForm';
+import UserList from './UserList';
 
 const UsersPage = () => {
-  const { id } = useParams()
-  const [users, setUsers] = useState([])
+  const { id } = useParams();
+  const [users, setUsers] = useState([]);
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
-  const [userData, setUserData] = useState({})
-  const [loading, setLoading] = useState(false)
+  const [userData, setUserData] = useState({});
+  const [loading, setLoading] = useState(false);
 
   const currentId = useMemo(() => {
-    const intId = parseInt(id)
-    if (!isNaN(intId)) return intId
-    return null
-  }, [id])
+    const intId = parseInt(id);
+    if (!isNaN(intId)) return intId;
+    return null;
+  }, [id]);
 
   const loadUsers = () => {
-    setLoading(true)
+    setLoading(true);
     nebula
-      .request('user_list')
+      .request('list-users')
       .then((res) => {
         setUsers(
           res.data.users.map((user) => ({
@@ -36,52 +36,52 @@ const UsersPage = () => {
             api_key: undefined,
             api_key_preview: user.api_key,
           }))
-        )
+        );
       })
-      .finally(() => setLoading(false))
-  }
+      .finally(() => setLoading(false));
+  };
 
   useEffect(() => {
-    loadUsers()
-  }, [])
+    loadUsers();
+  }, []);
 
   useEffect(() => {
     if (currentId) {
-      const user = users.find((user) => user.id === currentId)
+      const user = users.find((user) => user.id === currentId);
       if (user) {
-        setUserData(user)
-        return
+        setUserData(user);
+        return;
       }
     }
-    const doCopy = new URLSearchParams(window.location.search).get('copy')
-    if (!doCopy) setUserData({})
-  }, [currentId, users])
+    const doCopy = new URLSearchParams(window.location.search).get('copy');
+    if (!doCopy) setUserData({});
+  }, [currentId, users]);
 
   const onSelect = (userId) => {
-    navigate(`/users/${userId}`)
-  }
+    navigate(`/users/${userId}`);
+  };
 
   const onSave = () => {
     nebula
-      .request('save_user', userData)
+      .request('save-user', userData)
       .then(() => {
-        loadUsers()
+        loadUsers();
       })
       .catch((err) => {
-        toast.error('Error saving user')
-        console.error(err)
+        toast.error('Error saving user');
+        console.error(err);
       })
       .finally(() => {
         setUserData((data) => ({
           ...data,
           password: undefined,
           api_key: undefined,
-        }))
-      })
-  }
+        }));
+      });
+  };
 
   const copyUser = () => {
-    const copy = { ...userData }
+    const copy = { ...userData };
     for (const key of [
       'id',
       'login',
@@ -91,19 +91,15 @@ const UsersPage = () => {
       'full_name',
       'email',
     ])
-      copy[key] = undefined
-    navigate('/users?copy=true')
-    setUserData(copy)
-  }
+      copy[key] = undefined;
+    navigate('/users?copy=true');
+    setUserData(copy);
+  };
 
   return (
     <main className="column">
       <Navbar>
-        <Button
-          icon="person_add"
-          label="New user"
-          onClick={() => navigate('/users')}
-        />
+        <Button icon="person_add" label="New user" onClick={() => navigate('/users')} />
         <Button
           icon="content_copy"
           label="Copy user"
@@ -125,7 +121,7 @@ const UsersPage = () => {
         <Sessions userId={userData?.id} />
       </div>
     </main>
-  )
-}
+  );
+};
 
-export default UsersPage
+export default UsersPage;

@@ -95,7 +95,7 @@ async def setup_settings(db: DatabaseConnection) -> None:
 
     log.info("Applying system settings")
 
-    await db.execute("DELETE FROM settings")
+    await db.execute("DELETE FROM settings WHERE key NOT LIKE '.%'")
     for key, value in settings.system.model_dump(exclude_none=True).items():
         await db.execute(
             """

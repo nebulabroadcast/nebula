@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react'
-import styled from 'styled-components'
-import { getTheme } from './theme'
+import { useState, useEffect } from 'react';
+import styled from 'styled-components';
+
+import { getTheme } from './theme';
 
 const BaseProgress = styled.div`
   width: 100%;
@@ -13,23 +14,22 @@ const BaseProgress = styled.div`
     height: 100%;
     background: ${getTheme().colors.cyan};
     border-radius: ${getTheme().inputBorderRadius};
-    transition: ${(props) =>
-      props.disableTransition ? 'none' : 'width 0.3s linear'};
+    transition: ${(props) => (props.disableTransition ? 'none' : 'width 0.3s linear')};
   }
-`
+`;
 
 const Progress = ({ value, ...props }) => {
-  const [prevValue, setPrevValue] = useState(value)
-  const [disableTransition, setDisableTransition] = useState(false)
+  const [prevValue, setPrevValue] = useState(value);
+  const [disableTransition, setDisableTransition] = useState(false);
 
   useEffect(() => {
     if (value < prevValue) {
-      setDisableTransition(true)
+      setDisableTransition(true);
     } else {
-      setDisableTransition(false)
+      setDisableTransition(false);
     }
-    setPrevValue(value)
-  }, [value, prevValue])
+    setPrevValue(value);
+  }, [value, prevValue]);
 
   return (
     <BaseProgress {...props} disableTransition={disableTransition}>
@@ -39,7 +39,7 @@ const Progress = ({ value, ...props }) => {
         key={disableTransition ? 'no-transition' : 'transition'}
       />
     </BaseProgress>
-  )
-}
+  );
+};
 
-export default Progress
+export default Progress;

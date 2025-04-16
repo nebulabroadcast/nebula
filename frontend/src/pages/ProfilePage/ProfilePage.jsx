@@ -1,7 +1,9 @@
-import nebula from '/src/nebula'
-import { useNavigate } from 'react-router-dom'
-import { toast } from 'react-toastify'
-import { useState } from 'react'
+import nebula from '/src/nebula';
+
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import { useState } from 'react';
+
 import {
   Form,
   FormRow,
@@ -10,12 +12,11 @@ import {
   InputPassword,
   Button,
   PanelHeader,
-} from '/src/components'
-
-import Sessions from '/src/containers/Sessions.jsx'
+} from '/src/components';
+import Sessions from '/src/containers/Sessions.jsx';
 
 const ProfileForm = () => {
-  const displayName = nebula.user.full_name || nebula.user.login
+  const displayName = nebula.user.full_name || nebula.user.login;
 
   return (
     <section className="column">
@@ -38,31 +39,31 @@ const ProfileForm = () => {
         </FormRow>
       </Form>
     </section>
-  )
-}
+  );
+};
 
 const ChangePasswordForm = () => {
-  const [password, setPassword] = useState('')
-  const [passwordRepeat, setPasswordRepeat] = useState('')
+  const [password, setPassword] = useState('');
+  const [passwordRepeat, setPasswordRepeat] = useState('');
 
   const changePassword = () => {
     if (password !== passwordRepeat) {
-      toast.error('Passwords do not match')
-      return
+      toast.error('Passwords do not match');
+      return;
     }
 
     nebula
       .request('password', { password })
       .then(() => {
-        toast.success('Password changed')
-        setPassword('')
-        setPasswordRepeat('')
+        toast.success('Password changed');
+        setPassword('');
+        setPasswordRepeat('');
       })
       .catch((err) => {
-        const msg = err.response?.data?.detail || err.message
-        toast.error(msg)
-      })
-  }
+        const msg = err.response?.data?.detail || err.message;
+        toast.error(msg);
+      });
+  };
 
   return (
     <section className="column">
@@ -86,19 +87,15 @@ const ChangePasswordForm = () => {
           />
         </FormRow>
         <FormRow>
-          <Button
-            label="Change password"
-            icon="check"
-            onClick={changePassword}
-          />
+          <Button label="Change password" icon="check" onClick={changePassword} />
         </FormRow>
       </Form>
     </section>
-  )
-}
+  );
+};
 
 const AdminPanel = () => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   return (
     <section className="grow column">
@@ -115,16 +112,16 @@ const AdminPanel = () => {
         />
       </div>
     </section>
-  )
-}
+  );
+};
 
 const UserPanel = () => {
   return (
     <section className="grow column">
       <h2>Access control</h2>
     </section>
-  )
-}
+  );
+};
 
 const ProfilePage = () => {
   return (
@@ -138,7 +135,7 @@ const ProfilePage = () => {
 
       <Sessions userId={nebula.user.id} />
     </main>
-  )
-}
+  );
+};
 
-export default ProfilePage
+export default ProfilePage;

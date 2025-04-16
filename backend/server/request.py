@@ -1,4 +1,4 @@
-from typing import Any, Type
+from typing import Any
 
 from server.models import ResponseModel
 
@@ -9,7 +9,7 @@ class APIRequest:
     title: str | None = None
     methods: list[str] = ["POST"]
     response_class: Any = None
-    response_model: Type[ResponseModel] | None = None
+    response_model: type[ResponseModel] | None = None
     responses: list[int] = [200]
     exclude_none: bool = True
     exclude_unset: bool = False

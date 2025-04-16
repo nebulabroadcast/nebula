@@ -1,14 +1,14 @@
-import { AudioContextProvider } from './AudioContext'
-import { VideoPlayerBody } from './VideoPlayerBody'
+import { AudioContextProvider } from './AudioContext';
+import { VideoPlayerBody } from './VideoPlayerBody';
 
 const VideoPlayer = (props) => {
-  const audioChannels = 2
+  const audioChannels = 2;
 
   return (
     <AudioContextProvider numChannels={audioChannels}>
       <VideoPlayerBody {...props} />
     </AudioContextProvider>
-  )
-}
+  );
+};
 
-export default VideoPlayer
+export default VideoPlayer;

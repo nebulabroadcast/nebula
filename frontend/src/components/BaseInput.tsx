@@ -1,5 +1,6 @@
-import styled from 'styled-components'
-import { getTheme } from './theme'
+import styled from 'styled-components';
+
+import { getTheme } from './theme';
 
 const BaseInput = styled.input`
   border: 0;
@@ -18,7 +19,9 @@ const BaseInput = styled.input`
 
   &:-webkit-autofill,
   &:-webkit-autofill:focus {
-    transition: background-color 600000s 0s, color 600000s 0s;
+    transition:
+      background-color 600000s 0s,
+      color 600000s 0s;
   }
 
   &:focus {
@@ -58,6 +61,6 @@ const BaseInput = styled.input`
     max-height: 400px !important;
     resize: vertical;
   }
-`
+`;
 
-export default BaseInput
+export default BaseInput;

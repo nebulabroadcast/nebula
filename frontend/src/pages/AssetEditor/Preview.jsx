@@ -1,26 +1,17 @@
-import nebula from '/src/nebula'
-import styled from 'styled-components'
+import nebula from '/src/nebula';
 
-import { toast } from 'react-toastify'
-import { useState, useEffect, useCallback, useMemo } from 'react'
-import {
-  Dropdown,
-  Spacer,
-  InputTimecode,
-  Navbar,
-  Button,
-} from '/src/components'
-import VideoPlayer from '/src/containers/VideoPlayer'
-import Subclip from './Subclip'
-import { useKeyDown } from '/src/hooks'
+import { toast } from 'react-toastify';
+import { useState, useEffect, useMemo } from 'react';
 
-const SubclipsPanel = ({
-  subclips,
-  setSubclips,
-  selection,
-  setSelection,
-  fps,
-}) => {
+import { Dropdown, Spacer, InputTimecode, Navbar, Button } from '/src/components';
+import VideoPlayer from '/src/containers/VideoPlayer';
+
+import Subclip from './Subclip';
+
+import { useKeyDown } from '/src/hooks';
+import { arrayEquals } from '/src/utils';
+
+const SubclipsPanel = ({ subclips, setSubclips, selection, setSelection, fps }) => {
   return (
     <section className="grow">
       <div
@@ -47,72 +38,70 @@ const SubclipsPanel = ({
         <Spacer />
       </div>
     </section>
-  )
-}
+  );
+};
 
 const Preview = ({ assetData, setAssetData }) => {
-  const accessToken = nebula.getAccessToken()
-  const [selection, setSelection] = useState({})
-  const [subclips, setSubclips] = useState([])
-  const [position, setPosition] = useState(0)
+  const accessToken = nebula.getAccessToken();
+  const [selection, setSelection] = useState({});
+  const [subclips, setSubclips] = useState([]);
+  const [position, setPosition] = useState(0);
 
   // Video source
 
   const videoSrc = useMemo(
-    () =>
-      assetData.id &&
-      accessToken &&
-      `/proxy/${assetData.id}?token=${accessToken}`,
+    () => assetData.id && accessToken && `/proxy/${assetData.id}?token=${accessToken}`,
     [assetData, accessToken]
-  )
+  );
   const frameRate = useMemo(() => {
-    const fps = assetData['video/fps_f'] || 25.0
-    //console.log('fps', fps)
-    return fps
-  }, [assetData])
+    const fps = assetData['video/fps_f'] || 25.0;
+    return fps;
+  }, [assetData]);
 
   const patchAsset = (data) => {
     // helper function to update asset data
+    if (!data) return;
     setAssetData((o) => {
-      return { ...o, ...data }
-    })
-  }
+      return { ...o, ...data };
+    });
+  };
 
   useEffect(() => {
     setSelection({
       mark_in: assetData.mark_in,
       mark_out: assetData.mark_out,
-    })
-    setSubclips(assetData.subclips || [])
-  }, [assetData?.id])
+    });
+    setSubclips(assetData.subclips || []);
+  }, [assetData?.id]); //eslint-disable-line
 
   useEffect(() => {
     // when subclip list changes, update it in asset data
-    if (!assetData) return
-    if ((assetData.subclips || []) !== subclips) {
-      patchAsset({ subclips: subclips.length ? subclips : null })
+    if (!assetData) return;
+    const existingSubclips = [];
+    if (!arrayEquals(existingSubclips, subclips)) {
+      patchAsset({ subclips: subclips.length ? subclips : null });
     }
-  }, [subclips])
+  }, [subclips]);
 
   // Dropdown menu options for poster frame
 
   const setPosterFrame = () => {
-    patchAsset({ poster_frame: position })
-  }
+    patchAsset({ poster_frame: position });
+  };
 
   const goToPosterFrame = () => {
-    setSelection({ mark_in: assetData.poster_frame, mark_out: null })
-  }
+    setSelection({ mark_in: assetData.poster_frame, mark_out: null });
+  };
 
   const clearPosterFrame = () => {
-    patchAsset({ poster_frame: null })
-  }
+    patchAsset({ poster_frame: null });
+  };
 
   const posterOptions = [
     { label: 'Set poster frame', onClick: setPosterFrame },
     { label: 'Go to poster frame', onClick: goToPosterFrame },
     { label: 'Clear poster frame', onClick: clearPosterFrame },
-  ]
+  ];
 
   // Actions
 
@@ -122,29 +111,34 @@ const Preview = ({ assetData, setAssetData }) => {
     patchAsset({
       mark_in: selection.mark_in || null,
       mark_out: selection.mark_out || null,
-    })
-  }
+    });
+  };
 
   const onNewSubclip = () => {
     if (!(selection.mark_in && selection.mark_out)) {
-      toast.error('Please select a region first')
-      return
+      toast.error('Please select a region first');
+      return;
     }
 
     if (selection.mark_in >= selection.mark_out) {
-      toast.error('Please select a valid region')
-      return
+      toast.error('Please select a valid region');
+      return;
+    }
+
+    if (selection.mark_out - selection.mark_in < 2) {
+      toast.error('Region must be at least 2 frames long');
+      return;
     }
 
     setSubclips((subclips) => [
       ...subclips,
       { title: `SubClip ${subclips.length + 1}`, ...selection },
-    ])
-  }
+    ]);
+  };
 
   // Keyboard shortcuts
 
-  useKeyDown('v', onNewSubclip)
+  useKeyDown('v', onNewSubclip);
 
   // Render
 
@@ -209,7 +203,7 @@ const Preview = ({ assetData, setAssetData }) => {
         />
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Preview
+export default Preview;

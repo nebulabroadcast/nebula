@@ -41,6 +41,11 @@ class NebulaConfig(BaseModel):
         description="Password hashing method",
     )
 
+    session_secret: str = Field(
+        default_factory=lambda: os.urandom(32).hex(),
+        description="Session secret. MUST be set when the server is scaled",
+    )
+
     max_failed_login_attempts: int = Field(
         10,
         description="Maximum number of failed login attempts before the IP is banned",

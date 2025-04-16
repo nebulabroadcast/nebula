@@ -19,7 +19,7 @@ class InvalidateSessionRequest(APIRequest):
     used to log out other users.
     """
 
-    name = "invalidate_session"
+    name = "invalidate-session"
     title = "Invalidate session"
     responses = [204]
 

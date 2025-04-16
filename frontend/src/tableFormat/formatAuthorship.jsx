@@ -1,7 +1,7 @@
-import nebula from '/src/nebula'
+import nebula from '/src/nebula';
 
 const formatAuthorship = (rowData, key) => {
-  return <td>{nebula.getUserName(rowData[key])}</td>
-}
+  return <td>{nebula.getUserName(rowData[key])}</td>;
+};
 
-export default formatAuthorship
+export default formatAuthorship;

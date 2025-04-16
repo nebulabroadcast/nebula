@@ -1,5 +1,3 @@
-from typing import Type
-
 from nebula.enum import ObjectType
 from nebula.objects.asset import Asset
 from nebula.objects.base import BaseObject
@@ -17,7 +15,7 @@ object_types = {
 }
 
 
-def get_object_class_by_name(name: ObjectType) -> Type[BaseObject]:
+def get_object_class_by_name(name: ObjectType) -> type[BaseObject]:
     if name not in object_types:
         raise KeyError(f"Unknown object type: {name}")
     return object_types[name]

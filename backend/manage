@@ -1,67 +1,75 @@
 #!/bin/bash
 
-SERVER_TYPE=${NEBULA_SERVER_TYPE:-gunicorn}
+SERVER_PORT=${NEBULA_SERVER_PORT:-80}
+SERVER_WORKERS=${NEBULA_SERVER_WORKERS:-1}
 
-if [ $# -ne 1 ]; then
-  echo "Error: a single argument is required"
-  exit 1
+# Maximum number of requests a worker will process before restarting
+# If we have only one worker, we keep it running indefinitely
+
+if [ $SERVER_WORKERS -eq 1 ]; then
+    MAX_REQUESTS=0
+else
+    MAX_REQUESTS=${NEBULA_SERVER_MAX_REQUESTS:-1000}
 fi
 
-function start_server () {
-  echo ""
-  echo "Starting the server..."
-  echo ""
 
-  # Run setup to make sure database is up to date
-  python -m setup
-
-  
-  if [ $SERVER_TYPE = "gunicorn" ]; then
-    exec gunicorn \
-      -k uvicorn.workers.UvicornWorker \
-      --log-level warning \
-      -b :80 \
-      server.server:app
-  elif [ $SERVER_TYPE = "granian" ]; then
-    exec granian \
-      --interface asgi \
-      --log-level warning \
-      --host 0.0.0.0 \
-      --port 80 \
-      server.server:app
-  else
-    echo ""
-    echo "Error: invalid server type '$SERVER_TYPE'. Expected 'gunicorn' or 'granian'"
-    echo ""
+if [ $# -ne 1 ]; then
+    echo "Error: a single argument is required"
     exit 1
-  fi
+fi
+
+function setup () {
+    echo ""
+    echo "Running setup..."
+    echo ""
+    python -m setup
+}
+
+function serve () {
+    echo ""
+    echo "Starting the server..."
+    echo ""
+    # Run setup to make sure database is up to date
+    exec gunicorn \
+        --name nebula-gunicorn \
+        --bind :${SERVER_PORT} \
+        --workers ${SERVER_WORKERS} \
+        --worker-class uvicorn_worker.UvicornWorker \
+        --max-requests ${MAX_REQUESTS} \
+        --log-level warning \
+        --pid /tmp/nebula-gunicorn.pid \
+        server.server:app
+}
+
+function start_server () {
+    # This is the entry point for the Docker container
+    # It starts the setup and then the server
+    # In production, both tasks could be run individually
+    # (setup in a init container, server in the main
+    # container with multiple replicas)
+    setup || exit 1
+    serve || exit 1
 }
 
 
 function get_server_pid () {
-  if [ $SERVER_TYPE = "gunicorn" ]; then
-    pid=$(ps aux | grep 'gunicorn' | awk '{print $2}')
-  elif [ $SERVER_TYPE = "granian" ]; then
-    pid=$(ps aux | grep 'granian' | awk '{print $2}')
-  fi
-  echo $pid
+    cat /tmp/nebula-gunicorn.pid 2> /dev/null
 }
 
-
 function stop_server () {
-  echo ""
-  echo "SIGTERM signal received. Shutting down..."
-  echo ""
-  kill -TERM $(get_server_pid) 2> /dev/null
-  exit 0
+    echo ""
+    echo "SIGTERM signal received. Shutting down..."
+    echo ""
+    kill -TERM $(get_server_pid) 2> /dev/null
+    exit 0
 }
 
 function reload_server () {
-  echo ""
-  echo "Reloading the server..."
-  echo ""
-  kill -HUP $(get_server_pid) 2> /dev/null
-  exit 0
+    echo ""
+    echo "Reloading the server..."
+    echo ""
+    kill -HUP $(get_server_pid) 2> /dev/null
+    exit 0
 }
 
 trap stop_server SIGTERM SIGINT
@@ -69,14 +77,18 @@ trap reload_server SIGHUP
 
 
 if [ $1 = "start" ]; then
-  start_server
+    start_server
 elif [ $1 = "stop" ]; then
-  stop_server
+    stop_server
 elif [ $1 = "reload" ]; then
-  reload_server
+    reload_server
+elif [ $1 = "setup" ]; then
+    setup
+elif [ $1 = "serve" ]; then
+    serve
 else
-  echo ""
-  echo "Error: invalid argument '$1'. Expected 'start' or 'reload'"
-  echo ""
-  exit 1
+    echo ""
+    echo "Error: invalid argument '$1'"
+    echo ""
+    exit 1
 fi

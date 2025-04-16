@@ -1,6 +1,7 @@
-import { forwardRef } from 'react'
-import styled from 'styled-components'
-import { getTheme } from './theme'
+import { forwardRef } from 'react';
+import styled from 'styled-components';
+
+import { getTheme } from './theme';
 
 const StyledRange = styled.input`
   border: 0;
@@ -30,12 +31,12 @@ const StyledRange = styled.input`
     background: ${getTheme().colors.surface04};
     border-radius: 8px;
   }
-`
+`;
 
 const RangeSlider = forwardRef((props, ref) => {
-  return <StyledRange ref={ref} type="range" {...props} />
-})
+  return <StyledRange ref={ref} type="range" {...props} />;
+});
 
-RangeSlider.displayName = 'RangeSlider'
+RangeSlider.displayName = 'RangeSlider';
 
-export default RangeSlider
+export default RangeSlider;

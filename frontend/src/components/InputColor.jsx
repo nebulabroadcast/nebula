@@ -1,10 +1,11 @@
-import { useMemo } from 'react'
-import styled from 'styled-components'
-import BaseInput from './BaseInput'
+import { useMemo } from 'react';
+import styled from 'styled-components';
+
+import BaseInput from './BaseInput';
 
 const BaseColorInput = styled(BaseInput)`
   width: 30px;
-`
+`;
 
 const COLOR_PRESETS = [
   '#dc8a78',
@@ -22,7 +23,7 @@ const COLOR_PRESETS = [
   '#1e66f5',
   '#7287fd',
   '#4c4f69',
-]
+];
 
 const InputColor = ({ value, onChange, tooltip, ...props }) => {
   /*
@@ -30,14 +31,14 @@ const InputColor = ({ value, onChange, tooltip, ...props }) => {
   */
 
   const hexValue = useMemo(() => {
-    if (!value) return '#7287fd'
-    return `#${value.toString(16).padStart(6, '0')}`
-  }, [value])
+    if (!value) return '#7287fd';
+    return `#${value.toString(16).padStart(6, '0')}`;
+  }, [value]);
 
   const setColor = (hex) => {
-    if (!hex) return null
-    onChange(parseInt(hex.slice(1), 16))
-  }
+    if (!hex) return null;
+    onChange(parseInt(hex.slice(1), 16));
+  };
 
   return (
     <>
@@ -55,7 +56,7 @@ const InputColor = ({ value, onChange, tooltip, ...props }) => {
         ))}
       </datalist>
     </>
-  )
-}
+  );
+};
 
-export default InputColor
+export default InputColor;

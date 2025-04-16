@@ -1,10 +1,4 @@
-import {
-  Navbar,
-  Button,
-  Spacer,
-  RadioButton,
-  ToolbarSeparator,
-} from '/src/components'
+import { Navbar, Button, Spacer, RadioButton, ToolbarSeparator } from '/src/components';
 
 const QC_STATE_OPTIONS = [
   { value: 0, icon: 'flag', tooltip: 'Revert QC state' },
@@ -20,7 +14,7 @@ const QC_STATE_OPTIONS = [
     buttonStyle: { color: 'var(--color-green)' },
     tooltip: 'Approve asset',
   },
-]
+];
 
 const AssetEditorNav = ({
   assetData,
@@ -83,7 +77,7 @@ const AssetEditorNav = ({
         disabled={!enabledActions.save}
       />
     </Navbar>
-  )
-}
+  );
+};
 
-export default AssetEditorNav
+export default AssetEditorNav;

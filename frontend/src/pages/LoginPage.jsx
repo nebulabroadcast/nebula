@@ -1,10 +1,13 @@
-import axios from 'axios'
+import axios from 'axios';
+import { useState, useEffect, useRef } from 'react';
+import { toast } from 'react-toastify';
 
-import { useState, useEffect, useRef } from 'react'
-import { toast } from 'react-toastify'
-import { Button, InputText, InputPassword } from '/src/components'
-import NebulaLogo from '/src/svg/logo-wide.svg'
-import styled from 'styled-components'
+import { Button, InputText, InputPassword } from '/src/components';
+import NebulaLogo from '/src/svg/logo-wide.svg';
+
+import styled from 'styled-components';
+
+import LoadingPage from './LoadingPage';
 
 const LoginContainer = styled.div`
   position: absolute;
@@ -23,7 +26,7 @@ const LoginContainer = styled.div`
     font-style: italic;
     color: var(--color-text-dim);
   }
-`
+`;
 
 const LoginForm = styled.form`
   padding: 30px;
@@ -38,6 +41,12 @@ const LoginForm = styled.form`
   max-height: 85%;
   position: relative;
 
+  hr {
+    border: none;
+    border-top: 1px solid var(--color-surface-04);
+    margin: 12px 0;
+  }
+
   .logo-container {
     width: 100%;
     display: flex;
@@ -50,26 +59,62 @@ const LoginForm = styled.form`
       margin-bottom: 2em;
     }
   }
-`
+`;
 
-const LoginPage = ({ motd, onLogin }) => {
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
+const SSOOptions = ({ ssoOptions }) => {
+  return (
+    <>
+      <hr />
+      {ssoOptions.map((option) => (
+        <Button
+          key={option.name}
+          as="a"
+          href={`/api/sso/login/${option.name}`}
+          label={option.title}
+        />
+      ))}
+    </>
+  );
+};
 
-  const loginRef = useRef()
-  const passwordRef = useRef()
-  const buttonRef = useRef()
+const LoginPage = ({ motd, onLogin, ssoOptions }) => {
+  const [initialized, setInitialized] = useState(false);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [loginInput, setLoginInput] = useState(null);
+
+  const passwordRef = useRef();
+  const buttonRef = useRef();
 
   useEffect(() => {
-    loginRef.current.focus()
-  }, [])
+    // check if there's authorize field in query params
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('authorize');
+    const error = urlParams.get('error');
+    // clear token from url
+    window.history.replaceState({}, document.title, window.location.pathname);
+    if (token) {
+      // exchange tokens
+      axios.post('/api/token-exchange', { access_token: token }).then((response) => {
+        onLogin(response.data.access_token);
+      });
+    } else if (error) {
+      toast.error(error);
+    } else {
+      setInitialized(true);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    loginInput?.focus();
+  }, [loginInput]);
 
   const onSubmit = (event) => {
-    event.preventDefault()
+    event.preventDefault();
     axios
       .post('/api/login', { username, password })
       .then((response) => {
-        onLogin(response.data.access_token)
+        onLogin(response.data.access_token);
       })
       .catch((err) => {
         if (err.response.status === 422) {
@@ -80,22 +125,24 @@ const LoginPage = ({ motd, onLogin }) => {
               </p>
               <p>Invalid request</p>
             </>
-          )
-          return
+          );
+          return;
         }
 
         toast.error(
-          <>
-            <p>
-              <strong>Login failed</strong>
-            </p>
+          <div>
+            <strong>Login failed</strong>
             <p>{err.response.data?.detail || 'Unknown error'}</p>
-          </>
-        )
-      })
-  }
+          </div>
+        );
+      });
+  };
 
-  const loginDisabled = !username || !password
+  const loginDisabled = !username || !password;
+
+  if (!initialized) {
+    return <LoadingPage />;
+  }
 
   return (
     <main>
@@ -109,7 +156,7 @@ const LoginPage = ({ motd, onLogin }) => {
             name="username"
             value={username}
             onChange={setUsername}
-            ref={loginRef}
+            ref={setLoginInput}
           />
           <InputPassword
             type="password"
@@ -125,11 +172,12 @@ const LoginPage = ({ motd, onLogin }) => {
             ref={buttonRef}
             disabled={loginDisabled}
           />
+          {ssoOptions && <SSOOptions ssoOptions={ssoOptions} />}
         </LoginForm>
         {motd && <small>{motd}</small>}
       </LoginContainer>
     </main>
-  )
-}
+  );
+};
 
-export default LoginPage
+export default LoginPage;

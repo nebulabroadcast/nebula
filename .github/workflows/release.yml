@@ -22,7 +22,7 @@ jobs:
         uses: SebRollen/toml-action@v1.0.1
         with:
           file: 'backend/pyproject.toml'
-          field: 'tool.poetry.version'
+          field: 'project.version'
 
       - name: Build docker image
         uses: docker/build-push-action@v4

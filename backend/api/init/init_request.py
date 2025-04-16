@@ -1,4 +1,4 @@
-from typing import Annotated, Any, get_args
+from typing import Annotated, get_args
 
 import fastapi
 from pydantic import Field
@@ -9,8 +9,9 @@ from nebula.settings import load_settings
 from nebula.settings.common import LanguageCode
 from server.context import ScopedEndpoint, server_context
 from server.dependencies import CurrentUserOptional
-from server.models import ResponseModel
+from server.models import ResponseModel, UserModel
 from server.request import APIRequest
+from server.sso import NebulaSSO, SSOOption
 
 from .client_settings import ClientSettingsModel, get_client_settings
 
@@ -33,9 +34,9 @@ class InitResponseModel(ResponseModel):
     ] = None
 
     user: Annotated[
-        dict[str, Any] | None,
+        UserModel | None,
         Field(
-            title="User data",
+            title="Current user",
             description="User data if user is logged in",
         ),
     ] = None
@@ -63,10 +64,10 @@ class InitResponseModel(ResponseModel):
         ),
     ] = None
 
-    oauth2_options: Annotated[
-        list[dict[str, Any]] | None,
+    sso_options: Annotated[
+        list[SSOOption] | None,
         Field(
-            title="OAuth2 options",
+            title="SSO options",
         ),
     ] = None
 
@@ -85,7 +86,7 @@ class InitRequest(APIRequest):
     """
 
     name = "init"
-    title = "Login"
+    title = "Init"
     response_model = InitResponseModel
 
     async def handle(
@@ -104,10 +105,11 @@ class InitRequest(APIRequest):
                 return InitResponseModel(installed=False)
 
         # Not logged in. Only return motd and oauth2 options.
-        # TODO: return oauth2 options
         if user is None:
+            sso_options = await NebulaSSO.options() or None
             return InitResponseModel(
                 motd=motd,
+                sso_options=sso_options,
                 experimental=nebula.config.enable_experimental or None,
             )
 
@@ -127,10 +129,12 @@ class InitRequest(APIRequest):
         client_settings.server_url = f"{request.url.scheme}://{request.url.netloc}"
         plugins = get_frontend_plugins()
 
+        # Return response
+
         return InitResponseModel(
             installed=True,
             motd=motd,
-            user=user.meta,
+            user=UserModel.from_meta(user.meta),
             settings=client_settings,
             frontend_plugins=plugins,
             scoped_endpoints=server_context.scoped_endpoints,

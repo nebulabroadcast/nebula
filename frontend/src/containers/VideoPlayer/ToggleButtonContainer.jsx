@@ -1,4 +1,4 @@
-import styled from 'styled-components'
+import styled from 'styled-components';
 
 const ToggleButtonContainer = styled.div`
   flex-direction: row;
@@ -26,6 +26,6 @@ const ToggleButtonContainer = styled.div`
       outline: none;
     }
   }
-`
+`;
 
-export default ToggleButtonContainer
+export default ToggleButtonContainer;

@@ -1,9 +1,9 @@
-import styled from 'styled-components'
+import styled from 'styled-components';
 
 const ScrollContainer = styled.div`
   flex-grow: 1;
   position: relative;
-`
+`;
 
 const ScrollContent = styled.div`
   position: absolute;
@@ -16,14 +16,14 @@ const ScrollContent = styled.div`
   overflow-y: scroll;
   overflow-x: auto;
   gap: 6px;
-`
+`;
 
 const ScrollBox = ({ children, style }) => {
   return (
     <ScrollContainer style={style}>
       <ScrollContent>{children}</ScrollContent>
     </ScrollContainer>
-  )
-}
+  );
+};
 
-export default ScrollBox
+export default ScrollBox;

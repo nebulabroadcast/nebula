@@ -2,17 +2,16 @@ from fastapi import Response
 
 import nebula
 from server.dependencies import CurrentUser
+from server.models import UserModel
 from server.request import APIRequest
 from server.session import Session
-
-from .user_model import UserModel
 
 
 class SaveUserRequest(APIRequest):
     """Save user data"""
 
-    name = "save_user"
-    title = "Save user data"
+    name = "save-user"
+    title = "Save user"
     responses = [204, 201]
 
     async def handle(self, current_user: CurrentUser, payload: UserModel) -> Response:
@@ -21,16 +20,15 @@ class SaveUserRequest(APIRequest):
         if not current_user.is_admin:
             raise nebula.ForbiddenException("You are not allowed to edit users")
 
-        meta = payload.dict()
+        meta = payload.model_dump()
         meta.pop("id", None)
 
         password = meta.pop("password", None)
         api_key = meta.pop("api_key", None)
+        permissions = meta.pop("permissions", {})
 
-        for key, value in list(meta.items()):
-            if key.startswith("can_"):
-                meta[key.replace("can_", "can/")] = value
-                del meta[key]
+        for key, value in permissions.items():
+            meta[f"can/{key}"] = value
 
         if new_user:
             user = nebula.User.from_meta(meta)

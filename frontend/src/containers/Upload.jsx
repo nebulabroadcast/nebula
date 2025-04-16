@@ -1,10 +1,9 @@
-import axios from 'axios'
-import styled from 'styled-components'
+import axios from 'axios';
+import styled from 'styled-components';
+import { useState, useRef, useMemo } from 'react';
 
-import { useState, useRef, useMemo } from 'react'
-import { Dialog, Button, Progress } from '/src/components'
-
-import nebula from '/src/nebula'
+import { Dialog, Button, Progress } from '/src/components';
+import nebula from '/src/nebula';
 
 const StatusMessage = styled.div`
   display: flex;
@@ -31,26 +30,26 @@ const StatusMessage = styled.div`
       content: 'Upload failed';
     }
   }
-`
+`;
 
 const FileSelectWidget = ({ onSelect, disabled, contentType }) => {
-  const inputRef = useRef(null)
+  const inputRef = useRef(null);
 
   const onChange = (event) => {
-    const files = [...event.target.files]
-    if (files.length === 0) return
-    onSelect(files[0])
-    inputRef.current.value = null
-  }
+    const files = [...event.target.files];
+    if (files.length === 0) return;
+    onSelect(files[0]);
+    inputRef.current.value = null;
+  };
 
   const accept = useMemo(() => {
-    let result = []
+    let result = [];
     for (const ext in nebula.settings.filetypes) {
-      const type = nebula.settings.filetypes[ext]
-      if (type === contentType) result.push(`.${ext}`)
+      const type = nebula.settings.filetypes[ext];
+      if (type === contentType) result.push(`.${ext}`);
     }
-    return result.join(',')
-  }, [contentType])
+    return result.join(',');
+  }, [contentType]);
 
   return (
     <>
@@ -59,7 +58,7 @@ const FileSelectWidget = ({ onSelect, disabled, contentType }) => {
         label="Select File"
         icon="upload"
         onClick={() => {
-          inputRef.current.click()
+          inputRef.current.click();
         }}
       />
       <input
@@ -72,8 +71,8 @@ const FileSelectWidget = ({ onSelect, disabled, contentType }) => {
         multiple={false}
       />
     </>
-  )
-}
+  );
+};
 
 const FileDetailWrapper = styled.div`
   display: flex;
@@ -90,26 +89,25 @@ const FileDetailWrapper = styled.div`
     align-items: center;
     justify-content: center;
   }
-`
+`;
 
 const FileDetails = ({ file, bytesTransferred }) => {
   const formatFileSize = (bytes) => {
-    if (bytes < 1024) return `${bytes} B`
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`
-    if (bytes < 1024 * 1024 * 1024)
-      return `${(bytes / 1024 / 1024).toFixed(2)} MB`
-    return `${(bytes / 1024 / 1024 / 1024).toFixed(2)} GB`
-  }
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`;
+    if (bytes < 1024 * 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
+    return `${(bytes / 1024 / 1024 / 1024).toFixed(2)} GB`;
+  };
 
   if (!file) {
     return (
       <FileDetailWrapper>
         <h2> No File Selected </h2>
       </FileDetailWrapper>
-    )
+    );
   }
 
-  const percent = (bytesTransferred / file.size) * 100
+  const percent = (bytesTransferred / file.size) * 100;
 
   return (
     <FileDetailWrapper>
@@ -118,33 +116,33 @@ const FileDetails = ({ file, bytesTransferred }) => {
       </h2>
       <Progress value={percent} />
     </FileDetailWrapper>
-  )
-}
+  );
+};
 
 const UploadDialog = ({ onHide, assetData }) => {
-  const [file, setFile] = useState(null)
-  const [bytesTransferred, setBytesTransferred] = useState(0)
-  const [uploading, setUploading] = useState(false)
-  const [status, setStatus] = useState('idle') // idle, uploading, error, success
+  const [file, setFile] = useState(null);
+  const [bytesTransferred, setBytesTransferred] = useState(0);
+  const [uploading, setUploading] = useState(false);
+  const [status, setStatus] = useState('idle'); // idle, uploading, error, success
 
-  const abortController = new AbortController()
-  const cancelToken = axios.CancelToken
-  const cancelTokenSource = cancelToken.source()
+  const abortController = new AbortController();
+  const cancelToken = axios.CancelToken;
+  const cancelTokenSource = cancelToken.source();
 
   const handleHide = () => {
     if (status === 'uploading') {
-      console.warn('Unable to close dialog: upload in progress')
-      return
+      console.warn('Unable to close dialog: upload in progress');
+      return;
     }
-    onHide()
-  }
+    onHide();
+  };
 
   const handleProgress = (event) => {
-    setBytesTransferred(event.loaded)
-  }
+    setBytesTransferred(event.loaded);
+  };
 
   const handleUpload = async () => {
-    setStatus('uploading')
+    setStatus('uploading');
     try {
       await axios.post(`/upload/${assetData.id}`, file, {
         signal: abortController.signal,
@@ -155,22 +153,22 @@ const UploadDialog = ({ onHide, assetData }) => {
           'X-nebula-extension': file.name.split('.').pop(),
           Authorization: `Bearer ${nebula.getAccessToken()}`,
         },
-      })
+      });
 
-      setStatus('success')
+      setStatus('success');
     } catch (error) {
-      console.error(error)
+      console.error(error);
       if (axios.isCancel(error)) {
-        console.error('Request canceled', error.message)
+        console.error('Request canceled', error.message);
       } else if (error.response) {
-        console.error('Error response', error.response)
+        console.error('Error response', error.response);
       }
-      setBytesTransferred(0)
-      setStatus('error')
+      setBytesTransferred(0);
+      setStatus('error');
     }
 
-    setUploading(false)
-  } // handleUpload
+    setUploading(false);
+  }; // handleUpload
 
   const footer = (
     <>
@@ -184,19 +182,12 @@ const UploadDialog = ({ onHide, assetData }) => {
         icon="upload"
         onClick={handleUpload}
         disabled={
-          !file?.size ||
-          status === 'uploading' ||
-          file.size === bytesTransferred
+          !file?.size || status === 'uploading' || file.size === bytesTransferred
         }
       />
-      <Button
-        label="Close"
-        icon="close"
-        onClick={handleHide}
-        disabled={uploading}
-      />
+      <Button label="Close" icon="close" onClick={handleHide} disabled={uploading} />
     </>
-  )
+  );
 
   return (
     <Dialog
@@ -207,19 +198,16 @@ const UploadDialog = ({ onHide, assetData }) => {
       <FileDetails file={file} bytesTransferred={bytesTransferred} />
       <StatusMessage className={status} />
     </Dialog>
-  )
-}
+  );
+};
 
 const UploadButton = ({ assetData, disabled }) => {
-  const [dialogVisible, setDialogVisible] = useState(false)
+  const [dialogVisible, setDialogVisible] = useState(false);
 
   return (
     <>
       {dialogVisible && (
-        <UploadDialog
-          assetData={assetData}
-          onHide={() => setDialogVisible(false)}
-        />
+        <UploadDialog assetData={assetData} onHide={() => setDialogVisible(false)} />
       )}
       <Button
         icon="upload"
@@ -228,7 +216,7 @@ const UploadButton = ({ assetData, disabled }) => {
         disabled={disabled}
       />
     </>
-  )
-}
+  );
+};
 
-export { UploadDialog, UploadButton }
+export { UploadDialog, UploadButton };

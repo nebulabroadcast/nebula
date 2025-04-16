@@ -1,6 +1,7 @@
-import clsx from 'clsx'
-import styled from 'styled-components'
-import { getTheme } from './theme'
+import clsx from 'clsx';
+import styled from 'styled-components';
+
+import { getTheme } from './theme';
 
 const BaseSwitch = ({ style, className, value, onChange, disabled }) => (
   <div style={style} className={clsx(className, { disabled })}>
@@ -14,7 +15,7 @@ const BaseSwitch = ({ style, className, value, onChange, disabled }) => (
       <span className="slider"></span>
     </label>
   </div>
-)
+);
 
 const InputSwitch = styled(BaseSwitch)`
   max-height: ${getTheme().inputHeight};
@@ -88,6 +89,6 @@ const InputSwitch = styled(BaseSwitch)`
       }
     }
   }
-`
+`;
 
-export default InputSwitch
+export default InputSwitch;

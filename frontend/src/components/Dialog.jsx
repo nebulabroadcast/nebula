@@ -1,6 +1,6 @@
-import { useEffect, useRef } from 'react'
-import styled from 'styled-components'
-import clsx from 'clsx'
+import clsx from 'clsx';
+import { useEffect, useRef } from 'react';
+import styled from 'styled-components';
 
 const StyledDialog = styled.dialog`
   color: var(--color-text);
@@ -60,7 +60,7 @@ const StyledDialog = styled.dialog`
       min-width: 100px !important;
     }
   }
-`
+`;
 
 const DialogBody = styled.div`
   padding: 12px 6px;
@@ -70,7 +70,7 @@ const DialogBody = styled.div`
   flex-grow: 1;
   overflow: auto;
   position: relative;
-`
+`;
 
 const Dialog = ({
   onHide,
@@ -83,34 +83,34 @@ const Dialog = ({
   bodyStyle,
   footerStyle,
 }) => {
-  const dialogRef = useRef(null)
+  const dialogRef = useRef(null);
 
   useEffect(() => {
     // Automatically open the dialog when the component mounts
-    dialogRef.current.showModal()
+    dialogRef.current.showModal();
     // Focus management is handled by the <dialog> element itself
 
     const handleCancel = (event) => {
-      event.preventDefault()
-      onHide()
-    }
+      event.preventDefault();
+      onHide();
+    };
 
     // Add event listener for the cancel event (when user attempts to close the dialog)
-    dialogRef.current.addEventListener('cancel', handleCancel)
+    dialogRef.current.addEventListener('cancel', handleCancel);
 
     return () => {
       if (dialogRef.current)
-        dialogRef.current.removeEventListener('cancel', handleCancel)
-    }
-  }, [onHide])
+        dialogRef.current.removeEventListener('cancel', handleCancel);
+    };
+  }, [onHide]);
 
   const onShadeClick = (event) => {
     // No need for this with native dialog, but keeping for custom hide logic
-    if (event.currentTarget != event.target) return
-    if (!onHide) return
-    event.preventDefault()
-    onHide()
-  }
+    if (event.currentTarget != event.target) return;
+    if (!onHide) return;
+    event.preventDefault();
+    onHide();
+  };
 
   return (
     <StyledDialog
@@ -119,14 +119,14 @@ const Dialog = ({
       ref={dialogRef}
       onClick={onShadeClick}
       onKeyDown={(event) => {
-        if (event.key === 'Escape') onHide()
+        if (event.key === 'Escape') onHide();
       }}
     >
       {header && <header style={headerStyle}>{header}</header>}
       <DialogBody style={bodyStyle}>{children}</DialogBody>
       {footer && <footer style={footerStyle}>{footer}</footer>}
     </StyledDialog>
-  )
-}
+  );
+};
 
-export default Dialog
+export default Dialog;

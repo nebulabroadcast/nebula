@@ -1,4 +1,4 @@
-import BaseInput from './BaseInput'
+import BaseInput from './BaseInput';
 
 const InputNumber = ({ value, onChange, tooltip, ...props }) => {
   return (
@@ -9,7 +9,7 @@ const InputNumber = ({ value, onChange, tooltip, ...props }) => {
       title={tooltip}
       {...props}
     />
-  )
-}
+  );
+};
 
-export default InputNumber
+export default InputNumber;
