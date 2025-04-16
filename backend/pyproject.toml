@@ -1,6 +1,6 @@
 [project]
 name = "nebula"
-version = "6.0.9"
+version = "6.0.10"
 description = "Open source broadcast automation system"
 authors = ["Nebula Broadcast <info@nebulabroadcast.com>"]
 requires-python = ">=3.11,<3.13"

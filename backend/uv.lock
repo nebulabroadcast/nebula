@@ -628,7 +628,7 @@ wheels = [
 
 [[package]]
 name = "nebula"
-version = "6.0.9"
+version = "6.0.10"
 source = { virtual = "." }
 dependencies = [
     { name = "aiofiles" },
