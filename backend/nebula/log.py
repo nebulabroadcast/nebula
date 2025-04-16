@@ -1,9 +1,19 @@
+import contextvars
 import enum
 import logging
 import sys
 import traceback
+from collections.abc import Generator
+from contextlib import contextmanager
 from typing import Any
 
+_log_context: contextvars.ContextVar[dict[str, Any] | None] = contextvars.ContextVar(
+    "_log_context", default=None
+)
+
+def get_log_context() -> dict[str, Any] | None:
+    """Get the current log context."""
+    return _log_context.get()
 
 def indent(text: str, level: int = 4) -> str:
     return text.replace("\n", f"\n{' ' * level}")
@@ -26,17 +36,22 @@ class Logger:
     level = LogLevel.DEBUG
     user_max_length: int = 16
 
+
     def __call__(
         self,
         level: LogLevel,
         *args: Any,
-        user: str | None = None,
+        **kwargs: Any,
     ) -> None:
         if level < self.level:
             return
 
+        context = get_log_context()
+        usr = self.user
+        if context:
+            usr = context.get("user", self.user)
+
         lvl = level.name.upper()
-        usr = user or self.user
         usr = usr[: self.user_max_length].ljust(self.user_max_length)
         msg = " ".join([str(arg) for arg in args])
 
@@ -76,6 +91,15 @@ class Logger:
 
     def critical(self, *args: Any, user: str | None = None) -> None:
         self(LogLevel.CRITICAL, *args, user=user)
+
+    @contextmanager
+    def contextualize(self, **context: Any) -> Generator[None, None, None]:
+        token = _log_context.set(context)
+        try:
+            yield
+        finally:
+            _log_context.reset(token)
+
 
 
 log = Logger()
