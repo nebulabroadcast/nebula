@@ -98,24 +98,15 @@ class GatekeeperMiddleware(BaseHTTPMiddleware):
 
         with nebula.log.contextualize(**context):
             start_time = time.perf_counter()
-            response = await call_next(request)
-            process_time = round(time.perf_counter() - start_time, 3)
-            status_code = response.status_code
+            status_code = 100
 
-            if getattr(request.state, "refresh_cookie", None):
-                nebula.log.trace("Refreshing session cookie")
-                sid, max_age = request.state.refresh_cookie
-                response.set_cookie(
-                    key="session_id",
-                    value=sid,
-                    max_age=max_age,
-                    httponly=True,
-                    secure=True,
-                    samesite="lax",
-                )
+            try:
+                response = await call_next(request)
+                status_code = response.status_code
+                return response
+            finally:
+                process_time = round(time.perf_counter() - start_time, 3)
+                f_result = f"| {status_code} in {process_time}s"
+                nebula.log.trace(f"[{request.method}] {path} {f_result}")
 
-            f_result = f"| {status_code} in {process_time}s"
-            nebula.log.trace(f"[{request.method}] {path} {f_result}")
-
-        return response
 

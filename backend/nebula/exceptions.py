@@ -14,23 +14,10 @@ class NebulaException(Exception):
     status: int = 500
     log: bool = True
 
-    def __init__(
-        self,
-        detail: str | None = None,
-        log: bool | str = False,
-        user_name: str | None = None,
-        **kwargs: Any,
-    ) -> None:
+    def __init__(self, detail: str | None = None, **kwargs: Any) -> None:
         self.kwargs = kwargs
-
         if detail is not None:
             self.detail = detail
-
-        if log is True or self.log:
-            logger.error(f"EXCEPTION: {self.status} {self.detail}", user=user_name)
-        elif isinstance(log, str):
-            logger.error(f"EXCEPTION: {self.status} {log}", user=user_name)
-
         super().__init__(self.detail)
 
 
