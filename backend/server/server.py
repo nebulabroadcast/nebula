@@ -170,6 +170,10 @@ async def ws_endpoint(websocket: WebSocket) -> None:
             del messaging.clients[client.id]
 
 
+#
+# API endpoints and the frontend
+#
+
 @app.get("/api/login-background.jpg")
 def login_background() -> FileResponse:
     """Serve the login background image."""
@@ -177,11 +181,6 @@ def login_background() -> FileResponse:
     if os.path.exists(img_path):
         return FileResponse(img_path, media_type="image/jpeg")
     return JSONResponse(status_code=404, content={"detail": "File not found"})
-
-
-#
-# API endpoints and the frontend
-#
 
 
 def install_frontend_plugins(app: FastAPI) -> None:
