@@ -170,6 +170,15 @@ async def ws_endpoint(websocket: WebSocket) -> None:
             del messaging.clients[client.id]
 
 
+@app.get("/api/login-background.jpg")
+def login_background() -> FileResponse:
+    """Serve the login background image."""
+    img_path = f"/mnt/{nebula.config.site_name}_01/.nx/login-background.jpg"
+    if os.path.exists(img_path):
+        return FileResponse(img_path, media_type="image/jpeg")
+    return JSONResponse(status_code=404, content={"detail": "File not found"})
+
+
 #
 # API endpoints and the frontend
 #

@@ -40,6 +40,7 @@ const App = () => {
         nebula.experimental = response.data.experimental || false;
         nebula.plugins = response.data.frontend_plugins || [];
         nebula.scopedEndpoints = response.data.scoped_endpoints || [];
+        nebula.loginBackground = response.data.background || false;
         nebula.user = response.data.user || {};
         axios.interceptors.response.use(
           (response) => {
