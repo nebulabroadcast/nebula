@@ -6,6 +6,7 @@ import { Button, InputText, InputPassword } from '/src/components';
 import NebulaLogo from '/src/svg/logo-wide.svg';
 
 import styled from 'styled-components';
+
 import nebula from '/src/nebula';
 
 import LoadingPage from './LoadingPage';
@@ -25,7 +26,6 @@ const LoginContainer = styled.div`
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
-
 
   small {
     font-size: 0.8em;
@@ -51,17 +51,17 @@ const LoginForm = styled.form`
     background-color: rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(10px);
 
-    input, button, a {
+    input,
+    button,
+    a {
       background-color: rgba(255, 255, 255, 0.1) !important;
       color: #eee !important;
 
-    &::placeholder {
-      color: #ccc;
-      opacity: 1; /* Firefox */
+      &::placeholder {
+        color: #ccc;
+        opacity: 1; /* Firefox */
+      }
     }
-
-    }
-
   }
 
   hr {
@@ -167,7 +167,7 @@ const LoginPage = ({ motd, onLogin, ssoOptions }) => {
     return <LoadingPage />;
   }
 
-  const pageStyle = {}
+  const pageStyle = {};
   let formClass = null;
   if (nebula.loginBackground) {
     pageStyle.backgroundImage = `url(/api/login-background.jpg)`;
@@ -179,7 +179,7 @@ const LoginPage = ({ motd, onLogin, ssoOptions }) => {
 
   return (
     <main style={pageStyle}>
-      <LoginContainer >
+      <LoginContainer>
         <LoginForm onSubmit={onSubmit} className={formClass}>
           <div className="logo-container">
             <img src={NebulaLogo} alt="Nebula" />
