@@ -7,6 +7,8 @@ import NebulaLogo from '/src/svg/logo-wide.svg';
 
 import styled from 'styled-components';
 
+import nebula from '/src/nebula';
+
 import LoadingPage from './LoadingPage';
 
 const LoginContainer = styled.div`
@@ -21,6 +23,10 @@ const LoginContainer = styled.div`
   justify-content: center;
   gap: 12px;
 
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+
   small {
     font-size: 0.8em;
     font-style: italic;
@@ -29,7 +35,7 @@ const LoginContainer = styled.div`
 `;
 
 const LoginForm = styled.form`
-  padding: 30px;
+  padding: 40px;
   background-color: var(--color-surface-02);
   border-radius: 12px;
   display: flex;
@@ -40,6 +46,23 @@ const LoginForm = styled.form`
   max-width: 85%;
   max-height: 85%;
   position: relative;
+
+  &.glass {
+    background-color: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(10px);
+
+    input,
+    button,
+    a {
+      background-color: rgba(255, 255, 255, 0.1) !important;
+      color: #eee !important;
+
+      &::placeholder {
+        color: #ccc;
+        opacity: 1; /* Firefox */
+      }
+    }
+  }
 
   hr {
     border: none;
@@ -144,10 +167,20 @@ const LoginPage = ({ motd, onLogin, ssoOptions }) => {
     return <LoadingPage />;
   }
 
+  const pageStyle = {};
+  let formClass = null;
+  if (nebula.loginBackground) {
+    pageStyle.backgroundImage = `url(/api/login-background.jpg)`;
+    pageStyle.backgroundPosition = 'center';
+    pageStyle.backgroundRepeat = 'no-repeat';
+    pageStyle.backgroundSize = 'cover';
+    formClass = 'glass';
+  }
+
   return (
-    <main>
+    <main style={pageStyle}>
       <LoginContainer>
-        <LoginForm onSubmit={onSubmit}>
+        <LoginForm onSubmit={onSubmit} className={formClass}>
           <div className="logo-container">
             <img src={NebulaLogo} alt="Nebula" />
           </div>

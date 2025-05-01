@@ -1,3 +1,5 @@
+import functools
+import os
 from typing import Annotated, get_args
 
 import fastapi
@@ -16,6 +18,12 @@ from server.sso import NebulaSSO, SSOOption
 from .client_settings import ClientSettingsModel, get_client_settings
 
 
+@functools.cache
+def is_login_background_enabled() -> bool:
+    img_path = f"/mnt/{nebula.config.site_name}_01/.nx/login-background.jpg"
+    return os.path.isfile(img_path)
+
+
 class InitResponseModel(ResponseModel):
     installed: Annotated[
         bool | None,
@@ -32,6 +40,15 @@ class InitResponseModel(ResponseModel):
             description="Server welcome string (displayed on login page)",
         ),
     ] = None
+
+    background: Annotated[
+        bool,
+        Field(
+            title="Background",
+            description="Is the login background image enabled?",
+            default_factory=is_login_background_enabled,
+        ),
+    ]
 
     user: Annotated[
         UserModel | None,

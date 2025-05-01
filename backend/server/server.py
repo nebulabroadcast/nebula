@@ -174,6 +174,14 @@ async def ws_endpoint(websocket: WebSocket) -> None:
 # API endpoints and the frontend
 #
 
+@app.get("/api/login-background.jpg")
+def login_background() -> FileResponse:
+    """Serve the login background image."""
+    img_path = f"/mnt/{nebula.config.site_name}_01/.nx/login-background.jpg"
+    if os.path.exists(img_path):
+        return FileResponse(img_path, media_type="image/jpeg")
+    return JSONResponse(status_code=404, content={"detail": "File not found"})
+
 
 def install_frontend_plugins(app: FastAPI) -> None:
     for plugin in get_frontend_plugins():
