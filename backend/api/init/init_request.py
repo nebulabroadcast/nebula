@@ -20,7 +20,7 @@ from .client_settings import ClientSettingsModel, get_client_settings
 
 @functools.cache
 def is_login_background_enabled() -> bool:
-    img_path = f"/mnt/{nebula.config.site_name}_01/.nx/login_background.jpg"
+    img_path = f"/mnt/{nebula.config.site_name}_01/.nx/login-background.jpg"
     return os.path.isfile(img_path)
 
 
@@ -46,8 +46,9 @@ class InitResponseModel(ResponseModel):
         Field(
             title="Background",
             description="Is the login background image enabled?",
+            default_factory=is_login_background_enabled,
         ),
-    ] = True
+    ]
 
     user: Annotated[
         UserModel | None,
