@@ -28,7 +28,7 @@ from typing import Any, Generic, TypeVar
 
 def _hash_args(func: Callable[..., Any], *args: Any, **kwargs: Any) -> str:
     """Generates a hash from the function arguments and keyword arguments."""
-    func_id = str(func.__module__ + "." + func.__qualname_)
+    func_id = str(id(func))
     arg_str = str(args)
     kwarg_str = str(sorted(kwargs.items()))
     combined_str = arg_str + kwarg_str + func_id
