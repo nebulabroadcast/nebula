@@ -48,7 +48,7 @@ class InitResponseModel(ResponseModel):
             description="Is the login background image enabled?",
             default_factory=is_login_background_enabled,
         ),
-    ]
+    ] = False
 
     user: Annotated[
         UserModel | None,
