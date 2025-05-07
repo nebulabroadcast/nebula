@@ -1,4 +1,5 @@
 import nebula
+from nebula.coalescer import Coalescer
 from server.dependencies import CurrentUser
 from server.request import APIRequest
 
@@ -34,4 +35,6 @@ class RundownRequest(APIRequest):
         if not user.can("rundown_view", request.id_channel):
             raise nebula.ForbiddenException("You are not allowed to view this rundown")
 
-        return await get_rundown(request)
+        coalesce = Coalescer()
+        rundown = await coalesce(get_rundown, request.id_channel, request.date)
+        return await rundown
