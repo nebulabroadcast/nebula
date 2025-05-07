@@ -10,7 +10,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.websockets import WebSocket, WebSocketDisconnect
 
 import nebula
-from nebula.exceptions import NebulaException
+from nebula.exceptions import NebulaException, NotFoundException
 from nebula.plugins.frontend import get_frontend_plugins
 from nebula.settings import load_settings
 from server.endpoints import install_endpoints
@@ -181,7 +181,7 @@ def login_background() -> FileResponse:
     img_path = f"/mnt/{nebula.config.site_name}_01/.nx/login-background.jpg"
     if os.path.exists(img_path):
         return FileResponse(img_path, media_type="image/jpeg")
-    return JSONResponse(status_code=404, content={"detail": "File not found"})
+    raise NotFoundException("Login background image not found")
 
 
 def install_frontend_plugins(app: FastAPI) -> None:
