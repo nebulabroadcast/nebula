@@ -7,6 +7,8 @@ import clsx from 'clsx';
 import nebula from '/src/nebula';
 import { Button, Progress } from '/src/components';
 
+import PlayoutPlugins from './PlayoutPlugins';
+
 const ControlsSection = styled.section`
   flex-direction: column;
   gap: 8px;
@@ -179,7 +181,11 @@ const PlayoutControls = ({ playoutStatus, rundownMode, loadRundown, onError }) =
         </ControlsSection>
       )}
 
-      {rundownMode === 'plugins' && <ControlsSection>not implemented</ControlsSection>}
+      {rundownMode === 'plugins' && (
+        <ControlsSection>
+          <PlayoutPlugins onError={onError} />
+        </ControlsSection>
+      )}
     </>
   );
 };
