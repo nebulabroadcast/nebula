@@ -37,4 +37,4 @@ class RundownRequest(APIRequest):
 
         coalesce = Coalescer()
         rundown = await coalesce(get_rundown, request.id_channel, request.date)
-        return await rundown
+        return rundown

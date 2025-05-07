@@ -52,6 +52,8 @@ class SchedulerRequest(APIRequest):
             date=request.date,
             days=request.days,
             editable=editable,
+            events=request.events,
+            delete=request.delete,
             user=user,
         )
 
