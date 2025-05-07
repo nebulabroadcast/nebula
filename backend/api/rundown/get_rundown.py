@@ -4,7 +4,7 @@ import nebula
 from nebula.enum import ObjectStatus, RunMode
 from nebula.helpers.scheduling import get_pending_assets, parse_rundown_date
 
-from .models import RundownRequestModel, RundownResponseModel, RundownRow
+from .models import RundownResponseModel, RundownRow
 
 
 async def get_rundown(id_channel: int, date: str | None = None) -> RundownResponseModel:

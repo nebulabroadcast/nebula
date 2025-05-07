@@ -1,5 +1,5 @@
 import nebula
-from nebula.coalescer import Coalescer
+from nebula.helpers.coalescer import Coalescer
 from server.dependencies import CurrentUser
 from server.request import APIRequest
 

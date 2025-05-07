@@ -1,28 +1,36 @@
 import nebula
-from nebula.helpers.create_new_event import create_new_event
+from nebula.helpers.create_new_event import EventData, create_new_event
 from nebula.helpers.scheduling import parse_rundown_date
 
-from .models import SchedulerRequestModel, SchedulerResponseModel
+from .models import SchedulerResponseModel
 from .utils import delete_events, get_event_at_time, get_events_in_range
+
+# request: SchedulerRequestModel,
 
 
 async def scheduler(
-    request: SchedulerRequestModel,
+    id_channel: int,
+    date: str | None = None,
+    days: int = 7,
+    delete: list[int] | None = None,
+    events: list[EventData] | None = None,
     editable: bool = True,
     user: nebula.User | None = None,
 ) -> SchedulerResponseModel:
     """Modify and display channel schedule"""
-    start_time: float | None = None
-    end_time: float | None = None
 
     username = user.name if user else None
+    start_time: float | None = None
+    end_time: float | None = None
+    delete = delete or []
+    events = events or []
 
-    if not (channel := nebula.settings.get_playout_channel(request.id_channel)):
-        raise nebula.BadRequestException(f"No such channel {request.id_channel}")
+    if not (channel := nebula.settings.get_playout_channel(id_channel)):
+        raise nebula.BadRequestException(f"No such channel {id_channel}")
 
-    if request.date:
-        start_time = parse_rundown_date(request.date, channel)
-        end_time = start_time + (request.days * 86400)
+    if date:
+        start_time = parse_rundown_date(date, channel)
+        end_time = start_time + (days * 86400)
 
     affected_events: list[int] = []
     affected_bins: list[int] = []
@@ -31,14 +39,14 @@ async def scheduler(
     # Delete events
     #
 
-    if request.delete and editable:
-        deleted_event_ids = await delete_events(request.delete, user=user)
+    if delete and editable:
+        deleted_event_ids = await delete_events(delete, user=user)
         affected_events.extend(deleted_event_ids)
     #
     # Create / update events
     #
 
-    for event_data in request.events:
+    for event_data in events:
         if not editable:
             # weird syntax, but keeps indentation level low
             break
@@ -127,11 +135,16 @@ async def scheduler(
     # Return existing events
 
     if (start_time is not None) and (end_time is not None):
-        events = await get_events_in_range(channel.id, start_time, end_time, user=user)
+        c_events = await get_events_in_range(
+            channel.id,
+            start_time,
+            end_time,
+            user=user,
+        )
     else:
-        events = []
+        c_events = []
     return SchedulerResponseModel(
-        events=[e.meta for e in events],
+        events=[e.meta for e in c_events],
         affected_events=affected_events,
         affected_bins=affected_bins,
     )

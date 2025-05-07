@@ -174,6 +174,7 @@ async def ws_endpoint(websocket: WebSocket) -> None:
 # API endpoints and the frontend
 #
 
+
 @app.get("/api/login-background.jpg")
 def login_background() -> FileResponse:
     """Serve the login background image."""

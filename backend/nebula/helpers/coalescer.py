@@ -1,5 +1,6 @@
 """
 Example usage:
+
 async def fetch_data(item_id: int):
     print(f"Fetching data for {item_id}...")
     await asyncio.sleep(2) # Simulate network call
@@ -7,16 +8,16 @@ async def fetch_data(item_id: int):
 
 coalescer = Coalescer()
 
-async def main():
-    # These calls will be coalesced if made close together
-    task1 = asyncio.create_task(coalescer(fetch_data, item_id=1))
-    task2 = asyncio.create_task(coalescer(fetch_data, item_id=1)) # Will use task1's future
-    task3 = asyncio.create_task(coalescer(fetch_data, item_id=2)) # New actual call
+# These calls will be coalesced if made close together
 
-    result1 = await task1
-    result2 = await task2
-    result3 = await task3
-    print(result1, result2, result3)
+task1 = asyncio.create_task(coalescer(fetch_data, item_id=1))
+task2 = asyncio.create_task(coalescer(fetch_data, item_id=1)) # Will use task1's future
+task3 = asyncio.create_task(coalescer(fetch_data, item_id=2)) # New actual call
+
+result1 = await task1
+result2 = await task2
+result3 = await task3
+print(result1, result2, result3)
 """
 
 import asyncio
@@ -31,7 +32,7 @@ def _hash_args(func: Callable[..., Any], *args: Any, **kwargs: Any) -> str:
     arg_str = str(args)
     kwarg_str = str(sorted(kwargs.items()))
     combined_str = arg_str + kwarg_str + func_id
-    return hashlib.md5(combined_str.encode()).hexdigest()
+    return hashlib.md5(combined_str.encode()).hexdigest()  # noqa: S324
 
 
 T = TypeVar("T")
