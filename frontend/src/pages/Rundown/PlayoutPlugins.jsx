@@ -20,7 +20,14 @@ const PluginFormWrapper = styled.div`
 
 const PluginSlot = ({ slot, value, onChange }) => {
   if (slot.type === 'text') {
-    return <InputText label={slot.name} value={value} onChange={onChange} style={{flexGrow:1}}/>;
+    return (
+      <InputText
+        label={slot.name}
+        value={value}
+        onChange={onChange}
+        style={{ flexGrow: 1 }}
+      />
+    );
   }
 
   if (slot.type === 'select') {

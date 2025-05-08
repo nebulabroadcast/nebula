@@ -91,7 +91,7 @@ const Calendar = ({
     return { x, y };
   };
 
-  const eventAtPos = () => {
+  const eventAtPos = useCallback(() => {
     if (!cursorTime.current) return null;
     const currentTs = cursorTime.current.getTime() / 1000;
 
@@ -127,7 +127,7 @@ const Calendar = ({
     }
     // no valid event under the cursor
     return null;
-  };
+  }, [events, dayStartOffsetSeconds]);
 
   // Update drawParams reference
 
@@ -139,6 +139,7 @@ const Calendar = ({
     drawParams.current.pos2time = pos2time;
     drawParams.current.time2pos = time2pos;
     drawParams.current.startTime = startTime;
+    //eslint-disable-next-line react-hooks/exhaustive-deps
   }, [drawParams.current, dayRef.current, zoom, startTime]);
 
   //
@@ -204,6 +205,7 @@ const Calendar = ({
 
   useEffect(() => {
     drawCalendar();
+    //eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cursorTime.current, events]);
 
   // Event handlers
@@ -255,7 +257,7 @@ const Calendar = ({
   const openEventInRundown = (event) => {
     const basePath = '/mam/rundown';
     const searchParams = new URLSearchParams(location.search);
-    const startTs = event.start - dayStartOffsetSeconds;
+    const startTs = event.start; // TODO: ensure we don't need any offset here
     const targetDate = new Date(startTs * 1000).toISOString().slice(0, 10);
     searchParams.set('date', targetDate);
     const hash = `#${event.id}`;
@@ -330,6 +332,7 @@ const Calendar = ({
       calendarRef.current.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
     };
+    //eslint-disable-next-line react-hooks/exhaustive-deps
   }, [calendarRef.current, startTime]);
 
   //
@@ -433,7 +436,7 @@ const Calendar = ({
       });
     }
     return dayStyles;
-  }, [startTime]);
+  }, [startTime, dayStartOffsetSeconds]);
 
   // yes. this is very ugly, but i need that reference to one day
   // to get its width
