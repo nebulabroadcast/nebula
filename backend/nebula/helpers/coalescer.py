@@ -1,6 +1,20 @@
 """
-Example usage:
+This module provides a Coalescer class that prevent multiple identical,
+concurrent asynchronous operations from being executed simultaneously.
 
+If you invoke an async function (e.g., fetch_data(id=1)) through the Coalescer instance,
+and another call to fetch_data(id=1) is already in progress, the Coalescer ensures
+that the second (and any subsequent identical) call will simply await the result
+of the first, ongoing operation, rather than initiating a new, redundant execution.
+
+In essence: It's a smart wrapper for async functions that says:
+
+> If I'm already doing this exact same thing,  don't start it again.
+> Just wait for the one already running to finish and share its result.
+
+## Example usage:
+
+```
 async def fetch_data(item_id: int):
     print(f"Fetching data for {item_id}...")
     await asyncio.sleep(2) # Simulate network call
@@ -18,6 +32,7 @@ result1 = await task1
 result2 = await task2
 result3 = await task3
 print(result1, result2, result3)
+```
 """
 
 import asyncio
