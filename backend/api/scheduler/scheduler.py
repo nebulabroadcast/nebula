@@ -5,9 +5,6 @@ from nebula.helpers.scheduling import parse_rundown_date
 from .models import SchedulerResponseModel
 from .utils import delete_events, get_event_at_time, get_events_in_range
 
-# request: SchedulerRequestModel,
-
-
 async def scheduler(
     id_channel: int,
     date: str | None = None,
