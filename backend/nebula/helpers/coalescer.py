@@ -71,7 +71,7 @@ class Coalescer(Generic[T]):
         *args: Any,
         **kwargs: Any,
     ) -> T:
-        key = _hash_args(func, args, kwargs)
+        key = _hash_args(func, *args, **kwargs)
         async with self.lock:
             if key not in self.current_futures:
                 self.current_futures[key] = asyncio.create_task(func(*args, **kwargs))
