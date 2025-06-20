@@ -52,10 +52,6 @@ async def set_rundown_order(
                         )
                         continue
 
-                    if not item:
-                        nebula.log.trace(f"Skipping {item}", user=user.name)
-                        continue
-
                 # Shut-up mypy
                 assert item is not None, "Item should not be None at this point"
                 assert item["id_bin"] is not None, "Item w/o bin. Shouldn't happen."
