@@ -1,5 +1,5 @@
 """
-This module provides a Coalescer class that prevent multiple identical,
+This module provides a Coalescer class that prevents multiple identical,
 concurrent asynchronous operations from being executed simultaneously.
 
 If you invoke an async function (e.g., fetch_data(id=1)) through the Coalescer instance,
