@@ -19,8 +19,6 @@ const ChannelSwitcher = () => {
     return null;
   }
 
-  if (!nebula.experimental) return null;
-
   const channelOptions = nebula.settings?.playout_channels.map((channel) => ({
     label: channel.name,
     onClick: () => dispatch(setCurrentChannel(channel.id)),
