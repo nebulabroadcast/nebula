@@ -4,7 +4,15 @@ import { useMemo, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import nebula from '/src/nebula';
-import { Spacer, Select, RadioButton, Button, InputText, Form, FormRow } from '/src/components';
+import {
+  Spacer,
+  Select,
+  RadioButton,
+  Button,
+  InputText,
+  Form,
+  FormRow,
+} from '/src/components';
 import { Navbar } from '/src/components';
 
 const PluginFormWrapper = styled.div`
@@ -32,9 +40,7 @@ const PluginSlot = ({ slot, value, onChange }) => {
   }
 
   if (slot.type === 'select') {
-    return (
-      <Select value={value} onChange={onChange} options={slot.options} />
-    );
+    return <Select value={value} onChange={onChange} options={slot.options} />;
   }
 
   return <span>Unsupported slot type: {slot.type}</span>;
@@ -87,25 +93,23 @@ const PluginPanel = ({ plugin, onError }) => {
   return (
     <>
       <Form>
-      {plugin.slots
-        .filter((slot) => slot.type !== 'action')
-        .map((slot) => (
-          <FormRow key={slot.name} title={slot.name}>
-            <PluginSlot
-              slot={slot}
-              value={formData[slot.name]}
-              onChange={(val) => setFormData((o) => ({ ...o, [slot.name]: val }))}
-            />
-          </FormRow>
-        ))
-      }
-      <FormRow title="Actions">
-      <div style={{ display: 'flex', flexDirection: 'row', gap: '4px' }}>
-        {buttons}
-      </div>
-      </FormRow>
+        {plugin.slots
+          .filter((slot) => slot.type !== 'action')
+          .map((slot) => (
+            <FormRow key={slot.name} title={slot.name}>
+              <PluginSlot
+                slot={slot}
+                value={formData[slot.name]}
+                onChange={(val) => setFormData((o) => ({ ...o, [slot.name]: val }))}
+              />
+            </FormRow>
+          ))}
+        <FormRow title="Actions">
+          <div style={{ display: 'flex', flexDirection: 'row', gap: '4px' }}>
+            {buttons}
+          </div>
+        </FormRow>
       </Form>
-
     </>
   );
 };

@@ -71,7 +71,9 @@ const MainNavbar = () => {
       <div className="left">
         <Logo />
         <NavLink to={`/mam/editor${mamSuffix}`}>Assets</NavLink>
-        {show.scheduler && <NavLink to={`/mam/scheduler${mamSuffix}`}>Scheduler</NavLink>}
+        {show.scheduler && (
+          <NavLink to={`/mam/scheduler${mamSuffix}`}>Scheduler</NavLink>
+        )}
         {show.rundown && <NavLink to={`/mam/rundown${mamSuffix}`}>Rundown</NavLink>}
         {show.jobs && <NavLink to="/jobs">Jobs</NavLink>}
         {show.services && <NavLink to="/services">Services</NavLink>}
