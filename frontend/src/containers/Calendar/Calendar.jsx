@@ -13,6 +13,7 @@ import drawMarks from './drawMarks';
 import drawEvents from './drawEvents';
 
 import { useLocalStorage } from '/src/hooks';
+import {dateToDateString} from '/src/utils';
 
 const CalendarCanvas = styled.canvas`
   background-color: #24202e;
@@ -257,8 +258,9 @@ const Calendar = ({
   const openEventInRundown = (event) => {
     const basePath = '/mam/rundown';
     const searchParams = new URLSearchParams(location.search);
-    const startTs = event.start; // TODO: ensure we don't need any offset here
-    const targetDate = new Date(startTs * 1000).toISOString().slice(0, 10);
+    const startTs = event.start - dayStartOffsetSeconds;
+    const localDateTime = new Date(startTs * 1000);
+    const targetDate = dateToDateString(localDateTime);
     searchParams.set('date', targetDate);
     const hash = `#${event.id}`;
     const fullPath = `${basePath}?${searchParams.toString()}${hash}`;
@@ -411,7 +413,7 @@ const Calendar = ({
       const dayStartTs = weekStartTs + i * 24 * 3600;
       // get date in YYYY-MM-DD format
       const jsDate = new Date(dayStartTs * 1000);
-      const date = jsDate.toISOString().slice(0, 10);
+      const date = dateToDateString(jsDate);
       const dayName = jsDate.toLocaleDateString(nebula.locale, {
         day: 'numeric',
         month: 'short',

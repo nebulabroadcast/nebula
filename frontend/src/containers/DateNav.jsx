@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 
 import { useDialog } from '/src/hooks';
 import { Button } from '/src/components';
+import { dateToDateString } from '/src/utils';
 
 const DateNav = ({ onChange, skipBy = 1 }) => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -12,7 +13,7 @@ const DateNav = ({ onChange, skipBy = 1 }) => {
   useEffect(() => {
     let dateParam = searchParams.get('date');
     if (date && dateParam === date) return;
-    if (!dateParam) dateParam = new Date().toISOString().split('T')[0];
+    if (!dateParam) dateParam = dateToDateString(new Date());
     setDate(dateParam);
     onChange(dateParam);
   }, [searchParams]);
@@ -21,11 +22,11 @@ const DateNav = ({ onChange, skipBy = 1 }) => {
 
   const dateStep = (days) => {
     let dateParam = searchParams.get('date');
-    if (!dateParam) dateParam = new Date().toISOString().split('T')[0];
+    if (!dateParam) dateParam = dateToDateString(new Date());
     const currentDate = new Date(dateParam);
     const newDate = new Date(currentDate.getTime() + days * 24 * 60 * 60 * 1000);
     setSearchParams((o) => {
-      o.set('date', newDate.toISOString().split('T')[0]);
+      o.set('date', dateToDateString(newDate));
       return o;
     });
   };
@@ -35,7 +36,7 @@ const DateNav = ({ onChange, skipBy = 1 }) => {
 
   const today = () => {
     setSearchParams((o) => {
-      o.set('date', new Date().toISOString().split('T')[0]);
+      o.set('date', dateToDateString(new Date()));
       return o;
     });
   };

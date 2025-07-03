@@ -47,8 +47,9 @@ const Scheduler = ({ draggedObjects }) => {
     setLoading(false);
     toast.error(
       <>
+        <p>
         <strong>Scheduler API error</strong>
-        <br />
+        </p>
         <p>{error.response?.data?.detail || 'Unknown error'}</p>
       </>
     );
