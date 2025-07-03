@@ -182,9 +182,7 @@ const PlayoutControls = ({ playoutStatus, rundownMode, loadRundown, onError }) =
       )}
 
       {rundownMode === 'plugins' && (
-        <ControlsSection>
-          <PlayoutPlugins onError={onError} />
-        </ControlsSection>
+        <PlayoutPlugins onError={onError} />
       )}
     </>
   );

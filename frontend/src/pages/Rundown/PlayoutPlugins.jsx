@@ -4,12 +4,13 @@ import { useMemo, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import nebula from '/src/nebula';
-import { Spacer, RadioButton, Button, InputText } from '/src/components';
+import { Spacer, Select, RadioButton, Button, InputText, Form, FormRow } from '/src/components';
+import { Navbar } from '/src/components';
 
 const PluginFormWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 6px;
 
   > div {
     display: flex;
@@ -32,13 +33,7 @@ const PluginSlot = ({ slot, value, onChange }) => {
 
   if (slot.type === 'select') {
     return (
-      <select value={slot.value} onChange={(e) => onChange(e.target.value)}>
-        {slot.options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.title}
-          </option>
-        ))}
-      </select>
+      <Select value={value} onChange={onChange} options={slot.options} />
     );
   }
 
@@ -89,37 +84,28 @@ const PluginPanel = ({ plugin, onError }) => {
   const inputWidgetCount = plugin.slots.filter((slot) => slot.type !== 'action').length;
   const buttonCount = plugin.slots.filter((slot) => slot.type === 'action').length;
 
-  if (inputWidgetCount === 1 && buttonCount < 3) {
-    const slot = plugin.slots[0];
-    return (
-      <div>
-        <PluginSlot
-          key={slot.name}
-          slot={slot}
-          value={formData[slot.name]}
-          onChange={(val) => setFormData((o) => ({ ...o, [slot.name]: val }))}
-        />
-        {buttons}
-      </div>
-    );
-  }
-
   return (
     <>
+      <Form>
       {plugin.slots
         .filter((slot) => slot.type !== 'action')
         .map((slot) => (
-          <div key={slot.name}>
+          <FormRow key={slot.name} title={slot.name}>
             <PluginSlot
               slot={slot}
               value={formData[slot.name]}
               onChange={(val) => setFormData((o) => ({ ...o, [slot.name]: val }))}
             />
-          </div>
-        ))}
-      <div>
-        <Spacer>{buttons}</Spacer>
+          </FormRow>
+        ))
+      }
+      <FormRow title="Actions">
+      <div style={{ display: 'flex', flexDirection: 'row', gap: '4px' }}>
+        {buttons}
       </div>
+      </FormRow>
+      </Form>
+
     </>
   );
 };
@@ -156,22 +142,24 @@ const PlayoutPlugins = ({ onError }) => {
 
   return (
     <PluginFormWrapper>
-      <div>
+      <Navbar>
         <RadioButton
           options={pluginOptions}
           value={currentPlugin}
           onChange={setCurrentPlugin}
         />
         <Spacer />
-      </div>
-      <PluginPanel
-        onError={onError}
-        plugin={
-          pluginList?.length &&
-          currentPlugin &&
-          pluginList.find((p) => p.name === currentPlugin)
-        } // Find the plugin object based on the currentPlugin name
-      />
+      </Navbar>
+      <section style={{ flexDirection: 'column', display: 'flex', gap: '6px' }}>
+        <PluginPanel
+          onError={onError}
+          plugin={
+            pluginList?.length &&
+            currentPlugin &&
+            pluginList.find((p) => p.name === currentPlugin)
+          } // Find the plugin object based on the currentPlugin name
+        />
+      </section>
     </PluginFormWrapper>
   );
 };

@@ -103,7 +103,7 @@ const Select = ({
     );
   }, [dialogVisible]);
 
-  if (selectionMode === 'single' && options.length < 10) {
+  if (selectionMode === 'single' && options.length < 20) {
     return (
       <StyledHTMLSelect
         value={value || ''}
