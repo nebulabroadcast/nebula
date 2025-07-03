@@ -112,7 +112,7 @@ const Select = ({
         }}
         style={style}
       >
-        <option value={null}></option>
+        <option value={''}></option>
         {options.map((option) => (
           <option key={option.value} value={option.value}>
             {option.title}
