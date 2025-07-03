@@ -4,19 +4,19 @@ import nebula
 from nebula.enum import ObjectStatus, RunMode
 from nebula.helpers.scheduling import get_pending_assets, parse_rundown_date
 
-from .models import RundownRequestModel, RundownResponseModel, RundownRow
+from .models import RundownResponseModel, RundownRow
 
 
-async def get_rundown(request: RundownRequestModel) -> RundownResponseModel:
+async def get_rundown(id_channel: int, date: str | None = None) -> RundownResponseModel:
     """Get a rundown"""
-    if not (channel := nebula.settings.get_playout_channel(request.id_channel)):
-        raise nebula.BadRequestException(f"No such channel: {request.id_channel}")
+    if not (channel := nebula.settings.get_playout_channel(id_channel)):
+        raise nebula.BadRequestException(f"No such channel: {id_channel}")
 
     request_start_time = time.monotonic()
-    start_time = parse_rundown_date(request.date, channel)
+    start_time = parse_rundown_date(date, channel)
     end_time = start_time + (3600 * 24)
     pending_assets = await get_pending_assets(channel.send_action)
-    pskey = f"playout_status/{request.id_channel}"
+    pskey = f"playout_status/{id_channel}"
 
     query = """
         SELECT
@@ -75,9 +75,7 @@ async def get_rundown(request: RundownRequestModel) -> RundownResponseModel:
     last_event = None
     ts_broadcast = ts_scheduled = 0.0
 
-    async for record in nebula.db.iterate(
-        query, request.id_channel, start_time, end_time
-    ):
+    async for record in nebula.db.iterate(query, id_channel, start_time, end_time):
         id_event = record["id_event"]
         id_item = record["id_item"]
         id_bin = record["id_bin"]

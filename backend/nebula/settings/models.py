@@ -98,7 +98,7 @@ class SSOProvider(SettingsModel):
         str,
         Field(
             title="Name",
-            example="myoauth",
+            examples=["myoauth"],
         ),
     ]
 
@@ -107,7 +107,7 @@ class SSOProvider(SettingsModel):
         Field(
             title="Title",
             description="Used on the SSO button on the login page",
-            example="Log in using MyOauth",
+            examples=["Log in using MyOauth"],
         ),
     ]
 
@@ -124,7 +124,7 @@ class SSOProvider(SettingsModel):
         Field(
             title="Entrypoint",
             description="URL to the SSO provider configuration endpoint",
-            example="https://iam.example.com/realms/nebula/.well-known/openid-configuration",
+            examples=["https://iam.example.com/realms/nebula/.well-known/openid-configuration"],
         ),
     ] = None
 
@@ -132,7 +132,7 @@ class SSOProvider(SettingsModel):
         str,
         Field(
             title="Client ID",
-            example="myclientid",
+            examples=["myclientid"],
         ),
     ]
 
@@ -140,7 +140,7 @@ class SSOProvider(SettingsModel):
         str,
         Field(
             title="Client secret",
-            example="myclientsecret",
+            examples=["myclientsecret"],
         ),
     ]
 
