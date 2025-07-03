@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 
 import nebula from '/src/nebula';
-import { Table, Timestamp } from '/src/components';
+import { Table, Timestamp, Section } from '/src/components';
 
 import styled from 'styled-components';
 
@@ -74,7 +74,7 @@ const Sessions = ({ userId }) => {
   };
 
   return (
-    <section className="column grow" style={{ minWidth: 400 }}>
+    <Section className="column grow" style={{ minWidth: 400 }}>
       <Table
         data={sessions}
         loading={loading}
@@ -100,7 +100,7 @@ const Sessions = ({ userId }) => {
           },
         ]}
       />
-    </section>
+    </Section>
   );
 };
 

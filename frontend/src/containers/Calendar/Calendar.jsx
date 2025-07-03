@@ -13,7 +13,7 @@ import drawMarks from './drawMarks';
 import drawEvents from './drawEvents';
 
 import { useLocalStorage } from '/src/hooks';
-import {dateToDateString} from '/src/utils';
+import { dateToDateString } from '/src/utils';
 
 const CalendarCanvas = styled.canvas`
   background-color: #24202e;
@@ -443,7 +443,7 @@ const Calendar = ({
   // yes. this is very ugly, but i need that reference to one day
   // to get its width
   return (
-    <CalendarWrapper scrollbarWidth={scrollbarWidth} clockWidth={CLOCK_WIDTH}>
+    <CalendarWrapper scrollbarwidth={scrollbarWidth} clockwidth={CLOCK_WIDTH}>
       <div className="calendar-header">
         {dstyles.map((d, i) => {
           const r = i === 0 ? dayRef : null;

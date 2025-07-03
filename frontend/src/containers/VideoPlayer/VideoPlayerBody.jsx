@@ -10,7 +10,7 @@ import Trackbar from './Trackbar';
 import VideoOverlay from './VideoOverlay';
 import VideoPlayerControls from './VideoPlayerControls';
 
-import { Button, InputTimecode, Navbar } from '/src/components';
+import { Button, InputTimecode, Navbar, Section } from '/src/components';
 
 const VideoPlayerContainer = styled.div`
   display: flex;
@@ -264,7 +264,7 @@ const VideoPlayerBody = ({ ...props }) => {
         />
       </Navbar>
 
-      <section className="row grow">
+      <Section className="row grow">
         <VUMeter gainNodes={leftNodes} audioContext={audioContext} />
         <VideoSpace>
           <VideoContainer>
@@ -288,7 +288,7 @@ const VideoPlayerBody = ({ ...props }) => {
           </VideoContainer>
         </VideoSpace>
         <VUMeter gainNodes={rightNodes} audioContext={audioContext} />
-      </section>
+      </Section>
 
       <Trackbar
         duration={frames2time(durFrames, props.frameRate)}

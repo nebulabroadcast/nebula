@@ -12,6 +12,7 @@ import {
   InputText,
   Form,
   FormRow,
+  Section,
 } from '/src/components';
 import { Navbar } from '/src/components';
 
@@ -154,7 +155,7 @@ const PlayoutPlugins = ({ onError }) => {
         />
         <Spacer />
       </Navbar>
-      <section style={{ flexDirection: 'column', display: 'flex', gap: '6px' }}>
+      <Section style={{ flexDirection: 'column', display: 'flex', gap: '6px' }}>
         <PluginPanel
           onError={onError}
           plugin={
@@ -163,7 +164,7 @@ const PlayoutPlugins = ({ onError }) => {
             pluginList.find((p) => p.name === currentPlugin)
           } // Find the plugin object based on the currentPlugin name
         />
-      </section>
+      </Section>
     </PluginFormWrapper>
   );
 };

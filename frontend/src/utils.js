@@ -9,7 +9,7 @@ const deepCopy = (obj) => cloneDeep(obj);
 const sortByKey = (array, key) => {
   // Return a copy of array of objects sorted
   // by the given key
-  return array.sort(function(a, b) {
+  return array.sort(function (a, b) {
     var x = a[key];
     var y = b[key];
     return x < y ? -1 : x > y ? 1 : 0;
@@ -56,6 +56,14 @@ const dateToTimeString = (localDateTime) => {
   const ss = localDateTime.getSeconds();
   const timeStr = `${zpad(hh)}:${zpad(min)}:${zpad(ss)}`;
   return timeStr;
-}
+};
 
-export { arrayEquals, deepCopy, isEmpty, sortByKey, formatTimeString, dateToDateString, dateToTimeString };
+export {
+  arrayEquals,
+  deepCopy,
+  isEmpty,
+  sortByKey,
+  formatTimeString,
+  dateToDateString,
+  dateToTimeString,
+};

@@ -31,7 +31,7 @@ root.render(
         newestOnTop={true}
         draggable={false}
         closeOnClick={true}
-        autoClose={3000}
+        autoClose={300000}
         limit={5}
       />
     </ReduxProvider>

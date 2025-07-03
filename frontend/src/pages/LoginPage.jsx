@@ -142,12 +142,12 @@ const LoginPage = ({ motd, onLogin, ssoOptions }) => {
       .catch((err) => {
         if (err.response.status === 422) {
           toast.error(
-            <>
+            <div>
               <p>
                 <strong>Login failed</strong>
               </p>
               <p>Invalid request</p>
-            </>
+            </div>
           );
           return;
         }

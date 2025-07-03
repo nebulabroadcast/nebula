@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
-import { Table, Button } from '/src/components';
+import { Table, Button, Section } from '/src/components';
 
 import { NavLink } from 'react-router-dom';
 
@@ -178,9 +178,9 @@ const JobsPage = () => {
   return (
     <main className="column">
       <JobsNav searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
-      <section className="grow">
+      <Section className="grow">
         <Table columns={COLUMNS} className="contained" data={jobs} loading={loading} />
-      </section>
+      </Section>
     </main>
   );
 };
