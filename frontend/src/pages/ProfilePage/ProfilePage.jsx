@@ -12,6 +12,7 @@ import {
   InputPassword,
   Button,
   PanelHeader,
+  Section,
 } from '/src/components';
 import Sessions from '/src/containers/Sessions.jsx';
 
@@ -19,7 +20,7 @@ const ProfileForm = () => {
   const displayName = nebula.user.full_name || nebula.user.login;
 
   return (
-    <section className="column">
+    <Section className="column">
       <PanelHeader>
         <Icon icon="person" />
         {displayName}
@@ -38,7 +39,7 @@ const ProfileForm = () => {
           <Button label="Save" icon="check" disabled />
         </FormRow>
       </Form>
-    </section>
+    </Section>
   );
 };
 
@@ -66,7 +67,7 @@ const ChangePasswordForm = () => {
   };
 
   return (
-    <section className="column">
+    <Section className="column">
       <PanelHeader>
         <Icon icon="security" />
         Change password
@@ -90,7 +91,7 @@ const ChangePasswordForm = () => {
           <Button label="Change password" icon="check" onClick={changePassword} />
         </FormRow>
       </Form>
-    </section>
+    </Section>
   );
 };
 
@@ -98,7 +99,7 @@ const AdminPanel = () => {
   const navigate = useNavigate();
 
   return (
-    <section className="grow column">
+    <Section className="grow column">
       <PanelHeader>
         <Icon icon="admin_panel_settings" />
         Administration
@@ -111,15 +112,15 @@ const AdminPanel = () => {
           onClick={() => navigate('/users')}
         />
       </div>
-    </section>
+    </Section>
   );
 };
 
 const UserPanel = () => {
   return (
-    <section className="grow column">
+    <Section className="grow column">
       <h2>Access control</h2>
-    </section>
+    </Section>
   );
 };
 

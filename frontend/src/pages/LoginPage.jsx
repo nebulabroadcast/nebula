@@ -142,12 +142,12 @@ const LoginPage = ({ motd, onLogin, ssoOptions }) => {
       .catch((err) => {
         if (err.response.status === 422) {
           toast.error(
-            <>
+            <div>
               <p>
                 <strong>Login failed</strong>
               </p>
               <p>Invalid request</p>
-            </>
+            </div>
           );
           return;
         }
@@ -167,7 +167,13 @@ const LoginPage = ({ motd, onLogin, ssoOptions }) => {
     return <LoadingPage />;
   }
 
-  const pageStyle = {};
+  const pageStyle = {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  };
   let formClass = null;
   if (nebula.loginBackground) {
     pageStyle.backgroundImage = `url(/api/login-background.jpg)`;

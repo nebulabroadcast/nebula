@@ -1,8 +1,8 @@
-import { Table } from '/src/components';
+import { Table, Section } from '/src/components';
 
 const UserList = ({ onSelect, users, currentId, loading }) => {
   return (
-    <section className="grow" style={{ minWidth: 300, maxWidth: 400 }}>
+    <Section className="grow" style={{ minWidth: 300, maxWidth: 400 }}>
       <Table
         className="contained"
         data={users}
@@ -17,7 +17,7 @@ const UserList = ({ onSelect, users, currentId, loading }) => {
           },
         ]}
       />
-    </section>
+    </Section>
   );
 };
 

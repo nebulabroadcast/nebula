@@ -7,6 +7,7 @@ import nebula from '/src/nebula';
 import { useDialog } from '/src/hooks';
 import { Loader, LoaderWrapper } from '/src/components';
 import Calendar from '/src/containers/Calendar';
+import { Section } from '/src/components';
 
 import SchedulerNav from './SchedulerNav';
 
@@ -46,11 +47,12 @@ const Scheduler = ({ draggedObjects }) => {
   const onError = (error) => {
     setLoading(false);
     toast.error(
-      <>
-        <strong>Scheduler API error</strong>
-        <br />
+      <div>
+        <p>
+          <strong>Scheduler API error</strong>
+        </p>
         <p>{error.response?.data?.detail || 'Unknown error'}</p>
-      </>
+      </div>
     );
   };
 
@@ -244,7 +246,7 @@ const Scheduler = ({ draggedObjects }) => {
         loading={loading}
         setLoading={setLoading}
       />
-      <section className="grow nopad">
+      <Section className="grow nopad">
         {startTime && (
           <Calendar
             startTime={startTime}
@@ -260,7 +262,7 @@ const Scheduler = ({ draggedObjects }) => {
             <Loader />
           </LoaderWrapper>
         )}
-      </section>
+      </Section>
     </main>
   );
 };

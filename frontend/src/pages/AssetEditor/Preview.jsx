@@ -13,7 +13,7 @@ import { arrayEquals } from '/src/utils';
 
 const SubclipsPanel = ({ subclips, setSubclips, selection, setSelection, fps }) => {
   return (
-    <section className="grow">
+    <Section className="grow">
       <div
         className="contained column"
         style={{
@@ -37,7 +37,7 @@ const SubclipsPanel = ({ subclips, setSubclips, selection, setSelection, fps }) 
         ))}
         <Spacer />
       </div>
-    </section>
+    </Section>
   );
 };
 

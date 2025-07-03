@@ -1,6 +1,8 @@
 import styled from 'styled-components';
 
 import { getTheme } from './theme';
+import { dateToDateString } from '/src/utils';
+import { dateToTimeString } from '/src/utils';
 
 const TimestampWrapper = styled.div`
   display: flex;
@@ -18,18 +20,8 @@ const TimestampWrapper = styled.div`
 const Timestamp = ({ timestamp, mode, ...props }) => {
   if (!timestamp) return <></>;
   const localDateTime = new Date(timestamp * 1000);
-
-  const yy = localDateTime.getFullYear();
-  const mm = localDateTime.getMonth() + 1; // Months are zero-based
-  const dd = localDateTime.getDate();
-
-  const hh = localDateTime.getHours();
-  const min = localDateTime.getMinutes();
-  const ss = localDateTime.getSeconds();
-
-  const pad = (n) => String(n).padStart(2, '0');
-  const dateStr = `${yy}-${pad(mm)}-${pad(dd)}`;
-  const timeStr = `${hh}:${pad(min)}:${pad(ss)}`;
+  const dateStr = dateToDateString(localDateTime);
+  const timeStr = dateToTimeString(localDateTime);
 
   return (
     <TimestampWrapper {...props}>

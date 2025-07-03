@@ -124,7 +124,9 @@ class SSOProvider(SettingsModel):
         Field(
             title="Entrypoint",
             description="URL to the SSO provider configuration endpoint",
-            examples=["https://iam.example.com/realms/nebula/.well-known/openid-configuration"],
+            examples=[
+                "https://iam.example.com/realms/nebula/.well-known/openid-configuration"
+            ],
         ),
     ] = None
 

@@ -5,7 +5,7 @@ import { debounce } from 'lodash';
 import clsx from 'clsx';
 
 import nebula from '/src/nebula';
-import { Table } from '/src/components';
+import { Table, Section } from '/src/components';
 import Pagination from '/src/containers/Pagination';
 import { setCurrentView, setSelectedAssets, setFocusedAsset } from '/src/actions';
 import { useLocalStorage, useDialog } from '/src/hooks';
@@ -269,7 +269,7 @@ const BrowserTable = ({ isDragging }) => {
 
   return (
     <>
-      <section className="grow">
+      <Section className="grow">
         <Table
           data={data}
           columns={columns}
@@ -289,7 +289,7 @@ const BrowserTable = ({ isDragging }) => {
             setSortDirection(sortDirection);
           }}
         />
-      </section>
+      </Section>
       <Pagination page={page} setPage={setPage} hasMore={hasMore} />
     </>
   );

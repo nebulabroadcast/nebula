@@ -14,7 +14,7 @@ import {
   setSelectedAssets,
   setFocusedAsset,
 } from '/src/actions';
-import { Loader } from '/src/components';
+import { Loader, Section } from '/src/components';
 
 import AssetEditorNav from './EditorNav';
 import AssetMainProps from './AssetMainProps';
@@ -283,10 +283,10 @@ const AssetEditor = () => {
       })
       .catch((error) => {
         toast.error(
-          <>
+          <div>
             <strong>Unable to save asset</strong>
             <p>{error.response?.data?.detail || 'Unknown error'}</p>
-          </>
+          </div>
         );
       })
       .finally(() => {
@@ -326,7 +326,7 @@ const AssetEditor = () => {
               setMeta={setMeta}
               enabledActions={enabledActions}
             />
-            <section
+            <Section
               className={clsx('grow', 'column', {
                 'section-changed': isChanged,
               })}
@@ -347,7 +347,7 @@ const AssetEditor = () => {
                   disabled={!enabledActions.edit}
                 />
               </div>
-            </section>
+            </Section>
           </main>
         );
     }

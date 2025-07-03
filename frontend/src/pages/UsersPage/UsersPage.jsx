@@ -66,6 +66,7 @@ const UsersPage = () => {
       .request('save-user', userData)
       .then(() => {
         loadUsers();
+        toast.success('User saved');
       })
       .catch((err) => {
         toast.error('Error saving user');
