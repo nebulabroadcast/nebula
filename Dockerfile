@@ -13,8 +13,11 @@ RUN yarn install
 COPY ./frontend/src /frontend/src
 RUN yarn build
 
-FROM python:3.12-slim
-ENV PYTHONBUFFERED=1
+FROM python:3.13-slim-trixie
+ENV PYTHONUNBUFFERED=1
+
+EXPOSE 80
+LABEL maintainer="github.com/nebulabroadcast"
 
 RUN \
   apt-get update \
@@ -27,8 +30,7 @@ RUN \
 
 WORKDIR /backend
 COPY ./backend/pyproject.toml /backend/uv.lock .
-RUN --mount=from=ghcr.io/astral-sh/uv,source=/uv,target=/bin/uv \
-    uv pip install -r pyproject.toml --system
+RUN pip install --break-system-packages -e .  
 
 COPY ./backend .
 COPY --from=build /frontend/dist/ /frontend
