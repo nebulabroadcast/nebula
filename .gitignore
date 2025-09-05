@@ -2,9 +2,7 @@ __pycache__
 .mypy_cache
 .pytest_cache
 .env
-poetry.lock
 frontend/node_modules
-frontend/yarn.lock
 
 storage/
 settings/*.py
