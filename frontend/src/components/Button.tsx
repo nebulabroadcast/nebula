@@ -38,7 +38,8 @@ const BaseButton = styled.button`
   white-space: nowrap;
 
   .icon {
-    font-size: 1.4rem;
+    font-size: 20px;
+    padding-top: 2px;
   }
 
   &:focus {
@@ -101,8 +102,9 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>((props: ButtonProps, r
   const _buttonStyle = style || {};
   const _iconStyle = iconStyle || {};
 
-  if (hlColor) {
-    _buttonStyle.borderBottom = `1px solid ${props.hlColor}`;
+  if (hlColor && !buttonProps.disabled) {
+    //_buttonStyle.borderBottom = `1px solid ${props.hlColor}`;
+    _iconStyle.color = props.hlColor
   }
 
   return (
