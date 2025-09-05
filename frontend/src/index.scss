@@ -125,7 +125,7 @@ section:not(.Toastify) {
 }
 
 .section-changed {
-  border: 1px solid var(--color-violet);
+  border: 1px solid var(--color-violet) !important;
 }
 
 //
