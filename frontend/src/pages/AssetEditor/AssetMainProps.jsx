@@ -41,6 +41,7 @@ const AssetEditorNav = ({ assetData, setMeta, enabledActions }) => {
       label: f.name,
       style: { borderLeft: `4px solid ${f.color}` },
       onClick: () => setMeta('id_folder', f.id),
+      value: f.id,
     }));
   }, []);
 
@@ -136,6 +137,7 @@ const AssetEditorNav = ({ assetData, setMeta, enabledActions }) => {
         }}
         label={currentFolder?.name || 'no folder'}
         disabled={!enabledActions.folderChange}
+        value={currentFolder?.id}
       />
 
       <InputTimecode
