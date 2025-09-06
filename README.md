@@ -18,8 +18,11 @@ Apart from this server repository, Nebula consists of the following other reposi
 
  - [nebula-tutorial](https://github.com/nebulabroadcast/nebula-tutorial) - Example docker-compose.yml, default settings, plugins and other files for getting started with Nebula.
  - [nebula-worker](https://github.com/nebulabroadcast/nebula-worker) - Nebula worker is a Python application that runs on a worker machine and handles the actual media processing.
- - [firefly](https://github.com/nebulabroadcast/firefly) - Firefly is a desktop client needed for linear broadcast planning, scheduling and playout.
+ - [firefly](https://github.com/nebulabroadcast/firefly) - Firefly is a desktop client needed for linear broadcast planning, scheduling and playout. 
 
+> [!NOTE]
+> Firefly is being phased out. It remains supported, but no new features are being added as 
+> the web interface now has full feature parity and provides a better user experience.
 
 Key features
 ------------
@@ -68,8 +71,7 @@ Each clip in the rundown is picked by its editorial format, genre, tempo, atmosp
 
 ### Playout control
 
-For linear broadcasting, Nebula can control
-[CasparCG](https://casparcg.com), [VLC](https://videolan.org) or [Conti](https://github.com/immstudios/conti).
+For linear broadcasting, Nebula can control [CasparCG](https://casparcg.com) or another playout server (using a custom plugin).
 Broadcasting can run autonomously with and option of starting blocks at a specified time.
 
 Users - master control room operators - can interfere with the rundown using [Firefly client](https://github.com/nebulabroadcast/firefly),
@@ -99,7 +101,7 @@ dashboard can be used for their visualization and alerting in case of problems.
 
 ### Reliability
 
-Nebula is under active development and is in production since 2012 with no intenitons of abandoning the project,
+Nebula is under active development and is in production since 2012 with no intentitons of abandoning the project,
 and we have a roadmap for several years. We listen to our customers, and we change our priorities in order to meet
 requests from the production.
 
