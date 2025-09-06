@@ -114,7 +114,7 @@ class Redis:
         await cls.redis_pool.publish(cls.channel, message)
 
     @classmethod
-    async def iterate(cls, namespace: str) -> AsyncGenerator[tuple[str, str], None]:
+    async def iterate(cls, namespace: str) -> AsyncGenerator[tuple[str, str]]:
         """Iterate over stored keys
 
         Yield (key, payload) tuples matching given namespace.
@@ -129,9 +129,7 @@ class Redis:
             yield key_without_ns, payload
 
     @classmethod
-    async def iterate_json(
-        cls, namespace: str
-    ) -> AsyncGenerator[tuple[str, Any], None]:
+    async def iterate_json(cls, namespace: str) -> AsyncGenerator[tuple[str, Any]]:
         """Iterate over stored keys
 
         Yield (key, payload) tuples matching given namespace.

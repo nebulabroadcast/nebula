@@ -161,7 +161,11 @@ const SelectDialog = ({ options, onHide, selectionMode, initialValue, title }) =
           ref={filterRef}
           style={{ flexGrow: 1 }}
         />
-        <Button onClick={() => setFilter('')} icon="filter_alt_off" title="Clear filter" />
+        <Button
+          onClick={() => setFilter('')}
+          icon="filter_alt_off"
+          title="Clear filter"
+        />
       </div>
     </div>
   );

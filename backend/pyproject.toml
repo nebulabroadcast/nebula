@@ -1,6 +1,6 @@
 [project]
 name = "nebula"
-version = "6.0.10"
+version = "6.1.0"
 description = "Open source broadcast automation system"
 authors = [
   {name = "Nebula Broadcast", email = "info@nebulabroadcast.com"},
@@ -81,6 +81,8 @@ ignore = [
     "S101", # asserts - slowly removing
     "S608", # string-based SQL query construction
     "S307", # eval (used somewhere)
+    "UP046",
+    "UP047",
 ]
 
 [tool.mypy]

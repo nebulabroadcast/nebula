@@ -58,9 +58,7 @@ class DB:
         pool = await self.pool()
         return await pool.fetchrow(query, *args)
 
-    async def iterate(
-        self, query: str, *args: Any
-    ) -> AsyncGenerator[asyncpg.Record, None]:
+    async def iterate(self, query: str, *args: Any) -> AsyncGenerator[asyncpg.Record]:
         """Iterate over a query and yield the result."""
         pool = await self.pool()
         async with pool.acquire() as conn, conn.transaction():
