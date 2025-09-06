@@ -32,9 +32,11 @@ const DropdownContainer = styled.div`
         background-color: var(--color-surface-04);
       }
 
-      &:active,
+      &.active,
       &:focus {
         outline: none !important;
+        background-color: var(--color-surface-04);
+        text-shadow: none !important;
       }
 
       &:disabled {
@@ -82,6 +84,7 @@ const DropdownOption = ({
         iconStyle={hlColor ? { color: hlColor } : {}}
         disabled={disabled || currentValue === value}
         onClick={() => onClick(value)}
+        active={currentValue === value}
       />
     </span>
   );
@@ -96,7 +99,7 @@ const Dropdown = ({
   contentStyle = {},
   value = null,
   disabled = false,
-  iconOnRigth = false,
+  iconOnRight = true,
 }) => {
   if (align === 'right') contentStyle['right'] = 0;
 
@@ -107,7 +110,7 @@ const Dropdown = ({
         style={buttonStyle}
         icon={icon}
         label={label}
-        iconOnRight={iconOnRigth}
+        iconOnRight={iconOnRight}
         disabled={disabled}
       />
       <div className="dropdown-content" style={contentStyle}>

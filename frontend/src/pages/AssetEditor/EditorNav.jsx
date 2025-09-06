@@ -65,16 +65,18 @@ const AssetEditorNav = ({
       <ToolbarSeparator />
 
       <Button
-        icon="backspace"
+        icon="close"
         label="Discard changes"
         onClick={onRevert}
         disabled={!enabledActions.revert}
+        hlColor="var(--color-red)"
       />
       <Button
         icon="check"
         label="Save asset"
         onClick={() => onSave()}
         disabled={!enabledActions.save}
+        hlColor="var(--color-green)"
       />
     </Navbar>
   );

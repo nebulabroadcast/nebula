@@ -2,8 +2,11 @@
 name = "nebula"
 version = "6.0.10"
 description = "Open source broadcast automation system"
-authors = ["Nebula Broadcast <info@nebulabroadcast.com>"]
-requires-python = ">=3.11,<3.13"
+authors = [
+  {name = "Nebula Broadcast", email = "info@nebulabroadcast.com"},
+]
+
+requires-python = ">=3.13"
 dependencies = [
     "aiofiles >=24.1.0",
     "asyncpg >=0.29.0",

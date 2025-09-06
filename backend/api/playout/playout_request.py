@@ -41,11 +41,17 @@ class PlayoutRequest(APIRequest):
         # HTTPx stopped working for some reason, raising asyncio.CancelledError
         # when trying to send a request. Using requests for now.
 
-        response = requests.post(
-            f"{controller_url}/{request.action.value}",
-            json=request.payload,
-            timeout=4,
-        )
+        try:
+            response = requests.post(
+                f"{controller_url}/{request.action.value}",
+                json=request.payload,
+                timeout=4,
+            )
+        except requests.exceptions.ConnectionError as e:
+            nebula.log.error("Unable to connect to playout controller")
+            raise nebula.NebulaException(
+                "Unable to connect to playout controller"
+            ) from e
 
         #
         # Parse response and return

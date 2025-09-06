@@ -119,6 +119,7 @@ const TableWrapper = styled.div`
             width: 100%;
             background: transparent;
             border: 1px solid var(--color-violet);
+            align-items: center;
           }
         }
 
