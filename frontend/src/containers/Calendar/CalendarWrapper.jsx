@@ -12,9 +12,9 @@ const CalendarWrapper = styled.div`
     user-drag: none;
     display: flex;
     margin-right: ${(props) =>
-      props.scrollbarWidth}px; /* Dynamic padding to account for scrollbar */
+      props.scrollbarwidth}px; /* Dynamic padding to account for scrollbar */
     margin-left: ${(props) =>
-      props.clockWidth}px; /* Dynamic padding to account for scrollbar */
+      props.clockwidth}px; /* Dynamic padding to account for scrollbar */
 
     .calendar-day {
       flex: 1;

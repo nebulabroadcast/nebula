@@ -6,6 +6,7 @@ import { useLocalStorage, useDialog } from '/src/hooks';
 import { toast } from 'react-toastify';
 
 import nebula from '/src/nebula';
+import { dateToDateString } from '/src/utils';
 
 import PlayoutControls from './PlayoutControls';
 import RundownEditTools from './RundownEditTools';
@@ -77,7 +78,7 @@ const Rundown = ({ draggedObjects }) => {
     if (!startTime) return;
     setLoading(true);
     const requestParams = {
-      date: currentDateRef.current.toISOString().split('T')[0],
+      date: dateToDateString(currentDateRef.current),
       id_channel: currentChannelRef.current,
     };
     nebula.request('rundown', requestParams).then(onResponse).catch(onError);

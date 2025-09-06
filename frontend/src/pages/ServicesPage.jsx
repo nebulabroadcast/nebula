@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
 import PubSub from '/src/pubsub';
-import { Table, Button, InputSwitch, Spacer } from '/src/components';
+import { Table, Button, InputSwitch, Spacer, Section } from '/src/components';
 
 import { Duration } from 'luxon';
 
@@ -141,7 +141,7 @@ const ServicesPage = () => {
 
   return (
     <main>
-      <section className="grow">
+      <Section className="grow">
         <Table
           data={services}
           columns={columns}
@@ -149,7 +149,7 @@ const ServicesPage = () => {
           keyField="id"
           loading={loading}
         />
-      </section>
+      </Section>
     </main>
   );
 };

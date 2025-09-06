@@ -38,4 +38,32 @@ const formatTimeString = (timestamp) => {
   return `${localDate} ${localTime}`;
 };
 
-export { arrayEquals, deepCopy, isEmpty, sortByKey, formatTimeString };
+const zpad = (n) => String(n).padStart(2, '0');
+
+const dateToDateString = (localDateTime) => {
+  if (!localDateTime) return '';
+  const yy = localDateTime.getFullYear();
+  const mm = localDateTime.getMonth() + 1; // Months are zero-based
+  const dd = localDateTime.getDate();
+  const dateStr = `${yy}-${zpad(mm)}-${zpad(dd)}`;
+  return dateStr;
+};
+
+const dateToTimeString = (localDateTime) => {
+  if (!localDateTime) return '';
+  const hh = localDateTime.getHours();
+  const min = localDateTime.getMinutes();
+  const ss = localDateTime.getSeconds();
+  const timeStr = `${zpad(hh)}:${zpad(min)}:${zpad(ss)}`;
+  return timeStr;
+};
+
+export {
+  arrayEquals,
+  deepCopy,
+  isEmpty,
+  sortByKey,
+  formatTimeString,
+  dateToDateString,
+  dateToTimeString,
+};

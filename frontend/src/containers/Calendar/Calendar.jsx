@@ -13,6 +13,7 @@ import drawMarks from './drawMarks';
 import drawEvents from './drawEvents';
 
 import { useLocalStorage } from '/src/hooks';
+import { dateToDateString } from '/src/utils';
 
 const CalendarCanvas = styled.canvas`
   background-color: #24202e;
@@ -91,7 +92,7 @@ const Calendar = ({
     return { x, y };
   };
 
-  const eventAtPos = () => {
+  const eventAtPos = useCallback(() => {
     if (!cursorTime.current) return null;
     const currentTs = cursorTime.current.getTime() / 1000;
 
@@ -127,7 +128,7 @@ const Calendar = ({
     }
     // no valid event under the cursor
     return null;
-  };
+  }, [events, dayStartOffsetSeconds]);
 
   // Update drawParams reference
 
@@ -139,6 +140,7 @@ const Calendar = ({
     drawParams.current.pos2time = pos2time;
     drawParams.current.time2pos = time2pos;
     drawParams.current.startTime = startTime;
+    //eslint-disable-next-line react-hooks/exhaustive-deps
   }, [drawParams.current, dayRef.current, zoom, startTime]);
 
   //
@@ -204,6 +206,7 @@ const Calendar = ({
 
   useEffect(() => {
     drawCalendar();
+    //eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cursorTime.current, events]);
 
   // Event handlers
@@ -256,7 +259,8 @@ const Calendar = ({
     const basePath = '/mam/rundown';
     const searchParams = new URLSearchParams(location.search);
     const startTs = event.start - dayStartOffsetSeconds;
-    const targetDate = new Date(startTs * 1000).toISOString().slice(0, 10);
+    const localDateTime = new Date(startTs * 1000);
+    const targetDate = dateToDateString(localDateTime);
     searchParams.set('date', targetDate);
     const hash = `#${event.id}`;
     const fullPath = `${basePath}?${searchParams.toString()}${hash}`;
@@ -330,6 +334,7 @@ const Calendar = ({
       calendarRef.current.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
     };
+    //eslint-disable-next-line react-hooks/exhaustive-deps
   }, [calendarRef.current, startTime]);
 
   //
@@ -408,7 +413,7 @@ const Calendar = ({
       const dayStartTs = weekStartTs + i * 24 * 3600;
       // get date in YYYY-MM-DD format
       const jsDate = new Date(dayStartTs * 1000);
-      const date = jsDate.toISOString().slice(0, 10);
+      const date = dateToDateString(jsDate);
       const dayName = jsDate.toLocaleDateString(nebula.locale, {
         day: 'numeric',
         month: 'short',
@@ -433,12 +438,12 @@ const Calendar = ({
       });
     }
     return dayStyles;
-  }, [startTime]);
+  }, [startTime, dayStartOffsetSeconds]);
 
   // yes. this is very ugly, but i need that reference to one day
   // to get its width
   return (
-    <CalendarWrapper scrollbarWidth={scrollbarWidth} clockWidth={CLOCK_WIDTH}>
+    <CalendarWrapper scrollbarwidth={scrollbarWidth} clockwidth={CLOCK_WIDTH}>
       <div className="calendar-header">
         {dstyles.map((d, i) => {
           const r = i === 0 ? dayRef : null;

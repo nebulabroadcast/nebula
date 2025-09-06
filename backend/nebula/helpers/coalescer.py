@@ -17,16 +17,17 @@ In essence: It's a smart wrapper for async functions that says:
 ```
 async def fetch_data(item_id: int):
     print(f"Fetching data for {item_id}...")
-    await asyncio.sleep(2) # Simulate network call
+    await asyncio.sleep(2)  # Simulate network call
     return f"Data for {item_id}"
+
 
 coalescer = Coalescer()
 
 # These calls will be coalesced if made close together
 
 task1 = asyncio.create_task(coalescer(fetch_data, item_id=1))
-task2 = asyncio.create_task(coalescer(fetch_data, item_id=1)) # Will use task1's future
-task3 = asyncio.create_task(coalescer(fetch_data, item_id=2)) # New actual call
+task2 = asyncio.create_task(coalescer(fetch_data, item_id=1))  # Will use task1's future
+task3 = asyncio.create_task(coalescer(fetch_data, item_id=2))  # New actual call
 
 result1 = await task1
 result2 = await task2

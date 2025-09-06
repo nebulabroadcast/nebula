@@ -1,6 +1,7 @@
 import styled from 'styled-components';
+import { Section } from '/src/components';
 
-const RundownTableWrapper = styled.section`
+const RundownTableWrapper = styled(Section)`
   tbody {
     tr {
       border-left: 0 !important;

@@ -7,6 +7,7 @@ import {
   FormRow,
   InputSwitch,
   ScrollBox,
+  Section,
 } from '/src/components';
 
 import AccessControl from './AccessControl';
@@ -25,7 +26,7 @@ const UserForm = ({ userData, setUserData }) => {
 
   return (
     <ScrollBox style={{ minWidth: 600 }}>
-      <section className="column">
+      <Section className="column">
         <PanelHeader>
           <Icon icon="person" />
           {userData?.id ? 'User profile' : 'New user'}
@@ -51,9 +52,9 @@ const UserForm = ({ userData, setUserData }) => {
             />
           </FormRow>
         </Form>
-      </section>
+      </Section>
 
-      <section className="column">
+      <Section className="column">
         <PanelHeader>
           <Icon icon="security" />
           Authentication
@@ -84,15 +85,15 @@ const UserForm = ({ userData, setUserData }) => {
             />
           </FormRow>
         </Form>
-      </section>
+      </Section>
 
-      <section className="column">
+      <Section className="column">
         <PanelHeader>
           <Icon icon="lock" />
           Access control
         </PanelHeader>
         <AccessControl userData={userData} setValue={setValue} />
-      </section>
+      </Section>
     </ScrollBox>
   );
 };

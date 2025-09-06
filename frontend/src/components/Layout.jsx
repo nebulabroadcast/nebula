@@ -52,11 +52,20 @@ const Navbar = styled.nav`
     align-items: center;
   }
 `;
+
 const Spacer = styled.div`
   flex-grow: 1;
   display: flex;
   align-items: center;
   justify-content: center;
+`;
+
+const Section = styled.section`
+  display: flex;
+  padding: 12px;
+  border-radius: 5px;
+  background-color: var(--color-surface-02);
+  border: 1px solid transparent;
 `;
 
 const ToolbarSeparator = styled.div`
@@ -79,4 +88,4 @@ const PanelHeader = styled.h2`
   gap: 8px;
 `;
 
-export { Navbar, Spacer, ToolbarSeparator, PanelHeader };
+export { Navbar, Spacer, ToolbarSeparator, PanelHeader, Section };

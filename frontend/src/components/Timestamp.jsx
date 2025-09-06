@@ -1,6 +1,8 @@
 import styled from 'styled-components';
 
 import { getTheme } from './theme';
+import { dateToDateString } from '/src/utils';
+import { dateToTimeString } from '/src/utils';
 
 const TimestampWrapper = styled.div`
   display: flex;
@@ -18,9 +20,8 @@ const TimestampWrapper = styled.div`
 const Timestamp = ({ timestamp, mode, ...props }) => {
   if (!timestamp) return <></>;
   const localDateTime = new Date(timestamp * 1000);
-
-  const dateStr = localDateTime.toISOString().split('T')[0];
-  const timeStr = localDateTime.toISOString().split('T')[1].split('.')[0];
+  const dateStr = dateToDateString(localDateTime);
+  const timeStr = dateToTimeString(localDateTime);
 
   return (
     <TimestampWrapper {...props}>
