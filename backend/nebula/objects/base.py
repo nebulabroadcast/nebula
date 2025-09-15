@@ -2,7 +2,6 @@ import time
 from typing import Any, TypeVar
 
 import asyncpg
-from nxtools import slugify
 
 from nebula.db import DB, DatabaseConnection, db
 from nebula.enum import ObjectTypeId
@@ -16,6 +15,7 @@ from nebula.messaging import msg
 from nebula.metadata.format import format_meta
 from nebula.metadata.normalize import normalize_meta
 from nebula.settings import settings
+from nx.utils import slugify
 
 T = TypeVar("T", bound="BaseObject")
 

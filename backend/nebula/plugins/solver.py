@@ -1,7 +1,6 @@
-from nxtools import format_time
-
 import nebula
 from nebula.helpers.scheduling import bin_refresh
+from nx.utils import format_time
 
 from .common import modules_root
 

@@ -17,7 +17,7 @@ def hash_data(data: Any) -> str:
 
 def create_hash() -> str:
     """Create a pseudo-random hash (used as and access token)."""
-    return hash_data([time.time(), random.random()])
+    return hash_data([time.time(), random.random()])  # noqa: S311
 
 
 def create_uuid() -> str:

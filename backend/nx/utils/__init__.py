@@ -32,6 +32,7 @@ from .hashing import (
 from .strings import (
     camelize,
     format_filesize,
+    fract2float,
     get_base_name,
     indent,
     obscure,
@@ -39,7 +40,6 @@ from .strings import (
     parse_api_key,
     slugify,
     string2color,
-    fract2float,
     unaccent,
 )
 from .timeutils import (

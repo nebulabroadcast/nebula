@@ -1,11 +1,10 @@
 import os
 
-from nxtools import get_base_name, slugify
-
 from nebula.enum import ContentType, MediaType, ObjectStatus
 from nebula.objects.base import BaseObject
 from nebula.settings import settings
 from nebula.storages import storages
+from nx.utils import get_base_name, slugify
 
 
 class Asset(BaseObject):

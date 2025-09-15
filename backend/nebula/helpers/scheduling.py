@@ -1,9 +1,8 @@
 import datetime
 from typing import TYPE_CHECKING, Any
 
-from nxtools import datestr2ts, s2time
-
 import nebula
+from nx.utils import datestr2ts, s2time
 
 if TYPE_CHECKING:
     from nebula.settings.models import AcceptModel, PlayoutChannelSettings

@@ -47,7 +47,7 @@ def string2color(string: str) -> str:
     return hex(h & 0x00FFFFFF)
 
 
-def fract2float(fract) -> float:
+def fract2float(fract: str) -> float:
     """Convert a fraction string to float."""
     nd = fract.split("/")
     try:
@@ -78,7 +78,7 @@ def indent(text: str, amount: int = 4) -> str:
 
 
 @functools.lru_cache(maxsize=128)
-def obscure(text: str):
+def obscure(text: str) -> str:
     """obscure all characters in the text except spaces."""
     return "".join("*" if c != " " else c for c in text)
 

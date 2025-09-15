@@ -152,11 +152,11 @@ def s2words(secs: int) -> str:
     if s < 60:
         return f"{s} seconds".format(s)
     elif s < 120:
-        return f"1 minute {int(s-60)} seconds"
+        return f"1 minute {int(s - 60)} seconds"
     elif s < 7200:
-        return f"{int(s/60)} minutes"
+        return f"{int(s / 60)} minutes"
     else:
-        return f"{int(s/3600)} hours"
+        return f"{int(s / 3600)} hours"
 
 
 def format_time(
