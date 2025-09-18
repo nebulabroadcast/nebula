@@ -1,5 +1,15 @@
 version = 1
+revision = 1
 requires-python = ">=3.13"
+
+[[package]]
+name = "aiocache"
+version = "0.12.3"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/7a/64/b945b8025a9d1e6e2138845f4022165d3b337f55f50984fbc6a4c0a1e355/aiocache-0.12.3.tar.gz", hash = "sha256:f528b27bf4d436b497a1d0d1a8f59a542c153ab1e37c3621713cb376d44c4713", size = 132196 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/37/d7/15d67e05b235d1ed8c3ce61688fe4d84130e72af1657acadfaac3479f4cf/aiocache-0.12.3-py2.py3-none-any.whl", hash = "sha256:889086fc24710f431937b87ad3720a289f7fc31c4fd8b68e9f918b9bacd8270d", size = 28199 },
+]
 
 [[package]]
 name = "aiofiles"
@@ -204,7 +214,7 @@ name = "click"
 version = "8.2.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "colorama", marker = "platform_system == 'Windows'" },
+    { name = "colorama", marker = "sys_platform == 'win32'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/60/6c/8ca2efa64cf75a977a0d7fac081354553ebe483345c734fb6b6515d96bbc/click-8.2.1.tar.gz", hash = "sha256:27c491cc05d968d271d5a1db13e3b5a184636d9d930f148c50b038f0d0646202", size = 286342 }
 wheels = [
@@ -598,6 +608,7 @@ name = "nebula"
 version = "6.1.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "aiocache" },
     { name = "aiofiles" },
     { name = "asyncpg" },
     { name = "authlib" },
@@ -634,6 +645,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "aiocache", specifier = ">=0.12.3" },
     { name = "aiofiles", specifier = ">=24.1.0" },
     { name = "asyncpg", specifier = ">=0.29.0" },
     { name = "authlib", specifier = ">=1.5.1" },
