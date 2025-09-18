@@ -25,6 +25,7 @@ RUN \
   curl \
   cifs-utils \
   procps \
+  ffmpeg \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 

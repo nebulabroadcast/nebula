@@ -2,7 +2,7 @@ import { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 
 import { Canvas, Navbar } from '/src/components';
 
-const MARK_SIZE = 7;
+const MARK_SIZE = 6;
 
 const Trackbar = ({
   duration,
@@ -37,11 +37,12 @@ const Trackbar = ({
     const width = ctx.canvas.width;
     const height = ctx.canvas.height;
 
-    // Clear the canvas
-    ctx.clearRect(0, 0, width, height);
-
+    //
     // Draw the background of the slider
+    //
+
     ctx.fillStyle = '#19161f';
+    ctx.clearRect(0, 0, width, height);
     ctx.fillRect(0, 0, width, height);
 
     const frameWidth = numFrames >= width ? 2 : width / numFrames;
@@ -58,7 +59,10 @@ const Trackbar = ({
       }
     }
 
+    //
     // Draw the buffered ranges
+    //
+
     for (const range of bufferedRanges) {
       const start = (range.start / duration) * width;
       const end = (range.end / duration) * width;
@@ -68,36 +72,6 @@ const Trackbar = ({
       ctx.lineTo(end, 0);
       ctx.stroke();
     }
-
-    let markInX = 0;
-    if (markIn) {
-      markInX = (markIn / duration) * width;
-      ctx.strokeStyle = 'green';
-      ctx.beginPath();
-      ctx.moveTo(markInX, height - MARK_SIZE);
-      ctx.lineTo(markInX, height - 1);
-      ctx.lineTo(markInX - MARK_SIZE, height - 1);
-      ctx.lineTo(markInX, height - MARK_SIZE);
-      ctx.stroke();
-    }
-
-    let markOutX = width;
-    if (markOut) {
-      markOutX = (markOut / duration) * width + frameWidth;
-      ctx.strokeStyle = 'red';
-      ctx.beginPath();
-      ctx.moveTo(markOutX, height - MARK_SIZE);
-      ctx.lineTo(markOutX, height - 1);
-      ctx.lineTo(markOutX + MARK_SIZE, height - 1);
-      ctx.lineTo(markOutX, height - MARK_SIZE);
-      ctx.stroke();
-    }
-
-    ctx.strokeStyle = markOutX > markInX ? '#0ed3fe' : 'red';
-    ctx.beginPath();
-    ctx.moveTo(markInX, height - 1);
-    ctx.lineTo(markOutX, height - 1);
-    ctx.stroke();
 
     //
     // Draw the handle
@@ -121,7 +95,48 @@ const Trackbar = ({
     ctx.fillRect(progressX - 1, 0, handleWidth, height);
     ctx.fill();
 
-    // Draw the poster frame
+    //
+    // Draw the selection marks
+    //
+
+    let markInX = 0;
+    if (markIn) {
+      markInX = (markIn / duration) * width;
+      ctx.strokeStyle = 'green';
+      ctx.fillStyle = 'green';
+      ctx.beginPath();
+      ctx.moveTo(markInX, height - MARK_SIZE);
+      ctx.lineTo(markInX, height);
+      ctx.lineTo(markInX - MARK_SIZE, height);
+      ctx.lineTo(markInX, height - MARK_SIZE);
+      ctx.stroke();
+      ctx.fill();
+    }
+
+    let markOutX = width;
+    if (markOut) {
+      markOutX = (markOut / duration) * width + frameWidth;
+      ctx.strokeStyle = 'red';
+      ctx.fillStyle = 'red';
+      ctx.beginPath();
+      ctx.moveTo(markOutX, height - MARK_SIZE);
+      ctx.lineTo(markOutX, height);
+      ctx.lineTo(markOutX + MARK_SIZE, height);
+      ctx.lineTo(markOutX, height - MARK_SIZE);
+      ctx.stroke();
+      ctx.fill();
+    }
+
+    ctx.strokeStyle = markOutX > markInX ? '#0ed3fe' : 'red';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(markInX + 1, height - 1);
+    ctx.lineTo(markOutX -1, height - 1);
+    ctx.stroke();
+
+    //
+    // Draw the poster frame indicator
+    //
 
     if (auxMarks.poster_frame) {
       const posterFrameX = (auxMarks.poster_frame / duration) * width + frameWidth / 2;
@@ -135,7 +150,9 @@ const Trackbar = ({
     }
   }, [currentTime, duration, markIn, markOut, marks]);
 
-  // Events
+  //
+  // Event handling
+  //
 
   useEffect(() => {
     drawSlider();

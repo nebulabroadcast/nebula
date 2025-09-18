@@ -278,6 +278,7 @@ const VideoPlayerBody = ({ ...props }) => {
               onPause={handlePause}
               onProgress={handleProgress}
               disablePictureInPicture={true}
+              disableRemotePlayback={true}
               onTimeUpdate={updatePos}
               src={props.src}
             />

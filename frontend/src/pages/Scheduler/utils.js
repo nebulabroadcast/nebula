@@ -15,7 +15,7 @@ const createTitle = (startTime, channelName) => {
   const formattedStart = date.toLocaleString(dparams);
   const formattedEnd = date.plus({ days: 6 }).toLocaleString(dparams);
 
-  return `${formattedStart} - ${formattedEnd} (${weekNumber}.)`;
+  return `${formattedStart} - ${formattedEnd} (${weekNumber})`;
 };
 
 export { createTitle };
