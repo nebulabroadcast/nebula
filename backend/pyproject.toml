@@ -18,13 +18,13 @@ dependencies = [
     "httpx >=0.27.2",
     "itsdangerous>=2.2.0",
     "mistune >=3.0.1",
-    "nxtools >=1.6",
     "pydantic >=2.9.2",
     "python-dotenv >=1.0.1",
     "redis >=5.1.0",
     "requests >=2.32.3",
     "rich >=13.8.0",
     "shortuuid >=1.0.12",
+    "unidecode>=1.4.0",
     "user-agents >=2.2.0",
     "uvicorn-worker>=0.3.0",
     "uvicorn[standard] >=0.31.0",
@@ -99,7 +99,7 @@ strict_optional = true
 exclude = "tests/|.venv/"
 
 [[tool.mypy.overrides]]
-module = ["nxtools", "user_agents"]
+module = ["user_agents"]
 ignore_errors = true
 follow_imports = "skip"
 ignore_missing_imports = true

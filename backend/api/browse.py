@@ -1,6 +1,5 @@
 from typing import Literal
 
-from nxtools import slugify
 from pydantic import Field
 
 import nebula
@@ -8,6 +7,7 @@ from nebula.common import SerializableValue, sql_list
 from nebula.enum import MetaClass
 from nebula.exceptions import NebulaException
 from nebula.metadata.normalize import normalize_meta
+from nx.utils import slugify
 from server.dependencies import CurrentUser
 from server.models import RequestModel, ResponseModel
 from server.request import APIRequest

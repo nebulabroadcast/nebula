@@ -204,7 +204,7 @@ name = "click"
 version = "8.2.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "colorama", marker = "sys_platform == 'win32'" },
+    { name = "colorama", marker = "platform_system == 'Windows'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/60/6c/8ca2efa64cf75a977a0d7fac081354553ebe483345c734fb6b6515d96bbc/click-8.2.1.tar.gz", hash = "sha256:27c491cc05d968d271d5a1db13e3b5a184636d9d930f148c50b038f0d0646202", size = 286342 }
 wheels = [
@@ -608,13 +608,13 @@ dependencies = [
     { name = "httpx" },
     { name = "itsdangerous" },
     { name = "mistune" },
-    { name = "nxtools" },
     { name = "pydantic" },
     { name = "python-dotenv" },
     { name = "redis" },
     { name = "requests" },
     { name = "rich" },
     { name = "shortuuid" },
+    { name = "unidecode" },
     { name = "user-agents" },
     { name = "uvicorn", extra = ["standard"] },
     { name = "uvicorn-worker" },
@@ -644,13 +644,13 @@ requires-dist = [
     { name = "httpx", specifier = ">=0.27.2" },
     { name = "itsdangerous", specifier = ">=2.2.0" },
     { name = "mistune", specifier = ">=3.0.1" },
-    { name = "nxtools", specifier = ">=1.6" },
     { name = "pydantic", specifier = ">=2.9.2" },
     { name = "python-dotenv", specifier = ">=1.0.1" },
     { name = "redis", specifier = ">=5.1.0" },
     { name = "requests", specifier = ">=2.32.3" },
     { name = "rich", specifier = ">=13.8.0" },
     { name = "shortuuid", specifier = ">=1.0.12" },
+    { name = "unidecode", specifier = ">=1.4.0" },
     { name = "user-agents", specifier = ">=2.2.0" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.31.0" },
     { name = "uvicorn-worker", specifier = ">=0.3.0" },
@@ -666,19 +666,6 @@ dev = [
     { name = "types-aiofiles", specifier = ">=23.2.0.20240311" },
     { name = "types-authlib", specifier = ">=1.4.0.20241230" },
     { name = "types-requests", specifier = ">=2.31.0.20240311" },
-]
-
-[[package]]
-name = "nxtools"
-version = "1.6"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "colorama" },
-    { name = "unidecode" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/b8/db/49d09a2b2991fff854878aae301b7f964c89242660337c030084b7a19ecb/nxtools-1.6.tar.gz", hash = "sha256:e91839eef643483a3165165a46a693ad976d40a393ee5476a341e4e8bb102b92", size = 18176 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/ab/6d/3e97c9bb6805fec30447e8df843f8f468ca7c31ec909ef9e26642cc8a76f/nxtools-1.6-py3-none-any.whl", hash = "sha256:cde2d2c19193a2bd9c8071eeb3f121474ec34ab5c014de9a90f0c434cdfee716", size = 19865 },
 ]
 
 [[package]]

@@ -3,10 +3,9 @@ from collections import defaultdict
 from functools import lru_cache
 from typing import Any
 
-from nxtools import unaccent
-
 from nebula.settings import settings
 from nebula.settings.common import LanguageCode
+from nx.utils import unaccent
 
 
 @lru_cache(maxsize=512)

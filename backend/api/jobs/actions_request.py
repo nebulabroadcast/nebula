@@ -1,8 +1,8 @@
-from nxtools import xml
 from pydantic import Field
 
 import nebula
 from nebula.enum import *  # noqa
+from nx.utils import xml
 from server.dependencies import CurrentUser
 from server.models import RequestModel, ResponseModel
 from server.request import APIRequest
@@ -55,6 +55,8 @@ class ActionsRequest(APIRequest):
                 continue
 
             action_settings = xml(row["settings"])
+            if action_settings is None:
+                continue
 
             if allow_if_elm := action_settings.findall("allow_if"):
                 allow_if_cond = allow_if_elm[0].text

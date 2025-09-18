@@ -12,7 +12,7 @@ from nebula.exceptions import NebulaException
 
 
 class DB:
-    _pool: asyncpg.pool.Pool | None = None  # type: ignore
+    _pool: asyncpg.pool.Pool | None = None
 
     async def init_connection(self, conn) -> None:  # type: ignore
         await conn.set_type_codec(
@@ -30,7 +30,7 @@ class DB:
         )
         assert self._pool is not None
 
-    async def pool(self) -> asyncpg.pool.Pool:  # type: ignore
+    async def pool(self) -> asyncpg.pool.Pool:
         """Return the Postgres connection pool. If it doesn't exist, create it."""
         if self._pool is None:
             await self.connect()
@@ -67,6 +67,6 @@ class DB:
                 yield record
 
 
-DatabaseConnection = asyncpg.pool.PoolConnectionProxy | DB  # type: ignore
+DatabaseConnection = asyncpg.pool.PoolConnectionProxy | DB
 
 db = DB()

@@ -1,7 +1,7 @@
 import asyncpg
-from nxtools import format_time
 
 import nebula
+from nx.utils import format_time
 
 
 async def get_event_at_time(id_channel: int, timestamp: int) -> nebula.Event | None:

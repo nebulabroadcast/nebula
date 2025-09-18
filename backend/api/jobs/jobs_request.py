@@ -1,11 +1,11 @@
 import time
 from typing import Literal
 
-from nxtools import slugify
 from pydantic import Field
 
 import nebula
 from nebula.enum import JobState
+from nx.utils import slugify
 from server.dependencies import CurrentUser
 from server.models import RequestModel, ResponseModel
 from server.request import APIRequest
