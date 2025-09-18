@@ -21,6 +21,8 @@ import ToolPage from '/src/pages/ToolPage';
 import ProfilePage from '/src/pages/ProfilePage';
 import UsersPage from '/src/pages/UsersPage';
 
+import StoragesPage from '/src/pages/System/Storages/StoragesPage';
+
 const App = () => {
   const [accessToken, setAccessToken] = useLocalStorage('accessToken', null);
   const [errorCode, setErrorCode] = useState(null);
@@ -96,6 +98,7 @@ const App = () => {
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/users" element={<UsersPage />} />
             <Route path="/users/:id" element={<UsersPage />} />
+            <Route path="/system/storages" element={<StoragesPage />} />
           </Routes>
         </BrowserRouter>
       </DialogProvider>
