@@ -3,27 +3,12 @@ import styled from 'styled-components';
 import { useDispatch } from 'react-redux';
 
 import nebula from '/src/nebula';
-import { Section } from '/src/components';
+import { Section, Spacer } from '/src/components';
 import { setPageTitle } from '/src/actions';
 import StorageVisualization from './StorageVisualization';
 
-const Row = styled.section`
-  display: flex;
-  overflow: hidden;
-`;
+import { formatBytes } from './common';
 
-const Meta = styled.div`
-  width: 250px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-`;
-
-const Label = styled.h3`
-  margin: 0;
-  font-size: 1.2rem;
-`;
 
 const Availability = styled.span`
   display: inline-flex;
@@ -42,6 +27,20 @@ const Availability = styled.span`
   }
 `;
 
+const StorageHeader = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+
+  h3 {
+    margin: 0;
+    font-size: 1.5rem;
+  }
+`;
+
+
 const Sizes = styled.div`
   margin-top: 0.5rem;
   font-size: 0.9rem;
@@ -49,30 +48,25 @@ const Sizes = styled.div`
 `;
 
 
-const formatBytes = (bytes) => {
-  const sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
-  if (bytes === 0) return '0 B';
-  const i = Math.floor(Math.log(bytes) / Math.log(1024));
-  return (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + sizes[i];
-};
 
 const StorageRow = ({ storage }) => {
   const usedPercent = storage.used / storage.total;
 
   return (
-    <Row>
-      <Meta>
-        <Label>{storage.label}</Label>
-        <Availability available={storage.available}>
-          {storage.available ? 'Available' : 'Offline'}
-        </Availability>
+    <Section className="column">
+      <StorageHeader>
+        <h3>{storage.label}</h3>
         <Sizes>
           {formatBytes(storage.used)} / {formatBytes(storage.total)} (
           {(usedPercent * 100).toFixed(1)}%)
         </Sizes>
-      </Meta>
+        <Spacer />
+        <Availability available={storage.available}>
+          {storage.available ? 'Available' : 'Offline'}
+        </Availability>
+      </StorageHeader>
       <StorageVisualization storage={storage} />
-    </Row>
+    </Section>
   );
 };
 
@@ -88,7 +82,7 @@ const StoragesPage = () => {
   }, []);
 
   return (
-    <Section className="grow column">
+    <Section className="transparent column">
       {data.storages.map((s) => (
         <StorageRow key={s.storage_id} storage={s} />
       ))}

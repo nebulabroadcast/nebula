@@ -1,12 +1,12 @@
 import styled from "styled-components";
-import {getTheme} from "/src/components/theme";
+import { getTheme } from "/src/components/theme";
+import { formatBytes } from './common';
 
 const VizContainer = styled.div`
   flex-grow: 1;
   display: flex;
+  min-height: 12px;
 `
-
-//    ${(p) => p.color};
 
 const VizSegment = styled.div`
   width: ${(p) => p.size}%;
@@ -20,7 +20,6 @@ const VizSegment = styled.div`
 
 
 const StorageVisualization = ({storage}) => {
-
   const storageSize = storage.total;
   const usedSize = storage.used;
   const untrackedSize = storageSize - storage.nebula_usage.reduce((acc, seg) => acc + seg.usage, 0);
@@ -33,14 +32,14 @@ const StorageVisualization = ({storage}) => {
           key={idx} 
           size={segment.usage / storage.total *100}
           color={segment.color} 
-          title={`${segment.label}: ${((segment.usage / storage.total) * 100)}%`}
+          title={`${segment.label}: ${formatBytes(segment.usage)}`}
         >
         </VizSegment>
       ))}
 
       {untrackedSize > 0 && (
       <VizSegment
-        title="Untracked"
+        title={`Untracked: ${formatBytes(untrackedSize)}`}
         size={ untrackedSize / storage.total * 100 }
         color={getTheme().colors.surface07}
       />
@@ -48,7 +47,7 @@ const StorageVisualization = ({storage}) => {
 
       {freeSize > 0 && (
       <VizSegment
-        title="Free"
+        title={`Free: ${formatBytes(freeSize)}`}
         size={ freeSize / storage.total * 100 }
         color={getTheme().colors.surface03}
       />
