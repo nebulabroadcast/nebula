@@ -35,14 +35,12 @@ const SystemPage = () => {
     }
   }, [view]);
 
-
   return (
     <main className="column">
-      <SystemNav/>
+      <SystemNav />
       {pageComponent}
     </main>
   );
 };
 
 export default SystemPage;
-

@@ -24,4 +24,11 @@ export { default as Timestamp } from './Timestamp';
 
 export { Form, FormRow } from './Form';
 export { Loader, LoaderWrapper } from './Loader';
-export { Navbar, Spacer, ToolbarSeparator, PanelHeader, Section } from './Layout';
+export {
+  Navbar,
+  NavbarTitle,
+  Spacer,
+  ToolbarSeparator,
+  PanelHeader,
+  Section,
+} from './Layout';

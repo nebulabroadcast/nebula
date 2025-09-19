@@ -1,8 +1,10 @@
-import React, {useState, useEffect} from "react";
-import styled from "styled-components";
+import React, { useState, useEffect } from 'react';
+import styled from 'styled-components';
+import { useDispatch } from 'react-redux';
 
 import nebula from '/src/nebula';
 import { Section } from '/src/components';
+import { setPageTitle } from '/src/actions';
 
 const Row = styled.section`
   display: flex;
@@ -29,12 +31,12 @@ const Availability = styled.span`
   margin-top: 0.3rem;
 
   &::before {
-    content: "";
+    content: '';
     display: inline-block;
     width: 10px;
     height: 10px;
     border-radius: 50%;
-    background: ${(p) => (p.available ? "#4caf50" : "#f44336")};
+    background: ${(p) => (p.available ? '#4caf50' : '#f44336')};
     margin-right: 0.5rem;
   }
 `;
@@ -54,15 +56,15 @@ const Square = styled.rect`
 `;
 
 const formatBytes = (bytes) => {
-  const sizes = ["B", "KB", "MB", "GB", "TB", "PB"];
-  if (bytes === 0) return "0 B";
+  const sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
+  if (bytes === 0) return '0 B';
   const i = Math.floor(Math.log(bytes) / Math.log(1024));
-  return (bytes / Math.pow(1024, i)).toFixed(1) + " " + sizes[i];
+  return (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + sizes[i];
 };
 
 const StorageRow = ({ storage }) => {
   const cols = 100; // squares per row
-  const rows = 10;  // number of rows
+  const rows = 10; // number of rows
   const totalSquares = cols * rows;
 
   const usedPercent = storage.used / storage.total;
@@ -83,17 +85,17 @@ const StorageRow = ({ storage }) => {
 
   // Fill any leftover used squares with a fallback color
   while (filled < usedSquares) {
-    squares.push({color: "#666"});
+    squares.push({ color: '#666' });
     filled++;
   }
 
   // Remaining squares = free space
   while (squares.length < totalSquares) {
-    squares.push({color: "#222", label: "Free"});
+    squares.push({ color: '#222', label: 'Free' });
   }
 
   const size = 10; // px
-  const gap = 2;   // px
+  const gap = 2; // px
   const svgWidth = cols * (size + gap);
   const svgHeight = rows * (size + gap);
 
@@ -102,7 +104,7 @@ const StorageRow = ({ storage }) => {
       <Meta>
         <Label>{storage.label}</Label>
         <Availability available={storage.available}>
-          {storage.available ? "Available" : "Offline"}
+          {storage.available ? 'Available' : 'Offline'}
         </Availability>
         <Sizes>
           {formatBytes(storage.used)} / {formatBytes(storage.total)} (
@@ -134,21 +136,22 @@ const StorageRow = ({ storage }) => {
 
 const StoragesPage = () => {
   const [data, setData] = useState({ storages: [] });
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    nebula.request("stats/storages").then(response => {
+    dispatch(setPageTitle({ title: 'Storages' }));
+    nebula.request('stats/storages').then((response) => {
       setData(response.data);
-      })
+    });
   }, []);
 
-  return(
+  return (
     <Section className="grow column">
-    {data.storages.map((s) => (
-      <StorageRow key={s.storage_id} storage={s} />
-    ))}
+      {data.storages.map((s) => (
+        <StorageRow key={s.storage_id} storage={s} />
+      ))}
     </Section>
-  )
+  );
 };
 
 export default StoragesPage;
-
