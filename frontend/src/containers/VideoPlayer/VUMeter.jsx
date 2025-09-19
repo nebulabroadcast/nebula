@@ -36,7 +36,7 @@ const VUMeter = ({ gainNodes, audioContext }) => {
 
     gainNodes.forEach((gainNode, index) => {
       gainNode.connect(analysers[index]);
-      analysers[index].fftSize = 256;
+      analysers[index].fftSize = 1024;
       analysers[index].smoothingTimeConstant = 0.8;
     });
 
