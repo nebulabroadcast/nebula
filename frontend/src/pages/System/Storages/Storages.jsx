@@ -5,6 +5,7 @@ import { useDispatch } from 'react-redux';
 import nebula from '/src/nebula';
 import { Section } from '/src/components';
 import { setPageTitle } from '/src/actions';
+import StorageVisualization from './StorageVisualization';
 
 const Row = styled.section`
   display: flex;
@@ -47,13 +48,6 @@ const Sizes = styled.div`
   color: #aaa;
 `;
 
-const Viz = styled.div`
-  flex: 0;
-`;
-
-const Square = styled.rect`
-  shape-rendering: crispEdges;
-`;
 
 const formatBytes = (bytes) => {
   const sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
@@ -63,41 +57,7 @@ const formatBytes = (bytes) => {
 };
 
 const StorageRow = ({ storage }) => {
-  const cols = 100; // squares per row
-  const rows = 10; // number of rows
-  const totalSquares = cols * rows;
-
   const usedPercent = storage.used / storage.total;
-  const usedSquares = Math.round(totalSquares * usedPercent);
-
-  // assign squares to categories based on usage share
-  let squares = [];
-  let filled = 0;
-
-  storage.nebula_usage.forEach((cat) => {
-    const share = cat.usage / storage.used;
-    const count = Math.max(1, Math.round(usedSquares * share));
-    for (let i = 0; i < count; i++) {
-      squares.push(cat);
-    }
-    filled += count;
-  });
-
-  // Fill any leftover used squares with a fallback color
-  while (filled < usedSquares) {
-    squares.push({ color: '#666' });
-    filled++;
-  }
-
-  // Remaining squares = free space
-  while (squares.length < totalSquares) {
-    squares.push({ color: '#222', label: 'Free' });
-  }
-
-  const size = 10; // px
-  const gap = 2; // px
-  const svgWidth = cols * (size + gap);
-  const svgHeight = rows * (size + gap);
 
   return (
     <Row>
@@ -111,25 +71,7 @@ const StorageRow = ({ storage }) => {
           {(usedPercent * 100).toFixed(1)}%)
         </Sizes>
       </Meta>
-      <Viz>
-        <svg width={svgWidth} height={svgHeight}>
-          {squares.map((square, idx) => {
-            const x = (idx % cols) * (size + gap);
-            const y = Math.floor(idx / cols) * (size + gap);
-            return (
-              <Square
-                key={idx}
-                x={x}
-                y={y}
-                width={size}
-                height={size}
-                fill={square.color}
-                title={square.label}
-              />
-            );
-          })}
-        </svg>
-      </Viz>
+      <StorageVisualization storage={storage} />
     </Row>
   );
 };
