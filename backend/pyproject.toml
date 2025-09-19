@@ -100,7 +100,7 @@ strict_optional = true
 exclude = "tests/|.venv/"
 
 [[tool.mypy.overrides]]
-module = ["user_agents"]
+module = ["user_agents", "aiocache"]
 ignore_errors = true
 follow_imports = "skip"
 ignore_missing_imports = true

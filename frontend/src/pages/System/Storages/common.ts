@@ -6,4 +6,3 @@ const formatBytes = (bytes: Number) => {
 };
 
 export { formatBytes };
-

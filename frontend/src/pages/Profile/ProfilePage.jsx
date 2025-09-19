@@ -98,12 +98,11 @@ const ChangePasswordForm = () => {
   );
 };
 
-
 const ProfilePage = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    dispatch(setPageTitle({ title: "User profile" }));
+    dispatch(setPageTitle({ title: 'User profile' }));
   }, []);
 
   return (

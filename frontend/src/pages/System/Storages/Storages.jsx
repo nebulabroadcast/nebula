@@ -9,7 +9,6 @@ import StorageVisualization from './StorageVisualization';
 
 import { formatBytes } from './common';
 
-
 const Availability = styled.span`
   display: inline-flex;
   align-items: center;
@@ -40,14 +39,11 @@ const StorageHeader = styled.div`
   }
 `;
 
-
 const Sizes = styled.div`
   margin-top: 0.5rem;
   font-size: 0.9rem;
   color: #aaa;
 `;
-
-
 
 const StorageRow = ({ storage }) => {
   const usedPercent = storage.used / storage.total;

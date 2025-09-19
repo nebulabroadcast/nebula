@@ -4,8 +4,10 @@ import os
 import aiocache
 
 import nebula
+from server.dependencies import CurrentUser
 from server.models import ResponseModel
 from server.request import APIRequest
+
 
 class NebulaStorageUsage(ResponseModel):
     label: str
@@ -49,9 +51,9 @@ async def get_disk_usage(path: str) -> tuple[int, int]:
 @aiocache.cached(ttl=60)
 async def get_nebula_folders_usage(storage_id: int) -> list[NebulaStorageUsage]:
     query = """
-        SELECT 
-            a.id_folder, 
-            sum((meta->'file/size')::bigint), 
+        SELECT
+            a.id_folder,
+            sum((meta->'file/size')::bigint),
             sum((meta->'duration')::bigint) AS duration,
             f.settings->'name' AS folder_name,
             f.settings->'color' AS folder_color
@@ -68,14 +70,17 @@ async def get_nebula_folders_usage(storage_id: int) -> list[NebulaStorageUsage]:
             color=row["folder_color"],
             duration=row["duration"] or 0,
         )
-        for row in rows if row["sum"]
+        for row in rows
+        if row["sum"]
     ]
 
 
 @aiocache.cached(ttl=60)
 async def get_nebula_playout_usage(storage_id: int) -> NebulaStorageUsage:
     channel_keys = [
-        f"playout_status/{channel.id}" for channel in nebula.settings.playout_channels if channel.playout_storage == storage_id
+        f"playout_status/{channel.id}"
+        for channel in nebula.settings.playout_channels
+        if channel.playout_storage == storage_id
     ]
 
     size = 0
@@ -83,7 +88,7 @@ async def get_nebula_playout_usage(storage_id: int) -> NebulaStorageUsage:
 
     for channel_key in channel_keys:
         query = """
-            SELECT 
+            SELECT
                 sum(coalesce((meta->$1->'size'),'0'::jsonb)::bigint) AS usage,
                 sum(coalesce((meta->$1->'duration'),'0'::jsonb)::bigint) AS duration
             FROM assets
@@ -121,8 +126,6 @@ class NebulaStoragesUsage(ResponseModel):
     storages: list[StorageStat]
 
 
-
-
 class NebulaStoragesRequest(APIRequest):
     """Get a list of objects"""
 
@@ -132,9 +135,8 @@ class NebulaStoragesRequest(APIRequest):
 
     async def handle(
         self,
-        #user: CurrentUser,
+        user: CurrentUser,
     ) -> NebulaStoragesUsage:
-
         results: list[StorageStat] = []
         site_name = nebula.config.site_name
         storages = await get_storage_map()
@@ -158,7 +160,11 @@ class NebulaStoragesRequest(APIRequest):
             used_by_nebula = sum(u.usage for u in usage)
 
             storage = storages.get(storage_id)
-            if storage and storage["protocol"] != "local" and not os.path.ismount(f"/mnt/{mountpoint_name}"):
+            if (
+                storage
+                and storage["protocol"] != "local"
+                and not os.path.ismount(f"/mnt/{mountpoint_name}")
+            ):
                 total_size = used_size = used_by_nebula
                 free_size = untracked_size = 0
                 available = False
@@ -177,7 +183,7 @@ class NebulaStoragesRequest(APIRequest):
                     free=free_size,
                     untracked=untracked_size,
                     nebula_usage=usage,
-                    available=available
+                    available=available,
                 )
             )
 

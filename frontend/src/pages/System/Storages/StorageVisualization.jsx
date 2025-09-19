@@ -1,12 +1,12 @@
-import styled from "styled-components";
-import { getTheme } from "/src/components/theme";
+import styled from 'styled-components';
+import { getTheme } from '/src/components/theme';
 import { formatBytes } from './common';
 
 const VizContainer = styled.div`
   flex-grow: 1;
   display: flex;
   min-height: 12px;
-`
+`;
 
 const VizSegment = styled.div`
   width: ${(p) => p.size}%;
@@ -18,51 +18,44 @@ const VizSegment = styled.div`
   min-width: 1px;
 `;
 
-
-const StorageVisualization = ({storage}) => {
+const StorageVisualization = ({ storage }) => {
   const storageSize = storage.total;
   const usedSize = storage.used;
-  const untrackedSize = storageSize - storage.nebula_usage.reduce((acc, seg) => acc + seg.usage, 0);
+  const untrackedSize =
+    storageSize - storage.nebula_usage.reduce((acc, seg) => acc + seg.usage, 0);
   const freeSize = storageSize - usedSize;
 
   return (
     <VizContainer>
-     {storage.nebula_usage.map((segment, idx) => (
-        <VizSegment 
-          key={idx} 
-          size={segment.usage / storage.total *100}
-          color={segment.color} 
+      {storage.nebula_usage.map((segment, idx) => (
+        <VizSegment
+          key={idx}
+          size={(segment.usage / storage.total) * 100}
+          color={segment.color}
           title={`${segment.label}: ${formatBytes(segment.usage)}`}
-        >
-        </VizSegment>
+        ></VizSegment>
       ))}
 
       {untrackedSize > 0 && (
-      <VizSegment
-        title={`Untracked: ${formatBytes(untrackedSize)}`}
-        size={ untrackedSize / storage.total * 100 }
-        color={getTheme().colors.surface07}
-      />
+        <VizSegment
+          title={`Untracked: ${formatBytes(untrackedSize)}`}
+          size={(untrackedSize / storage.total) * 100}
+          color={getTheme().colors.surface07}
+        />
       )}
 
       {freeSize > 0 && (
-      <VizSegment
-        title={`Free: ${formatBytes(freeSize)}`}
-        size={ freeSize / storage.total * 100 }
-        color={getTheme().colors.surface03}
-      />
+        <VizSegment
+          title={`Free: ${formatBytes(freeSize)}`}
+          size={(freeSize / storage.total) * 100}
+          color={getTheme().colors.surface03}
+        />
       )}
-
-
     </VizContainer>
-  )
-
-}
+  );
+};
 
 export default StorageVisualization;
-
-
-
 
 /*
  *

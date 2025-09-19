@@ -131,7 +131,7 @@ const Trackbar = ({
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(markInX + 1, height - 1);
-    ctx.lineTo(markOutX -1, height - 1);
+    ctx.lineTo(markOutX - 1, height - 1);
     ctx.stroke();
 
     //
