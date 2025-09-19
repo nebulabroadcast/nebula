@@ -77,7 +77,7 @@ const Subclip = ({
       return;
     }
 
-    if (selection.mark_out - selection.mark_in < (2.0/fps)) {
+    if (selection.mark_out - selection.mark_in < 2.0 / fps) {
       toast.error('Region must be at least 2 frames long.');
       return;
     }

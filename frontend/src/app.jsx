@@ -16,10 +16,10 @@ import LoginPage from '/src/pages/LoginPage';
 import LoadingPage from '/src/pages/LoadingPage';
 import MAMPage from '/src/pages/MAMPage';
 import JobsPage from '/src/pages/JobsPage';
-import ServicesPage from '/src/pages/ServicesPage';
 import ToolPage from '/src/pages/ToolPage';
-import ProfilePage from '/src/pages/ProfilePage';
-import UsersPage from '/src/pages/UsersPage';
+
+import ProfilePage from '/src/pages/Profile';
+import SystemPage from '/src/pages/System';
 
 const App = () => {
   const [accessToken, setAccessToken] = useLocalStorage('accessToken', null);
@@ -90,12 +90,15 @@ const App = () => {
               exact
               element={<Navigate replace to="/jobs/active" />}
             />
+            <Route
+              path="/system"
+              exact
+              element={<Navigate replace to="/system/services" />}
+            />
             <Route path="/jobs/:view" element={<JobsPage />} />
+            <Route path="/system/:view" element={<SystemPage />} />
             <Route path="/tool/:tool" element={<ToolPage />} />
-            <Route path="/services" element={<ServicesPage />} />
             <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/users" element={<UsersPage />} />
-            <Route path="/users/:id" element={<UsersPage />} />
           </Routes>
         </BrowserRouter>
       </DialogProvider>

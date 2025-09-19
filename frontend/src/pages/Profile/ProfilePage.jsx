@@ -2,7 +2,10 @@ import nebula from '/src/nebula';
 
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+
+import { setPageTitle } from '/src/actions';
 
 import {
   Form,
@@ -95,44 +98,19 @@ const ChangePasswordForm = () => {
   );
 };
 
-const AdminPanel = () => {
-  const navigate = useNavigate();
-
-  return (
-    <Section className="grow column">
-      <PanelHeader>
-        <Icon icon="admin_panel_settings" />
-        Administration
-      </PanelHeader>
-
-      <div style={{ flexDirection: 'column', display: 'flex', maxWidth: 200 }}>
-        <Button
-          label="User management"
-          icon="group"
-          onClick={() => navigate('/users')}
-        />
-      </div>
-    </Section>
-  );
-};
-
-const UserPanel = () => {
-  return (
-    <Section className="grow column">
-      <h2>Access control</h2>
-    </Section>
-  );
-};
-
 const ProfilePage = () => {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(setPageTitle({ title: 'User profile' }));
+  }, []);
+
   return (
     <main>
       <div className="column" style={{ minWidth: 400 }}>
         <ProfileForm />
         <ChangePasswordForm />
       </div>
-
-      {nebula.user.is_admin ? <AdminPanel /> : <UserPanel />}
 
       <Sessions userId={nebula.user.id} />
     </main>

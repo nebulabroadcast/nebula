@@ -148,6 +148,12 @@ section:not(.Toastify) {
   gap: var(--section-gap);
 }
 
+.transparent {
+  background-color: transparent !important;
+  border: 1px solid transparent !important;
+  padding: 0 !important;
+}
+
 .center {
   display: flex;
   align-items: center;

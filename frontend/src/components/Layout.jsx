@@ -53,6 +53,24 @@ const Navbar = styled.nav`
   }
 `;
 
+const NavbarTitle = styled.div`
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #f0f0f0;
+  margin-right: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+
+  .icon {
+    font-size: 2.1rem;
+  }
+`;
+
 const Spacer = styled.div`
   flex-grow: 1;
   display: flex;
@@ -88,4 +106,4 @@ const PanelHeader = styled.h2`
   gap: 8px;
 `;
 
-export { Navbar, Spacer, ToolbarSeparator, PanelHeader, Section };
+export { Navbar, NavbarTitle, Spacer, ToolbarSeparator, PanelHeader, Section };

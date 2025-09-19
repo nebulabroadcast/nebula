@@ -132,7 +132,7 @@ const Preview = ({ assetData, setAssetData }) => {
       return;
     }
 
-    if (selection.mark_out - selection.mark_in < (2.0/frameRate)) {
+    if (selection.mark_out - selection.mark_in < 2.0 / frameRate) {
       toast.error('Region must be at least 2 frames long');
       return;
     }

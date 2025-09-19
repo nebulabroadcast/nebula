@@ -61,7 +61,7 @@ const MainNavbar = () => {
       rundown:
         nebula.can('rundown_view', null, true) ||
         nebula.can('rundown_edit', null, true),
-      services: nebula.can('service_control', null, true),
+      system: nebula.can('service_control', null, true),
       jobs: nebula.can('job_control', null, true),
     };
   }, []);
@@ -76,7 +76,7 @@ const MainNavbar = () => {
         )}
         {show.rundown && <NavLink to={`/mam/rundown${mamSuffix}`}>Rundown</NavLink>}
         {show.jobs && <NavLink to="/jobs">Jobs</NavLink>}
-        {show.services && <NavLink to="/services">Services</NavLink>}
+        {show.system && <NavLink to="/system">System</NavLink>}
       </div>
       <div className="center">
         <PageTitle />

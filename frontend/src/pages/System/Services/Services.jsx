@@ -140,17 +140,15 @@ const ServicesPage = () => {
   }, []);
 
   return (
-    <main>
-      <Section className="grow">
-        <Table
-          data={services}
-          columns={columns}
-          className="contained"
-          keyField="id"
-          loading={loading}
-        />
-      </Section>
-    </main>
+    <Section className="grow">
+      <Table
+        data={services}
+        columns={columns}
+        className="contained"
+        keyField="id"
+        loading={loading}
+      />
+    </Section>
   );
 };
 
