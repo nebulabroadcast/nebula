@@ -2,6 +2,7 @@ import React, {useState, useEffect} from "react";
 import styled from "styled-components";
 
 import nebula from '/src/nebula';
+import { Section } from '/src/components';
 
 const Row = styled.section`
   display: flex;
@@ -46,7 +47,6 @@ const Sizes = styled.div`
 
 const Viz = styled.div`
   flex: 0;
-  border: 1px solid #444;
 `;
 
 const Square = styled.rect`
@@ -142,15 +142,11 @@ const StoragesPage = () => {
   }, []);
 
   return(
-  <main style={{
-      flexDirection: "column",
-      justifyContent: "flex-start",
-      alignItems: "center",
-  }}>
+    <Section className="grow column">
     {data.storages.map((s) => (
       <StorageRow key={s.storage_id} storage={s} />
     ))}
-  </main>
+    </Section>
   )
 };
 
