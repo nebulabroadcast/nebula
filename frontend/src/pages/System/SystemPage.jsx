@@ -1,7 +1,7 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { useParams, NavLink } from 'react-router-dom';
 
-import { Navbar, Spacer, Section, Button } from '/src/components';
+import { Navbar, Spacer, Button } from '/src/components';
 
 import Services from './Services';
 import Storages from './Storages';
