@@ -49,36 +49,44 @@ interface ContextMenuOption {
   onClick?: (contextData: { posX: number; posY: number }) => void;
 }
 
+
 interface ContextMenuProps {
   target: React.RefObject<HTMLElement>;
-  options: () => ContextMenuOption[];
+  options: (contextData?: any) => ContextMenuOption[];
 }
 
 const ContextMenu: React.FC<ContextMenuProps> = ({ target, options }) => {
-  const [contextData, setContextData] = useState({
+  const [menuState, setMenuState] = useState({
     visible: false,
     posX: 0,
     posY: 0,
+    contextData: undefined,
   });
   const contextRef = useRef(null);
 
   useEffect(() => {
     const contextMenuEventHandler = (event: MouseEvent) => {
       const targetElement = target.current;
+      let contextData = undefined;
+      // Try to get context data from a custom property on the event
+      if ((event as any).contextData) {
+        contextData = (event as any).contextData;
+      }
       if (targetElement && targetElement.contains(event.target as Node)) {
         event.preventDefault();
         setTimeout(() => {
-          setContextData({
+          setMenuState({
             visible: true,
             posX: event.clientX,
             posY: event.clientY,
+            contextData,
           });
         }, 0);
       } else if (
         contextRef.current &&
         (contextRef.current as HTMLElement).contains(event.target as Node)
       ) {
-        setContextData({ ...contextData, visible: false });
+        setMenuState({ ...menuState, visible: false });
       }
     };
 
@@ -87,7 +95,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ target, options }) => {
         contextRef.current &&
         !(contextRef.current as HTMLElement).contains(event.target as Node)
       ) {
-        setContextData({ ...contextData, visible: false });
+        setMenuState({ ...menuState, visible: false });
       }
     };
 
@@ -97,36 +105,36 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ target, options }) => {
       document.removeEventListener('contextmenu', contextMenuEventHandler);
       document.removeEventListener('click', offClickHandler);
     };
-  }, [contextData, target]);
+  }, [menuState, target]);
 
   useLayoutEffect(() => {
     if (!contextRef?.current) return;
     const element = contextRef.current as HTMLElement;
 
-    if (contextData.posX + element.offsetWidth > window.innerWidth) {
-      setContextData({
-        ...contextData,
-        posX: contextData.posX - element.offsetWidth,
+    if (menuState.posX + element.offsetWidth > window.innerWidth) {
+      setMenuState({
+        ...menuState,
+        posX: menuState.posX - element.offsetWidth,
       });
     }
-    if (contextData.posY + element.offsetHeight > window.innerHeight) {
-      setContextData({
-        ...contextData,
-        posY: contextData.posY - element.offsetHeight,
+    if (menuState.posY + element.offsetHeight > window.innerHeight) {
+      setMenuState({
+        ...menuState,
+        posY: menuState.posY - element.offsetHeight,
       });
     }
-  }, [contextData]);
+  }, [menuState]);
 
   return (
     <ContextMenuWrapper
       ref={contextRef}
       style={{
-        display: `${contextData.visible ? 'block' : 'none'}`,
-        left: contextData.posX,
-        top: contextData.posY,
+        display: `${menuState.visible ? 'block' : 'none'}`,
+        left: menuState.posX,
+        top: menuState.posY,
       }}
     >
-      {options().map((option, idx) => (
+      {options(menuState.contextData).map((option, idx) => (
         <span key={idx}>
           {option.separator && <hr />}
           <Button
@@ -134,8 +142,8 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ target, options }) => {
             icon={option.icon}
             iconStyle={option.hlColor ? { color: option.hlColor } : {}}
             onClick={() => {
-              setContextData({ ...contextData, visible: false });
-              if (option.onClick) option.onClick(contextData);
+              setMenuState({ ...menuState, visible: false });
+              if (option.onClick) option.onClick(menuState.contextData);
             }}
           />
         </span>

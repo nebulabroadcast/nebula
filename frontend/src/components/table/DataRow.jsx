@@ -68,6 +68,15 @@ const DataRow = ({
   // Reder the row
   //
 
+
+  // Handler to forward cell context menu events up to parent (Table)
+  const handleCellContextMenu = (cellInfo) => {
+    // Attach contextData to the native event and trigger contextmenu
+    if (cellInfo && cellInfo.event) {
+      cellInfo.event.contextData = { column: cellInfo.column, value: cellInfo.value, rowData, rowIndex: index };
+    }
+  };
+
   const rowContent = useMemo(() => {
     return (
       <>
@@ -77,6 +86,7 @@ const DataRow = ({
             column={column}
             rowData={rowData}
             cellFormatter={column.formatter}
+            onCellContextMenu={handleCellContextMenu}
           />
         ))}
       </>

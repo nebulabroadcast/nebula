@@ -237,33 +237,44 @@ const BrowserTable = ({ isDragging }) => {
       .catch(() => {});
   };
 
-  const contextMenu = () => [
-    {
-      label: 'Send to...',
-      icon: 'send',
-      onClick: () => sendTo(),
-    },
-    {
-      label: 'Reset',
-      icon: 'undo',
-      onClick: () =>
-        setSelectionStatus(5, 'Do you want to reload selected assets metadata?'),
-    },
-    {
-      label: 'Archive',
-      separator: true,
-      icon: 'archive',
-      onClick: () =>
-        setSelectionStatus(4, 'Do you want to move selected assets to archive?'),
-    },
-    {
-      label: 'Trash',
-      icon: 'delete',
-      hlColor: 'var(--color-red)',
-      onClick: () =>
-        setSelectionStatus(3, 'Do you want to move selected assets to trash?'),
-    },
-  ];
+  const contextMenu = (contextData) => {
+    const menu = [
+      {
+        label: 'Send to...',
+        icon: 'send',
+        onClick: () => sendTo(),
+      },
+      {
+        label: 'Reset',
+        icon: 'undo',
+        onClick: () =>
+          setSelectionStatus(5, 'Do you want to reload selected assets metadata?'),
+      },
+      {
+        label: 'Archive',
+        separator: true,
+        icon: 'archive',
+        onClick: () =>
+          setSelectionStatus(4, 'Do you want to move selected assets to archive?'),
+      },
+      {
+        label: 'Trash',
+        icon: 'delete',
+        hlColor: 'var(--color-red)',
+        onClick: () =>
+          setSelectionStatus(3, 'Do you want to move selected assets to trash?'),
+      },
+    ];
+    if (contextData && contextData.column && contextData.value !== undefined) {
+      menu.unshift({
+        label: `Filter by ${contextData.column}`,
+        icon: 'filter_list',
+        separator: true,
+        onClick: () => alert(`filtering by ${contextData.value}`),
+      });
+    }
+    return menu;
+  };
 
   const tableClass = clsx('contained', isDragging && 'no-scroll');
 
