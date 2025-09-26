@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import DatePicker from 'react-datepicker';
 import styled from 'styled-components';
 
-import BaseInput from './BaseInput';
+import Input from './Input.styled';
 import Button from './Button';
 import Dialog from './Dialog';
 
@@ -139,7 +139,7 @@ const InputDatetime = ({ value, onChange, placeholder, mode, className }) => {
           onClose={() => setShowCalendar(false)}
         />
       )}
-      <BaseInput
+      <Input
         type="text"
         ref={inputRef}
         value={time || ''}

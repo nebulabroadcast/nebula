@@ -1,8 +1,8 @@
-import BaseInput from './BaseInput';
+import Input from './Input.styled';
 
 const InputNumber = ({ value, onChange, tooltip, ...props }) => {
   return (
-    <BaseInput
+    <Input
       type="number"
       value={value || ''}
       onChange={(e) => onChange(e.target.value)}

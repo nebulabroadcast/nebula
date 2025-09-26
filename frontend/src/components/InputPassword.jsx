@@ -1,10 +1,10 @@
 import { forwardRef } from 'react';
 
-import BaseInput from './BaseInput';
+import Input from './Input.styled';
 
 const InputPassword = forwardRef(({ value, onChange, tooltip, ...props }, ref) => {
   return (
-    <BaseInput
+    <Input
       ref={ref}
       type="password"
       title={tooltip}
