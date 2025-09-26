@@ -8,9 +8,9 @@ import { useLocalStorage } from '/src/hooks';
 
 import { Routes, Route, Navigate, BrowserRouter } from 'react-router-dom';
 
+import { MediaUploadMonitor } from './containers/MediaUpload/MediaUploadMonitor';
 import { DialogProvider } from './hooks/useDialog';
 import { MediaUploadProvider } from './hooks/useMediaUpload';
-import { MediaUploadMonitor } from './containers/MediaUpload/MediaUploadMonitor';
 
 import WebsocketListener from '/src/websocket';
 import MainNavbar from '/src/containers/MainNavbar';
@@ -82,29 +82,33 @@ const App = () => {
       <WebsocketListener />
       <DialogProvider>
         <MediaUploadProvider>
-        <BrowserRouter>
-          <MainNavbar />
-          <Routes>
-            <Route path="/" exact element={<Navigate replace to="/mam/editor" />} />
-            <Route path="/mam" exact element={<Navigate replace to="/mam/editor" />} />
-            <Route path="/mam/:module" element={<MAMPage />} />
-            <Route
-              path="/jobs"
-              exact
-              element={<Navigate replace to="/jobs/active" />}
-            />
-            <Route
-              path="/system"
-              exact
-              element={<Navigate replace to="/system/services" />}
-            />
-            <Route path="/jobs/:view" element={<JobsPage />} />
-            <Route path="/system/:view" element={<SystemPage />} />
-            <Route path="/tool/:tool" element={<ToolPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-          </Routes>
-          <MediaUploadMonitor />
-        </BrowserRouter>
+          <BrowserRouter>
+            <MainNavbar />
+            <Routes>
+              <Route path="/" exact element={<Navigate replace to="/mam/editor" />} />
+              <Route
+                path="/mam"
+                exact
+                element={<Navigate replace to="/mam/editor" />}
+              />
+              <Route path="/mam/:module" element={<MAMPage />} />
+              <Route
+                path="/jobs"
+                exact
+                element={<Navigate replace to="/jobs/active" />}
+              />
+              <Route
+                path="/system"
+                exact
+                element={<Navigate replace to="/system/services" />}
+              />
+              <Route path="/jobs/:view" element={<JobsPage />} />
+              <Route path="/system/:view" element={<SystemPage />} />
+              <Route path="/tool/:tool" element={<ToolPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
+            </Routes>
+            <MediaUploadMonitor />
+          </BrowserRouter>
         </MediaUploadProvider>
       </DialogProvider>
     </Suspense>

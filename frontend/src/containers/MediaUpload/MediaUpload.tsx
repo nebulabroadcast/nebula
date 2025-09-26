@@ -7,15 +7,11 @@ import nebula from '/src/nebula';
 import { useMediaUpload } from '../../hooks/useMediaUpload';
 import { MediaUploadTask } from '../../types/upload';
 
-
 const StatusMessage = styled.div`
   border: 1px solid red;
 `;
 
-
-const FileDetailWrapper = styled.div`
-`;
-
+const FileDetailWrapper = styled.div``;
 
 interface FileSelectWidgetProps {
   onSelect: (file: File) => void;
@@ -109,7 +105,12 @@ interface UploadDialogProps {
   contentType: string;
 }
 
-const UploadDialog: React.FC<UploadDialogProps> = ({ onHide, id, title, contentType }) => {
+const UploadDialog: React.FC<UploadDialogProps> = ({
+  onHide,
+  id,
+  title,
+  contentType,
+}) => {
   const [file, setFile] = useState<File | null>(null);
   const { addToQueue, UPLOAD_STATUS } = useMediaUpload();
   const [status, setStatus] = useState<typeof UPLOAD_STATUS.QUEUED | 'idle'>('idle'); // Local status
@@ -150,11 +151,7 @@ const UploadDialog: React.FC<UploadDialogProps> = ({ onHide, id, title, contentT
 
   const footer = (
     <>
-      <FileSelectWidget
-        onSelect={setFile}
-        disabled={false}
-        contentType={contentType}
-      />
+      <FileSelectWidget onSelect={setFile} disabled={false} contentType={contentType} />
       <Button
         label="Submit for Upload"
         icon="upload"
@@ -191,17 +188,27 @@ const UploadDialog: React.FC<UploadDialogProps> = ({ onHide, id, title, contentT
 interface UploadButtonProps {
   id: string; // Asset ID (unique identifier of the task as well)
   title: string; // Asset title (for display purposes)
-  contentType: string; 
+  contentType: string;
   disabled: boolean;
 }
 
-export const UploadButton: React.FC<UploadButtonProps> = ({ id, title, contentType, disabled }) => {
+export const UploadButton: React.FC<UploadButtonProps> = ({
+  id,
+  title,
+  contentType,
+  disabled,
+}) => {
   const [dialogVisible, setDialogVisible] = useState(false);
 
   return (
     <>
       {dialogVisible && (
-        <UploadDialog id={id} title={title} contentType={contentType} onHide={() => setDialogVisible(false)} />
+        <UploadDialog
+          id={id}
+          title={title}
+          contentType={contentType}
+          onHide={() => setDialogVisible(false)}
+        />
       )}
       <Button
         icon="upload"

@@ -8,7 +8,6 @@ import { setPageTitle } from '/src/actions';
 import { formatBytes } from './common';
 import StorageVisualization from './StorageVisualization';
 
-
 const Availability = styled.span`
   display: inline-flex;
   align-items: center;

@@ -7,7 +7,6 @@ import useWebSocket, { ReadyState } from 'react-use-websocket';
 import PubSub from '/src/pubsub';
 import { arrayEquals } from '/src/utils';
 
-
 const proto = window.location.protocol.replace('http', 'ws');
 const wsAddress = `${proto}//${window.location.host}/ws`;
 const wsOpts = {

@@ -7,7 +7,6 @@ import { useDispatch } from 'react-redux';
 import PubSub from '/src/pubsub';
 import { Table, Button, InputSwitch, Spacer, Section } from '/src/components';
 
-
 import { setPageTitle } from '/src/actions';
 
 const formatStatus = (rowData, key) => {

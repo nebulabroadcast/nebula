@@ -146,7 +146,10 @@ const useMediaUploadLogic = (): MediaUploadContextType => {
         console.warn(`Upload ${id} was canceled.`);
       } else {
         console.error(`Upload ${id} failed:`, error);
-        updateTask(id, { status: UPLOAD_STATUS.ERROR as MediaUploadStatus, progress: 0 });
+        updateTask(id, {
+          status: UPLOAD_STATUS.ERROR as MediaUploadStatus,
+          progress: 0,
+        });
       }
     } finally {
       activeUploadRef.current = null;

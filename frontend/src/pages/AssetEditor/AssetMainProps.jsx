@@ -21,7 +21,6 @@ import AssigneesButton from './AssigneesButton';
 import ContextActionResult from './ContextAction';
 import MetadataDetail from './MetadataDetail';
 
-
 const AssetEditorNav = ({ assetData, setMeta, enabledActions }) => {
   const [detailsVisible, setDetailsVisible] = useState(false);
   const [contextActionResult, setContextActionResult] = useState(null);
@@ -175,7 +174,12 @@ const AssetEditorNav = ({ assetData, setMeta, enabledActions }) => {
       )}
 
       {nebula.settings?.system?.ui_asset_upload && (
-        <UploadButton id={assetData.id} title={assetData.title} contentType={assetData.content_type} disabled={!enabledActions.upload} />
+        <UploadButton
+          id={assetData.id}
+          title={assetData.title}
+          contentType={assetData.content_type}
+          disabled={!enabledActions.upload}
+        />
       )}
     </Navbar>
   );

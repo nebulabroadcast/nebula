@@ -1,10 +1,10 @@
+import { Button, Progress } from '@components';
+import { useMediaUpload } from '@hooks/useMediaUpload';
 import React, { useMemo } from 'react';
 import styled from 'styled-components';
 
-import { Button, Progress } from '/src/components';
 
-import { useMediaUpload } from '../../hooks/useMediaUpload';
-import { MediaUploadTask } from '../../types/upload';
+import type { MediaUploadTask } from '../../types/upload';
 
 const MonitorWrapper = styled.div`
   position: fixed;
@@ -14,21 +14,8 @@ const MonitorWrapper = styled.div`
 `;
 
 const TaskItem = styled.div`
-  background: #fff;
-  border: 1px solid
-    ${(props) => {
-      switch (props.$status) {
-        case 'uploading':
-        case 'queued':
-          return '#007bff'; // Blue for active
-        case 'success':
-          return '#28a745'; // Green for success
-        case 'error':
-          return '#dc3545'; // Red for error
-        default:
-          return '#6c757d'; // Grey for unknown
-      }
-    }};
+  background: #444;
+  border: 1px solid;
   padding: 10px;
   margin-bottom: 10px;
   width: 300px;
@@ -63,9 +50,7 @@ export const MediaUploadMonitor: React.FC = () => {
   // Logic to filter and sort tasks
   const activeTasks = useMemo(() => {
     return queue
-      .filter(
-        (t) => t.status !== UPLOAD_STATUS.SUCCESS
-      )
+      .filter((t) => t.status !== UPLOAD_STATUS.SUCCESS)
       .sort((a, b) => {
         const aActive =
           a.status === UPLOAD_STATUS.UPLOADING || a.status === UPLOAD_STATUS.QUEUED;
@@ -85,7 +70,7 @@ export const MediaUploadMonitor: React.FC = () => {
   return (
     <MonitorWrapper>
       <h3>Background Uploads ({activeCount} remaining)</h3>
-      {activeTasks.map((task: UploadTask) => (
+      {activeTasks.map((task: MediaUploadTask) => (
         <TaskItem key={task.id} $status={task.status}>
           <div className="header">
             <span title={task.file.name}>{formatFileName(task.file.name)}</span>
@@ -96,17 +81,9 @@ export const MediaUploadMonitor: React.FC = () => {
           <div className="actions">
             {task.status === UPLOAD_STATUS.UPLOADING ||
             task.status === UPLOAD_STATUS.QUEUED ? (
-              <Button
-                size="small"
-                label="Cancel"
-                onClick={() => cancelUpload(task.id)}
-              />
+              <Button label="Cancel" onClick={() => cancelUpload(task.id)} />
             ) : (
-              <Button
-                size="small"
-                label="Dismiss"
-                onClick={() => dismissTask(task.id)}
-              />
+              <Button label="Dismiss" onClick={() => dismissTask(task.id)} />
             )}
           </div>
         </TaskItem>
