@@ -9,6 +9,8 @@ import { useLocalStorage } from '/src/hooks';
 import { Routes, Route, Navigate, BrowserRouter } from 'react-router-dom';
 
 import { DialogProvider } from './hooks/useDialog';
+import { MediaUploadProvider } from './hooks/useMediaUpload';
+import { MediaUploadMonitor } from './containers/MediaUpload/MediaUploadMonitor';
 
 import WebsocketListener from '/src/websocket';
 import MainNavbar from '/src/containers/MainNavbar';
@@ -79,6 +81,7 @@ const App = () => {
     <Suspense fallback={<LoadingPage />}>
       <WebsocketListener />
       <DialogProvider>
+        <MediaUploadProvider>
         <BrowserRouter>
           <MainNavbar />
           <Routes>
@@ -100,7 +103,9 @@ const App = () => {
             <Route path="/tool/:tool" element={<ToolPage />} />
             <Route path="/profile" element={<ProfilePage />} />
           </Routes>
+          <MediaUploadMonitor />
         </BrowserRouter>
+        </MediaUploadProvider>
       </DialogProvider>
     </Suspense>
   );

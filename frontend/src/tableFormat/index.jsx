@@ -10,10 +10,10 @@ import formatObjectIdFolder from './formatObjectIdFolder';
 import formatObjectQcState from './formatObjectQcState';
 import formatObjectStatus from './formatObjectStatus';
 import formatObjectTitle from './formatObjectTitle';
+import formatRundownDifference from './formatRundownDifference';
 import formatRundownRunMode from './formatRundownRunMode';
 import formatRundownSymbol from './formatRundownSymbol';
 import formatRundownTime from './formatRundownTime';
-import formatRundownDifference from './formatRundownDifference';
 
 const formatRowHighlightColor = (rowData) => {
   switch (rowData['status']) {

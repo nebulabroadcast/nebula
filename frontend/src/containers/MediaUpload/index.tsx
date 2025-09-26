@@ -1,0 +1,1 @@
+export {UploadButton} from './MediaUpload';

@@ -1,7 +1,8 @@
 import nebula from '/src/nebula';
 
-import { useDispatch } from 'react-redux';
+import contentType from 'content-type';
 import { useState, useMemo } from 'react';
+import { useDispatch } from 'react-redux';
 
 import { setCurrentViewId, setSearchQuery } from '/src/actions';
 import {
@@ -13,14 +14,13 @@ import {
   InputTimecode,
   Dialog,
 } from '/src/components';
-import { UploadButton } from '/src/containers/Upload';
+import { UploadButton } from '/src/containers/MediaUpload';
 import { useDialog } from '/src/hooks';
 
-import MetadataDetail from './MetadataDetail';
-import ContextActionResult from './ContextAction';
 import AssigneesButton from './AssigneesButton';
+import ContextActionResult from './ContextAction';
+import MetadataDetail from './MetadataDetail';
 
-import contentType from 'content-type';
 
 const AssetEditorNav = ({ assetData, setMeta, enabledActions }) => {
   const [detailsVisible, setDetailsVisible] = useState(false);
@@ -175,7 +175,7 @@ const AssetEditorNav = ({ assetData, setMeta, enabledActions }) => {
       )}
 
       {nebula.settings?.system?.ui_asset_upload && (
-        <UploadButton assetData={assetData} disabled={!enabledActions.upload} />
+        <UploadButton id={assetData.id} title={assetData.title} contentType={assetData.content_type} disabled={!enabledActions.upload} />
       )}
     </Navbar>
   );

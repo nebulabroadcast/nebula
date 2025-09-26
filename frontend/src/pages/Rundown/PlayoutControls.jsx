@@ -1,8 +1,8 @@
+import clsx from 'clsx';
 import { useState, useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import styled from 'styled-components';
-import clsx from 'clsx';
 
 import nebula from '/src/nebula';
 import { Button, Progress } from '/src/components';
