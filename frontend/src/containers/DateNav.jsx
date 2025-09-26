@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
-import { useDialog } from '/src/hooks';
-import { Button } from '/src/components';
+import { useDialog } from '@hooks/useDialog';
+import { Button } from '@components';
 import { dateToDateString } from '/src/utils';
 
 const DateNav = ({ onChange, skipBy = 1 }) => {

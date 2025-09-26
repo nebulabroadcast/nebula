@@ -14,7 +14,6 @@ export interface MediaUploadTask {
   id: string;
   title: string;
   file: File;
-  contentType: string;
   status: MediaUploadStatus;
   progress: number;
   bytesTransferred: number;

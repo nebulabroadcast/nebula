@@ -1,4 +1,6 @@
-import axios from 'axios';
+import axios, { AxiosProgressEvent } from 'axios';
+import { toast } from 'react-toastify';
+
 import React, {
   createContext,
   useContext,
@@ -9,7 +11,7 @@ import React, {
   ReactNode,
 } from 'react';
 
-import nebula from '/src/nebula';
+import nebula from '../nebula';
 
 import {
   MediaUploadTask,
@@ -114,11 +116,12 @@ const useMediaUploadLogic = (): MediaUploadContextType => {
     isProcessingRef.current = true;
     activeUploadRef.current = nextTask.id;
 
-    const { id, file, title, controller } = nextTask;
+    const { id, file, controller } = nextTask;
     updateTask(id, { status: UPLOAD_STATUS.UPLOADING as MediaUploadStatus });
 
     try {
-      const handleProgress = (event: ProgressEvent) => {
+      const handleProgress = (event: AxiosProgressEvent) => {
+        if (!event.total) return;
         const progress = Math.round((event.loaded / event.total) * 100);
         updateTask(id, { progress, bytesTransferred: event.loaded });
       };
@@ -135,6 +138,7 @@ const useMediaUploadLogic = (): MediaUploadContextType => {
         },
       });
 
+      toast.success(`File "${file.name}" uploaded successfully.`);
       updateTask(id, {
         status: UPLOAD_STATUS.SUCCESS as MediaUploadStatus,
         progress: 100,

@@ -1,8 +1,8 @@
 import { Button, Progress } from '@components';
 import { useMediaUpload } from '@hooks/useMediaUpload';
+
 import React, { useMemo } from 'react';
 import styled from 'styled-components';
-
 
 import type { MediaUploadTask } from '../../types/upload';
 
@@ -63,15 +63,11 @@ export const MediaUploadMonitor: React.FC = () => {
 
   if (activeTasks.length === 0) return null;
 
-  const activeCount = activeTasks.filter(
-    (t) => t.status !== UPLOAD_STATUS.SUCCESS && t.status !== UPLOAD_STATUS.ERROR
-  ).length;
 
   return (
     <MonitorWrapper>
-      <h3>Background Uploads ({activeCount} remaining)</h3>
       {activeTasks.map((task: MediaUploadTask) => (
-        <TaskItem key={task.id} $status={task.status}>
+        <TaskItem key={task.id} className={task.status.toLowerCase()}>
           <div className="header">
             <span title={task.file.name}>{formatFileName(task.file.name)}</span>
             <span className="status">{task.status.toUpperCase()}</span>
@@ -80,7 +76,7 @@ export const MediaUploadMonitor: React.FC = () => {
             task.status === UPLOAD_STATUS.QUEUED) && <Progress value={task.progress} />}
           <div className="actions">
             {task.status === UPLOAD_STATUS.UPLOADING ||
-            task.status === UPLOAD_STATUS.QUEUED ? (
+              task.status === UPLOAD_STATUS.QUEUED ? (
               <Button label="Cancel" onClick={() => cancelUpload(task.id)} />
             ) : (
               <Button label="Dismiss" onClick={() => dismissTask(task.id)} />

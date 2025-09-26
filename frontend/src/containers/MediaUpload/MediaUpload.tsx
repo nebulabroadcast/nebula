@@ -1,11 +1,12 @@
 import React, { useState, useRef, useMemo, DragEvent, ChangeEvent } from 'react';
+import { toast } from 'react-toastify';
 import styled from 'styled-components';
 
-import { Dialog, Button, Progress } from '/src/components';
-import nebula from '/src/nebula';
+import { Dialog, Button, Progress } from '@components';
+import nebula from '../../nebula';
 
-import { useMediaUpload } from '../../hooks/useMediaUpload';
-import { MediaUploadTask } from '../../types/upload';
+import { useMediaUpload } from '@hooks/useMediaUpload';
+import { ContentType } from '@/client';
 
 const StatusMessage = styled.div`
   border: 1px solid red;
@@ -16,7 +17,7 @@ const FileDetailWrapper = styled.div``;
 interface FileSelectWidgetProps {
   onSelect: (file: File) => void;
   disabled: boolean;
-  contentType: string;
+  contentType: ContentType;
 }
 
 const FileSelectWidget: React.FC<FileSelectWidgetProps> = ({
@@ -36,8 +37,9 @@ const FileSelectWidget: React.FC<FileSelectWidgetProps> = ({
   const accept = useMemo(() => {
     // TypeScript utility for object keys/values
     const result: string[] = [];
-    for (const ext in nebula.settings.filetypes) {
-      const type = (nebula.settings.filetypes as Record<string, string>)[ext];
+    const filetypes = nebula?.settings?.filetypes || {};
+    for (const ext in filetypes) {
+      const type = (filetypes as Record<string, ContentType>)[ext];
       if (type === contentType) result.push(`.${ext}`);
     }
     return result.join(',');
@@ -81,14 +83,14 @@ const formatFileSize = (bytes: number): string => {
 const FileDetails: React.FC<FileDetailsProps> = ({ file, progressPercent }) => {
   if (!file) {
     return (
-      <FileDetailWrapper $isDragActive={false}>
+      <FileDetailWrapper>
         <h2> No File Selected </h2>
       </FileDetailWrapper>
     );
   }
 
   return (
-    <FileDetailWrapper $isDragActive={false}>
+    <FileDetailWrapper>
       <h2>
         {file.name} ({formatFileSize(file.size)})
       </h2>
@@ -102,7 +104,7 @@ interface UploadDialogProps {
   onHide: () => void;
   id: string; // Asset ID
   title: string; // Asset title
-  contentType: string;
+  contentType: ContentType;
 }
 
 const UploadDialog: React.FC<UploadDialogProps> = ({
@@ -115,7 +117,6 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
   const { addToQueue, UPLOAD_STATUS } = useMediaUpload();
   const [status, setStatus] = useState<typeof UPLOAD_STATUS.QUEUED | 'idle'>('idle'); // Local status
 
-  const [isDragActive, setIsDragActive] = useState(false);
 
   const handleUpload = () => {
     if (!file) return;
@@ -131,17 +132,14 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
   // Drag-and-Drop Handlers
   const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    setIsDragActive(true);
   };
 
   const handleDragLeave = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    setIsDragActive(false);
   };
 
   const handleDrop = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    setIsDragActive(false);
 
     const files = [...e.dataTransfer.files];
     if (files.length === 1) {
@@ -169,7 +167,6 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
       footer={footer}
     >
       <FileDetailWrapper
-        $isDragActive={isDragActive}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
@@ -188,7 +185,7 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
 interface UploadButtonProps {
   id: string; // Asset ID (unique identifier of the task as well)
   title: string; // Asset title (for display purposes)
-  contentType: string;
+  contentType: ContentType;
   disabled: boolean;
 }
 
