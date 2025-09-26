@@ -2,7 +2,7 @@ import { Timecode } from '@wfoxall/timeframe';
 import clsx from 'clsx';
 import { useState, useEffect, useRef } from 'react';
 
-import BaseInput from './BaseInput';
+import Input from './Input.styled';
 
 const InputTimecode = ({
   value = null, // in seconds
@@ -90,7 +90,7 @@ const InputTimecode = ({
   };
 
   return (
-    <BaseInput
+    <Input
       type="text"
       ref={inputRef}
       className={clsx('timecode', className, { error: invalid })}

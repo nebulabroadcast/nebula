@@ -1,7 +1,7 @@
-import styled from 'styled-components';
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import styled from 'styled-components';
 
 import nebula from '/src/nebula';
 import { Navbar, NavbarTitle, Button, Spacer } from '/src/components';

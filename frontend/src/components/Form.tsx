@@ -36,7 +36,13 @@ const Form = styled.div`
   }
 `;
 
-const FormRow = ({ title, tooltip, section, children, ...props }) => {
+interface FormRowProps extends React.HTMLAttributes<HTMLDivElement> {
+  title: string;
+  tooltip?: string;
+  section?: string;
+}
+
+const FormRow = ({ title, tooltip, section, children, ...props }:FormRowProps) => {
   return (
     <>
       {section && <h3>{section}</h3>}

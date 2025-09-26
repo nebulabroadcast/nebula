@@ -1,14 +1,12 @@
+import { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 
 import { useAudioContext } from './AudioContext';
-
-import { useState, useEffect, useRef } from 'react';
-
-import VUMeter from './VUMeter';
 import ChannelSelect from './ChannelSelect';
 import Trackbar from './Trackbar';
 import VideoOverlay from './VideoOverlay';
 import VideoPlayerControls from './VideoPlayerControls';
+import VUMeter from './VUMeter';
 
 import { Button, InputTimecode, Navbar, Section } from '/src/components';
 
