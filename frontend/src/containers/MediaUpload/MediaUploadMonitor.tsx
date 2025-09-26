@@ -10,7 +10,6 @@ const MonitorWrapper = styled.div`
   position: fixed;
   bottom: 20px;
   right: 20px;
-  border: 1px solid #ccc;
 `;
 
 const TaskItem = styled.div`
@@ -69,7 +68,7 @@ export const MediaUploadMonitor: React.FC = () => {
       {activeTasks.map((task: MediaUploadTask) => (
         <TaskItem key={task.id} className={task.status.toLowerCase()}>
           <div className="header">
-            <span title={task.file.name}>{formatFileName(task.file.name)}</span>
+            <span title={task.file.name}>{formatFileName(task.file.name)} to {task.title}</span>
             <span className="status">{task.status.toUpperCase()}</span>
           </div>
           {(task.status === UPLOAD_STATUS.UPLOADING ||

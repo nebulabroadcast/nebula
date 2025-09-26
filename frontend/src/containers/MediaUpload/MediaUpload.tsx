@@ -1,5 +1,4 @@
 import React, { useState, useRef, useMemo, DragEvent, ChangeEvent } from 'react';
-import { toast } from 'react-toastify';
 import styled from 'styled-components';
 
 import { Dialog, Button, Progress } from '@components';
@@ -125,7 +124,6 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
     addToQueue(file, id, title);
 
     setStatus(UPLOAD_STATUS.QUEUED);
-    toast.success(`File "${file.name}" queued for upload.`);
     onHide();
   };
 
@@ -196,6 +194,12 @@ export const UploadButton: React.FC<UploadButtonProps> = ({
   disabled,
 }) => {
   const [dialogVisible, setDialogVisible] = useState(false);
+  const { queue } = useMediaUpload();
+
+  // Disable button if there's already an upload task for this asset in the queue
+  const isAlreadyQueued = queue.some((task) => task.id === id && (task.status === 'queued' || task.status === 'uploading'));
+
+  const label = isAlreadyQueued ? 'Uploading...' : 'Upload Media';
 
   return (
     <>
@@ -209,9 +213,9 @@ export const UploadButton: React.FC<UploadButtonProps> = ({
       )}
       <Button
         icon="upload"
-        label="Upload media"
+        label={label}
         onClick={() => setDialogVisible(true)}
-        disabled={disabled}
+        disabled={disabled || isAlreadyQueued}
       />
     </>
   );

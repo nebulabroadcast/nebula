@@ -32,8 +32,10 @@ export const useMediaUpload = (): MediaUploadContextType => {
 
 const useMediaUploadLogic = (): MediaUploadContextType => {
   const [queue, setQueue] = useState<MediaUploadTask[]>([]);
+  const queueRef = useRef<MediaUploadTask[]>([]);
   const activeUploadRef = useRef<string | null>(null);
   const isProcessingRef = useRef(false);
+  const processQueueTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   //
   // Prevent tab/window close if uploads are in progress
@@ -83,7 +85,17 @@ const useMediaUploadLogic = (): MediaUploadContextType => {
       totalBytes: file.size,
       controller: new AbortController(),
     };
-    setQueue((prev) => [...prev, newTask]);
+    setQueue((prev) => {
+      // Prevent adding duplicates
+      if (
+        prev.find((task) => (
+          task.id === id 
+          && ([UPLOAD_STATUS.QUEUED, UPLOAD_STATUS.UPLOADING] as MediaUploadStatus[]).includes(task.status)
+        ))) {
+        return prev;
+      }
+      return [...prev.filter(e => e.id !== newTask.id), newTask]
+    });
   }, []);
 
   const cancelUpload = useCallback(
@@ -109,7 +121,7 @@ const useMediaUploadLogic = (): MediaUploadContextType => {
   const processQueue = useCallback(async () => {
     if (isProcessingRef.current || activeUploadRef.current) return;
 
-    const nextTask = queue.find((t) => t.status === UPLOAD_STATUS.QUEUED);
+    const nextTask = queueRef.current.find((t) => t.status === UPLOAD_STATUS.QUEUED);
 
     if (!nextTask) return; // No queued tasks
 
@@ -159,12 +171,32 @@ const useMediaUploadLogic = (): MediaUploadContextType => {
       activeUploadRef.current = null;
       isProcessingRef.current = false;
       // Process the next task immediately
-      setTimeout(processQueue, 0);
+      processQueueTimeoutRef.current = setTimeout(() => {
+        processQueue();
+      }, 500);
     }
-  }, [queue, updateTask]);
+  }, [updateTask]);
+
+  // Keep queueRef in sync with queue state
+  useEffect(() => {
+    queueRef.current = queue;
+  }, [queue]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (processQueueTimeoutRef.current) {
+        clearTimeout(processQueueTimeoutRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
-    processQueue();
+    // Only trigger if we have queued items and aren't already processing
+    const hasQueuedItems = queue.some((task) => task.status === UPLOAD_STATUS.QUEUED);
+    if (hasQueuedItems && !isProcessingRef.current && !activeUploadRef.current) {
+      processQueue();
+    }
   }, [queue, processQueue]);
 
   return {
