@@ -1,10 +1,11 @@
+import { Dialog, Button, Progress } from '@components';
+import { useMediaUpload } from '@hooks/useMediaUpload';
 import React, { useState, useRef, useMemo, DragEvent, ChangeEvent } from 'react';
 import styled from 'styled-components';
 
-import { Dialog, Button, Progress } from '@components';
 import nebula from '../../nebula';
 
-import { useMediaUpload } from '@hooks/useMediaUpload';
+
 import { ContentType } from '@/client';
 
 const StatusMessage = styled.div`
@@ -116,7 +117,6 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
   const { addToQueue, UPLOAD_STATUS } = useMediaUpload();
   const [status, setStatus] = useState<typeof UPLOAD_STATUS.QUEUED | 'idle'>('idle'); // Local status
 
-
   const handleUpload = () => {
     if (!file) return;
 
@@ -197,7 +197,10 @@ export const UploadButton: React.FC<UploadButtonProps> = ({
   const { queue } = useMediaUpload();
 
   // Disable button if there's already an upload task for this asset in the queue
-  const isAlreadyQueued = queue.some((task) => task.id === id && (task.status === 'queued' || task.status === 'uploading'));
+  const isAlreadyQueued = queue.some(
+    (task) =>
+      task.id === id && (task.status === 'queued' || task.status === 'uploading')
+  );
 
   const label = isAlreadyQueued ? 'Uploading...' : 'Upload Media';
 

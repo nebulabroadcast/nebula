@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import styled from 'styled-components';
 
 import nebula from '/src/nebula';
 import { Navbar, NavbarTitle, Button, Spacer } from '/src/components';
@@ -10,15 +9,12 @@ import Sessions from '/src/containers/Sessions';
 import UserForm from './UserForm';
 import UserList from './UserList';
 
-const PageColumn = styled.div`
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-`;
 
 const UsersPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [users, setUsers] = useState([]);
+
+  const _ = setSearchParams;
 
   const navigate = useNavigate();
 

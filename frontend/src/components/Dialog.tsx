@@ -3,7 +3,6 @@ import { useEffect, useRef } from 'react';
 
 import { StyledDialog, DialogBody } from './Dialog.styled';
 
-
 interface DialogProps {
   onHide: () => void;
   header?: React.ReactNode;
@@ -26,7 +25,7 @@ const Dialog = ({
   headerStyle,
   bodyStyle,
   footerStyle,
-}:DialogProps) => {
+}: DialogProps) => {
   const dialogRef = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {

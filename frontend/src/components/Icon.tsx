@@ -10,7 +10,7 @@ interface IconProps {
   style?: React.CSSProperties;
 }
 
-const Icon = ({ icon, style }:IconProps) => {
+const Icon = ({ icon, style }: IconProps) => {
   return (
     <StyledIcon className="icon material-symbols-outlined" style={style}>
       {icon}

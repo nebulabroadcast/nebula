@@ -88,8 +88,8 @@ const PluginPanel = ({ plugin, onError }) => {
     return <div>No interactivity available</div>;
   }
 
-  const inputWidgetCount = plugin.slots.filter((slot) => slot.type !== 'action').length;
-  const buttonCount = plugin.slots.filter((slot) => slot.type === 'action').length;
+  // const inputWidgetCount = plugin.slots.filter((slot) => slot.type !== 'action').length;
+  // const buttonCount = plugin.slots.filter((slot) => slot.type === 'action').length;
 
   return (
     <>

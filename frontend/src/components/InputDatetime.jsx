@@ -4,9 +4,9 @@ import { useState, useEffect, useRef } from 'react';
 import DatePicker from 'react-datepicker';
 import styled from 'styled-components';
 
-import Input from './Input.styled';
 import Button from './Button';
 import Dialog from './Dialog';
+import Input from './Input.styled';
 
 const timeRegex = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/;
 const dateRegex = /^(\d{4})-(\d{2})-(\d{2})$/;

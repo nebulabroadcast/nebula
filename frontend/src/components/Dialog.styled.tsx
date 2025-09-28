@@ -69,5 +69,3 @@ export const DialogBody = styled.div`
   overflow: auto;
   position: relative;
 `;
-
-

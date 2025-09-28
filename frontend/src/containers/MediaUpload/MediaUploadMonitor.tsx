@@ -1,88 +1,52 @@
 import { Button, Progress } from '@components';
 import { useMediaUpload } from '@hooks/useMediaUpload';
-
-import React, { useMemo } from 'react';
-import styled from 'styled-components';
+import React from 'react';
 
 import type { MediaUploadTask } from '../../types/upload';
 
-const MonitorWrapper = styled.div`
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-`;
+import { MonitorWrapper, MonitorItemWrapper } from './MediaUploadMonitor.styled';
 
-const TaskItem = styled.div`
-  background: #444;
-  border: 1px solid;
-  padding: 10px;
-  margin-bottom: 10px;
-  width: 300px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+interface MonitorItemProps {
+  task: MediaUploadTask;
+}
 
-  .header {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 5px;
+const MonitorItem = ({ task }: MonitorItemProps) => {
+  const { cancelUpload, dismissTask, UPLOAD_STATUS } = useMediaUpload();
 
-    .status {
-      font-weight: bold;
-      text-transform: uppercase;
-    }
-  }
+  const active =
+    task.status === UPLOAD_STATUS.UPLOADING || task.status === UPLOAD_STATUS.QUEUED;
+  const progress = active && <Progress value={task.progress} />;
 
-  .actions {
-    margin-top: 10px;
-    text-align: right;
-  }
-`;
+  return (
+    <MonitorItemWrapper key={task.id} className={task.status.toLowerCase()}>
+      <span className="status">{task.status}</span>
+      <span className="info">
+        File "{task.file.name}" to asset {task.title}
+      </span>
 
-const formatFileName = (name: string): string => {
-  if (name.length > 25)
-    return name.substring(0, 10) + '...' + name.substring(name.length - 12);
-  return name;
+      {progress}
+
+      <div className="actions">
+        {active ? (
+          <Button label="Cancel" onClick={() => cancelUpload(task.id)} />
+        ) : (
+          <Button label="Dismiss" onClick={() => dismissTask(task.id)} />
+        )}
+      </div>
+    </MonitorItemWrapper>
+  );
 };
 
 export const MediaUploadMonitor: React.FC = () => {
-  const { queue, cancelUpload, dismissTask, UPLOAD_STATUS } = useMediaUpload();
-
-  // Logic to filter and sort tasks
-  const activeTasks = useMemo(() => {
-    return queue
-      .filter((t) => t.status !== UPLOAD_STATUS.SUCCESS)
-      .sort((a, b) => {
-        const aActive =
-          a.status === UPLOAD_STATUS.UPLOADING || a.status === UPLOAD_STATUS.QUEUED;
-        const bActive =
-          b.status === UPLOAD_STATUS.UPLOADING || b.status === UPLOAD_STATUS.QUEUED;
-        if (aActive !== bActive) return bActive ? 1 : -1; // Bring active to top
-        return parseInt(a.id, 36) - parseInt(b.id, 36); // Sort by submission time
-      });
-  }, [queue, UPLOAD_STATUS]);
-
-  if (activeTasks.length === 0) return null;
-
+  const { queue, UPLOAD_STATUS } = useMediaUpload();
 
   return (
     <MonitorWrapper>
-      {activeTasks.map((task: MediaUploadTask) => (
-        <TaskItem key={task.id} className={task.status.toLowerCase()}>
-          <div className="header">
-            <span title={task.file.name}>{formatFileName(task.file.name)} to {task.title}</span>
-            <span className="status">{task.status.toUpperCase()}</span>
-          </div>
-          {(task.status === UPLOAD_STATUS.UPLOADING ||
-            task.status === UPLOAD_STATUS.QUEUED) && <Progress value={task.progress} />}
-          <div className="actions">
-            {task.status === UPLOAD_STATUS.UPLOADING ||
-              task.status === UPLOAD_STATUS.QUEUED ? (
-              <Button label="Cancel" onClick={() => cancelUpload(task.id)} />
-            ) : (
-              <Button label="Dismiss" onClick={() => dismissTask(task.id)} />
-            )}
-          </div>
-        </TaskItem>
-      ))}
+      {queue
+        .filter((t) => t.status !== UPLOAD_STATUS.SUCCESS)
+        .map((task: MediaUploadTask) => (
+          <MonitorItem key={task.id} task={task} />
+        ))}
     </MonitorWrapper>
   );
 };

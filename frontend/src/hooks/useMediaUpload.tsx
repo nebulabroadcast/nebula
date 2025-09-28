@@ -1,6 +1,4 @@
 import axios, { AxiosProgressEvent } from 'axios';
-import { toast } from 'react-toastify';
-
 import React, {
   createContext,
   useContext,
@@ -10,9 +8,10 @@ import React, {
   useCallback,
   ReactNode,
 } from 'react';
+import { toast } from 'react-toastify';
+
 
 import nebula from '../nebula';
-
 import {
   MediaUploadTask,
   MediaUploadContextType,
@@ -88,13 +87,17 @@ const useMediaUploadLogic = (): MediaUploadContextType => {
     setQueue((prev) => {
       // Prevent adding duplicates
       if (
-        prev.find((task) => (
-          task.id === id 
-          && ([UPLOAD_STATUS.QUEUED, UPLOAD_STATUS.UPLOADING] as MediaUploadStatus[]).includes(task.status)
-        ))) {
+        prev.find(
+          (task) =>
+            task.id === id &&
+            (
+              [UPLOAD_STATUS.QUEUED, UPLOAD_STATUS.UPLOADING] as MediaUploadStatus[]
+            ).includes(task.status)
+        )
+      ) {
         return prev;
       }
-      return [...prev.filter(e => e.id !== newTask.id), newTask]
+      return [...prev.filter((e) => e.id !== newTask.id), newTask];
     });
   }, []);
 
