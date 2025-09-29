@@ -1,8 +1,8 @@
-import BaseInput from './BaseInput';
+import Input from './Input.styled';
 
 const TextArea = ({ value, onChange, tooltip, ...props }) => {
   return (
-    <BaseInput
+    <Input
       as="textarea"
       className="textarea"
       title={tooltip}

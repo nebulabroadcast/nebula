@@ -6,9 +6,9 @@ import { NavLink, useNavigate, useSearchParams } from 'react-router-dom';
 
 import { Navbar, Dropdown } from '/src/components';
 
+import ChannelSwitcher from './ChannelSwitcher';
 import Logo from './Logo';
 import PageTitle from './PageTitle';
-import ChannelSwitcher from './ChannelSwitcher';
 
 const MainNavbar = () => {
   const navigate = useNavigate();

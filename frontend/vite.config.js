@@ -4,6 +4,14 @@ export default ({ mode }) => {
   Object.assign(process?.env, loadEnv(mode, process?.cwd(), ''));
   const SERVER_URL = process?.env?.SERVER_URL || 'http://localhost:4455';
   return defineConfig({
+    resolve: {
+      alias: {
+        '@containers': '/src/containers',
+        '@components': '/src/components',
+        '@hooks': '/src/hooks',
+        '@types': '/src/types',
+      },
+    },
     server: {
       proxy: {
         '/api': {

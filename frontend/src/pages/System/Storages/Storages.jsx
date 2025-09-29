@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
 import { useDispatch } from 'react-redux';
+import styled from 'styled-components';
 
 import nebula from '/src/nebula';
 import { Section, Spacer } from '/src/components';
 import { setPageTitle } from '/src/actions';
-import StorageVisualization from './StorageVisualization';
-
 import { formatBytes } from './common';
+import StorageVisualization from './StorageVisualization';
 
 const Availability = styled.span`
   display: inline-flex;

@@ -2,8 +2,8 @@ import ReactMarkdown from 'react-markdown';
 
 import { Dialog, Table, Button } from '/src/components';
 
-import styled from 'styled-components';
 import { toast } from 'react-toastify';
+import styled from 'styled-components';
 
 import { formatTimeString } from '/src/utils';
 import formatMetaDatetime from '/src/tableFormat/formatMetaDatetime';

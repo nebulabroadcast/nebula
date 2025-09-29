@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
 import styled from 'styled-components';
 
-import BaseInput from './BaseInput';
+import Input from './Input.styled';
 
-const BaseColorInput = styled(BaseInput)`
+const BaseColorInput = styled(Input)`
   width: 30px;
 `;
 

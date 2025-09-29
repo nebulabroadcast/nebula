@@ -1,7 +1,7 @@
-import { toast } from 'react-toastify';
-import styled from 'styled-components';
 import { useMemo, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
+import { toast } from 'react-toastify';
+import styled from 'styled-components';
 
 import nebula from '/src/nebula';
 import {
@@ -88,8 +88,8 @@ const PluginPanel = ({ plugin, onError }) => {
     return <div>No interactivity available</div>;
   }
 
-  const inputWidgetCount = plugin.slots.filter((slot) => slot.type !== 'action').length;
-  const buttonCount = plugin.slots.filter((slot) => slot.type === 'action').length;
+  // const inputWidgetCount = plugin.slots.filter((slot) => slot.type !== 'action').length;
+  // const buttonCount = plugin.slots.filter((slot) => slot.type === 'action').length;
 
   return (
     <>

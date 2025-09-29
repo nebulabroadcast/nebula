@@ -1,12 +1,11 @@
 import nebula from '/src/nebula';
 
+import { Duration } from 'luxon';
 import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
 import PubSub from '/src/pubsub';
 import { Table, Button, InputSwitch, Spacer, Section } from '/src/components';
-
-import { Duration } from 'luxon';
 
 import { setPageTitle } from '/src/actions';
 

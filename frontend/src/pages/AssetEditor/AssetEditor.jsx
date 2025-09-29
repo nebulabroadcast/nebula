@@ -1,11 +1,11 @@
 import nebula from '/src/nebula';
 
-import { useSearchParams } from 'react-router-dom';
+import clsx from 'clsx';
+import { isEqual, isEmpty } from 'lodash';
 import { useEffect, useState, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { useSearchParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { isEqual, isEmpty } from 'lodash';
-import clsx from 'clsx';
 
 import { useLocalStorage, useDialog } from '/src/hooks';
 import {
@@ -16,8 +16,8 @@ import {
 } from '/src/actions';
 import { Loader, Section } from '/src/components';
 
-import AssetEditorNav from './EditorNav';
 import AssetMainProps from './AssetMainProps';
+import AssetEditorNav from './EditorNav';
 
 import MetadataEditor from '/src/containers/MetadataEditor';
 
