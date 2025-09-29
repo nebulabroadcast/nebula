@@ -19,5 +19,3 @@ export const FileSelectWrapper = styled.div`
   }
 
 `;
-
-
