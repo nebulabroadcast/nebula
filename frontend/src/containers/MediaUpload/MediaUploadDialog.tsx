@@ -6,7 +6,6 @@ import type { ContentType } from '@/client';
 
 import { FileSelect } from './FileSelect';
 
-
 interface UploadDialogProps {
   onHide: () => void;
   id: string; // Asset ID
