@@ -10,7 +10,7 @@ const BaseProgress = styled.div`
   background: ${getTheme().inputBackground};
   height: 10px;
 
-  div {
+  .progress {
     height: 100%;
     background: ${getTheme().colors.cyan};
     border-radius: ${getTheme().inputBorderRadius};
