@@ -13,6 +13,7 @@ import {
   Select,
   TextArea,
 } from '/src/components';
+import { RadioButton } from '@components';
 
 const EditorField = ({ field, value, originalValue, onFieldChanged, disabled }) => {
   const metaType = { ...nebula.metaType(field.name), ...field };
@@ -70,14 +71,22 @@ const EditorField = ({ field, value, originalValue, onFieldChanged, disabled }) 
       editor = <TextArea value={value} onChange={onChange} disabled={disabled} />;
       break;
     case 'select':
-      editor = (
-        <Select
+      editor = metaType.mode === 'radio' ? (
+        <RadioButton
           options={options}
           value={value}
-          selectionMode="single"
           onChange={onChange}
+          disabled={disabled}
         />
-      );
+      ) :
+        (
+          <Select
+            options={options}
+            value={value}
+            selectionMode="single"
+            onChange={onChange}
+          />
+        );
       break;
     case 'list':
       editor = (
