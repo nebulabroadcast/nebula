@@ -21,6 +21,7 @@ export { default as SelectDialog } from './SelectDialog';
 export { default as Table } from './table';
 export { default as TextArea } from './TextArea';
 export { default as Timestamp } from './Timestamp';
+export { getTheme } from './theme';
 
 export { Form, FormRow } from './Form';
 export { Loader, LoaderWrapper } from './Loader';

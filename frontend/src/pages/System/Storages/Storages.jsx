@@ -7,6 +7,7 @@ import { Section, Spacer } from '/src/components';
 import { setPageTitle } from '/src/actions';
 import { formatBytes } from './common';
 import StorageVisualization from './StorageVisualization';
+import { InputSwitch } from '@components';
 
 const Availability = styled.span`
   display: inline-flex;
@@ -44,7 +45,7 @@ const Sizes = styled.div`
   color: #aaa;
 `;
 
-const StorageRow = ({ storage }) => {
+const StorageRow = ({ storage, showUntracked, showFree }) => {
   const usedPercent = storage.used / storage.total;
 
   return (
@@ -60,7 +61,13 @@ const StorageRow = ({ storage }) => {
           {storage.available ? 'Available' : 'Offline'}
         </Availability>
       </StorageHeader>
-      <StorageVisualization storage={storage} />
+      {storage.available && (
+        <StorageVisualization 
+          storage={storage} 
+          showFree={showFree} 
+          showUntracked={showUntracked}
+        />
+      )}
     </Section>
   );
 };
@@ -68,6 +75,10 @@ const StorageRow = ({ storage }) => {
 const StoragesPage = () => {
   const [data, setData] = useState({ storages: [] });
   const dispatch = useDispatch();
+
+  const [showUntracked, setShowUntracked] = useState(false);
+  const [showFree, setShowFree] = useState(false);
+
 
   useEffect(() => {
     dispatch(setPageTitle({ title: 'Storages' }));
@@ -77,11 +88,19 @@ const StoragesPage = () => {
   }, []);
 
   return (
+    <>
+    <Section>
+      <InputSwitch value={showUntracked} onChange={setShowUntracked} label="Show Untracked" />
+      <InputSwitch value={showFree} onChange={setShowFree} label="Show Free" />
+    </Section>
+
     <Section className="transparent column">
+      <Spacer height={10} />
       {data.storages.map((s) => (
-        <StorageRow key={s.storage_id} storage={s} />
+        <StorageRow key={s.storage_id} storage={s} showUntracked={showUntracked} showFree={showFree} />
       ))}
     </Section>
+    </>
   );
 };
 
