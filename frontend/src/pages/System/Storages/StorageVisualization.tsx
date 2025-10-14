@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 
 import { getTheme } from '@components';
-import { formatBytes } from './common';
+import { formatBytes, type StorageStats } from './common';
 
 const VizContainer = styled.div`
   flex-grow: 1;
@@ -22,19 +22,12 @@ const VizSegment = styled.div<VizSegmentProps>`
   position: relative;
   border-right: 4px solid ${(p) => p.$color};
   min-width: 1px;
+  transition: width 0.3s ease;
 `;
 
+
 interface StorageVisualizationProps {
-  storage: {
-    total: number; // in bytes
-    used: number; // in bytes
-    untracked: number; // in bytes
-    nebula_usage: {
-      label: string;
-      usage: number; // in bytes
-      color: string; // hex color code
-    }[];
-  };
+  storage: StorageStats;
   showFree: boolean;
   showUntracked: boolean;
 }

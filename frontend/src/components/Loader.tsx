@@ -45,7 +45,12 @@ const LoaderWrapper = styled.div`
   justify-content: center;
 `;
 
-const Loader = ({ style }) => {
+interface LoaderProps {
+  style?: React.CSSProperties;
+}
+
+
+const Loader = ({ style }: LoaderProps) => {
   return <LoaderContainer style={style}></LoaderContainer>;
 };
 

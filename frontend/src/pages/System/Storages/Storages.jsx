@@ -5,9 +5,10 @@ import styled from 'styled-components';
 import nebula from '/src/nebula';
 import { Section, Spacer } from '/src/components';
 import { setPageTitle } from '/src/actions';
+import { useLocalStorage } from '/src/hooks';
 import { formatBytes } from './common';
 import StorageVisualization from './StorageVisualization';
-import { InputSwitch } from '@components';
+import { Form, FormRow, InputSwitch } from '@components';
 
 const Availability = styled.span`
   display: inline-flex;
@@ -76,8 +77,8 @@ const StoragesPage = () => {
   const [data, setData] = useState({ storages: [] });
   const dispatch = useDispatch();
 
-  const [showUntracked, setShowUntracked] = useState(false);
-  const [showFree, setShowFree] = useState(false);
+  const [showUntracked, setShowUntracked] = useLocalStorage('system.storages.showUntracked', false);
+  const [showFree, setShowFree] = useState('system.storages.showFree', true);
 
 
   useEffect(() => {
@@ -88,19 +89,25 @@ const StoragesPage = () => {
   }, []);
 
   return (
-    <>
-    <Section>
-      <InputSwitch value={showUntracked} onChange={setShowUntracked} label="Show Untracked" />
-      <InputSwitch value={showFree} onChange={setShowFree} label="Show Free" />
-    </Section>
+    <Section className="transparent row grow">
+      <Section className="column">
+        <Form style={{ minWidth: '200px' }}>
+          <FormRow title="Show untracked files">
+            <InputSwitch value={showUntracked} onChange={setShowUntracked}/>
+          </FormRow>
+          <FormRow title="Show free space">
+            <InputSwitch value={showFree} onChange={setShowFree}/>
+          </FormRow>
+        </Form>
+        <Spacer />
+      </Section>
 
-    <Section className="transparent column">
-      <Spacer height={10} />
-      {data.storages.map((s) => (
-        <StorageRow key={s.storage_id} storage={s} showUntracked={showUntracked} showFree={showFree} />
-      ))}
+      <Section className="transparent column grow">
+        {data.storages.map((s) => (
+          <StorageRow key={s.storage_id} storage={s} showUntracked={showUntracked} showFree={showFree} />
+        ))}
+      </Section>
     </Section>
-    </>
   );
 };
 
