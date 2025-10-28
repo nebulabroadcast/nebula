@@ -1,66 +1,37 @@
+import { setPageTitle } from '@actions';
 import { Form, FormRow, InputSwitch } from '@components';
-import React, { useState, useEffect } from 'react';
+import { Section, Spacer } from '@components';
+import { useLocalStorage } from '@hooks';
+import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import styled from 'styled-components';
 
-import nebula from '/src/nebula';
-import { Section, Spacer } from '/src/components';
-import { setPageTitle } from '/src/actions';
-import { useLocalStorage } from '/src/hooks';
 import { formatBytes } from './common';
+import type { StorageStats } from './common';
+import { Availability, StorageName, StorageHeader, Sizes } from './Storages.styled';
 import StorageVisualization from './StorageVisualization';
 
-const Availability = styled.span`
-  display: inline-flex;
-  align-items: center;
-  font-size: 0.9rem;
-  margin-top: 0.3rem;
+import nebula from '@/nebula';
 
-  &::before {
-    content: '';
-    display: inline-block;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: ${(p) => (p.available ? '#4caf50' : '#f44336')};
-    margin-right: 0.5rem;
-  }
-`;
+interface StorageRowProps {
+  storage: StorageStats;
+  showUntracked: boolean;
+  showFree: boolean;
+}
 
-const StorageHeader = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-  gap: 24px;
-
-  h3 {
-    margin: 0;
-    font-size: 1.5rem;
-  }
-`;
-
-const Sizes = styled.div`
-  margin-top: 0.5rem;
-  font-size: 0.9rem;
-  color: #aaa;
-`;
-
-const StorageRow = ({ storage, showUntracked, showFree }) => {
+const StorageRow = ({ storage, showUntracked, showFree }: StorageRowProps) => {
   const usedPercent = storage.used / storage.total;
 
   return (
     <Section className="column">
+      <StorageName>{storage.label}</StorageName>
       <StorageHeader>
-        <h3>{storage.label}</h3>
+        <Availability available={storage.available}>
+          {storage.available ? 'Available' : 'Offline'}
+        </Availability>
         <Sizes>
           {formatBytes(storage.used)} / {formatBytes(storage.total)} (
           {(usedPercent * 100).toFixed(1)}%)
         </Sizes>
-        <Spacer />
-        <Availability available={storage.available}>
-          {storage.available ? 'Available' : 'Offline'}
-        </Availability>
       </StorageHeader>
       {storage.available && (
         <StorageVisualization
@@ -73,22 +44,27 @@ const StorageRow = ({ storage, showUntracked, showFree }) => {
   );
 };
 
+interface StoragesData {
+  storages: StorageStats[];
+}
+
 const StoragesPage = () => {
-  const [data, setData] = useState({ storages: [] });
+  const [data, setData] = useState<StoragesData>({ storages: [] });
   const dispatch = useDispatch();
 
   const [showUntracked, setShowUntracked] = useLocalStorage(
     'system.storages.showUntracked',
     false
   );
-  const [showFree, setShowFree] = useState('system.storages.showFree', true);
+  const [showFree, setShowFree] = useLocalStorage('system.storages.showFree', true);
 
   useEffect(() => {
     dispatch(setPageTitle({ title: 'Storages' }));
     nebula.request('stats/storages').then((response) => {
       setData(response.data);
+      console.log(response.data);
     });
-  }, []);
+  }, [dispatch]);
 
   return (
     <Section className="transparent row grow">

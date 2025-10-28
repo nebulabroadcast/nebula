@@ -5,6 +5,9 @@ export interface NebulaUsageStats {
 }
 
 export interface StorageStats {
+  label: string;
+  storage_id: number;
+  available: boolean;
   total: number; // in bytes
   used: number; // in bytes
   untracked: number; // in bytes
