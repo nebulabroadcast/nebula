@@ -1,11 +1,10 @@
 import clsx from 'clsx';
 import { DateTime } from 'luxon';
 import { useState, useEffect, useRef } from 'react';
-import DatePicker from 'react-datepicker';
 import styled from 'styled-components';
 
 import Button from './Button';
-import Dialog from './Dialog';
+import DatePickerDialog from './DatePickerDialog';
 import Input from './Input.styled';
 
 const timeRegex = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/;
@@ -20,52 +19,55 @@ const DateTimeWrapper = styled.div`
   min-width: 200px;
 `;
 
-const DatePickerWrapper = styled.div`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-`;
+interface CalendarDialogProps {
+  value: number;
+  onChange: (value: number) => void;
+  onClose: () => void;
+}
 
-const CalendarDialog = ({ value, onChange, onClose }) => {
+const CalendarDialog = ({ value, onChange, onClose }: CalendarDialogProps) => {
   // get current timestamp
   const defaultDate = DateTime.local().toSeconds();
 
   const [date, setDate] = useState(DateTime.fromSeconds(value || defaultDate));
 
-  const footer = (
-    <>
-      <Button label="Cancel" icon="close" onClick={onClose} />
-      <Button
-        icon="check"
-        label="Apply"
-        onClick={() => {
-          const newDate = date.set({ hour: 0, minute: 0, second: 0 });
-          onChange(newDate.toSeconds());
-          onClose();
-        }}
-      />
-    </>
-  );
-
   return (
-    <Dialog onHide={onClose} footer={footer} header="Select a date...">
-      <DatePickerWrapper>
-        <DatePicker
-          calendarStartDay={1}
-          selected={date.toJSDate()}
-          onChange={(date) => {
-            setDate(DateTime.fromJSDate(date));
-          }}
-          inline
-        />
-      </DatePickerWrapper>
-    </Dialog>
+    <DatePickerDialog
+      title="Select Date"
+      value={date.toFormat('yyyy-MM-dd')}
+      handleCancel={onClose}
+      handleConfirm={(newDateString: string) => {
+        const newDate = DateTime.fromFormat(newDateString, 'yyyy-MM-dd').set({
+          hour: date.hour,
+          minute: date.minute,
+          second: date.second,
+        });
+        setDate(newDate);
+        onChange(newDate.toSeconds());
+        onClose();
+      }}
+      cancelLabel="Close"
+      confirmLabel="Select"
+    />
   );
 };
 
-const InputDatetime = ({ value, onChange, placeholder, mode, className }) => {
-  const [time, setTime] = useState();
+interface InputDatetimeProps {
+  value: number;
+  onChange: (value: number) => void;
+  placeholder: string;
+  mode: 'date' | 'datetime';
+  className: string;
+}
+
+const InputDatetime = ({
+  value,
+  onChange,
+  placeholder,
+  mode,
+  className,
+}: InputDatetimeProps) => {
+  const [time, setTime] = useState<string>();
   const [isFocused, setIsFocused] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
   const inputRef = useRef(null);
@@ -80,9 +82,9 @@ const InputDatetime = ({ value, onChange, placeholder, mode, className }) => {
     }
 
     setTime(DateTime.fromSeconds(value).toFormat(timestampFormat));
-  }, [value]);
+  }, [value, timestampFormat]);
 
-  const handleChange = (event) => {
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     let newValue = event.target.value;
     if (!allowedDateCharsRegex.test(newValue)) return;
 
@@ -100,15 +102,20 @@ const InputDatetime = ({ value, onChange, placeholder, mode, className }) => {
     setTime(newValue);
   };
 
-  const isValidTime = (timeString) => {
-    if (!timeString) return true;
-
+  const isValidTime = (timeString: string | undefined) => {
+    if (!timeString) return true; // empty string is valid
     if (timestampRegex.test(timeString))
-      if (!isNaN(DateTime.fromFormat(timeString, timestampFormat))) return true;
+      return DateTime.fromFormat(timeString, timestampFormat).isValid;
     return false;
   };
 
   const onSubmit = () => {
+    if (!inputRef.current) return;
+    if (!time) {
+      onChange(0);
+      setIsFocused(false);
+      return;
+    }
     let value = 0;
 
     if (dateRegex.test(time) && mode !== 'date') {
@@ -120,11 +127,11 @@ const InputDatetime = ({ value, onChange, placeholder, mode, className }) => {
       value = DateTime.fromFormat(time, timestampFormat).toSeconds();
     }
     onChange(value);
-    inputRef.current.blur();
+    (inputRef.current as HTMLInputElement).blur();
     setIsFocused(false);
   };
 
-  const onKeyDown = (e) => {
+  const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       onSubmit();
     }

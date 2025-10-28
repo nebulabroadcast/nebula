@@ -113,6 +113,7 @@ const VideoPlayerBody = ({ ...props }) => {
     if (!videoRef.current) return;
 
     const updateVideoDimensions = () => {
+      if (!videoRef.current) return;
       const width = videoRef.current.clientWidth;
       const height = videoRef.current.clientHeight;
       setVideoDimensions({ width, height });

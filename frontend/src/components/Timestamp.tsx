@@ -1,8 +1,8 @@
 import styled from 'styled-components';
 
-import { getTheme } from './theme';
 import { dateToDateString } from './lib/datetime';
 import { dateToTimeString } from './lib/datetime';
+import { getTheme } from './theme';
 
 const TimestampWrapper = styled.div`
   display: flex;

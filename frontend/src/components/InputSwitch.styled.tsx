@@ -1,23 +1,8 @@
-import clsx from 'clsx';
 import styled from 'styled-components';
 
 import { getTheme } from './theme';
 
-const BaseSwitch = ({ style, className, value, onChange, disabled }) => (
-  <div style={style} className={clsx(className, { disabled })}>
-    <label className="switch-body">
-      <input
-        type="checkbox"
-        checked={value}
-        disabled={disabled}
-        onChange={() => onChange(!value)}
-      />
-      <span className="slider"></span>
-    </label>
-  </div>
-);
-
-const InputSwitch = styled(BaseSwitch)`
+export const BaseSwitch = styled.div`
   max-height: ${getTheme().inputHeight};
   min-height: ${getTheme().inputHeight};
   display: flex;
@@ -90,5 +75,3 @@ const InputSwitch = styled(BaseSwitch)`
     }
   }
 `;
-
-export default InputSwitch;

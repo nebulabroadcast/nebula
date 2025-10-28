@@ -1,5 +1,6 @@
-import { drawTruncatedText } from './drawUtils';
 import { getTextColor } from '@components/lib/colors';
+
+import { drawTruncatedText } from './drawUtils';
 
 const drawEvents = (ctx, drawParams, events, draggedEvent) => {
   const { dayWidth, hourHeight, time2pos } = drawParams.current;

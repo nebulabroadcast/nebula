@@ -1,6 +1,6 @@
+import { getTheme } from '@components';
 import styled from 'styled-components';
 
-import { getTheme } from '@components';
 import { formatBytes, type StorageStats } from './common';
 
 const VizContainer = styled.div`

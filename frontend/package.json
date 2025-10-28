@@ -37,6 +37,7 @@
   "devDependencies": {
     "@eslint/js": "^9.19.0",
     "@hey-api/openapi-ts": "^0.82.4",
+    "@types/luxon": "^3.7.1",
     "@types/node": "^24.3.1",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",

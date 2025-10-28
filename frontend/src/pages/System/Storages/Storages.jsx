@@ -1,3 +1,4 @@
+import { Form, FormRow, InputSwitch } from '@components';
 import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
@@ -8,7 +9,6 @@ import { setPageTitle } from '/src/actions';
 import { useLocalStorage } from '/src/hooks';
 import { formatBytes } from './common';
 import StorageVisualization from './StorageVisualization';
-import { Form, FormRow, InputSwitch } from '@components';
 
 const Availability = styled.span`
   display: inline-flex;

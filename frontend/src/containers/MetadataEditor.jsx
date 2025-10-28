@@ -1,3 +1,4 @@
+import { RadioButton } from '@components';
 import { useMemo } from 'react';
 
 import nebula from '/src/nebula';
@@ -13,7 +14,6 @@ import {
   Select,
   TextArea,
 } from '/src/components';
-import { RadioButton } from '@components';
 
 const EditorField = ({ field, value, originalValue, onFieldChanged, disabled }) => {
   const metaType = { ...nebula.metaType(field.name), ...field };
