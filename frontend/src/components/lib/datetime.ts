@@ -17,4 +17,3 @@ export const dateToTimeString = (localDateTime: Date | null) => {
   const timeStr = `${zpad(hh)}:${zpad(min)}:${zpad(ss)}`;
   return timeStr;
 };
-

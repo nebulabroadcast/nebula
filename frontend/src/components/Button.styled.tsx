@@ -70,4 +70,3 @@ export const BaseButton = styled.button`
       color 0.2s;
   }
 `;
-

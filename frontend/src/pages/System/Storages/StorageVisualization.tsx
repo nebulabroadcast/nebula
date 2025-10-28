@@ -25,7 +25,6 @@ const VizSegment = styled.div<VizSegmentProps>`
   transition: width 0.3s ease;
 `;
 
-
 interface StorageVisualizationProps {
   storage: StorageStats;
   showFree: boolean;

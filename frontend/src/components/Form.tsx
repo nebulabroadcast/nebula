@@ -6,7 +6,7 @@ const Form = styled.div`
   row-gap: var(--gap-size);
   column-gap: 16px;
 
-  >label {
+  > label {
     color: #555;
   }
 

@@ -1,6 +1,5 @@
 type TextColor = '#000000' | '#ffffff';
 
-
 const hexToRgb = (hex: string): [number, number, number] => {
   // Converts a 6-digit hexadecimal color string (e.g., "#FF00AA") to its RGB components.
   const normalizedHex = hex.startsWith('#') ? hex.slice(1) : hex;
@@ -13,36 +12,35 @@ const hexToRgb = (hex: string): [number, number, number] => {
   const r = (bigint >> 16) & 255;
   const g = (bigint >> 8) & 255;
   const b = bigint & 255;
-  
+
   return [r, g, b];
 };
 
-
-export const getTextColor = (backgroundColor: string, threshold: number = 128): TextColor => {
+export const getTextColor = (
+  backgroundColor: string,
+  threshold: number = 128
+): TextColor => {
   // Determines the ideal text color (black or white) against a given background hex color
   try {
     const [r, g, b] = hexToRgb(backgroundColor);
 
     const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-    return brightness > threshold ? '#000000' : '#ffffff'; 
-
+    return brightness > threshold ? '#000000' : '#ffffff';
   } catch (error) {
     console.error(error);
-    return '#ffffff'; 
+    return '#ffffff';
   }
 };
-
 
 const stringToHash = (str: string): number => {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
     const char = str.charCodeAt(i);
-    hash = (hash << 5) - hash + char; 
+    hash = (hash << 5) - hash + char;
     hash |= 0; // Convert to a 32bit integer
   }
   return Math.abs(hash);
 };
-
 
 const hslToHex = (h: number, s: number, l: number): string => {
   // Converts an HSL color to a standard 6-digit hex string (#RRGGBB).
@@ -85,7 +83,7 @@ export const getColorFromString = (inputString: string): string => {
 
   const hash = stringToHash(inputString);
   const HUE = hash % 360;
-  const SATURATION = 0.70;
-  const LIGHTNESS = 0.50;
+  const SATURATION = 0.7;
+  const LIGHTNESS = 0.5;
   return hslToHex(HUE, SATURATION, LIGHTNESS);
 };

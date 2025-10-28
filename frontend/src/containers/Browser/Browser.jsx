@@ -34,7 +34,10 @@ const BrowserTable = ({ isDragging }) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [sortBy, setSortBy] = useLocalStorage('mam.browser.sortBy', 'ctime');
-  const [sortDirection, setSortDirection] = useLocalStorage('mam.browser.sortDirection', 'desc');
+  const [sortDirection, setSortDirection] = useLocalStorage(
+    'mam.browser.sortDirection',
+    'desc'
+  );
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const showDialog = useDialog();

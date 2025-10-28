@@ -7,7 +7,7 @@ interface InputIntegerProps {
   [key: string]: any;
 }
 
-const InputInteger = ({ value, onChange, tooltip, ...props }:InputIntegerProps) => {
+const InputInteger = ({ value, onChange, tooltip, ...props }: InputIntegerProps) => {
   return (
     <Input
       type="number"

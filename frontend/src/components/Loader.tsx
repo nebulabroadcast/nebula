@@ -49,7 +49,6 @@ interface LoaderProps {
   style?: React.CSSProperties;
 }
 
-
 const Loader = ({ style }: LoaderProps) => {
   return <LoaderContainer style={style}></LoaderContainer>;
 };

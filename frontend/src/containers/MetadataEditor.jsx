@@ -71,15 +71,15 @@ const EditorField = ({ field, value, originalValue, onFieldChanged, disabled }) 
       editor = <TextArea value={value} onChange={onChange} disabled={disabled} />;
       break;
     case 'select':
-      editor = metaType.mode === 'radio' ? (
-        <RadioButton
-          options={options}
-          value={value}
-          onChange={onChange}
-          disabled={disabled}
-        />
-      ) :
-        (
+      editor =
+        metaType.mode === 'radio' ? (
+          <RadioButton
+            options={options}
+            value={value}
+            onChange={onChange}
+            disabled={disabled}
+          />
+        ) : (
           <Select
             options={options}
             value={value}

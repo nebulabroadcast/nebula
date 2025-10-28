@@ -39,7 +39,7 @@ interface RadioButtonProps {
   onChange: (value: string) => void;
 }
 
-const RadioButton = ({ options, value, onChange }:RadioButtonProps) => {
+const RadioButton = ({ options, value, onChange }: RadioButtonProps) => {
   return (
     <RadioContainer>
       {options.map((option) => (

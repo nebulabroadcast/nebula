@@ -63,9 +63,9 @@ const StorageRow = ({ storage, showUntracked, showFree }) => {
         </Availability>
       </StorageHeader>
       {storage.available && (
-        <StorageVisualization 
-          storage={storage} 
-          showFree={showFree} 
+        <StorageVisualization
+          storage={storage}
+          showFree={showFree}
           showUntracked={showUntracked}
         />
       )}
@@ -77,9 +77,11 @@ const StoragesPage = () => {
   const [data, setData] = useState({ storages: [] });
   const dispatch = useDispatch();
 
-  const [showUntracked, setShowUntracked] = useLocalStorage('system.storages.showUntracked', false);
+  const [showUntracked, setShowUntracked] = useLocalStorage(
+    'system.storages.showUntracked',
+    false
+  );
   const [showFree, setShowFree] = useState('system.storages.showFree', true);
-
 
   useEffect(() => {
     dispatch(setPageTitle({ title: 'Storages' }));
@@ -93,10 +95,10 @@ const StoragesPage = () => {
       <Section className="column">
         <Form style={{ minWidth: '200px' }}>
           <FormRow title="Show untracked files">
-            <InputSwitch value={showUntracked} onChange={setShowUntracked}/>
+            <InputSwitch value={showUntracked} onChange={setShowUntracked} />
           </FormRow>
           <FormRow title="Show free space">
-            <InputSwitch value={showFree} onChange={setShowFree}/>
+            <InputSwitch value={showFree} onChange={setShowFree} />
           </FormRow>
         </Form>
         <Spacer />
@@ -104,7 +106,12 @@ const StoragesPage = () => {
 
       <Section className="transparent column grow">
         {data.storages.map((s) => (
-          <StorageRow key={s.storage_id} storage={s} showUntracked={showUntracked} showFree={showFree} />
+          <StorageRow
+            key={s.storage_id}
+            storage={s}
+            showUntracked={showUntracked}
+            showFree={showFree}
+          />
         ))}
       </Section>
     </Section>
