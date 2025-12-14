@@ -239,6 +239,7 @@ const VideoPlayerBody = ({ ...props }) => {
           mode="frames"
           tooltip="Current position"
           fps={props.frameRate}
+          onChange={(v) => seekToFrame(v)}
         />
         <ChannelSelect gainNodes={gainNodes} />
         <div style={{ flex: 1 }} />
