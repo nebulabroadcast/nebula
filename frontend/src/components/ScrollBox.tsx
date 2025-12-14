@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import React from 'react';
 
 const ScrollContainer = styled.div`
   flex-grow: 1;
@@ -18,7 +19,12 @@ const ScrollContent = styled.div`
   gap: 6px;
 `;
 
-const ScrollBox = ({ children, style }) => {
+interface ScrollBoxProps {
+  children: React.ReactNode;
+  style?: React.CSSProperties;
+}
+
+const ScrollBox: React.FC<ScrollBoxProps> = ({ children, style }) => {
   return (
     <ScrollContainer style={style}>
       <ScrollContent>{children}</ScrollContent>

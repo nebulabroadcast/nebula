@@ -1,14 +1,27 @@
 import clsx from 'clsx';
-import { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import styled from 'styled-components';
 
 import Button from './Button';
 import Dialog from './Dialog';
 import InputText from './InputText';
-
-import { sortByKey } from '/src/utils';
-
 import { getTheme } from './theme';
+
+import { sortByKey } from '@/utils';
+
+export interface SelectOption {
+  value: string; // Changed from string | number
+  title: string;
+  description?: string;
+  role?: string;
+  level?: number;
+}
+
+interface OptionProps {
+  option: SelectOption;
+  selected: boolean;
+  onClick: () => void;
+}
 
 const BaseOption = styled.div`
   padding: 3px;
@@ -32,11 +45,11 @@ const BaseOption = styled.div`
   }
 `;
 
-const Option = ({ option, selected, onClick }) => {
+const Option: React.FC<OptionProps> = ({ option, selected, onClick }) => {
   return (
     <BaseOption
       className={clsx(selected && 'selected', option.role === 'label' && 'label')}
-      style={{ paddingLeft: option.level * 15 }}
+      style={{ paddingLeft: (option.level || 0) * 15 }}
       onClick={option.role === 'label' ? undefined : onClick}
       title={option.description}
     >
@@ -45,35 +58,41 @@ const Option = ({ option, selected, onClick }) => {
   );
 };
 
-function filterHierarchy(array, query, currentSelection) {
+function filterHierarchy(
+  array: SelectOption[],
+  query: string,
+  currentSelection: Record<string, boolean>
+): SelectOption[] {
   const queryLower = query.toLowerCase();
-  const result = [];
-  const set = new Set();
+  const result: SelectOption[] = [];
+  const set = new Set<string>();
   for (const item of array) {
-    if (typeof item.value !== 'string') item.level = 1;
-    else item.level = item.value.split('.').length;
+    const newItem = { ...item };
+    if (typeof newItem.value !== 'string') newItem.level = 1;
+    else newItem.level = newItem.value.split('.').length;
+
     if (
-      item.title.toLowerCase().includes(queryLower) ||
-      item.value in currentSelection
+      newItem.title.toLowerCase().includes(queryLower) ||
+      newItem.value in currentSelection
     ) {
-      if (item.role === 'hidden') {
+      if (newItem.role === 'hidden') {
         continue;
       }
-      result.push(item);
-      set.add(item.value);
-      let value = item.value;
-      while (value) {
-        const parts = typeof value === 'string' ? value.split('.') : [value];
-        if (parts.length === 1) {
-          value = '';
-        } else {
-          parts.pop();
-          value = parts.join('.');
-          const parent = array.find((i) => i.value === value);
-          if (item.role !== 'hidden' && parent && !set.has(parent.value)) {
-            result.push(parent);
-            set.add(parent.value);
-          }
+      result.push(newItem);
+      set.add(newItem.value);
+
+      let currentVal: string | undefined = newItem.value;
+      while (currentVal) {
+        const parts: string[] = currentVal!.split('.');
+        if (parts.length <= 1) {
+          break;
+        }
+        parts.pop();
+        currentVal = parts.join('.');
+        const parent = array.find((i) => i.value === currentVal);
+        if (parent && !set.has(parent.value) && parent.role !== 'hidden') {
+          result.push({ ...parent, level: parts.length });
+          set.add(parent.value);
         }
       }
     }
@@ -81,35 +100,53 @@ function filterHierarchy(array, query, currentSelection) {
   return sortByKey(result, 'value');
 }
 
-const SelectDialog = ({ options, onHide, selectionMode, initialValue, title }) => {
-  const [filter, setFilter] = useState('');
-  const [selection, setSelection] = useState({});
+interface SelectDialogProps {
+  options: SelectOption[];
+  onHide: (value: string | string[] | null) => void;
+  selectionMode?: 'single' | 'multiple';
+  initialValue?: string | string[] | null;
+  title?: string;
+}
 
-  // Cannot be used rn - InputText does not support forwardRef yet
-  const filterRef = useRef(null);
+const SelectDialog: React.FC<SelectDialogProps> = ({
+  options,
+  onHide,
+  selectionMode = 'single',
+  initialValue = null,
+  title,
+}) => {
+  const [filter, setFilter] = useState<string>('');
+  const [selection, setSelection] = useState<Record<string, boolean>>({});
+
+  const filterRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     if (filterRef.current) {
       filterRef.current.focus();
     }
   }, [filterRef.current]);
 
-  // Create the selection object from the given initial Value.
-
   useEffect(() => {
-    if (selectionMode === 'single') {
+    if (
+      selectionMode === 'single' &&
+      typeof initialValue === 'string' &&
+      initialValue !== null
+    ) {
       setSelection({ [initialValue]: true });
       return;
+    } else if (selectionMode === 'multiple' && Array.isArray(initialValue)) {
+      const result: Record<string, boolean> = {};
+      for (const r of initialValue) result[r] = true;
+      setSelection(result);
+      return;
     }
-    const result = {};
-    for (const r of initialValue || []) result[r] = true;
-    setSelection(result);
-  }, [initialValue]);
+    setSelection({}); // Clear selection if initialValue doesn't match mode
+  }, [initialValue, selectionMode]);
 
   const filteredOptions = useMemo(() => {
     return filterHierarchy(options, filter, selection);
   }, [options, filter, selection]);
 
-  const onToggle = (key) => {
+  const onToggle = (key: string) => {
     setSelection((os) => {
       if (selectionMode === 'single') return { [key]: true };
       const result = { ...os };
@@ -127,8 +164,11 @@ const SelectDialog = ({ options, onHide, selectionMode, initialValue, title }) =
   };
 
   const onApply = () => {
-    let value = Object.keys(selection).filter((key) => selection[key]);
-    if (selectionMode === 'single') value = value.length ? value[0] : null;
+    let value: string | string[] | null = Object.keys(selection).filter(
+      (key) => selection[key]
+    );
+    if (selectionMode === 'single')
+      value = (value as string[]).length ? (value as string[])[0] : null;
     onHide(value);
   };
 

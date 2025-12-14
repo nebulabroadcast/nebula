@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 
-const useKeyDown = (key, callback) => {
+const useKeyDown = (key: string, callback: () => void) => {
   const callbackRef = useRef(callback);
 
   // Update the ref to the latest callback on each render
@@ -9,7 +9,7 @@ const useKeyDown = (key, callback) => {
   }, [callback]);
 
   useEffect(() => {
-    const handleKeyDown = (e) => {
+    const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === key) {
         callbackRef.current();
       }

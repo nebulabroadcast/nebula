@@ -10,6 +10,9 @@ interface InputTextProps {
   tooltip?: string;
   style?: React.CSSProperties;
   className?: string;
+  readOnly?: boolean;
+  onDoubleClick?: (e: React.MouseEvent<HTMLInputElement>) => void;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 }
 
 const InputText = forwardRef<HTMLInputElement, InputTextProps>(
@@ -22,7 +25,10 @@ const InputText = forwardRef<HTMLInputElement, InputTextProps>(
         title={props.tooltip}
         placeholder={props.placeholder}
         disabled={props.disabled}
+        readOnly={props.readOnly}
         onChange={(e) => props.onChange(e.target.value)}
+        onDoubleClick={props.onDoubleClick}
+        onKeyDown={props.onKeyDown}
         style={props.style}
         className={props.className}
       />

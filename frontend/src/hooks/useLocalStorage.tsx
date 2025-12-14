@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
 
-const useLocalStorage = (key, initialValue) => {
-  const [storedValue, setStoredValue] = useState(() => {
+function useLocalStorage<T>(
+  key: string,
+  initialValue: T
+): [T, (value: T | ((val: T) => T)) => void] {
+  const [storedValue, setStoredValue] = useState<T>(() => {
     if (typeof window === 'undefined') {
       return initialValue;
     }
@@ -17,7 +20,7 @@ const useLocalStorage = (key, initialValue) => {
     }
   });
 
-  const setValue = (value) => {
+  const setValue = (value: T | ((val: T) => T)) => {
     try {
       // Allow value to be a function so we have same API as useState
       const valueToStore = value instanceof Function ? value(storedValue) : value;
@@ -46,6 +49,6 @@ const useLocalStorage = (key, initialValue) => {
   }, [key, initialValue]);
 
   return [storedValue, setValue];
-};
+}
 
 export default useLocalStorage;

@@ -1,9 +1,14 @@
 import { useState, useEffect } from 'react';
 import styled from 'styled-components';
+import React from 'react';
 
 import { getTheme } from './theme';
 
-const BaseProgress = styled.div`
+interface BaseProgressProps {
+  disableTransition: boolean;
+}
+
+const BaseProgress = styled.div<BaseProgressProps>`
   width: 100%;
   border: 0;
   border-radius: ${getTheme().inputBorderRadius};
@@ -18,7 +23,11 @@ const BaseProgress = styled.div`
   }
 `;
 
-const Progress = ({ value, ...props }) => {
+interface ProgressProps extends React.HTMLAttributes<HTMLDivElement> {
+  value: number;
+}
+
+const Progress: React.FC<ProgressProps> = ({ value, ...props }) => {
   const [prevValue, setPrevValue] = useState(value);
   const [disableTransition, setDisableTransition] = useState(false);
 

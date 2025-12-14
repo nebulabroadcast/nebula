@@ -1,4 +1,4 @@
-import { forwardRef } from 'react';
+import React, { forwardRef } from 'react';
 import styled from 'styled-components';
 
 import { getTheme } from './theme';
@@ -33,7 +33,9 @@ const StyledRange = styled.input`
   }
 `;
 
-const RangeSlider = forwardRef((props, ref) => {
+interface RangeSliderProps extends React.InputHTMLAttributes<HTMLInputElement> {}
+
+const RangeSlider = forwardRef<HTMLInputElement, RangeSliderProps>((props, ref) => {
   return <StyledRange ref={ref} type="range" {...props} />;
 });
 
