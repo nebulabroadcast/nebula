@@ -213,6 +213,7 @@ const VideoPlayerControls = ({
         mode="frames"
         tooltip="Selection start"
         fps={frameRate}
+        onChange={setMarkIn}
       />
 
       <Button
@@ -290,6 +291,7 @@ const VideoPlayerControls = ({
         mode="frames"
         tooltip="Selection end"
         fps={frameRate}
+        onChange={setMarkOut}
       />
     </Navbar>
   );
