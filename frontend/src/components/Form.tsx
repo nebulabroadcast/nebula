@@ -1,37 +1,43 @@
 import styled from 'styled-components';
 
 const Form = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: var(--gap-size);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  row-gap: var(--gap-size);
+  column-gap: 16px;
 
-  h3 {
-    width: 100%;
-    text-align: center;
-    font-size: 1rem;
-    font-weight: 500;
+  > label {
+    color: #555;
   }
 
-  .form-row {
-    display: flex;
-    flex-direction: row;
-    gap: var(--gap-size);
+  // .form-title, .form-control {
+  //   border: 1px solid red;
+  // }
 
-    .form-title {
-      min-width: 200px;
-      max-width: 200px;
-      padding-top: 0.5rem;
-      user-select: none;
-      user-drag: none;
+  .form-section {
+    grid-column: 1 / -1;
+    h3 {
+      width: 100%;
+      text-align: center;
+      font-size: 1rem;
+      font-weight: 500;
     }
+  }
 
-    .form-control {
-      display: flex;
-      flex-grow: 1;
-      min-width: 220px;
-      > * {
-        width: 100%;
-      }
+  .form-title {
+    padding-top: 0.3rem;
+    user-select: none;
+    user-drag: none;
+    span {
+      white-space: nowrap;
+    }
+  }
+
+  .form-control {
+    display: flex;
+    flex-grow: 1;
+    > * {
+      width: 100%;
     }
   }
 `;
@@ -45,12 +51,16 @@ interface FormRowProps extends React.HTMLAttributes<HTMLDivElement> {
 const FormRow = ({ title, tooltip, section, children, ...props }: FormRowProps) => {
   return (
     <>
-      {section && <h3>{section}</h3>}
-      <div className="form-row" {...props}>
-        <div className="form-title">
-          <span title={tooltip}>{title}</span>
+      {section && (
+        <div className="form-section">
+          <h3>{section}</h3>
         </div>
-        <div className="form-control">{children}</div>
+      )}
+      <div className="form-title">
+        <span title={tooltip}>{title}</span>
+      </div>
+      <div className="form-control" {...props}>
+        {children}
       </div>
     </>
   );

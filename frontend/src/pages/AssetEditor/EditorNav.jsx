@@ -46,8 +46,8 @@ const AssetEditorNav = ({
 
       <RadioButton
         options={[
-          { label: 'Edit', value: 'metadata', icon: 'edit' },
-          { label: 'Preview', value: 'preview', icon: 'visibility' },
+          { title: 'Edit', value: 'metadata', icon: 'edit' },
+          { title: 'Preview', value: 'preview', icon: 'visibility' },
         ]}
         value={editorMode}
         onChange={setEditorMode}

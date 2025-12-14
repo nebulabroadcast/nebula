@@ -115,7 +115,7 @@
     var topic = String(message),
       found = Boolean(
         Object.prototype.hasOwnProperty.call(messages, topic) &&
-          hasKeys(messages[topic])
+        hasKeys(messages[topic])
       );
 
     return found;

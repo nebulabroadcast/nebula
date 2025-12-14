@@ -1,25 +1,28 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useDispatch } from 'react-redux';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
 import nebula from '/src/nebula';
+import { setPageTitle } from '/src/actions';
 import { Navbar, NavbarTitle, Button, Spacer } from '/src/components';
 import Sessions from '/src/containers/Sessions';
 
 import UserForm from './UserForm';
 import UserList from './UserList';
 
-
 const UsersPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [users, setUsers] = useState([]);
-
   const _ = setSearchParams;
-
   const navigate = useNavigate();
-
   const [userData, setUserData] = useState({});
   const [loading, setLoading] = useState(false);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(setPageTitle({ title: 'Users' }));
+  }, [dispatch]);
 
   const currentId = useMemo(() => {
     const intId = parseInt(searchParams.get('id'));

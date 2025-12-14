@@ -137,12 +137,7 @@ const PlayoutPlugins = ({ onError }) => {
   }, [currentChannel]);
 
   const pluginOptions = useMemo(() => {
-    return pluginList
-      .filter((plugin) => plugin?.slots.length)
-      .map((plugin) => ({
-        label: plugin.title,
-        value: plugin.name,
-      }));
+    return pluginList.filter((plugin) => plugin?.slots.length);
   }, [pluginList]);
 
   return (
