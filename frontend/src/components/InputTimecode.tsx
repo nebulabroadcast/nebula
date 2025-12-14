@@ -4,7 +4,10 @@ import clsx from 'clsx';
 
 import Input from './Input.styled';
 
-interface InputTimecodeProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange' | 'className' | 'title'> {
+interface InputTimecodeProps extends Omit<
+  React.InputHTMLAttributes<HTMLInputElement>,
+  'value' | 'onChange' | 'className' | 'title'
+> {
   value?: number | null; // in seconds
   mode?: 'time' | 'frames'; // time or frames
   fps?: number | string;

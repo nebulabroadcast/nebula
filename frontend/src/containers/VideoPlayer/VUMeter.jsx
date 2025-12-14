@@ -120,11 +120,9 @@ const VUMeter = ({ gainNodes, audioContext }) => {
     draw();
   }, [gainNodesRef.current?.length, audioContext, canvasRef, redrawTrigger]);
 
-
   const onCanvasDraw = useCallback(() => {
     setRedrawTrigger((old) => old + 1);
   }, []);
-
 
   return (
     <Canvas
