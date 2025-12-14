@@ -1,27 +1,36 @@
+import React, { useState, useEffect, useRef } from 'react';
 import { Timecode } from '@wfoxall/timeframe';
 import clsx from 'clsx';
-import { useState, useEffect, useRef } from 'react';
 
 import Input from './Input.styled';
 
-const InputTimecode = ({
+interface InputTimecodeProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange' | 'className' | 'title'> {
+  value?: number | null; // in seconds
+  mode?: 'time' | 'frames'; // time or frames
+  fps?: number | string;
+  onChange?: (value: number | null | undefined) => void;
+  tooltip?: string;
+  className?: string;
+}
+
+const InputTimecode: React.FC<InputTimecodeProps> = ({
   value = null, // in seconds
   mode = 'time', // time or frames
   fps = 25,
   onChange = () => {},
-  tooltip = null,
-  className = null,
+  tooltip = undefined,
+  className = undefined,
   ...props
 }) => {
-  const [text, setText] = useState('');
-  const [invalid, setInvalid] = useState(false);
-  const inputRef = useRef(null);
+  const [text, setText] = useState<string>('');
+  const [invalid, setInvalid] = useState<boolean>(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setInvalid(false);
-    let frames = undefined;
+    let frames: number | undefined = undefined;
     if (mode === 'time' && typeof value === 'number') {
-      frames = value * fps;
+      frames = value * (fps as number); // Assert fps as number for multiplication
     } else if (mode === 'frames' && typeof value === 'number') {
       frames = value;
     } else {
@@ -41,7 +50,7 @@ const InputTimecode = ({
     setText(str);
   }, [value, mode, fps]);
 
-  const onChangeHandler = (e) => {
+  const onChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     let res = e.target.value;
     res = res.replace(/[^0-9:]/g, '');
     if (res.length > 11) {
@@ -59,7 +68,7 @@ const InputTimecode = ({
     // add zero padding to the timecode
     if (!text) {
       setInvalid(false);
-      onChange(null);
+      onChange(undefined);
       return;
     }
 
@@ -73,18 +82,18 @@ const InputTimecode = ({
       const tcobj = new Timecode(str, fps);
       setInvalid(false);
       setText(str);
-      if (mode === 'time') onChange(tcobj.frames / fps);
-      else if (mode === 'frames') onChange(tcobj.frames);
+      if (mode === 'time') onChange((tcobj.Frames as number) / (fps as number));
+      else if (mode === 'frames') onChange(tcobj.Frames as number);
       else throw new Error('Invalid mode');
     } catch {
       setInvalid(true);
     }
   };
 
-  const onKeyDown = (e) => {
+  const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       onSubmit();
-      inputRef.current.blur();
+      inputRef.current?.blur();
     }
     e.stopPropagation();
   };
