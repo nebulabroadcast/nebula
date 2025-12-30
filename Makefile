@@ -20,6 +20,13 @@ dist: build
 setup-hooks:
 	@echo "Setting up Git hooks..."
 	@mkdir -p .git/hooks
-	@echo '#!/bin/sh\n\n# Navigate to the repository root directory\ncd "$$(git rev-parse --show-toplevel)"\n\n# Execute the linting command from the Makefile\nmake check\n\n# Check the return code of the make command\nif [ $$? -ne 0 ]; then\n  echo "Linting failed. Commit aborted."\n  exit 1\nfi\n\n# If everything is fine, allow the commit\nexit 0' > .git/hooks/pre-commit
+	@echo '#!/bin/sh' > .git/hooks/pre-commit
+	@echo 'cd "$$(git rev-parse --show-toplevel)"' >> .git/hooks/pre-commit
+	@echo 'make check' >> .git/hooks/pre-commit
+	@echo 'if [ $$? -ne 0 ]; then' >> .git/hooks/pre-commit
+	@echo '  echo "Linting failed. Commit aborted."' >> .git/hooks/pre-commit
+	@echo '  exit 1' >> .git/hooks/pre-commit
+	@echo 'fi' >> .git/hooks/pre-commit
+	@echo 'exit 0' >> .git/hooks/pre-commit
 	@chmod +x .git/hooks/pre-commit
 	@echo "Git hooks set up successfully."
