@@ -49,7 +49,7 @@ async def handle_samba_storage(storage: Storage) -> None:
             storage.mount_attempts = 999
             return
 
-    nebula.log.info(f"{storage} is not mounted. Mounting...")
+    nebula.log.info(f"{storage} is not mounted. Mounting (attempt:{storage.mount_attempts}...")
 
     smbopts = {}
     if storage.options.get("login"):
@@ -111,6 +111,13 @@ class StorageMonitor(BackgroundTask):
             storage.mount_attempts = self.status.get(id_storage, {}).get(
                 "mount_attempts", 0
             )
+
+            if storage.mount_attempts > 5:
+                await nebula.db.execute(
+                    "UPDATE storages SET enabled = FALSE WHERE id = $1", 
+                    id_storage,
+                )
+                nebula.log.error(f"Disabling storage {storage} after repeated mount failures")
 
             if storage.is_mounted:
                 continue
