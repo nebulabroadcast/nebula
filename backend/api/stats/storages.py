@@ -25,6 +25,7 @@ class StorageStat(ResponseModel):
     untracked: int
     available: bool = True
     nebula_usage: list[NebulaStorageUsage]
+    enabled: bool = True
 
 
 @aiocache.cached(ttl=60)
@@ -110,14 +111,14 @@ async def get_nebula_playout_usage(storage_id: int) -> NebulaStorageUsage:
     )
 
 
-@aiocache.cached(ttl=300, key="storage_map")
 async def get_storage_map() -> dict[int, dict[str, str]]:
     storages: dict[int, dict[str, str]] = {}
-    res = await nebula.db.fetch("SELECT id, settings FROM storages")
+    res = await nebula.db.fetch("SELECT id, settings, enabled FROM storages")
     for row in res:
         storages[row["id"]] = {
             "name": row["settings"].get("name", f"Storage {row['id']}"),
             "protocol": row["settings"].get("protocol", "local"),
+            "enabled": row["enabled"],
         }
     return storages
 
@@ -153,13 +154,30 @@ class NebulaStoragesRequest(APIRequest):
             except ValueError:
                 continue
 
+            storage = storages.get(storage_id)
+
+            if storage and not storage["enabled"]:
+                results.append(
+                    StorageStat(
+                        storage_id=storage_id,
+                        label=storage["name"],
+                        total=0,
+                        used=0,
+                        free=0,
+                        untracked=0,
+                        nebula_usage=[],
+                        available=False,
+                        enabled=False,
+                    )
+                )
+                continue
+
             usage = await get_nebula_folders_usage(storage_id)
             playout_usage = await get_nebula_playout_usage(storage_id)
             if playout_usage.usage > 0:
                 usage.append(playout_usage)
             used_by_nebula = sum(u.usage for u in usage)
 
-            storage = storages.get(storage_id)
             if (
                 storage
                 and storage["protocol"] != "local"

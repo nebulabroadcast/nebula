@@ -94,7 +94,8 @@ class StorageMonitor(BackgroundTask):
             await asyncio.sleep(5)
 
     async def main(self) -> None:
-        async for row in nebula.db.iterate("SELECT id, settings FROM storages"):
+        query = "SELECT id, settings FROM storages WHERE enabled"
+        async for row in nebula.db.iterate(query):
             id_storage = row["id"]
             storage_settings = row["settings"]
 

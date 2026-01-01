@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS public.settings (
 CREATE TABLE IF NOT EXISTS public.storages (
   id serial NOT NULL,
   settings JSONB NOT NULL,
+  enabled BOOLEAN NOT NULL DEFAULT true,
   CONSTRAINT storages_pkey PRIMARY KEY (id)
 );
 
@@ -202,3 +203,9 @@ CREATE TABLE IF NOT EXISTS public.asrun (
 CREATE INDEX IF NOT EXISTS asrun_start_idx ON asrun(start);
 CREATE INDEX IF NOT EXISTS asrun_channel_idx ON asrun(id_channel);
 CREATE INDEX IF NOT EXISTS asrun_item_idx ON asrun(id_item);
+
+
+
+-- Migrations
+
+ALTER TABLE public.storages ADD COLUMN IF NOT EXISTS enabled BOOLEAN NOT NULL DEFAULT true;
