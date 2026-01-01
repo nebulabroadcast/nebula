@@ -1,6 +1,7 @@
 import asyncio
 import contextlib
 import os
+import subprocess
 import time
 from typing import Any
 
@@ -10,21 +11,16 @@ from nebula.storages import Storage
 from server.background import BackgroundTask
 
 
-async def exec_mount(cmd: str) -> bool:
-    """Execute a mount command asynchronously.
-
-    Returns:
-        bool: True if the command executed successfully, False otherwise.
-    """
-    proc = await asyncio.create_subprocess_shell(
+def exec_mount(cmd: str) -> bool:
+    proc = subprocess.run(
         cmd,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        shell=True,
     )
-    stdout, stderr = await proc.communicate()
     if proc.returncode != 0:
         nebula.log.error(f"Mount failed with return code {proc.returncode}")
-        nebula.log.error(f"stderr: {stderr.decode()}")
+        nebula.log.error(f"Mout error: {proc.stderr.decode()}")
         return False
     return True
 
@@ -49,7 +45,7 @@ async def handle_samba_storage(storage: Storage) -> None:
             storage.mount_attempts = 999
             return
 
-    nebula.log.info(f"{storage} is not mounted. Mounting (attempt:{storage.mount_attempts}...")
+    nebula.log.info(f"{storage} is not mounted. Mounting (attempt {storage.mount_attempts})...")
 
     smbopts = {}
     if storage.options.get("login"):
@@ -64,15 +60,14 @@ async def handle_samba_storage(storage: Storage) -> None:
         smbopts["vers"] = smbver
 
     if smbopts:
-        opts = " -o 'noserverino,{}'".format(
-            ",".join([f"{k}={smbopts[k]}" for k in smbopts])
-        )
+        opts_body = ",".join([f"{k}={v}" for k,v in smbopts.items()])
+        opts = f" -o '{opts_body}'"
     else:
         opts = ""
 
     cmd = f"mount.cifs {storage.path} {storage.local_path}{opts}"
 
-    res = await exec_mount(cmd)
+    res = await asyncio.to_thread(exec_mount, cmd)
     if res:
         nebula.log.success(f"{storage} mounted successfully")
         storage.mount_attempts = 0
