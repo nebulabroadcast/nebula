@@ -19,8 +19,10 @@ def exec_mount(cmd: str) -> bool:
         shell=True,
     )
     if proc.returncode != 0:
-        nebula.log.error(f"Mount failed with return code {proc.returncode}")
-        nebula.log.error(f"Mout error: {proc.stderr.decode()}")
+        nebula.log.error(
+            f"Mount failed with return code {proc.returncode}"
+            f": {proc.stderr.decode().strip()}"
+        )
         return False
     return True
 
@@ -41,31 +43,36 @@ async def handle_samba_storage(storage: Storage) -> None:
             pass
         except Exception:
             nebula.log.traceback(f"Unable to create mountpoint for {storage}")
-            storage.last_mount_attempt = time.time()
-            storage.mount_attempts = 999
+            await nebula.db.execute(
+                "UPDATE storages SET enabled = FALSE WHERE id = $1", 
+                storage.id,
+            )
+            nebula.log.error(f"Disabling storage {storage}")
             return
 
-    nebula.log.info(f"{storage} is not mounted. Mounting (attempt {storage.mount_attempts})...")
+    nebula.log.info(f"Mounting {storage} (attempt {storage.mount_attempts + 1})...")
 
-    smbopts = {}
-    if storage.options.get("login"):
-        smbopts["user"] = storage.options["login"]
-    if storage.options.get("password"):
-        smbopts["pass"] = storage.options["password"]
-    if storage.options.get("domain"):
-        smbopts["domain"] = storage.options["domain"]
+    smbopts = []
+    for key, value in storage.options.items():
+        if key == "login":
+            key = "user"
+        elif key == "password":
+            key = "pass"
+        elif key == "samba_version":
+            key = "vers"
 
-    smbver = storage.options.get("samba_version", "3.0")
-    if smbver:
-        smbopts["vers"] = smbver
+        if value is None:
+            smbopts.append(key)
+        else:
+            smbopts.append(f"{key}={value}")
 
     if smbopts:
-        opts_body = ",".join([f"{k}={v}" for k,v in smbopts.items()])
-        opts = f" -o '{opts_body}'"
+        opts = f""" -o '{",".join(smbopts)}'"""
     else:
         opts = ""
 
     cmd = f"mount.cifs {storage.path} {storage.local_path}{opts}"
+    nebula.log.trace(cmd)
 
     res = await asyncio.to_thread(exec_mount, cmd)
     if res:
@@ -73,7 +80,6 @@ async def handle_samba_storage(storage: Storage) -> None:
         storage.mount_attempts = 0
     else:
         if storage.mount_attempts < 5:
-            nebula.log.trace(cmd)
             nebula.log.error(f"Unable to mount {storage}")
         storage.last_mount_attempt = time.time()
         storage.mount_attempts += 1
@@ -100,12 +106,9 @@ class StorageMonitor(BackgroundTask):
                     **storage_settings,
                 )
             )
-            storage.last_mount_attempt = self.status.get(id_storage, {}).get(
-                "last_mount_attempt", 0
-            )
-            storage.mount_attempts = self.status.get(id_storage, {}).get(
-                "mount_attempts", 0
-            )
+            stat = self.status.get(id_storage, {})
+            storage.last_mount_attempt = stat.get("last_mount_attempt", 0)
+            storage.mount_attempts = stat.get("mount_attempts", 0)
 
             if storage.mount_attempts > 5:
                 await nebula.db.execute(
@@ -121,7 +124,6 @@ class StorageMonitor(BackgroundTask):
                 if not os.path.isdir(storage.path):
                     with contextlib.suppress(FileExistsError):
                         os.makedirs(storage.path)
-
                 continue
 
             if storage.protocol == "samba":
