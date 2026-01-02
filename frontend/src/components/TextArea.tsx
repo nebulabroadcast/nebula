@@ -1,10 +1,8 @@
 import React from 'react';
 import Input from './Input.styled';
 
-interface TextAreaProps extends Omit<
-  React.TextareaHTMLAttributes<HTMLTextAreaElement>,
-  'onChange'
-> {
+interface TextAreaProps
+  extends Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, 'onChange'> {
   value: string;
   onChange: (value: string) => void;
   tooltip?: string;

@@ -17,6 +17,14 @@ class Storage:
         self.read_only: bool | None = None
         self.last_mount_attempt: float = 0
         self.mount_attempts: int = 0
+        self.enabled = True
+
+        for override in storage_settings.overrides:
+            if override.hostname == "__server__":
+                self.enabled = override.enabled
+                self.path = override.path or self.path
+                self.options = override.options or self.options
+                self.protocol = override.protocol or self.protocol
 
     def __str__(self) -> str:
         res = f"storage {self.id}"
@@ -83,6 +91,8 @@ class Storages:
                     name="Unknown",
                     protocol="local",
                     path=f"/mnt/{config.site_name}_{id_storage:02d}",
+                    options={},
+                    overrides=[],
                 )
             )
 
