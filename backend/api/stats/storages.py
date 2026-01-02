@@ -1,5 +1,6 @@
 import asyncio
 import os
+import subprocess
 
 import aiocache
 
@@ -28,25 +29,27 @@ class StorageStat(ResponseModel):
     enabled: bool = True
 
 
-@aiocache.cached(ttl=60)
-async def get_disk_usage(path: str) -> tuple[int, int]:
-    """Returns total and used space in bytes"""
+def exec_df(path: str) -> tuple[int, int]:
     cmd = ["df", "--output=size,used", path]
-    proc = await asyncio.create_subprocess_exec(
-        *cmd,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
-    )
-
-    stdout, stderr = await proc.communicate()
+    proc = subprocess.run(cmd, capture_output=True, text=True)  #noqa: S603
     if proc.returncode != 0:
-        raise RuntimeError(f"df command failed: {stderr.decode().strip()}")
+        raise RuntimeError(f"df command failed: {proc.stderr.strip()}")
 
-    lines = stdout.decode().strip().split("\n")
+    lines = proc.stdout.strip().split("\n")
     if len(lines) < 2:
         raise RuntimeError("df command returned unexpected output")
     total_kb, used_kb = map(int, lines[1].split())
     return total_kb * 1024, used_kb * 1024
+
+
+@aiocache.cached(ttl=60)
+async def get_disk_usage(path: str) -> tuple[int, int]:
+    """Returns total and used space in bytes"""
+    try:
+        return await asyncio.to_thread(exec_df, path)
+    except RuntimeError as e:
+        nebula.log.warning(f"Error getting disk usage for {path}: {e}")
+        return 0, 0
 
 
 @aiocache.cached(ttl=60)
