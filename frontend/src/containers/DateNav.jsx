@@ -14,6 +14,9 @@ const DateNav = ({ onChange, skipBy = 1 }) => {
     let dateParam = searchParams.get('date');
     if (date && dateParam === date) return;
     if (!dateParam) dateParam = dateToDateString(new Date());
+    
+    if (dateParam === date) return;
+
     setDate(dateParam);
     onChange(dateParam);
   }, [searchParams]);
