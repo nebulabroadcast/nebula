@@ -1,6 +1,7 @@
 import asyncio
 import contextlib
 import os
+import subprocess
 import time
 from typing import Any
 
@@ -10,23 +11,13 @@ from nebula.storages import Storage
 from server.background import BackgroundTask
 
 
-async def exec_mount(cmd: str) -> bool:
-    """Execute a mount command asynchronously.
-
-    Returns:
-        bool: True if the command executed successfully, False otherwise.
-    """
-    proc = await asyncio.create_subprocess_shell(
-        cmd,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
-    )
-    stdout, stderr = await proc.communicate()
+def exec_mount(cmd: list[str]) -> None:
+    proc = subprocess.run(cmd, capture_output=True)  # noqa: S603
     if proc.returncode != 0:
-        nebula.log.error(f"Mount failed with return code {proc.returncode}")
-        nebula.log.error(f"stderr: {stderr.decode()}")
-        return False
-    return True
+        raise RuntimeError(
+            f"Mount failed with return code {proc.returncode}"
+            f": {proc.stderr.decode().strip()}"
+        )
 
 
 # def handle_nfs_storage(storage: Storage):
@@ -45,43 +36,47 @@ async def handle_samba_storage(storage: Storage) -> None:
             pass
         except Exception:
             nebula.log.traceback(f"Unable to create mountpoint for {storage}")
-            storage.last_mount_attempt = time.time()
-            storage.mount_attempts = 999
+            await nebula.db.execute(
+                "UPDATE storages SET enabled = FALSE WHERE id = $1",
+                storage.id,
+            )
+            nebula.log.error(f"Disabling storage {storage}")
             return
 
-    nebula.log.info(f"{storage} is not mounted. Mounting...")
+    nebula.log.debug(f"Mounting {storage} (attempt {storage.mount_attempts + 1})...")
 
-    smbopts = {}
-    if storage.options.get("login"):
-        smbopts["user"] = storage.options["login"]
-    if storage.options.get("password"):
-        smbopts["pass"] = storage.options["password"]
-    if storage.options.get("domain"):
-        smbopts["domain"] = storage.options["domain"]
+    smbopts = []
+    for key, value in storage.options.items():
+        if key == "login":
+            key = "user"
+        elif key == "password":
+            key = "pass"
+        elif key == "samba_version":
+            key = "vers"
 
-    smbver = storage.options.get("samba_version", "3.0")
-    if smbver:
-        smbopts["vers"] = smbver
+        if value is None:
+            smbopts.append(key)
+        else:
+            smbopts.append(f"{key}={value}")
 
+    cmd = ["mount.cifs", storage.path, storage.local_path]
     if smbopts:
-        opts = " -o 'noserverino,{}'".format(
-            ",".join([f"{k}={smbopts[k]}" for k in smbopts])
-        )
-    else:
-        opts = ""
+        cmd.append("-o")
+        cmd.append(",".join(smbopts))
 
-    cmd = f"mount.cifs {storage.path} {storage.local_path}{opts}"
+    if storage.mount_attempts < 5:
+        nebula.log.trace(cmd)
 
-    res = await exec_mount(cmd)
-    if res:
-        nebula.log.success(f"{storage} mounted successfully")
-        storage.mount_attempts = 0
-    else:
+    try:
+        await asyncio.to_thread(exec_mount, cmd)
+    except RuntimeError as e:
         if storage.mount_attempts < 5:
-            nebula.log.trace(cmd)
-            nebula.log.error(f"Unable to mount {storage}")
+            nebula.log.error(str(e))
         storage.last_mount_attempt = time.time()
         storage.mount_attempts += 1
+    else:
+        nebula.log.success(f"{storage} mounted successfully")
+        storage.mount_attempts = 0
 
 
 class StorageMonitor(BackgroundTask):
@@ -94,7 +89,8 @@ class StorageMonitor(BackgroundTask):
             await asyncio.sleep(5)
 
     async def main(self) -> None:
-        async for row in nebula.db.iterate("SELECT id, settings FROM storages"):
+        query = "SELECT id, settings FROM storages"
+        async for row in nebula.db.iterate(query):
             id_storage = row["id"]
             storage_settings = row["settings"]
 
@@ -104,12 +100,13 @@ class StorageMonitor(BackgroundTask):
                     **storage_settings,
                 )
             )
-            storage.last_mount_attempt = self.status.get(id_storage, {}).get(
-                "last_mount_attempt", 0
-            )
-            storage.mount_attempts = self.status.get(id_storage, {}).get(
-                "mount_attempts", 0
-            )
+
+            if not storage.enabled:
+                continue
+
+            stat = self.status.get(id_storage, {})
+            storage.last_mount_attempt = stat.get("last_mount_attempt", 0)
+            storage.mount_attempts = stat.get("mount_attempts", 0)
 
             if storage.is_mounted:
                 continue
@@ -118,7 +115,6 @@ class StorageMonitor(BackgroundTask):
                 if not os.path.isdir(storage.path):
                     with contextlib.suppress(FileExistsError):
                         os.makedirs(storage.path)
-
                 continue
 
             if storage.protocol == "samba":

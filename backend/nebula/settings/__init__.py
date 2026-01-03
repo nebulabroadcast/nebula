@@ -10,6 +10,7 @@ from nebula.settings.models import (
     FolderSettings,
     PlayoutChannelSettings,
     ServerSettings,
+    StorageSettings,
     ViewSettings,
 )
 
@@ -32,7 +33,11 @@ async def get_server_settings() -> ServerSettings:
 
     # Storages
 
-    # TODO
+    _storages: list[StorageSettings] = []
+    query = "SELECT id, settings FROM storages ORDER BY id ASC"
+    async for row in db.iterate(query):
+        _storages.append(StorageSettings(id=row["id"], **row["settings"]))
+    result["storages"] = _storages
 
     # Playout channels
 
