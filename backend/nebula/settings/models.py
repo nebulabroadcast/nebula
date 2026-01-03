@@ -284,7 +284,7 @@ class StorageOverrideSettings(SettingsModel):
         bool,
         Field(
             title="Enabled",
-            description="Set to false to disale the storage access on the host",
+            description="Set to false to disable the storage access on the host",
         ),
     ] = True
 
