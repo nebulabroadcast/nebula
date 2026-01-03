@@ -151,7 +151,7 @@ class NebulaStoragesRequest(APIRequest):
     ) -> NebulaStoragesUsage:
         results: list[StorageStat] = []
         site_name = nebula.config.site_name
-        storages = await get_storage_map()
+        storage_map = await get_storage_map()
 
         for mountpoint_name in sorted(os.listdir("/mnt")):
             if not os.path.isdir(os.path.join("/mnt", mountpoint_name)):
@@ -165,7 +165,7 @@ class NebulaStoragesRequest(APIRequest):
             except ValueError:
                 continue
 
-            storage = storages.get(storage_id)
+            storage = storage_map.get(storage_id)
 
             if storage and not storage["enabled"]:
                 results.append(

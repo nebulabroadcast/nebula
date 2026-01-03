@@ -29,7 +29,6 @@ class ServeProxy(APIRequest):
         sys_settings = nebula.settings.system
         proxy_storage_path = nebula.storages[sys_settings.proxy_storage].local_path
         proxy_path_template = os.path.join(proxy_storage_path, sys_settings.proxy_path)
-        nebula.log.trace(f"Proxy storage path: {proxy_storage_path}")
 
         vars = {
             "id": id_asset,
