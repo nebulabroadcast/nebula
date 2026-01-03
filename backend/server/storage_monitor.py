@@ -11,15 +11,13 @@ from nebula.storages import Storage
 from server.background import BackgroundTask
 
 
-def exec_mount(cmd: list[str]) -> bool:
-    proc = subprocess.run(cmd, capture_output=True)  #noqa: S603
+def exec_mount(cmd: list[str]) -> None:
+    proc = subprocess.run(cmd, capture_output=True)  # noqa: S603
     if proc.returncode != 0:
-        nebula.log.error(
+        raise RuntimeError(
             f"Mount failed with return code {proc.returncode}"
             f": {proc.stderr.decode().strip()}"
         )
-        return False
-    return True
 
 
 # def handle_nfs_storage(storage: Storage):
@@ -45,7 +43,8 @@ async def handle_samba_storage(storage: Storage) -> None:
             nebula.log.error(f"Disabling storage {storage}")
             return
 
-    nebula.log.info(f"Mounting {storage} (attempt {storage.mount_attempts + 1})...")
+    if storage.mount_attempts < 5:
+        nebula.log.info(f"Mounting {storage} (attempt {storage.mount_attempts + 1})...")
 
     smbopts = []
     for key, value in storage.options.items():
@@ -66,17 +65,19 @@ async def handle_samba_storage(storage: Storage) -> None:
         cmd.append("-o")
         cmd.append(",".join(smbopts))
 
-    nebula.log.trace(cmd)
+    if storage.mount_attempts < 5:
+        nebula.log.trace(cmd)
 
-    res = await asyncio.to_thread(exec_mount, cmd)
-    if res:
-        nebula.log.success(f"{storage} mounted successfully")
-        storage.mount_attempts = 0
-    else:
+    try:
+        await asyncio.to_thread(exec_mount, cmd)
+    except RuntimeError as e:
         if storage.mount_attempts < 5:
-            nebula.log.error(f"Unable to mount {storage}")
+            nebula.log.error(str(e))
         storage.last_mount_attempt = time.time()
         storage.mount_attempts += 1
+    else:
+        nebula.log.success(f"{storage} mounted successfully")
+        storage.mount_attempts = 0
 
 
 class StorageMonitor(BackgroundTask):
@@ -107,15 +108,6 @@ class StorageMonitor(BackgroundTask):
             stat = self.status.get(id_storage, {})
             storage.last_mount_attempt = stat.get("last_mount_attempt", 0)
             storage.mount_attempts = stat.get("mount_attempts", 0)
-
-            if storage.mount_attempts > 5:
-                await nebula.db.execute(
-                    "UPDATE storages SET enabled = FALSE WHERE id = $1",
-                    id_storage,
-                )
-                nebula.log.error(
-                    f"Disabling storage {storage} after repeated mount failures"
-                )
 
             if storage.is_mounted:
                 continue

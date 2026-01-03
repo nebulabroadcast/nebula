@@ -1,5 +1,6 @@
 import os
 import posixpath
+from typing import Any
 
 from nebula.config import config
 from nebula.log import log
@@ -8,6 +9,16 @@ from nebula.settings.models import StorageSettings
 
 
 class Storage:
+    id: int
+    name: str
+    protocol: str
+    path: str
+    options: dict[str, Any]
+    read_only: bool | None
+    last_mount_attempt: float
+    mount_attempts: int
+    enabled: bool
+
     def __init__(self, storage_settings: StorageSettings) -> None:
         self.id = storage_settings.id
         self.name = storage_settings.name

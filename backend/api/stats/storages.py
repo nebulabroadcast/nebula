@@ -31,7 +31,7 @@ class StorageStat(ResponseModel):
 
 def exec_df(path: str) -> tuple[int, int]:
     cmd = ["df", "--output=size,used", path]
-    proc = subprocess.run(cmd, capture_output=True, text=True)  #noqa: S603
+    proc = subprocess.run(cmd, capture_output=True, text=True)  # noqa: S603
     if proc.returncode != 0:
         raise RuntimeError(f"df command failed: {proc.stderr.strip()}")
 
@@ -116,13 +116,21 @@ async def get_nebula_playout_usage(storage_id: int) -> NebulaStorageUsage:
 
 async def get_storage_map() -> dict[int, dict[str, str]]:
     storages: dict[int, dict[str, str]] = {}
-    res = await nebula.db.fetch("SELECT id, settings, enabled FROM storages")
+    res = await nebula.db.fetch("SELECT id, settings FROM storages")
     for row in res:
-        storages[row["id"]] = {
+        storage = {
             "name": row["settings"].get("name", f"Storage {row['id']}"),
             "protocol": row["settings"].get("protocol", "local"),
-            "enabled": row["enabled"],
+            "enabled": True,
         }
+
+        overrides = row["settings"].get("overrides", [])
+        for override in overrides:
+            if override.get("hostname") == "__server__":
+                storage["enabled"] = override.get("enabled", True)
+                storage["protocol"] = override.get("protocol", storage["protocol"])
+
+        storages[row["id"]] = storage
     return storages
 
 

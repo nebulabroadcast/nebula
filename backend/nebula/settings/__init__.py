@@ -34,7 +34,7 @@ async def get_server_settings() -> ServerSettings:
     # Storages
 
     _storages: list[StorageSettings] = []
-    query = "SELECT * FROM storages ORDER BY id ASC"
+    query = "SELECT id, settings FROM storages ORDER BY id ASC"
     async for row in db.iterate(query):
         _storages.append(StorageSettings(id=row["id"], **row["settings"]))
     result["storages"] = _storages
