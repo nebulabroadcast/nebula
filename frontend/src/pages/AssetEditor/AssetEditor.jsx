@@ -73,7 +73,6 @@ const AssetEditor = () => {
   const [editorMode, setEditorMode] = useLocalStorage('editorMode', 'metadata');
   const [_searchParams, setSearchParams] = useSearchParams();
 
-
   const assetIdRef = useRef(focusedAsset);
   const changedKeysRef = useRef(new Set());
 
@@ -108,7 +107,6 @@ const AssetEditor = () => {
       });
   };
 
-
   const refetchUnchangedFields = () => {
     console.log('Refetching unchanged fields for asset', assetIdRef.current);
     const changedKeys = changedKeysRef.current;
@@ -120,8 +118,11 @@ const AssetEditor = () => {
 
         setAssetData((oldFormData) => {
           let newFormData = { ...oldFormData };
-          const allKeys = new Set([...Object.keys(oldFormData), ...Object.keys(freshData)])
-  
+          const allKeys = new Set([
+            ...Object.keys(oldFormData),
+            ...Object.keys(freshData),
+          ]);
+
           for (const key of allKeys) {
             if (changedKeys.includes(key)) continue;
             if (isEqual(oldFormData[key], freshData[key])) continue;
@@ -143,7 +144,7 @@ const AssetEditor = () => {
       .finally(() => {
         setLoading(false);
       });
-  }
+  };
 
   // Update a single asset meta field
   // (called by EditorForm, flag buttons, etc.)
@@ -160,7 +161,6 @@ const AssetEditor = () => {
       });
     }
   };
-
 
   // Update changed keys ref
   // This is used to track which keys have been changed by the user,
@@ -179,12 +179,11 @@ const AssetEditor = () => {
     changedKeysRef.current = changedKeys;
   }, [assetData, originalData, loading]);
 
-
   // If the asset is new, set the default folder
   // (first writable folder)
 
   useEffect(() => {
-    if (assetData?.id_folder) return
+    if (assetData?.id_folder) return;
     setMeta('id_folder', nebula.getWritableFolders()[0]?.id);
   }, [assetData?.id_folder]);
 
@@ -210,7 +209,9 @@ const AssetEditor = () => {
 
   const fields = useMemo(() => {
     if (!assetData?.id_folder) return [];
-    return nebula.settings.folders.find((f) => f.id === assetData.id_folder)?.fields || []
+    return (
+      nebula.settings.folders.find((f) => f.id === assetData.id_folder)?.fields || []
+    );
   }, [assetData]);
 
   // Which fields are editable
@@ -219,11 +220,11 @@ const AssetEditor = () => {
 
   const editableFieldNames = useMemo(() => {
     const editableFieldNames = [
-      'qc/state', 
-      'id_folder', 
-      'duration', 
-      'mark_in', 
-      'mark_out', 
+      'qc/state',
+      'id_folder',
+      'duration',
+      'mark_in',
+      'mark_out',
       'subclips',
       'poster_frame',
     ];
@@ -239,8 +240,8 @@ const AssetEditor = () => {
   const isChanged = useMemo(() => {
     for (const key of editableFieldNames) {
       if (isEqual(assetData[key], originalData[key])) continue;
-        return true
-      }
+      return true;
+    }
     return false;
   }, [assetData, originalData, editableFieldNames]);
 
@@ -379,7 +380,6 @@ const AssetEditor = () => {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-
   const handlePubSub = (topic, message) => {
     if (topic !== 'objects_changed') return;
     if (message.object_type !== 'asset') return;
@@ -388,14 +388,13 @@ const AssetEditor = () => {
     if (message.objects.includes(assetIdRef.current)) {
       debounce(refetchUnchangedFields, 1000)();
     }
-  }
+  };
 
   useEffect(() => {
     const token = PubSub.subscribe('objects_changed', handlePubSub);
     // eslint-disable-next-line no-undef
     return () => PubSub.unsubscribe(token);
   }, []);
-
 
   // Render
 

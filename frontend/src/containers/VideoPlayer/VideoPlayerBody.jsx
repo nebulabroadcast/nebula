@@ -47,7 +47,6 @@ const VideoPlayerWarning = styled.div`
   z-index: 10;
 `;
 
-
 const time2frames = (time, frameRate) => Math.round(time * frameRate);
 const frames2time = (frames, frameRate) => frames / frameRate;
 const DEFAULT_VIDEO_DIMENSIONS = {
@@ -298,9 +297,7 @@ const VideoPlayerBody = ({ ...props }) => {
               videoHeight={videoDimensions.height}
               showOverlay={showOverlay}
             />
-            {props.warning && (
-              <VideoPlayerWarning>{props.warning}</VideoPlayerWarning>
-            )}
+            {props.warning && <VideoPlayerWarning>{props.warning}</VideoPlayerWarning>}
           </VideoContainer>
         </VideoSpace>
         <VUMeter gainNodes={rightNodes} audioContext={audioContext} />

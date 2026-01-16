@@ -3,7 +3,7 @@ import { useMediaUpload } from '@hooks/useMediaUpload';
 import { Button } from '@components';
 
 import type { ContentType } from '@/client';
-import {MediaUploadDialog} from './MediaUploadDialog';
+import { MediaUploadDialog } from './MediaUploadDialog';
 
 interface UploadButtonProps {
   id: string; // Asset ID (unique identifier of the task as well)

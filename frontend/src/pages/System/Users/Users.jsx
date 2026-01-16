@@ -9,7 +9,6 @@ import Sessions from '/src/containers/Sessions';
 import UserForm from './UserForm';
 import UserList from './UserList';
 
-
 const UsersPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [users, setUsers] = useState([]);

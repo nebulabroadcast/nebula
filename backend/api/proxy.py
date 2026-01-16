@@ -45,7 +45,6 @@ class ServeProxy(APIRequest):
         return FileResponse(video_path, media_type="video/mp4")
 
 
-
 class GetProsyInfo(APIRequest):
     """Get proxy info for a given asset."""
 
@@ -73,8 +72,4 @@ class GetProsyInfo(APIRequest):
         exists = os.path.exists(video_path)
         timestamp = os.path.getmtime(video_path) if exists else None
 
-        return {
-            "id": id_asset,
-            "available": exists, 
-            "timestamp": timestamp
-        }
+        return {"id": id_asset, "available": exists, "timestamp": timestamp}

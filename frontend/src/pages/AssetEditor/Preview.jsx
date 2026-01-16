@@ -55,7 +55,6 @@ const Preview = ({ assetData, setAssetData }) => {
   const [position, setPosition] = useState(0);
   const [proxyInfo, setProxyInfo] = useState(null);
 
-
   useEffect(() => {
     if (!assetData.id) {
       setProxyInfo(null);
@@ -66,28 +65,26 @@ const Preview = ({ assetData, setAssetData }) => {
     });
   }, [assetData]);
 
-
   const warning = useMemo(() => {
     if (proxyInfo && assetData && proxyInfo.id === assetData.id) {
       if (!proxyInfo.available) {
         return 'No proxy available';
       } else if (proxyInfo.timestamp < assetData['file/mtime']) {
-        return 'Proxy is outdated'
-      } 
+        return 'Proxy is outdated';
+      }
     }
     return null;
   }, [proxyInfo, assetData]);
 
-
   // Video source
 
   const videoSrc = useMemo(
-    () => (
-      assetData.id 
-        && proxyInfo 
-        && accessToken 
-        && `/proxy/${assetData.id}?token=${accessToken}&ts=${proxyInfo.timestamp}`
-    ), [assetData, accessToken, proxyInfo]
+    () =>
+      assetData.id &&
+      proxyInfo &&
+      accessToken &&
+      `/proxy/${assetData.id}?token=${accessToken}&ts=${proxyInfo.timestamp}`,
+    [assetData, accessToken, proxyInfo]
   );
 
   const frameRate = useMemo(() => {
