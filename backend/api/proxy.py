@@ -1,4 +1,5 @@
 import os
+from typing import Any
 
 from fastapi import Request
 from fastapi.responses import FileResponse
@@ -42,3 +43,38 @@ class ServeProxy(APIRequest):
             raise nebula.NotFoundException("Proxy not found")
 
         return FileResponse(video_path, media_type="video/mp4")
+
+
+
+class GetProsyInfo(APIRequest):
+    """Get proxy info for a given asset."""
+
+    name = "get_proxy_info"
+    path = "/proxy/{id_asset}/info"
+    title = "Get proxy info"
+    methods = ["GET"]
+
+    async def handle(
+        self,
+        id_asset: int,
+        user: CurrentUser,
+    ) -> dict[str, Any]:
+        sys_settings = nebula.settings.system
+        proxy_storage_path = nebula.storages[sys_settings.proxy_storage].local_path
+        proxy_path_template = os.path.join(proxy_storage_path, sys_settings.proxy_path)
+
+        vars = {
+            "id": id_asset,
+            "id1000": id_asset // 1000,
+        }
+
+        video_path = proxy_path_template.format(**vars)
+
+        exists = os.path.exists(video_path)
+        timestamp = os.path.getmtime(video_path) if exists else None
+
+        return {
+            "id": id_asset,
+            "available": exists, 
+            "timestamp": timestamp
+        }
