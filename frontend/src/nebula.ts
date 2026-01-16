@@ -25,7 +25,7 @@ const nebula = {
   locale: typeof window !== 'undefined' ? navigator.language || 'en-US' : 'en-US',
 
   // API
-
+  
   request(endpoint: string, data = {}) {
     return axios.post(`/api/${endpoint}`, data);
   },

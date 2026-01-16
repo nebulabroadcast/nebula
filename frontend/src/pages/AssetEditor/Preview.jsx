@@ -1,5 +1,5 @@
 import nebula from '/src/nebula';
-
+import axios from 'axios';
 import { useState, useEffect, useMemo } from 'react';
 import { toast } from 'react-toastify';
 
@@ -53,13 +53,47 @@ const Preview = ({ assetData, setAssetData }) => {
   const [selection, setSelection] = useState({});
   const [subclips, setSubclips] = useState([]);
   const [position, setPosition] = useState(0);
+  const [proxyInfo, setProxyInfo] = useState(null);
+  const [warning, setWarning] = useState(null);
+
+
+  useEffect(() => {
+    if (!assetData.id) {
+      setProxyInfo(null);
+      return;
+    }
+    axios.get(`/proxy/${assetData.id}/info`).then((response) => {
+      setProxyInfo(response.data);
+    });
+  }, [assetData.id]);
+
+
+  useEffect(() => {
+    if (proxyInfo && assetData && proxyInfo.id === assetData.id) {
+      if (!proxyInfo.available) {
+        setWarning('No proxy available');
+        return;
+      } else if (proxyInfo.timestamp < assetData['file/mtime']) {
+        setWarning('Proxy is outdated');
+        return;
+      } 
+    }
+    setWarning(null);
+
+  }, [proxyInfo, assetData]);
+
 
   // Video source
 
   const videoSrc = useMemo(
-    () => assetData.id && accessToken && `/proxy/${assetData.id}?token=${accessToken}`,
-    [assetData, accessToken]
+    () => (
+      assetData.id 
+        && proxyInfo 
+        && accessToken 
+        && `/proxy/${assetData.id}?token=${accessToken}&ts=${proxyInfo.timestamp}`
+    ), [assetData, accessToken, proxyInfo]
   );
+
   const frameRate = useMemo(() => {
     const fps = assetData['video/fps_f'] || 25.0;
     return fps;
@@ -164,6 +198,7 @@ const Preview = ({ assetData, setAssetData }) => {
           marks={{
             poster_frame: assetData.poster_frame,
           }}
+          warning={warning}
         />
       </div>
 
