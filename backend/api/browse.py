@@ -290,15 +290,19 @@ def build_query(
     # Process full text
 
     if request.query:
-        for elm in slugify(request.query, make_set=True, min_length=3):
-            # no need to sanitize this. slugified strings are safe
-            q = f"""
-                id IN (
-                    SELECT id FROM ft
-                    WHERE object_type = 0 AND value LIKE '{elm}%'
-                )
-            """
-            cond_list.append(q)
+        q_list = [
+            f"'{f}%'" for f in slugify(request.query, make_set=True, min_length=3)
+        ]
+
+        ft_cte = f"""
+        WITH ft_cte AS (
+            SELECT DISTINCT id FROM full_text
+            WHERE object_type = 0 AND value LIKE ANY (ARRAY[{q_list}])
+        """
+
+        ft_join = """
+        JOIN ft_cte ON ft_cte.id = assets.id
+        """
 
     # Access control
 
@@ -326,7 +330,9 @@ def build_query(
     # Build query
 
     query = f"""
+        {ft_cte if request.query else ""}
         SELECT meta FROM assets {conds}
+        {ft_join if request.query else ""}
         ORDER BY {order_by} {request.order_dir}, id DESC
         LIMIT {request.limit}
         OFFSET {request.offset}
