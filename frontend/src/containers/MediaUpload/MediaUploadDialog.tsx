@@ -2,9 +2,9 @@ import { Dialog, Button } from '@components';
 import { useMediaUpload } from '@hooks/useMediaUpload';
 import React, { useState } from 'react';
 
-import type { ContentType } from '@/client';
-
 import { FileSelect } from './FileSelect';
+
+import type { ContentType } from '@/client';
 
 interface UploadDialogProps {
   onHide: () => void;

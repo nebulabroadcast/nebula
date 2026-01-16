@@ -34,9 +34,9 @@ const RundownNav = ({ setStartTime, rundownMode, setRundownMode }) => {
       <Spacer />
       <RadioButton
         options={[
-          { label: 'Edit', value: 'edit' },
-          { label: 'Control', value: 'control' },
-          { label: 'Plugins', value: 'plugins' },
+          { title: 'Edit', value: 'edit' },
+          { title: 'Control', value: 'control' },
+          { title: 'Plugins', value: 'plugins' },
         ]}
         value={rundownMode}
         onChange={setRundownMode}

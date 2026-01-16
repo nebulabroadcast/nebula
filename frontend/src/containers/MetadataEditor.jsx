@@ -1,3 +1,4 @@
+import { RadioButton } from '@components';
 import { useMemo } from 'react';
 
 import nebula from '/src/nebula';
@@ -70,14 +71,22 @@ const EditorField = ({ field, value, originalValue, onFieldChanged, disabled }) 
       editor = <TextArea value={value} onChange={onChange} disabled={disabled} />;
       break;
     case 'select':
-      editor = (
-        <Select
-          options={options}
-          value={value}
-          selectionMode="single"
-          onChange={onChange}
-        />
-      );
+      editor =
+        metaType.mode === 'radio' ? (
+          <RadioButton
+            options={options}
+            value={value}
+            onChange={onChange}
+            disabled={disabled}
+          />
+        ) : (
+          <Select
+            options={options}
+            value={value}
+            selectionMode="single"
+            onChange={onChange}
+          />
+        );
       break;
     case 'list':
       editor = (

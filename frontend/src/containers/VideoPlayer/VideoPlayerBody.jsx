@@ -125,6 +125,7 @@ const VideoPlayerBody = ({ ...props }) => {
     if (!videoRef.current) return;
 
     const updateVideoDimensions = () => {
+      if (!videoRef.current) return;
       const width = videoRef.current.clientWidth;
       const height = videoRef.current.clientHeight;
       setVideoDimensions({ width, height });
@@ -250,6 +251,7 @@ const VideoPlayerBody = ({ ...props }) => {
           mode="frames"
           tooltip="Current position"
           fps={props.frameRate}
+          onChange={(v) => seekToFrame(v)}
         />
         <ChannelSelect gainNodes={gainNodes} />
         <div style={{ flex: 1 }} />

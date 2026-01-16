@@ -70,7 +70,7 @@ const AssetEditor = () => {
   const [assetData, setAssetData] = useState({});
   const [originalData, setOriginalData] = useState({});
   const [loading, setLoading] = useState(false);
-  const [editorMode, setEditorMode] = useLocalStorage('editorMode', 'metadata');
+  const [editorMode, setEditorMode] = useLocalStorage('mam.editor.mode', 'metadata');
   const [_searchParams, setSearchParams] = useSearchParams();
 
   const assetIdRef = useRef(focusedAsset);

@@ -1,9 +1,10 @@
 import React, { useRef, useMemo, DragEvent, ChangeEvent } from 'react';
+
+import nebula from '../../nebula';
+
 import { FileSelectWrapper } from './FileSelect.styled';
 
 import type { ContentType } from '@/client';
-
-import nebula from '../../nebula';
 
 const formatFileSize = (bytes: number): string => {
   if (bytes < 1024) return `${bytes} B`;

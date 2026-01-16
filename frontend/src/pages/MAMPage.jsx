@@ -54,7 +54,7 @@ const MAMPage = () => {
   const dispatch = useDispatch();
   const { module } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [splitterSizes, setSplitterSizes] = useLocalStorage('mamSplitterSizes', null);
+  const [splitterSizes, setSplitterSizes] = useLocalStorage('mam.splitterSizes', null);
 
   const draggedIndicatorRef = useRef(null);
 

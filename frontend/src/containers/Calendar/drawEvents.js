@@ -1,3 +1,5 @@
+import { getTextColor } from '@components/lib/colors';
+
 import { drawTruncatedText } from './drawUtils';
 
 const drawEvents = (ctx, drawParams, events, draggedEvent) => {
@@ -47,7 +49,7 @@ const drawEvents = (ctx, drawParams, events, draggedEvent) => {
     // event title
 
     ctx.font = '12px Noto Sans';
-    ctx.fillStyle = '#fff';
+    ctx.fillStyle = getTextColor(eventColor, 180);
     drawTruncatedText(ctx, startPos.x + 15, startPos.y + 15, dayWidth - 20, title);
 
     //ctx.fillText(title, startPos.x + 15, startPos.y + 15)

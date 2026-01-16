@@ -46,7 +46,6 @@ class InitResponseModel(ResponseModel):
         Field(
             title="Background",
             description="Is the login background image enabled?",
-            default_factory=is_login_background_enabled,
         ),
     ] = False
 
@@ -128,6 +127,7 @@ class InitRequest(APIRequest):
                 motd=motd,
                 sso_options=sso_options,
                 experimental=nebula.config.enable_experimental or None,
+                is_login_background=is_login_background_enabled(),
             )
 
         # User preferred language

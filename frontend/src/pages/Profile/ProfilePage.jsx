@@ -83,11 +83,7 @@ const ChangePasswordForm = () => {
           />
         </FormRow>
         <FormRow title="Repeat new password">
-          <InputText
-            type="password"
-            value={passwordRepeat}
-            onChange={setPasswordRepeat}
-          />
+          <InputPassword value={passwordRepeat} onChange={setPasswordRepeat} />
         </FormRow>
         <FormRow>
           <Button label="Change password" icon="check" onClick={changePassword} />
