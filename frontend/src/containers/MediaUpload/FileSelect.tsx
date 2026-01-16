@@ -1,9 +1,10 @@
 import React, { useRef, useMemo, DragEvent, ChangeEvent } from 'react';
+
+import nebula from '../../nebula';
+
 import { FileSelectWrapper } from './FileSelect.styled';
 
 import type { ContentType } from '@/client';
-
-import nebula from '../../nebula';
 
 const formatFileSize = (bytes: number): string => {
   if (bytes < 1024) return `${bytes} B`;
@@ -12,21 +13,23 @@ const formatFileSize = (bytes: number): string => {
   return `${(bytes / 1024 / 1024 / 1024).toFixed(2)} GB`;
 };
 
-
 interface FileSelectProps {
   file: File | null;
   setFile: (file: File) => void;
   contentType: ContentType;
 }
 
-
-export const FileSelect: React.FC<FileSelectProps> = ({ file, setFile, contentType }) => {
+export const FileSelect: React.FC<FileSelectProps> = ({
+  file,
+  setFile,
+  contentType,
+}) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const onSelect = (selectedFile: File) => {
     // TODO: extension/type validation
     setFile(selectedFile);
-  }
+  };
 
   const onChange = (event: ChangeEvent<HTMLInputElement>) => {
     const files = [...(event.target.files || [])];
@@ -45,7 +48,6 @@ export const FileSelect: React.FC<FileSelectProps> = ({ file, setFile, contentTy
     }
     return result.join(',');
   }, [contentType]);
-
 
   //
   // Drag-and-Drop Handlers
@@ -69,7 +71,6 @@ export const FileSelect: React.FC<FileSelectProps> = ({ file, setFile, contentTy
     }
   };
 
-
   const mainWidget = useMemo(() => {
     if (file) {
       return (
@@ -77,7 +78,7 @@ export const FileSelect: React.FC<FileSelectProps> = ({ file, setFile, contentTy
           <span>{file.name}</span>
           <span>{formatFileSize(file.size)}</span>
         </>
-      )
+      );
     }
 
     return (
@@ -91,14 +92,17 @@ export const FileSelect: React.FC<FileSelectProps> = ({ file, setFile, contentTy
           onChange={onChange}
           multiple={false}
         />
-        <button onClick={(event) => { inputRef.current?.click(); event?.preventDefault(); }} >
+        <button
+          onClick={(event) => {
+            inputRef.current?.click();
+            event?.preventDefault();
+          }}
+        >
           Click or drag-and-drop file to upload
         </button>
       </>
-    )
-
+    );
   }, [file, accept]);
-
 
   return (
     <FileSelectWrapper
@@ -110,4 +114,3 @@ export const FileSelect: React.FC<FileSelectProps> = ({ file, setFile, contentTy
     </FileSelectWrapper>
   );
 };
-

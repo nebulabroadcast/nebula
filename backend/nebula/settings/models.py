@@ -237,16 +237,91 @@ class ServiceSettings(BaseServiceSettings):
 
 
 class BaseStorageSettings(BaseListItemModel):
-    protocol: Literal["samba", "local"] = Field(
-        ...,
-        title="Connection protocol",
-        examples=["samba"],
-    )
-    path: str = Field(..., title="Path", examples=["//server/share"])
+    protocol: Annotated[
+        Literal["samba", "local"],
+        Field(
+            title="Connection protocol",
+            examples=["samba", "local"],
+        ),
+    ]
+
+    path: Annotated[
+        str,
+        Field(
+            title="Path",
+            examples=["//server/share"],
+        ),
+    ]
 
 
-class StorageSettings(BaseStorageSettings):
-    options: dict[str, Any] = Field(default_factory=dict, title="Connection options")
+class ExtendedStorageSettings(BaseStorageSettings):
+    options: Annotated[
+        dict[str, Any],
+        Field(
+            default_factory=dict,
+            title="Connection options",
+        ),
+    ]
+
+
+class StorageOverrideSettings(SettingsModel):
+    hostname: Annotated[
+        str,
+        Field(
+            title="Hostname",
+            description=(
+                "Hostname of the host for which the override applies"
+                " (use __server__ for the server hosts)"
+            ),
+            examples=[
+                "worker01",
+                "__server__",
+            ],
+        ),
+    ]
+
+    enabled: Annotated[
+        bool,
+        Field(
+            title="Enabled",
+            description="Set to false to disable the storage access on the host",
+        ),
+    ] = True
+
+    protocol: Annotated[
+        Literal["samba", "local"] | None,
+        Field(
+            title="Connection protocol",
+            examples=["samba", "local"],
+        ),
+    ] = None
+
+    path: Annotated[
+        str | None,
+        Field(
+            title="Path",
+            examples=["//server/share"],
+        ),
+    ] = None
+
+    options: Annotated[
+        dict[str, Any],
+        Field(
+            default_factory=dict,
+            title="Connection options",
+        ),
+    ]
+
+
+class StorageSettings(ExtendedStorageSettings):
+    overrides: Annotated[
+        list[StorageOverrideSettings],
+        Field(
+            default_factory=list,
+            title="Overrides",
+            description="List of storage overrides for specific hosts",
+        ),
+    ]
 
 
 #

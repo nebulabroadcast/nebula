@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 import { Canvas } from '/src/components';
 
@@ -120,6 +120,10 @@ const VUMeter = ({ gainNodes, audioContext }) => {
     draw();
   }, [gainNodesRef.current?.length, audioContext, canvasRef, redrawTrigger]);
 
+  const onCanvasDraw = useCallback(() => {
+    setRedrawTrigger((old) => old + 1);
+  }, []);
+
   return (
     <Canvas
       ref={canvasRef}
@@ -127,7 +131,7 @@ const VUMeter = ({ gainNodes, audioContext }) => {
         width: gainNodes.length * (barWidth + spacing),
         backgroundColor: COLOR_BKG,
       }}
-      onDraw={() => setRedrawTrigger(redrawTrigger + 1)}
+      onDraw={onCanvasDraw}
     />
   );
 };

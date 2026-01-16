@@ -1,5 +1,6 @@
 import asyncio
 import os
+import subprocess
 
 import aiocache
 
@@ -25,27 +26,30 @@ class StorageStat(ResponseModel):
     untracked: int
     available: bool = True
     nebula_usage: list[NebulaStorageUsage]
+    enabled: bool = True
+
+
+def exec_df(path: str) -> tuple[int, int]:
+    cmd = ["df", "--output=size,used", path]
+    proc = subprocess.run(cmd, capture_output=True, text=True)  # noqa: S603
+    if proc.returncode != 0:
+        raise RuntimeError(f"df command failed: {proc.stderr.strip()}")
+
+    lines = proc.stdout.strip().split("\n")
+    if len(lines) < 2:
+        raise RuntimeError("df command returned unexpected output")
+    total_kb, used_kb = map(int, lines[1].split())
+    return total_kb * 1024, used_kb * 1024
 
 
 @aiocache.cached(ttl=60)
 async def get_disk_usage(path: str) -> tuple[int, int]:
     """Returns total and used space in bytes"""
-    cmd = ["df", "--output=size,used", path]
-    proc = await asyncio.create_subprocess_exec(
-        *cmd,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
-    )
-
-    stdout, stderr = await proc.communicate()
-    if proc.returncode != 0:
-        raise RuntimeError(f"df command failed: {stderr.decode().strip()}")
-
-    lines = stdout.decode().strip().split("\n")
-    if len(lines) < 2:
-        raise RuntimeError("df command returned unexpected output")
-    total_kb, used_kb = map(int, lines[1].split())
-    return total_kb * 1024, used_kb * 1024
+    try:
+        return await asyncio.to_thread(exec_df, path)
+    except RuntimeError as e:
+        nebula.log.warning(f"Error getting disk usage for {path}: {e}")
+        return 0, 0
 
 
 @aiocache.cached(ttl=60)
@@ -110,15 +114,23 @@ async def get_nebula_playout_usage(storage_id: int) -> NebulaStorageUsage:
     )
 
 
-@aiocache.cached(ttl=300, key="storage_map")
 async def get_storage_map() -> dict[int, dict[str, str]]:
     storages: dict[int, dict[str, str]] = {}
     res = await nebula.db.fetch("SELECT id, settings FROM storages")
     for row in res:
-        storages[row["id"]] = {
+        storage = {
             "name": row["settings"].get("name", f"Storage {row['id']}"),
             "protocol": row["settings"].get("protocol", "local"),
+            "enabled": True,
         }
+
+        overrides = row["settings"].get("overrides", [])
+        for override in overrides:
+            if override.get("hostname") == "__server__":
+                storage["enabled"] = override.get("enabled", True)
+                storage["protocol"] = override.get("protocol", storage["protocol"])
+
+        storages[row["id"]] = storage
     return storages
 
 
@@ -139,7 +151,7 @@ class NebulaStoragesRequest(APIRequest):
     ) -> NebulaStoragesUsage:
         results: list[StorageStat] = []
         site_name = nebula.config.site_name
-        storages = await get_storage_map()
+        storage_map = await get_storage_map()
 
         for mountpoint_name in sorted(os.listdir("/mnt")):
             if not os.path.isdir(os.path.join("/mnt", mountpoint_name)):
@@ -153,13 +165,30 @@ class NebulaStoragesRequest(APIRequest):
             except ValueError:
                 continue
 
+            storage = storage_map.get(storage_id)
+
+            if storage and not storage["enabled"]:
+                results.append(
+                    StorageStat(
+                        storage_id=storage_id,
+                        label=storage["name"],
+                        total=0,
+                        used=0,
+                        free=0,
+                        untracked=0,
+                        nebula_usage=[],
+                        available=False,
+                        enabled=False,
+                    )
+                )
+                continue
+
             usage = await get_nebula_folders_usage(storage_id)
             playout_usage = await get_nebula_playout_usage(storage_id)
             if playout_usage.usage > 0:
                 usage.append(playout_usage)
             used_by_nebula = sum(u.usage for u in usage)
 
-            storage = storages.get(storage_id)
             if (
                 storage
                 and storage["protocol"] != "local"

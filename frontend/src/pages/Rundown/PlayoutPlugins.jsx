@@ -90,6 +90,13 @@ const PluginPanel = ({ plugin, onError }) => {
 
   // const inputWidgetCount = plugin.slots.filter((slot) => slot.type !== 'action').length;
   // const buttonCount = plugin.slots.filter((slot) => slot.type === 'action').length;
+  //
+
+  if (!plugin.slots.filter((slot) => slot.type !== 'action').length) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'row', gap: '4px' }}>{buttons}</div>
+    );
+  }
 
   return (
     <>
@@ -105,7 +112,7 @@ const PluginPanel = ({ plugin, onError }) => {
               />
             </FormRow>
           ))}
-        <FormRow title="Actions">
+        <FormRow title="">
           <div style={{ display: 'flex', flexDirection: 'row', gap: '4px' }}>
             {buttons}
           </div>
@@ -140,7 +147,7 @@ const PlayoutPlugins = ({ onError }) => {
     return pluginList
       .filter((plugin) => plugin?.slots.length)
       .map((plugin) => ({
-        label: plugin.title,
+        title: plugin.title || plugin.name,
         value: plugin.name,
       }));
   }, [pluginList]);

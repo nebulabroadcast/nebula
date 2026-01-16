@@ -39,8 +39,8 @@ const Calendar = ({
   const cursorTime = useRef(null);
 
   const [scrollbarWidth, setScrollbarWidth] = useState(0);
-  const [zoom, setZoom] = useLocalStorage('calendarZoom', 1);
-  const [scrollPos, setScrollPos] = useLocalStorage('calendarPos', 0);
+  const [zoom, setZoom] = useLocalStorage('mam.scheduler.calendarZoom', 1);
+  const [scrollPos, setScrollPos] = useLocalStorage('mam.scheduler.calendarPos', 0);
   const [mousePos, setMousePos] = useState(null);
 
   // Reference to events

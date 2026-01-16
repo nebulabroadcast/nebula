@@ -17,5 +17,4 @@ export const FileSelectWrapper = styled.div`
     color: var(--color-text-dim);
     cursor: pointer;
   }
-
 `;

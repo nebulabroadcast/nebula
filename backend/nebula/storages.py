@@ -1,5 +1,6 @@
 import os
 import posixpath
+from typing import Any
 
 from nebula.config import config
 from nebula.log import log
@@ -8,6 +9,16 @@ from nebula.settings.models import StorageSettings
 
 
 class Storage:
+    id: int
+    name: str
+    protocol: str
+    path: str
+    options: dict[str, Any]
+    read_only: bool | None
+    last_mount_attempt: float
+    mount_attempts: int
+    enabled: bool
+
     def __init__(self, storage_settings: StorageSettings) -> None:
         self.id = storage_settings.id
         self.name = storage_settings.name
@@ -17,6 +28,14 @@ class Storage:
         self.read_only: bool | None = None
         self.last_mount_attempt: float = 0
         self.mount_attempts: int = 0
+        self.enabled = True
+
+        for override in storage_settings.overrides:
+            if override.hostname == "__server__":
+                self.enabled = override.enabled
+                self.path = override.path or self.path
+                self.options = override.options or self.options
+                self.protocol = override.protocol or self.protocol
 
     def __str__(self) -> str:
         res = f"storage {self.id}"
@@ -83,6 +102,8 @@ class Storages:
                     name="Unknown",
                     protocol="local",
                     path=f"/mnt/{config.site_name}_{id_storage:02d}",
+                    options={},
+                    overrides=[],
                 )
             )
 

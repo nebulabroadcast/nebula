@@ -23,7 +23,7 @@ const Rundown = ({ draggedObjects }) => {
   const currentChannel = useSelector((state) => state.context.currentChannel);
 
   const [startTime, setStartTime] = useState(null);
-  const [rundownMode, setRundownMode] = useLocalStorage('rundownMode', 'edit');
+  const [rundownMode, setRundownMode] = useLocalStorage('mam.rundown.mode', 'edit');
 
   const [rundown, setRundown] = useState(null);
   const [loading, setLoading] = useState(false);

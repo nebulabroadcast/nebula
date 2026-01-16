@@ -2,9 +2,9 @@ import { Dialog, Button } from '@components';
 import { useMediaUpload } from '@hooks/useMediaUpload';
 import React, { useState } from 'react';
 
-import type { ContentType } from '@/client';
-
 import { FileSelect } from './FileSelect';
+
+import type { ContentType } from '@/client';
 
 interface UploadDialogProps {
   onHide: () => void;
@@ -32,11 +32,7 @@ export const MediaUploadDialog: React.FC<UploadDialogProps> = ({
 
   const footer = (
     <>
-      <Button 
-        label="Cancel" 
-        icon="close" 
-        onClick={onHide} 
-      />
+      <Button label="Cancel" icon="close" onClick={onHide} />
       <Button
         label="Upload"
         icon="upload"
@@ -52,11 +48,7 @@ export const MediaUploadDialog: React.FC<UploadDialogProps> = ({
       header={`Submit media file for upload: ${title}`}
       footer={footer}
     >
-      <FileSelect 
-        file={file} 
-        setFile={setFile} 
-        contentType={contentType} 
-      />
+      <FileSelect file={file} setFile={setFile} contentType={contentType} />
     </Dialog>
   );
 };
