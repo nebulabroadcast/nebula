@@ -195,7 +195,7 @@ const useMediaUploadLogic = (): MediaUploadContextType => {
 
   useEffect(() => {
     // Only trigger if we have queued items and aren't already processing
-    const hasQueuedItems = queue.some((task) => task.status === UPLOAD_STATUS.QUEUED);
+    const hasQueuedItems = queue.some((task) => task?.status === UPLOAD_STATUS.QUEUED);
     if (hasQueuedItems && !isProcessingRef.current && !activeUploadRef.current) {
       processQueue();
     }

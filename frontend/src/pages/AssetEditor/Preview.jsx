@@ -54,7 +54,6 @@ const Preview = ({ assetData, setAssetData }) => {
   const [subclips, setSubclips] = useState([]);
   const [position, setPosition] = useState(0);
   const [proxyInfo, setProxyInfo] = useState(null);
-  const [warning, setWarning] = useState(null);
 
 
   useEffect(() => {
@@ -65,21 +64,18 @@ const Preview = ({ assetData, setAssetData }) => {
     axios.get(`/proxy/${assetData.id}/info`).then((response) => {
       setProxyInfo(response.data);
     });
-  }, [assetData.id]);
+  }, [assetData]);
 
 
-  useEffect(() => {
+  const warning = useMemo(() => {
     if (proxyInfo && assetData && proxyInfo.id === assetData.id) {
       if (!proxyInfo.available) {
-        setWarning('No proxy available');
-        return;
+        return 'No proxy available';
       } else if (proxyInfo.timestamp < assetData['file/mtime']) {
-        setWarning('Proxy is outdated');
-        return;
+        return 'Proxy is outdated'
       } 
     }
-    setWarning(null);
-
+    return null;
   }, [proxyInfo, assetData]);
 
 

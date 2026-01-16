@@ -1,8 +1,8 @@
 import nebula from '/src/nebula';
 
 import clsx from 'clsx';
-import { isEqual, isEmpty } from 'lodash';
-import { useEffect, useState, useMemo } from 'react';
+import { isEqual, isEmpty, debounce } from 'lodash';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -18,9 +18,7 @@ import { Loader, Section } from '/src/components';
 
 import AssetMainProps from './AssetMainProps';
 import AssetEditorNav from './EditorNav';
-
 import MetadataEditor from '/src/containers/MetadataEditor';
-
 import Preview from './Preview';
 
 const getEnabledActions = ({ assetData, isChanged }) => {
@@ -75,6 +73,10 @@ const AssetEditor = () => {
   const [editorMode, setEditorMode] = useLocalStorage('editorMode', 'metadata');
   const [_searchParams, setSearchParams] = useSearchParams();
 
+
+  const assetIdRef = useRef(focusedAsset);
+  const changedKeysRef = useRef(new Set());
+
   const showDialog = useDialog();
 
   // Load asset data
@@ -86,7 +88,8 @@ const AssetEditor = () => {
       .then((response) => {
         setAssetData(response.data.data[0] || {});
         setOriginalData(response.data.data[0] || {});
-        //navigate({ pathname: `/mam/editor`, search: `?asset=${id_asset}` })
+        assetIdRef.current = id_asset;
+        changedKeysRef.current = [];
         setSearchParams((o) => {
           o.set('asset', id_asset);
           return o;
@@ -105,6 +108,43 @@ const AssetEditor = () => {
       });
   };
 
+
+  const refetchUnchangedFields = () => {
+    console.log('Refetching unchanged fields for asset', assetIdRef.current);
+    const changedKeys = changedKeysRef.current;
+    setLoading(true);
+    nebula
+      .request('get', { ids: [assetIdRef.current], type: 'asset' })
+      .then((response) => {
+        const freshData = response.data.data[0] || {};
+
+        setAssetData((oldFormData) => {
+          let newFormData = { ...oldFormData };
+          const allKeys = new Set([...Object.keys(oldFormData), ...Object.keys(freshData)])
+  
+          for (const key of allKeys) {
+            if (changedKeys.includes(key)) continue;
+            if (isEqual(oldFormData[key], freshData[key])) continue;
+            newFormData[key] = freshData[key];
+          }
+          return newFormData;
+        });
+
+        setOriginalData(freshData);
+      })
+      .catch((error) => {
+        toast.error(
+          <>
+            <strong>Unable to refresh asset</strong>
+            <p>{error.response.data?.detail || 'Unknown error'}</p>
+          </>
+        );
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }
+
   // Update a single asset meta field
   // (called by EditorForm, flag buttons, etc.)
 
@@ -121,11 +161,31 @@ const AssetEditor = () => {
     }
   };
 
+
+  // Update changed keys ref
+  // This is used to track which keys have been changed by the user,
+  // so that we don't overwrite them when refetching unchanged fields
+
+  useEffect(() => {
+    // don't update changed keys while loading
+    if (loading) return;
+    if (isEmpty(assetData) || isEmpty(originalData)) return;
+    let changedKeys = [];
+    for (const key in assetData) {
+      if (!isEqual(originalData[key] || null, assetData[key] || null)) {
+        changedKeys.push(key);
+      }
+    }
+    changedKeysRef.current = changedKeys;
+  }, [assetData, originalData, loading]);
+
+
   // If the asset is new, set the default folder
   // (first writable folder)
 
   useEffect(() => {
-    if (!assetData?.id_folder) setMeta('id_folder', nebula.getWritableFolders()[0]?.id);
+    if (assetData?.id_folder) return
+    setMeta('id_folder', nebula.getWritableFolders()[0]?.id);
   }, [assetData?.id_folder]);
 
   // Parse and show asset data
@@ -137,7 +197,6 @@ const AssetEditor = () => {
         const separator = nebula.settings.system.subtitle_separator || ' - ';
         title = `${title}${separator}${assetData.subtitle}`;
       }
-
       dispatch(setPageTitle({ title }));
     } else {
       const folderName = assetData.id_folder
@@ -151,26 +210,39 @@ const AssetEditor = () => {
 
   const fields = useMemo(() => {
     if (!assetData?.id_folder) return [];
-    for (const folder of nebula.settings.folders) {
-      if (folder.id !== assetData.id_folder) continue;
-      return folder.fields;
-    }
-  }, [assetData, originalData]);
+    return nebula.settings.folders.find((f) => f.id === assetData.id_folder)?.fields || []
+  }, [assetData]);
 
-  // Are there unsaved changes?
-  // ATM it return true if any field is changed,
-  // but it could be changed to return an array of changed fields
+  // Which fields are editable
+  // (this is used to determine if there are unsaved changes)
+  // Contains both standard and folder-specific fields
+
+  const editableFieldNames = useMemo(() => {
+    const editableFieldNames = [
+      'qc/state', 
+      'id_folder', 
+      'duration', 
+      'mark_in', 
+      'mark_out', 
+      'subclips',
+      'poster_frame',
+    ];
+    for (const field of fields) {
+      editableFieldNames.push(field.name);
+    }
+    return editableFieldNames;
+  }, [fields]);
+
+  // Are there unsaved changes that can be saved?
+  // This returns true only if a field that is editable has changed
 
   const isChanged = useMemo(() => {
-    let changed = [];
-    for (const key in assetData) {
-      if (!isEqual(originalData[key] || null, assetData[key] || null)) {
-        return true;
-        //changed.push(key)
+    for (const key of editableFieldNames) {
+      if (isEqual(assetData[key], originalData[key])) continue;
+        return true
       }
-    }
-    return changed.length;
-  }, [assetData, originalData]);
+    return false;
+  }, [assetData, originalData, editableFieldNames]);
 
   // Which actions are enabled (save, revert, etc.)
   // This is used to disable buttons when there are no changes
@@ -306,6 +378,24 @@ const AssetEditor = () => {
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
+
+
+  const handlePubSub = (topic, message) => {
+    if (topic !== 'objects_changed') return;
+    if (message.object_type !== 'asset') return;
+    if (!assetIdRef.current) return;
+
+    if (message.objects.includes(assetIdRef.current)) {
+      debounce(refetchUnchangedFields, 1000)();
+    }
+  }
+
+  useEffect(() => {
+    const token = PubSub.subscribe('objects_changed', handlePubSub);
+    // eslint-disable-next-line no-undef
+    return () => PubSub.unsubscribe(token);
+  }, []);
+
 
   // Render
 
