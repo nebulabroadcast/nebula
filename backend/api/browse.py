@@ -197,14 +197,14 @@ def build_conditions(conditions: list[ConditionModel]) -> list[str]:
         if condition.operator in ["IN", "NOT IN"]:
             assert isinstance(condition.value, list), "Value must be a list"
             values = sql_list([sanitize_value(v) for v in condition.value], t="str")
-            cond_list.append(f"meta->>'{condition.key}' {condition.operator} {values}")
+            cond_list.append(f"a.meta->>'{condition.key}' {condition.operator} {values}")
         elif condition.operator in ["IS NULL", "IS NOT NULL"]:
-            cond_list.append(f"meta->>'{condition.key}' {condition.operator}")
+            cond_list.append(f"a.meta->>'{condition.key}' {condition.operator}")
         else:
             value = sanitize_value(condition.value)
             assert value, "Value must not be empty"
             # TODO casting to numbers for <, >, <=, >=
-            cond_list.append(f"meta->>'{condition.key}' {condition.operator} '{value}'")
+            cond_list.append(f"a.meta->>'{condition.key}' {condition.operator} '{value}'")
     return cond_list
 
 
@@ -247,7 +247,7 @@ def build_order(order_by: str) -> str:
     # column, we need to sort by the JSONB key
 
     if order_by not in nebula.Asset.db_columns:
-        order_by = f"meta->>'{order_by}'"
+        order_by = f"a.meta->>'{order_by}'"
 
     if cast_order_by:
         order_by = f"COALESCE(CAST({order_by} AS {cast_order_by}), 0)"
@@ -274,10 +274,10 @@ def build_query(
         assert isinstance(request.view, int), "View must be an integer"
         if (view := nebula.settings.get_view(request.view)) is not None:
             if view.folders:
-                cond_list.append(f"id_folder IN {sql_list(view.folders)}")
+                cond_list.append(f"a.id_folder IN {sql_list(view.folders)}")
 
             if view.states:
-                cond_list.append(f"status IN {sql_list(view.states)}")
+                cond_list.append(f"a.status IN {sql_list(view.states)}")
 
             if view.conditions:
                 cond_list.extend(view.conditions)
@@ -289,30 +289,30 @@ def build_query(
 
     # Process full text
 
+    ft_cte = ft_join = ""
     if request.query:
         q_list = [
             f"'{f}%'" for f in slugify(request.query, make_set=True, min_length=3)
         ]
-
-        ft_cte = f"""
-        WITH ft_cte AS (
-            SELECT DISTINCT id FROM full_text
-            WHERE object_type = 0 AND value LIKE ANY (ARRAY[{q_list}])
-        """
-
-        ft_join = """
-        JOIN ft_cte ON ft_cte.id = assets.id
-        """
+        if q_list:
+            ft_cte = f"""
+            WITH ft_cte AS (
+                SELECT DISTINCT id FROM ft
+                WHERE object_type = 0 
+                AND value LIKE ANY(ARRAY[{','.join(q_list)}])
+            )
+            """
+            ft_join = """JOIN ft_cte ON ft_cte.id = a.id"""
 
     # Access control
 
     if user.is_limited:
-        c1 = f"meta->>'created_by' = '{user.id}'"
-        c2 = f"meta->'assignees' @> '[{user.id}]'::JSONB"
+        c1 = f"a.meta->>'created_by' = '{user.id}'"
+        c2 = f"a.meta->'assignees' @> '[{user.id}]'::JSONB"
         cond_list.append(f"({c1} OR {c2})")
 
     if (can_view := user["can/asset_view"]) and isinstance(can_view, list):
-        cond_list.append(f"id_folder IN {sql_list(can_view)}")
+        cond_list.append(f"a.id_folder IN {sql_list(can_view)}")
 
     # Build conditions
 
@@ -330,10 +330,11 @@ def build_query(
     # Build query
 
     query = f"""
-        {ft_cte if request.query else ""}
-        SELECT meta FROM assets {conds}
-        {ft_join if request.query else ""}
-        ORDER BY {order_by} {request.order_dir}, id DESC
+        {ft_cte}
+        SELECT meta FROM assets a
+        {ft_join}
+        {conds}
+        ORDER BY {order_by} {request.order_dir}, a.id DESC
         LIMIT {request.limit}
         OFFSET {request.offset}
     """
