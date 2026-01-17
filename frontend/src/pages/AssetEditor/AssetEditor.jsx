@@ -172,7 +172,7 @@ const AssetEditor = () => {
     let changedKeys = new Set();
     for (const key in assetData) {
       if (!isEqual(originalData[key] || null, assetData[key] || null)) {
-        changedKeys.push(key);
+        changedKeys.add(key);
       }
     }
     changedKeysRef.current = changedKeys;
