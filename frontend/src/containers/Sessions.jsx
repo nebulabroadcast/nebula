@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 import nebula from '/src/nebula';
 import { Table, Timestamp, Section, Button } from '/src/components';
 
-
 const FormattedTimestamp = (rowData) => {
   const timestamp = parseInt(rowData['accessed']);
   return (
@@ -55,8 +54,8 @@ const Sessions = ({ userId }) => {
   const invalidateFormatter = (rowData) => {
     const token = rowData['token'];
     return (
-      <td style={{ textAlign: 'right' }} className='action'>
-        <Button onClick={() => invalidateSession(token)} label="Invalidate"  />
+      <td style={{ textAlign: 'right' }} className="action">
+        <Button onClick={() => invalidateSession(token)} label="Invalidate" />
       </td>
     );
   };
