@@ -113,12 +113,12 @@ const TableWrapper = styled.div`
         &.action {
           padding: 0;
           button {
-            min-height: 24px;
-            max-height: 24px;
+            min-height: 22px;
+            max-height: 22px;
             padding: 2px;
             width: 100%;
             background: transparent;
-            border: 1px solid var(--color-violet);
+            border: 1px solid #666688;
             align-items: center;
           }
         }

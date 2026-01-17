@@ -116,7 +116,7 @@ const ServicesPage = () => {
       width: 70,
       formatter: formatAutoStart,
     },
-    { name: 'action', title: 'Action', width: 150, formatter: formatAction },
+    { name: 'action', title: 'Action', width: 100, formatter: formatAction },
   ];
 
   useEffect(() => {

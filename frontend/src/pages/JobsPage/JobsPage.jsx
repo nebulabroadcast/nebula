@@ -149,10 +149,10 @@ const JobsPage = () => {
     },
     {
       name: 'controls',
-      title: '',
+      title: 'Action',
       className: 'job-controls',
       formatter: formatAction,
-      width: 75,
+      width: 100,
     },
   ];
 

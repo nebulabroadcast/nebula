@@ -1,18 +1,8 @@
 import { useState, useEffect } from 'react';
 
 import nebula from '/src/nebula';
-import { Table, Timestamp, Section } from '/src/components';
+import { Table, Timestamp, Section, Button } from '/src/components';
 
-import styled from 'styled-components';
-
-const InvalidateButton = styled.button`
-  background: none;
-  border: none;
-  color: var(--color-red);
-  cursor: pointer;
-  padding: 0;
-  margin: 0;
-`;
 
 const FormattedTimestamp = (rowData) => {
   const timestamp = parseInt(rowData['accessed']);
@@ -65,10 +55,8 @@ const Sessions = ({ userId }) => {
   const invalidateFormatter = (rowData) => {
     const token = rowData['token'];
     return (
-      <td style={{ textAlign: 'right' }}>
-        <InvalidateButton onClick={() => invalidateSession(token)}>
-          Invalidate
-        </InvalidateButton>
+      <td style={{ textAlign: 'right' }} className='action'>
+        <Button onClick={() => invalidateSession(token)} label="Invalidate"  />
       </td>
     );
   };
