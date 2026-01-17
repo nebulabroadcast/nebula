@@ -59,6 +59,7 @@ const Preview = ({ assetData, setAssetData }) => {
   useEffect(() => {
     if (!assetData.id) {
       setProxyInfo(null);
+      setLoading(false);
       return;
     }
     setLoading(true);
