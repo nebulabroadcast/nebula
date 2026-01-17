@@ -26,7 +26,6 @@ export const BaseButton = styled.button`
   }
 
   user-select: none;
-  user-drag: none;
 
   display: flex;
   align-items: center;

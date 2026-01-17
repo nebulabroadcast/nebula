@@ -5,6 +5,7 @@ import Button from './Button';
 
 const RadioContainer = styled.div`
   display: flex;
+  flex-direction: row;
   gap: 0;
 
   button {
@@ -12,7 +13,7 @@ const RadioContainer = styled.div`
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
     border-right: 1px solid #161616 !important;
-    flex-grow: 1;
+    flex-grow: 1 !important;
 
     &:first-child {
       border-top-left-radius: 4px;
@@ -24,7 +25,7 @@ const RadioContainer = styled.div`
       border-top-right-radius: 4px;
       border-bottom-right-radius: 4px;
     }
-
+  }
 `;
 
 interface RadioButtonProps {
@@ -46,7 +47,7 @@ const RadioButton = ({ options, value, onChange }: RadioButtonProps) => {
         <Button
           key={option.value}
           onClick={() => onChange(option.value)}
-          className={clsx({ active: option.value === value })}
+          className={clsx({ active: option.value === value})}
           icon={option.icon}
           label={option.title}
           tooltip={option.tooltip}
