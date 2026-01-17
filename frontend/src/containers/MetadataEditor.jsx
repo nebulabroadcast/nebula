@@ -15,6 +15,10 @@ import {
   TextArea,
 } from '/src/components';
 
+const eqSet = (xs, ys) =>
+    xs.size === ys.size &&
+    [...xs].every((x) => ys.has(x));
+
 const EditorField = ({ field, value, originalValue, onFieldChanged, disabled }) => {
   const metaType = { ...nebula.metaType(field.name), ...field };
 
@@ -52,7 +56,27 @@ const EditorField = ({ field, value, originalValue, onFieldChanged, disabled }) 
 
   // Don't blame me for this one, it's a mess
 
-  const changed = !(!originalValue && !value) && originalValueParsed !== value;
+  const changed = useMemo(() => {
+    if (!originalValue && !value) return false;
+
+    if (metaType.type === 'number' || metaType.type === 'integer') {
+      return Number(originalValueParsed) !== Number(value);
+    }
+    if (metaType.type === 'boolean') {
+      return Boolean(originalValueParsed) !== Boolean(value);
+    }
+
+    if (metaType.type === 'list') {
+      const originalList = Array.isArray(originalValueParsed)
+        ? new Set(originalValueParsed)
+        : new Set([]);
+      const currentList = Array.isArray(value) ? new Set(value) : new Set([]);
+      return !eqSet(originalList, currentList)
+    }
+
+    return originalValueParsed !== value;
+  }, [originalValue, originalValueParsed, value, metaType]);
+
 
   // When a field is changed, update the asset data
 

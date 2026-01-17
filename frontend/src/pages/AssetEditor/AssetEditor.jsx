@@ -2,7 +2,7 @@ import nebula from '/src/nebula';
 
 import clsx from 'clsx';
 import { isEqual, isEmpty, debounce } from 'lodash';
-import { useEffect, useState, useMemo, useRef } from 'react';
+import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -80,15 +80,16 @@ const AssetEditor = () => {
 
   // Load asset data
 
-  const loadAsset = (id_asset) => {
+  const loadAsset = useCallback((id_asset) => {
     setLoading(true);
     nebula
       .request('get', { ids: [id_asset], type: 'asset' })
       .then((response) => {
-        setAssetData(response.data.data[0] || {});
-        setOriginalData(response.data.data[0] || {});
+        const data = response.data.data[0] || {};
+        setAssetData(data);
+        setOriginalData(data);
         assetIdRef.current = id_asset;
-        changedKeysRef.current.clear();
+        changedKeysRef.current = new Set();
         setSearchParams((o) => {
           o.set('asset', id_asset);
           return o;
@@ -105,9 +106,10 @@ const AssetEditor = () => {
       .finally(() => {
         setLoading(false);
       });
-  };
+  }, [setSearchParams]);
 
-  const refetchUnchangedFields = () => {
+  const refetchUnchangedFields = useCallback(() => {
+    console.log('Refetching unchanged fields for asset', assetIdRef.current);
     const changedKeys = changedKeysRef.current;
     setLoading(true);
     nebula
@@ -123,7 +125,7 @@ const AssetEditor = () => {
           ]);
 
           for (const key of allKeys) {
-            if (changedKeys.includes(key)) continue;
+            if (changedKeys.has(key)) continue;
             if (isEqual(oldFormData[key], freshData[key])) continue;
             newFormData[key] = freshData[key];
           }
@@ -143,7 +145,7 @@ const AssetEditor = () => {
       .finally(() => {
         setLoading(false);
       });
-  };
+  }, []);
 
   // Update a single asset meta field
   // (called by EditorForm, flag buttons, etc.)
@@ -226,6 +228,7 @@ const AssetEditor = () => {
       'mark_out',
       'subclips',
       'poster_frame',
+      'assignees',
     ];
     for (const field of fields) {
       editableFieldNames.push(field.name);
@@ -340,20 +343,21 @@ const AssetEditor = () => {
     setAssetData(originalData);
   };
 
-  const onSave = (payload) => {
+  const onSave = useCallback((payload) => {
     if (!enabledActions.save && !payload) {
       return;
     }
     setLoading(true);
-    // console.log('Saving...', assetData)
     nebula
       .request('set', { id: assetData.id, data: payload || assetData })
       .then((response) => {
         //reload browser if it's a new asset
         if (!assetData.id) dispatch(reloadBrowser());
-        loadAsset(response.data.id);
+        // loadAsset(response.data.id);
+        // Just wait for ws message to update the asset data
       })
       .catch((error) => {
+        setLoading(false);
         toast.error(
           <div>
             <strong>Unable to save asset</strong>
@@ -361,10 +365,9 @@ const AssetEditor = () => {
           </div>
         );
       })
-      .finally(() => {
-        setLoading(false);
-      });
-  };
+    // we don't clear the loading state here,
+    // we wait for the ws message that confirms the asset has been updated
+  }, [assetData, enabledActions.save, dispatch, loadAsset]);
 
   // Keyboard shortcuts
 
@@ -377,7 +380,7 @@ const AssetEditor = () => {
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [onSave]);
 
   const debouncedRefetchUnchangedFields = useMemo(
     () => debounce(refetchUnchangedFields, 1000),
