@@ -379,21 +379,29 @@ const AssetEditor = () => {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  const debouncedRefetchUnchangedFields = useMemo(
+    () => debounce(refetchUnchangedFields, 1000),
+    [refetchUnchangedFields]
+  );
+
   const handlePubSub = (topic, message) => {
     if (topic !== 'objects_changed') return;
     if (message.object_type !== 'asset') return;
     if (!assetIdRef.current) return;
 
     if (message.objects.includes(assetIdRef.current)) {
-      debounce(refetchUnchangedFields, 1000)();
+      debouncedRefetchUnchangedFields();
     }
   };
 
   useEffect(() => {
     const token = PubSub.subscribe('objects_changed', handlePubSub);
     // eslint-disable-next-line no-undef
-    return () => PubSub.unsubscribe(token);
-  }, []);
+    return () => {
+      PubSub.unsubscribe(token);
+      debouncedRefetchUnchangedFields.cancel();
+    };
+  }, [debouncedRefetchUnchangedFields]);
 
   // Render
 
