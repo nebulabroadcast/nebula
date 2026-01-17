@@ -33,7 +33,6 @@ const StyledRange = styled.input`
   }
 `;
 
-
 type RangeSliderProps = React.InputHTMLAttributes<HTMLInputElement>;
 
 const RangeSlider = forwardRef<HTMLInputElement, RangeSliderProps>((props, ref) => {
