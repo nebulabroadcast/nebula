@@ -54,35 +54,48 @@ const Preview = ({ assetData, setAssetData }) => {
   const [subclips, setSubclips] = useState([]);
   const [position, setPosition] = useState(0);
   const [proxyInfo, setProxyInfo] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!assetData.id) {
       setProxyInfo(null);
       return;
     }
-    axios.get(`/proxy/${assetData.id}/info`).then((response) => {
-      setProxyInfo(response.data);
-    });
+    setLoading(true);
+    axios
+      .get(`/proxy/${assetData.id}/info`)
+      .then((response) => {
+        setProxyInfo(response.data);
+      })
+      .catch(() => {
+        setProxyInfo(null);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, [assetData]);
 
   const warning = useMemo(() => {
-    if (proxyInfo && assetData && proxyInfo.id === assetData.id) {
-      if (!proxyInfo.available) {
-        return 'No proxy available';
-      } else if (proxyInfo.timestamp < assetData['file/mtime']) {
-        return 'Proxy is outdated';
-      }
-    }
+    if (loading) return null;
+
+    if (!(proxyInfo && assetData && proxyInfo.id === assetData.id))
+      return 'Proxy information not available';
+
+    if (!proxyInfo.available) return 'No proxy available';
+
+    if (proxyInfo.timestamp < assetData['file/mtime']) return 'Proxy is outdated';
+
     return null;
-  }, [proxyInfo, assetData]);
+  }, [proxyInfo, assetData, loading]);
 
   // Video source
 
   const videoSrc = useMemo(
     () =>
-      assetData.id &&
-      proxyInfo &&
       accessToken &&
+      assetData.id &&
+      proxyInfo.id === assetData.id &&
+      proxyInfo?.timestamp &&
       `/proxy/${assetData.id}?token=${accessToken}&ts=${proxyInfo.timestamp}`,
     [assetData, accessToken, proxyInfo]
   );

@@ -197,14 +197,18 @@ def build_conditions(conditions: list[ConditionModel]) -> list[str]:
         if condition.operator in ["IN", "NOT IN"]:
             assert isinstance(condition.value, list), "Value must be a list"
             values = sql_list([sanitize_value(v) for v in condition.value], t="str")
-            cond_list.append(f"a.meta->>'{condition.key}' {condition.operator} {values}")
+            cond_list.append(
+                f"a.meta->>'{condition.key}' {condition.operator} {values}"
+            )
         elif condition.operator in ["IS NULL", "IS NOT NULL"]:
             cond_list.append(f"a.meta->>'{condition.key}' {condition.operator}")
         else:
             value = sanitize_value(condition.value)
             assert value, "Value must not be empty"
             # TODO casting to numbers for <, >, <=, >=
-            cond_list.append(f"a.meta->>'{condition.key}' {condition.operator} '{value}'")
+            cond_list.append(
+                f"a.meta->>'{condition.key}' {condition.operator} '{value}'"
+            )
     return cond_list
 
 
@@ -298,8 +302,8 @@ def build_query(
             ft_cte = f"""
             WITH ft_cte AS (
                 SELECT DISTINCT id FROM ft
-                WHERE object_type = 0 
-                AND value LIKE ANY(ARRAY[{','.join(q_list)}])
+                WHERE object_type = 0
+                AND value LIKE ANY(ARRAY[{",".join(q_list)}])
             )
             """
             ft_join = """JOIN ft_cte ON ft_cte.id = a.id"""
