@@ -1,6 +1,6 @@
 [project]
 name = "nebula"
-version = "6.1.2"
+version = "6.1.3"
 description = "Open source broadcast automation system"
 authors = [
   {name = "Nebula Broadcast", email = "info@nebulabroadcast.com"},
