@@ -3,6 +3,7 @@ import time
 
 import aiofiles
 from fastapi import Request, Response
+from starlette.requests import ClientDisconnect
 
 import nebula
 from nebula.enum import MediaType, ObjectStatus
@@ -64,11 +65,20 @@ class UploadRequest(APIRequest):
         temp_path = os.path.join(temp_dir, f"upload-{asset.id}-{time.time()}")
 
         i = 0
-        async with aiofiles.open(temp_path, "wb") as f:
-            async for chunk in request.stream():
-                i += len(chunk)
-                await f.write(chunk)
-        nebula.log.debug(f"Uploaded {i} bytes", user=user.name)
+        try:
+            async with aiofiles.open(temp_path, "wb") as f:
+                async for chunk in request.stream():
+                    i += len(chunk)
+                    await f.write(chunk)
+            nebula.log.debug(f"Uploaded {i} bytes", user=user.name)
+        except ClientDisconnect:
+            nebula.log.warning(f"Upload cancelled for {asset}", user=user.name)
+            try:
+                os.remove(temp_path)
+            except OSError:
+                nebula.log.error(f"Unable to remove temp file {temp_path}")
+                pass
+            return
 
         os.rename(temp_path, target_path)
         if direct:

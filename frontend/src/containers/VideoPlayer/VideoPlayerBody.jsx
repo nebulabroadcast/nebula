@@ -35,6 +35,19 @@ const Video = styled.video`
   object-fit: contain;
 `;
 
+const VideoPlayerWarning = styled.div`
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(255, 0, 0, 0.8);
+  white-space: nowrap;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  z-index: 10;
+`;
+
 const time2frames = (time, frameRate) => Math.round(time * frameRate);
 const frames2time = (frames, frameRate) => frames / frameRate;
 const DEFAULT_VIDEO_DIMENSIONS = {
@@ -68,6 +81,18 @@ const VideoPlayerBody = ({ ...props }) => {
   useEffect(() => {
     durFramesRef.current = durFrames;
   }, [durFrames]);
+
+  useEffect(() => {
+    if (!props.src) {
+      videoRef.current.src = '';
+      setPosFrames(0);
+      setDurFrames(0);
+      setMarkIn(null);
+      setMarkOut(null);
+      setIsPlaying(false);
+      return;
+    }
+  }, [props.src, videoRef]);
 
   // Propagating markIn and markOut to parent component
 
@@ -287,6 +312,7 @@ const VideoPlayerBody = ({ ...props }) => {
               videoHeight={videoDimensions.height}
               showOverlay={showOverlay}
             />
+            {props.warning && <VideoPlayerWarning>{props.warning}</VideoPlayerWarning>}
           </VideoContainer>
         </VideoSpace>
         <VUMeter gainNodes={rightNodes} audioContext={audioContext} />

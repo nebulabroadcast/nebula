@@ -1,5 +1,5 @@
 import nebula from '/src/nebula';
-
+import axios from 'axios';
 import { useState, useEffect, useMemo } from 'react';
 import { toast } from 'react-toastify';
 
@@ -53,13 +53,56 @@ const Preview = ({ assetData, setAssetData }) => {
   const [selection, setSelection] = useState({});
   const [subclips, setSubclips] = useState([]);
   const [position, setPosition] = useState(0);
+  const [proxyInfo, setProxyInfo] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+    if (!assetData.id) {
+      setProxyInfo(null);
+      return;
+    }
+    axios
+      .get(`/proxy/${assetData.id}/info`)
+      .then((response) => {
+        setProxyInfo(response.data);
+      })
+      .catch(() => {
+        setProxyInfo(null);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [assetData]);
+
+  const warning = useMemo(() => {
+    if (loading) return null;
+
+    if (!assetData.id) return 'No asset selected';
+
+    if (!(proxyInfo && assetData && proxyInfo.id === assetData.id)) return '';
+
+    if (!proxyInfo.available) return 'No proxy available';
+
+    if (proxyInfo.timestamp < assetData['file/mtime']) return 'Proxy is outdated';
+
+    return null;
+  }, [proxyInfo, assetData, loading]);
 
   // Video source
 
   const videoSrc = useMemo(
-    () => assetData.id && accessToken && `/proxy/${assetData.id}?token=${accessToken}`,
-    [assetData, accessToken]
+    () =>
+      (accessToken &&
+        assetData.id &&
+        proxyInfo &&
+        proxyInfo.id === assetData.id &&
+        proxyInfo?.timestamp &&
+        `/proxy/${assetData.id}?token=${accessToken}&ts=${proxyInfo.timestamp}`) ||
+      null,
+    [assetData, accessToken, proxyInfo]
   );
+
   const frameRate = useMemo(() => {
     const fps = assetData['video/fps_f'] || 25.0;
     return fps;
@@ -164,6 +207,7 @@ const Preview = ({ assetData, setAssetData }) => {
           marks={{
             poster_frame: assetData.poster_frame,
           }}
+          warning={warning}
         />
       </div>
 

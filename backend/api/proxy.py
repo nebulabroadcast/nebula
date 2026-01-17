@@ -1,11 +1,24 @@
 import os
 
-from fastapi import Request
 from fastapi.responses import FileResponse
 
 import nebula
 from server.dependencies import CurrentUser
+from server.models import ResponseModel
 from server.request import APIRequest
+
+
+def get_proxy_path(id_asset: int) -> str:
+    sys_settings = nebula.settings.system
+    proxy_storage_path = nebula.storages[sys_settings.proxy_storage].local_path
+    proxy_path_template = os.path.join(proxy_storage_path, sys_settings.proxy_path)
+
+    vars = {
+        "id": id_asset,
+        "id1000": id_asset // 1000,
+    }
+
+    return proxy_path_template.format(**vars)
 
 
 class ServeProxy(APIRequest):
@@ -20,25 +33,34 @@ class ServeProxy(APIRequest):
     title = "Serve proxy"
     methods = ["GET"]
 
-    async def handle(
-        self,
-        request: Request,
-        id_asset: int,
-        user: CurrentUser,
-    ) -> FileResponse:
-        sys_settings = nebula.settings.system
-        proxy_storage_path = nebula.storages[sys_settings.proxy_storage].local_path
-        proxy_path_template = os.path.join(proxy_storage_path, sys_settings.proxy_path)
-
-        vars = {
-            "id": id_asset,
-            "id1000": id_asset // 1000,
-        }
-
-        video_path = proxy_path_template.format(**vars)
-
+    async def handle(self, id_asset: int, user: CurrentUser) -> FileResponse:
+        video_path = get_proxy_path(id_asset)
         if not os.path.exists(video_path):
-            # maybe return content too? with a placeholder image?
             raise nebula.NotFoundException("Proxy not found")
-
         return FileResponse(video_path, media_type="video/mp4")
+
+
+class ProxyInfo(ResponseModel):
+    id: int
+    available: bool
+    timestamp: float | None
+
+
+class GetProxyInfo(APIRequest):
+    """Get proxy info for a given asset."""
+
+    name = "get_proxy_info"
+    path = "/proxy/{id_asset}/info"
+    title = "Get proxy info"
+    methods = ["GET"]
+
+    async def handle(self, id_asset: int, user: CurrentUser) -> ProxyInfo:
+        video_path = get_proxy_path(id_asset)
+        exists = os.path.exists(video_path)
+        timestamp = os.path.getmtime(video_path) if exists else None
+
+        return ProxyInfo(
+            id=id_asset,
+            available=exists,
+            timestamp=timestamp,
+        )
