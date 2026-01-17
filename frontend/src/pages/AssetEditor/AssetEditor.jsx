@@ -108,7 +108,6 @@ const AssetEditor = () => {
   };
 
   const refetchUnchangedFields = () => {
-    console.log('Refetching unchanged fields for asset', assetIdRef.current);
     const changedKeys = changedKeysRef.current;
     setLoading(true);
     nebula
