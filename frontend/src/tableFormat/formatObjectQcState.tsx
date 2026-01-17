@@ -1,5 +1,5 @@
-import type { JSX } from 'react/jsx-runtime';
 import clsx from 'clsx';
+import type { JSX } from 'react/jsx-runtime';
 
 const QC_STATES = ['new', 'auto_rejected', 'auto_accepted', 'rejected', 'accepted'];
 

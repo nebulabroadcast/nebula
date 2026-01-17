@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
 import { Timecode } from '@wfoxall/timeframe';
 import clsx from 'clsx';
+import React, { useState, useEffect, useRef } from 'react';
 
 import Input from './Input.styled';
 

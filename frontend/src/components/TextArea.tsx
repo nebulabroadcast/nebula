@@ -1,5 +1,11 @@
 import React from 'react';
-import Input from './Input.styled';
+import styled from 'styled-components';
+
+import { InputStyle } from './Input.styled';
+
+const StyledTextArea = styled.textarea`
+  ${InputStyle}
+`;
 
 interface TextAreaProps extends Omit<
   React.TextareaHTMLAttributes<HTMLTextAreaElement>,
@@ -12,8 +18,7 @@ interface TextAreaProps extends Omit<
 
 const TextArea: React.FC<TextAreaProps> = ({ value, onChange, tooltip, ...props }) => {
   return (
-    <Input
-      as="textarea"
+    <StyledTextArea
       className="textarea"
       title={tooltip}
       value={value || ''}

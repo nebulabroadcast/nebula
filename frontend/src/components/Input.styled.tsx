@@ -1,8 +1,8 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
 import { getTheme } from './theme';
 
-const BaseInput = styled.input`
+export const InputStyle = css`
   border: 0;
   border-radius: ${getTheme().inputBorderRadius};
   background: ${getTheme().inputBackground};
@@ -63,4 +63,8 @@ const BaseInput = styled.input`
   }
 `;
 
-export default BaseInput;
+const StyledInput = styled.input`
+  ${InputStyle}
+`;
+
+export default StyledInput;

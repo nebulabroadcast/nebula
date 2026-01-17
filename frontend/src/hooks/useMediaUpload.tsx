@@ -33,7 +33,7 @@ const useMediaUploadLogic = (): MediaUploadContextType => {
   const queueRef = useRef<MediaUploadTask[]>([]);
   const activeUploadRef = useRef<string | null>(null);
   const isProcessingRef = useRef(false);
-  const processQueueTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const processQueueTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   //
   // Prevent tab/window close if uploads are in progress
