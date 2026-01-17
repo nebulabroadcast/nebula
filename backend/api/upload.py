@@ -73,7 +73,10 @@ class UploadRequest(APIRequest):
             nebula.log.debug(f"Uploaded {i} bytes", user=user.name)
         except ClientDisconnect:
             nebula.log.warning(f"Upload cancelled for {asset}", user=user.name)
-            os.remove(temp_path)
+            try:
+                os.remove(temp_path)
+            except OSError:
+                pass
             return
 
         os.rename(temp_path, target_path)
