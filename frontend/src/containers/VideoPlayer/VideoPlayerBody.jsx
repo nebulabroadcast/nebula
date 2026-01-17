@@ -41,6 +41,7 @@ const VideoPlayerWarning = styled.div`
   left: 50%;
   transform: translateX(-50%);
   background-color: rgba(255, 0, 0, 0.8);
+  white-space: nowrap;
   color: white;
   padding: 8px 16px;
   border-radius: 4px;
@@ -80,6 +81,18 @@ const VideoPlayerBody = ({ ...props }) => {
   useEffect(() => {
     durFramesRef.current = durFrames;
   }, [durFrames]);
+
+  useEffect(() => {
+    if (!props.src) {
+      videoRef.current.src = '';
+      setPosFrames(0);
+      setDurFrames(0);
+      setMarkIn(null);
+      setMarkOut(null);
+      setIsPlaying(false);
+      return;
+    }
+  }, [props.src, videoRef]);
 
   // Propagating markIn and markOut to parent component
 

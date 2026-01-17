@@ -88,7 +88,7 @@ const AssetEditor = () => {
         setAssetData(response.data.data[0] || {});
         setOriginalData(response.data.data[0] || {});
         assetIdRef.current = id_asset;
-        changedKeysRef.current = [];
+        changedKeysRef.current.clear();
         setSearchParams((o) => {
           o.set('asset', id_asset);
           return o;
@@ -169,7 +169,7 @@ const AssetEditor = () => {
     // don't update changed keys while loading
     if (loading) return;
     if (isEmpty(assetData) || isEmpty(originalData)) return;
-    let changedKeys = [];
+    let changedKeys = new Set();
     for (const key in assetData) {
       if (!isEqual(originalData[key] || null, assetData[key] || null)) {
         changedKeys.push(key);

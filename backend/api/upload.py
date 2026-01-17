@@ -76,6 +76,7 @@ class UploadRequest(APIRequest):
             try:
                 os.remove(temp_path)
             except OSError:
+                nebula.log.error(f"Unable to remove temp file {temp_path}")
                 pass
             return
 

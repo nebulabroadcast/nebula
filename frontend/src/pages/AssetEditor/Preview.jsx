@@ -57,12 +57,11 @@ const Preview = ({ assetData, setAssetData }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setLoading(true);
     if (!assetData.id) {
       setProxyInfo(null);
-      setLoading(false);
       return;
     }
-    setLoading(true);
     axios
       .get(`/proxy/${assetData.id}/info`)
       .then((response) => {
@@ -79,8 +78,9 @@ const Preview = ({ assetData, setAssetData }) => {
   const warning = useMemo(() => {
     if (loading) return null;
 
-    if (!(proxyInfo && assetData && proxyInfo.id === assetData.id))
-      return 'Proxy information not available';
+    if (!assetData.id) return 'No asset selected';
+
+    if (!(proxyInfo && assetData && proxyInfo.id === assetData.id)) return '';
 
     if (!proxyInfo.available) return 'No proxy available';
 
@@ -93,11 +93,13 @@ const Preview = ({ assetData, setAssetData }) => {
 
   const videoSrc = useMemo(
     () =>
-      accessToken &&
-      assetData.id &&
-      proxyInfo.id === assetData.id &&
-      proxyInfo?.timestamp &&
-      `/proxy/${assetData.id}?token=${accessToken}&ts=${proxyInfo.timestamp}`,
+      (accessToken &&
+        assetData.id &&
+        proxyInfo &&
+        proxyInfo.id === assetData.id &&
+        proxyInfo?.timestamp &&
+        `/proxy/${assetData.id}?token=${accessToken}&ts=${proxyInfo.timestamp}`) ||
+      null,
     [assetData, accessToken, proxyInfo]
   );
 
