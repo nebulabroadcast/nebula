@@ -15,9 +15,7 @@ import {
   TextArea,
 } from '/src/components';
 
-const eqSet = (xs, ys) =>
-    xs.size === ys.size &&
-    [...xs].every((x) => ys.has(x));
+const eqSet = (xs, ys) => xs.size === ys.size && [...xs].every((x) => ys.has(x));
 
 const EditorField = ({ field, value, originalValue, onFieldChanged, disabled }) => {
   const metaType = { ...nebula.metaType(field.name), ...field };
@@ -71,12 +69,11 @@ const EditorField = ({ field, value, originalValue, onFieldChanged, disabled }) 
         ? new Set(originalValueParsed)
         : new Set([]);
       const currentList = Array.isArray(value) ? new Set(value) : new Set([]);
-      return !eqSet(originalList, currentList)
+      return !eqSet(originalList, currentList);
     }
 
     return originalValueParsed !== value;
   }, [originalValue, originalValueParsed, value, metaType]);
-
 
   // When a field is changed, update the asset data
 

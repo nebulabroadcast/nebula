@@ -80,33 +80,36 @@ const AssetEditor = () => {
 
   // Load asset data
 
-  const loadAsset = useCallback((id_asset) => {
-    setLoading(true);
-    nebula
-      .request('get', { ids: [id_asset], type: 'asset' })
-      .then((response) => {
-        const data = response.data.data[0] || {};
-        setAssetData(data);
-        setOriginalData(data);
-        assetIdRef.current = id_asset;
-        changedKeysRef.current = new Set();
-        setSearchParams((o) => {
-          o.set('asset', id_asset);
-          return o;
+  const loadAsset = useCallback(
+    (id_asset) => {
+      setLoading(true);
+      nebula
+        .request('get', { ids: [id_asset], type: 'asset' })
+        .then((response) => {
+          const data = response.data.data[0] || {};
+          setAssetData(data);
+          setOriginalData(data);
+          assetIdRef.current = id_asset;
+          changedKeysRef.current = new Set();
+          setSearchParams((o) => {
+            o.set('asset', id_asset);
+            return o;
+          });
+        })
+        .catch((error) => {
+          toast.error(
+            <>
+              <strong>Unable to load asset</strong>
+              <p>{error.response.data?.detail || 'Unknown error'}</p>
+            </>
+          );
+        })
+        .finally(() => {
+          setLoading(false);
         });
-      })
-      .catch((error) => {
-        toast.error(
-          <>
-            <strong>Unable to load asset</strong>
-            <p>{error.response.data?.detail || 'Unknown error'}</p>
-          </>
-        );
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, [setSearchParams]);
+    },
+    [setSearchParams]
+  );
 
   const refetchUnchangedFields = useCallback(() => {
     console.log('Refetching unchanged fields for asset', assetIdRef.current);
@@ -343,31 +346,34 @@ const AssetEditor = () => {
     setAssetData(originalData);
   };
 
-  const onSave = useCallback((payload) => {
-    if (!enabledActions.save && !payload) {
-      return;
-    }
-    setLoading(true);
-    nebula
-      .request('set', { id: assetData.id, data: payload || assetData })
-      .then((response) => {
-        //reload browser if it's a new asset
-        if (!assetData.id) dispatch(reloadBrowser());
-        // loadAsset(response.data.id);
-        // Just wait for ws message to update the asset data
-      })
-      .catch((error) => {
-        setLoading(false);
-        toast.error(
-          <div>
-            <strong>Unable to save asset</strong>
-            <p>{error.response?.data?.detail || 'Unknown error'}</p>
-          </div>
-        );
-      })
-    // we don't clear the loading state here,
-    // we wait for the ws message that confirms the asset has been updated
-  }, [assetData, enabledActions.save, dispatch, loadAsset]);
+  const onSave = useCallback(
+    (payload) => {
+      if (!enabledActions.save && !payload) {
+        return;
+      }
+      setLoading(true);
+      nebula
+        .request('set', { id: assetData.id, data: payload || assetData })
+        .then((response) => {
+          //reload browser if it's a new asset
+          if (!assetData.id) dispatch(reloadBrowser());
+          // loadAsset(response.data.id);
+          // Just wait for ws message to update the asset data
+        })
+        .catch((error) => {
+          setLoading(false);
+          toast.error(
+            <div>
+              <strong>Unable to save asset</strong>
+              <p>{error.response?.data?.detail || 'Unknown error'}</p>
+            </div>
+          );
+        });
+      // we don't clear the loading state here,
+      // we wait for the ws message that confirms the asset has been updated
+    },
+    [assetData, enabledActions.save, dispatch, loadAsset]
+  );
 
   // Keyboard shortcuts
 
