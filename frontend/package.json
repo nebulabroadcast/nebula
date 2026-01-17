@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "lint": "eslint src/**/*.{jsx,tsx,js,ts} --fix",
+    "lint": "eslint src/**/*.{jsx,tsx,js,ts}",
     "format": "prettier . --write",
     "generate": "openapi-ts"
   },
@@ -29,7 +29,6 @@
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.5.2",
     "react-toastify": "^11.0.3",
-    "react-use-websocket": "^4.13.0",
     "sass": "^1.85.0",
     "styled-components": "^6.1.15",
     "uuid": "^11.0.5"

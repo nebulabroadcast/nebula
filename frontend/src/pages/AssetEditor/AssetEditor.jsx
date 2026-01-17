@@ -1,7 +1,7 @@
 import nebula from '/src/nebula';
 
 import clsx from 'clsx';
-import { isEqual, isEmpty, debounce } from 'lodash';
+import { isEqual, isEmpty } from 'lodash';
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useSearchParams } from 'react-router-dom';
@@ -20,6 +20,8 @@ import AssetMainProps from './AssetMainProps';
 import AssetEditorNav from './EditorNav';
 import MetadataEditor from '/src/containers/MetadataEditor';
 import Preview from './Preview';
+
+import { useWebSocket } from '@/features/Websocket';
 
 const getEnabledActions = ({ assetData, isChanged }) => {
   // Return an object with all the actions that are enabled
@@ -77,6 +79,7 @@ const AssetEditor = () => {
   const changedKeysRef = useRef(new Set());
 
   const showDialog = useDialog();
+  const ws = useWebSocket();
 
   // Load asset data
 
@@ -354,7 +357,7 @@ const AssetEditor = () => {
       setLoading(true);
       nebula
         .request('set', { id: assetData.id, data: payload || assetData })
-        .then((response) => {
+        .then(() => {
           //reload browser if it's a new asset
           if (!assetData.id) dispatch(reloadBrowser());
           // loadAsset(response.data.id);
@@ -388,31 +391,23 @@ const AssetEditor = () => {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [onSave]);
 
-  const debouncedRefetchUnchangedFields = useMemo(
-    () => debounce(refetchUnchangedFields, 1000),
-    [refetchUnchangedFields]
-  );
-
-  const handlePubSub = (topic, message) => {
-    if (topic !== 'objects_changed') return;
-    if (message.object_type !== 'asset') return;
-    if (!assetIdRef.current) return;
-
-    if (message.objects.includes(assetIdRef.current)) {
-      debouncedRefetchUnchangedFields();
-    }
-  };
-
   useEffect(() => {
-    const token = PubSub.subscribe('objects_changed', handlePubSub);
-    // eslint-disable-next-line no-undef
-    return () => {
-      PubSub.unsubscribe(token);
-      debouncedRefetchUnchangedFields.cancel();
+    const handlePubSub = (topic, message) => {
+      if (topic !== 'objects_changed') return;
+      if (message.object_type !== 'asset') return;
+      if (!assetIdRef.current) return;
+      if (message.objects.includes(assetIdRef.current)) {
+        refetchUnchangedFields();
+      }
     };
-  }, [debouncedRefetchUnchangedFields]);
 
+    const unsubscribe = ws.subscribe('objects_changed', handlePubSub);
+    return () => unsubscribe();
+  }, [ws, refetchUnchangedFields]);
+
+  //
   // Render
+  //
 
   const mainComponent = () => {
     switch (editorMode) {

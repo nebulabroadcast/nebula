@@ -13,8 +13,11 @@ import RundownEditTools from './RundownEditTools';
 import RundownNav from './RundownNav';
 import RundownTable from './RundownTable';
 
+import { useWebSocket } from '@/features/Websocket';
+
 const Rundown = ({ draggedObjects }) => {
   const showDialog = useDialog();
+  const ws = useWebSocket();
 
   //
   // States
@@ -193,20 +196,21 @@ const Rundown = ({ draggedObjects }) => {
   // Realtime updates
   //
 
-  const handlePubSub = (topic, message) => {
-    if (topic === 'playout_status') {
-      if (message.id_channel === currentChannelRef.current) {
-        setPlayoutStatus(message);
-      }
-    }
-  };
-
   useEffect(() => {
-    // eslint-disable-next-line no-undef
-    const token = PubSub.subscribe('playout_status', handlePubSub);
-    // eslint-disable-next-line no-undef
-    return () => PubSub.unsubscribe(token);
-  }, []);
+    const handlePubSub = (topic, message) => {
+      if (topic === 'playout_status') {
+        if (message.id_channel === currentChannelRef.current) {
+          console.log('Rundown: playout status update', message);
+          setPlayoutStatus(message);
+        }
+      }
+    };
+
+    const unsubscribe = ws.subscribe('playout_status', handlePubSub);
+    return () => {
+      unsubscribe();
+    };
+  }, [ws]);
 
   //
   // Render

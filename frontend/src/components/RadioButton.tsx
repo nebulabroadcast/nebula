@@ -47,7 +47,7 @@ const RadioButton = ({ options, value, onChange }: RadioButtonProps) => {
         <Button
           key={option.value}
           onClick={() => onChange(option.value)}
-          className={clsx({ active: option.value === value})}
+          className={clsx({ active: option.value === value })}
           icon={option.icon}
           label={option.title}
           tooltip={option.tooltip}

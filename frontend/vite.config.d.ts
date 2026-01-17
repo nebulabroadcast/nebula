@@ -1,5 +1,5 @@
 interface ConfigEnv {
-  mode: string;
+    mode: string;
 }
-declare const _default: ({ mode }: ConfigEnv) => import('vite').UserConfig;
+declare const _default: ({ mode }: ConfigEnv) => import("vite").UserConfig;
 export default _default;
