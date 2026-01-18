@@ -46,6 +46,14 @@ export default ({ mode }: ConfigEnv) => {
         },
       },
     },
-    plugins: [react()],
+    plugins: [
+      react({
+        babel: {
+          plugins: ['babel-plugin-react-compiler'],
+        },
+      }),
+    ],
+
+
   });
 };
