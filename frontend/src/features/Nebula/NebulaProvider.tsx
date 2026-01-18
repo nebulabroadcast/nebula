@@ -10,7 +10,7 @@ const DEFAULT_NEBULA_CONTEXT: NebulaState = {
   pageTitle: { title: 'Nebula' },
   browserRefreshId: 0,
   currentChannelId: JSON.parse(localStorage.getItem(LS_KEY_CURRENT_CHANNEL) || 'null'),
-  currentViewId: JSON.parse(localStorage.getItem(LS_KEY_CURRENT_CHANNEL) || 'null'),
+  currentViewId: JSON.parse(localStorage.getItem(LS_KEY_CURRENT_VIEW) || 'null'),
   searchQuery: JSON.parse(localStorage.getItem(LS_KEY_SEARCH_QUERY) || '""'),
   focusedAsset: null,
   selectedAssets: [],

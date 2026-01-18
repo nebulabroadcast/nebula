@@ -68,7 +68,7 @@ const BrowserTable = ({ isDragging }) => {
 
   useEffect(() => {
     // User changed view or search query
-    if (!currentView) {
+    if (!currentViewId) {
       // No view selected, load the first available view
       if (nebula.settings.views.length) {
         setCurrentView(nebula.settings.views[0].id);
