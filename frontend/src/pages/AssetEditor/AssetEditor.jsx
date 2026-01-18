@@ -9,7 +9,7 @@ import { useLocalStorage } from '@lib/useLocalStorage';
 import clsx from 'clsx';
 import { isEqual, isEmpty } from 'lodash';
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router';
 import { toast } from 'react-toastify';
 
 import AssetMainProps from './AssetMainProps';

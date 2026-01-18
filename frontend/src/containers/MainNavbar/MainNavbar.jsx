@@ -1,14 +1,14 @@
 import nebula from '/src/nebula';
 
+import { useNebula } from '@features/Nebula';
 import { useMemo } from 'react';
-import { NavLink, useNavigate, useSearchParams } from 'react-router-dom';
+import { NavLink, useNavigate, useSearchParams } from 'react-router';
 
 import { Navbar, Dropdown } from '/src/components';
 
 import ChannelSwitcher from './ChannelSwitcher';
 import Logo from './Logo';
 import PageTitle from './PageTitle';
-import { useNebula } from '@features/Nebula';
 
 const MainNavbar = () => {
   const navigate = useNavigate();

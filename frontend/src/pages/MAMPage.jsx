@@ -4,7 +4,7 @@ import { DndContext, MouseSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { useNebula } from '@features/Nebula';
 import { useLocalStorage } from '@lib/useLocalStorage';
 import { useMemo, useEffect, useState, useRef } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router';
 import styled from 'styled-components';
 
 import AssetEditor from '/src/pages/AssetEditor';

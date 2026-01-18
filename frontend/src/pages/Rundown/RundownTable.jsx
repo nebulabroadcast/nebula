@@ -3,7 +3,7 @@ import { Table } from '@components';
 import { useDialog } from '@features/Dialogs';
 import { formatRowHighlightColor, formatRowHighlightStyle } from '@lib/tableFormat';
 import { useMemo, useRef, useEffect } from 'react';
-import { useSearchParams, useLocation } from 'react-router-dom';
+import { useSearchParams, useLocation } from 'react-router';
 
 import RundownTableWrapper from './RundownTableWrapper';
 import { getRunModeOptions, getRundownColumns } from './utils';

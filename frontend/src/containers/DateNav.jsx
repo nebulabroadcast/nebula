@@ -2,7 +2,7 @@ import { Button } from '@components';
 import { useDialog } from '@features/Dialogs';
 import { dateToDateString } from '@lib/utils';
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router';
 
 const DateNav = ({ onChange, skipBy = 1 }) => {
   const [searchParams, setSearchParams] = useSearchParams();

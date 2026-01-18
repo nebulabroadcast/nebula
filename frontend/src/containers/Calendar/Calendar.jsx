@@ -4,7 +4,7 @@ import { ContextMenu } from '@components';
 import { useLocalStorage } from '@lib/useLocalStorage';
 import { dateToDateString } from '@lib/utils';
 import { useRef, useMemo, useEffect, useState, useCallback } from 'react';
-import { NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation } from 'react-router';
 import styled from 'styled-components';
 
 import CalendarWrapper from './CalendarWrapper';

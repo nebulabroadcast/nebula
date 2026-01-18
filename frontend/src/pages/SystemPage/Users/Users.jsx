@@ -1,5 +1,6 @@
+import { useNebula } from '@features/Nebula';
 import { useState, useEffect, useMemo } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router';
 import { toast } from 'react-toastify';
 
 import nebula from '/src/nebula';
@@ -8,7 +9,6 @@ import Sessions from '/src/containers/Sessions';
 
 import UserForm from './UserForm';
 import UserList from './UserList';
-import { useNebula } from '@features/Nebula';
 
 const UsersPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();

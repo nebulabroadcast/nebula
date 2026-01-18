@@ -6,15 +6,10 @@ import { WebSocketProvider } from '@features/Websocket';
 import { useLocalStorage } from '@lib/useLocalStorage';
 import axios from 'axios';
 import { useState, useEffect, useMemo, Suspense } from 'react';
-import { Routes, Route, Navigate, BrowserRouter } from 'react-router-dom';
+import { Outlet } from 'react-router';
 
-import LoginPage from '/src/pages/LoginPage';
-import LoadingPage from '/src/pages/LoadingPage';
-import MAMPage from '/src/pages/MAMPage';
-import JobsPage from '/src/pages/JobsPage';
-import ToolPage from '/src/pages/ToolPage';
-import ProfilePage from '/src/pages/Profile';
-import SystemPage from '/src/pages/System';
+import LoadingPage from './pages/LoadingPage';
+import LoginPage from './pages/LoginPage';
 
 const App = () => {
   const [accessToken, setAccessToken] = useLocalStorage('accessToken', null);
@@ -80,33 +75,9 @@ const App = () => {
       <WebSocketProvider url={wsAddress}>
         <DialogProvider>
           <MediaUploadProvider>
-            <BrowserRouter>
-              <MainNavbar />
-              <Routes>
-                <Route path="/" exact element={<Navigate replace to="/mam/editor" />} />
-                <Route
-                  path="/mam"
-                  exact
-                  element={<Navigate replace to="/mam/editor" />}
-                />
-                <Route path="/mam/:module" element={<MAMPage />} />
-                <Route
-                  path="/jobs"
-                  exact
-                  element={<Navigate replace to="/jobs/active" />}
-                />
-                <Route
-                  path="/system"
-                  exact
-                  element={<Navigate replace to="/system/services" />}
-                />
-                <Route path="/jobs/:view" element={<JobsPage />} />
-                <Route path="/system/:view" element={<SystemPage />} />
-                <Route path="/tool/:tool" element={<ToolPage />} />
-                <Route path="/profile" element={<ProfilePage />} />
-              </Routes>
-              <MediaUploadMonitor />
-            </BrowserRouter>
+            <MainNavbar />
+            <Outlet />
+            <MediaUploadMonitor />
           </MediaUploadProvider>
         </DialogProvider>
       </WebSocketProvider>

@@ -4,8 +4,7 @@ import { Table, Button, Section } from '@components';
 import { useNebula } from '@features/Nebula';
 import formatMetaDatetime from '@lib/tableFormat/formatMetaDatetime';
 import { useState, useEffect, useCallback } from 'react';
-import { useParams } from 'react-router-dom';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useParams } from 'react-router';
 
 import JobsNav from './JobsNav';
 

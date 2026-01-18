@@ -25,7 +25,7 @@
     "react-datepicker": "^8.1.0",
     "react-dom": "^19.0.0",
     "react-markdown": "^10.1.0",
-    "react-router-dom": "^7.5.2",
+    "react-router": "^7.9.3",
     "react-toastify": "^11.0.3",
     "sass": "^1.93.2",
     "styled-components": "^6.1.19",
