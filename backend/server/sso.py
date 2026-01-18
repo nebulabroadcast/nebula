@@ -1,7 +1,7 @@
 from typing import Any
 
-from authlib.integrations.httpx_client import AsyncOAuth2Client
 from authlib.integrations.starlette_client import OAuth
+from authlib.integrations.starlette_client.apps import StarletteOAuth2App
 
 import nebula
 from server.models import ResponseModel
@@ -73,8 +73,9 @@ class NebulaSSO:
         return cls._oauth
 
     @classmethod
-    def client(cls, provider: str) -> AsyncOAuth2Client:
-        return cls.get_oauth().create_client(provider)
+    def client(cls, provider: str) -> StarletteOAuth2App:
+        cli = cls.get_oauth().create_client(provider)
+        return cli
 
     @classmethod
     async def options(cls) -> list[SSOOption]:
