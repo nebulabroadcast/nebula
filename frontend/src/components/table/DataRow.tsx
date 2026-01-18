@@ -13,7 +13,9 @@ interface DataRowProps {
     event: React.MouseEvent<HTMLTableRowElement, MouseEvent>
   ) => void;
   rowHighlightColor?: (rowData: TableRowData) => string | undefined;
-  rowHighlightStyle?: (rowData: TableRowData) => 'none' | 'solid' | 'dotted' | undefined;
+  rowHighlightStyle?: (
+    rowData: TableRowData
+  ) => 'none' | 'solid' | 'dotted' | undefined;
   rowClass?: (rowData: TableRowData) => string;
   ident: string | number;
   index: number;

@@ -1,6 +1,9 @@
 export type TableSortDirection = 'asc' | 'desc';
 export type TableRowData = Record<string, any>;
-export type TableCellFormatter = (rowData: TableRowData, columnName: string) => React.ReactNode;
+export type TableCellFormatter = (
+  rowData: TableRowData,
+  columnName: string
+) => React.ReactNode;
 
 export interface TableColumn {
   name: string;
@@ -8,7 +11,6 @@ export interface TableColumn {
   title?: React.ReactNode;
   formatter?: TableCellFormatter;
 }
-
 
 export interface TableDroppable {
   type: string;

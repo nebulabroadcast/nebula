@@ -6,8 +6,13 @@ import { Loader, LoaderWrapper } from '../Loader';
 import DataRow from './DataRow';
 import HeaderCell from './HeaderCell';
 import TableWrapper from './TableWrapper';
-import type { TableRowData, TableColumn, TableSortDirection, TableDroppable, TableDraggableItem, } from './types';
-
+import type {
+  TableRowData,
+  TableColumn,
+  TableSortDirection,
+  TableDroppable,
+  TableDraggableItem,
+} from './types';
 
 interface TableProps {
   data: TableRowData[];
@@ -22,7 +27,9 @@ interface TableProps {
   onKeyDown?: (event: React.KeyboardEvent<HTMLTableElement>) => void;
   selection?: (string | number)[];
   rowHighlightColor?: (rowData: TableRowData) => string | undefined;
-  rowHighlightStyle?: (rowData: TableRowData) => 'none' | 'solid' | 'dotted' | undefined;
+  rowHighlightStyle?: (
+    rowData: TableRowData
+  ) => 'none' | 'solid' | 'dotted' | undefined;
   rowClass?: (rowData: TableRowData) => string;
   sortBy?: string;
   sortDirection?: TableSortDirection;
