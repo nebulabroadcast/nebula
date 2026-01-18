@@ -5,7 +5,9 @@ interface TableWrapperProps {
 }
 
 const TableWrapper = styled.div<TableWrapperProps>`
-  --progress: 0% --progress-opacity: 0;
+  --progress: 0%;
+  --progress-opacity: 0;
+
   overflow: auto;
 
   [data-key='${(props) => props.$drophl || 'default'}'] {

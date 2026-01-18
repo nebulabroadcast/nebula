@@ -142,7 +142,6 @@ const Table = ({
     selection,
     keyField,
     rowHighlightColor,
-    //droppable,
     onRowClick,
     rowClass,
     rowHighlightStyle,
@@ -158,7 +157,6 @@ const Table = ({
   };
 
   const onMouseMove = (event: MouseEvent) => {
-    // React.MouseEvent<HTMLTableElement>) => {
     if (!droppableRef.current) return;
     const target = event.target;
     if (!target) return;
