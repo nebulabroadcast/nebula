@@ -1,6 +1,5 @@
 import React, { createContext, useState } from 'react';
 
-
 export interface NebulaState {
   browserRefresh: number;
   currentView: number;
@@ -21,7 +20,6 @@ export interface NebulaContextType extends NebulaState {
   setCurrentChannel: (channelId: number | null) => void;
 }
 
-
 const DEFAULT_NEBULA_CONTEXT: NebulaState = {
   browserRefresh: 0,
   currentView: JSON.parse(localStorage.getItem('currentView') || 'null'),
@@ -32,48 +30,47 @@ const DEFAULT_NEBULA_CONTEXT: NebulaState = {
   currentChannel: JSON.parse(localStorage.getItem('currentChannel') || 'null'),
 };
 
+export const NebulaContext = createContext<NebulaContextType | undefined>(undefined);
 
+interface NebulaProviderProps {
+  children: React.ReactNode;
+}
 
-export const NebulaContext = createContext<NebulaContextType | undefined>(
-  undefined
-);
-
-interface NebulaProviderProps { children: React.ReactNode; }
-
-export const NebulaProvider: React.FC<NebulaProviderProps> = ({ children }: NebulaProviderProps ) => {
+export const NebulaProvider: React.FC<NebulaProviderProps> = ({
+  children,
+}: NebulaProviderProps) => {
   const [nebulaState, setNebulaState] = useState<NebulaState>(DEFAULT_NEBULA_CONTEXT);
-
 
   const setCurrentView = (viewId: number) => {
     localStorage.setItem('currentView', JSON.stringify(viewId));
     setNebulaState((prev) => ({ ...prev, currentView: viewId }));
-  }
+  };
 
   const reloadBrowser = () => {
     setNebulaState((prev) => ({ ...prev, browserRefresh: prev.browserRefresh + 1 }));
-  }
+  };
 
   const setSearchQuery = (query: string) => {
     localStorage.setItem('searchQuery', JSON.stringify(query));
     setNebulaState((prev) => ({ ...prev, searchQuery: query }));
-  }
+  };
 
   const setSelectedAssets = (assetIds: number[]) => {
     setNebulaState((prev) => ({ ...prev, selectedAssets: assetIds }));
-  }
+  };
 
   const setFocusedAsset = (assetId: number | null) => {
     setNebulaState((prev) => ({ ...prev, focusedAsset: assetId }));
-  }
+  };
 
   const setPageTitle = (title: string) => {
     setNebulaState((prev) => ({ ...prev, pageTitle: title }));
-  }
+  };
 
   const setCurrentChannel = (channelId: number | null) => {
     localStorage.setItem('currentChannel', JSON.stringify(channelId));
     setNebulaState((prev) => ({ ...prev, currentChannel: channelId }));
-  }
+  };
 
   const contextValue: NebulaContextType = {
     ...nebulaState,
@@ -86,10 +83,7 @@ export const NebulaProvider: React.FC<NebulaProviderProps> = ({ children }: Nebu
     setCurrentChannel,
   };
 
-
   return (
-    <NebulaContext.Provider value={contextValue}>
-      {children}
-    </NebulaContext.Provider>
+    <NebulaContext.Provider value={contextValue}>{children}</NebulaContext.Provider>
   );
-}
+};

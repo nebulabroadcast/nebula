@@ -10,4 +10,3 @@ export const useNebula = (): NebulaContextType => {
   }
   return context;
 };
-
