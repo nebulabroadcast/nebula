@@ -53,7 +53,5 @@ export default ({ mode }: ConfigEnv) => {
         },
       }),
     ],
-
-
   });
 };
