@@ -1,7 +1,7 @@
 import { useContext } from 'react';
 
 import { NebulaContext } from './NebulaProvider';
-import type { NebulaContextType } from './NebulaProvider';
+import type { NebulaContextType } from './types';
 
 export const useNebula = (): NebulaContextType => {
   const context = useContext(NebulaContext);

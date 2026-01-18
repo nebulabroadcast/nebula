@@ -14,7 +14,6 @@ export default ({ mode }: ConfigEnv) => {
       alias: {
         '@containers': '/src/containers',
         '@components': '/src/components',
-        '@actions': '/src/actions',
         '@features': '/src/features',
         '@hooks': '/src/hooks',
         '@types': '/src/types',

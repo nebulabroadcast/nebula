@@ -16,5 +16,6 @@ export const FileSelectWrapper = styled.div`
     border: none;
     color: var(--color-text-dim);
     cursor: pointer;
+    text-decoration: underline;
   }
 `;

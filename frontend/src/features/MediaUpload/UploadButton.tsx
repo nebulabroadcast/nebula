@@ -1,8 +1,8 @@
 import { Button } from '@components';
-import { useMediaUpload } from '@hooks/useMediaUpload';
 import React, { useState } from 'react';
 
 import { MediaUploadDialog } from './MediaUploadDialog';
+import { useMediaUpload } from './useMediaUpload';
 
 import type { ContentType } from '@/client';
 

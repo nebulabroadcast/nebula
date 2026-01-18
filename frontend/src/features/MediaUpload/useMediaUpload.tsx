@@ -10,15 +10,15 @@ import React, {
 } from 'react';
 import { toast } from 'react-toastify';
 
-import nebula from '../nebula';
+import nebula from '../../nebula';
+
+const MediaUploadContext = createContext<MediaUploadContextType | undefined>(undefined);
 import {
   MediaUploadTask,
   MediaUploadContextType,
   MediaUploadStatus,
   UPLOAD_STATUS,
-} from '../types/upload';
-
-const MediaUploadContext = createContext<MediaUploadContextType | undefined>(undefined);
+} from './types';
 
 export const useMediaUpload = (): MediaUploadContextType => {
   const context = useContext(MediaUploadContext);

@@ -1,10 +1,9 @@
 import { Button, Progress } from '@components';
-import { useMediaUpload } from '@hooks/useMediaUpload';
+import { useMediaUpload } from '@features/MediaUpload/useMediaUpload';
 import React from 'react';
 
-import type { MediaUploadTask } from '../../types/upload';
-
 import { MonitorWrapper, MonitorItemWrapper } from './MediaUploadMonitor.styled';
+import type { MediaUploadTask } from './types';
 
 interface MonitorItemProps {
   task: MediaUploadTask;

@@ -21,7 +21,7 @@ export interface MediaUploadTask {
   controller: AbortController; // Used for cancellation
 }
 
-// Define the shape of the context object returned by useUploadQueue
+
 export interface MediaUploadContextType {
   queue: MediaUploadTask[];
   addToQueue: (file: File, id: string, title: string) => void;

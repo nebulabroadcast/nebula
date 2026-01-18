@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { toast } from 'react-toastify';
 
 import { Button, InputText, InputPassword } from '/src/components';
-import NebulaLogo from '/src/svg/logo-wide.svg';
+import NebulaLogo from '/src/assets/logo-wide.svg';
 
 import nebula from '/src/nebula';
 

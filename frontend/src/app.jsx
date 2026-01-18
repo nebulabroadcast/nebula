@@ -4,10 +4,9 @@ import { useState, useEffect, Suspense } from 'react';
 import { useLocalStorage } from '/src/hooks';
 import { Routes, Route, Navigate, BrowserRouter } from 'react-router-dom';
 
-import { MediaUploadMonitor } from './containers/MediaUpload/MediaUploadMonitor';
+import { MediaUploadProvider, MediaUploadMonitor } from './features/MediaUpload';
 import { WebSocketProvider } from './features/Websocket';
 import { DialogProvider } from './hooks/useDialog';
-import { MediaUploadProvider } from './hooks/useMediaUpload';
 
 //import WebsocketListener from '/src/websocket';
 import MainNavbar from '/src/containers/MainNavbar';

@@ -1,5 +1,7 @@
 import nebula from '/src/nebula';
 
+import { UploadButton } from '@features/MediaUpload';
+import { useNebula } from '@features/Nebula';
 import contentType from 'content-type';
 import { useState, useMemo } from 'react';
 
@@ -12,14 +14,12 @@ import {
   InputTimecode,
   Dialog,
 } from '/src/components';
-import { UploadButton } from '/src/containers/MediaUpload';
 import { useDialog } from '/src/hooks';
 
 import AssigneesButton from './AssigneesButton';
 import ContextActionResult from './ContextAction';
 import MetadataDetail from './MetadataDetail';
 
-import { useNebula } from '/src/features/Nebula';
 
 const AssetEditorNav = ({ assetData, setMeta, enabledActions }) => {
   const [detailsVisible, setDetailsVisible] = useState(false);

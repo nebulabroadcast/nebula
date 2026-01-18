@@ -22,8 +22,6 @@
     "types": ["vite/client"],
     "baseUrl": "src",
     "paths": {
-      "@actions": ["./actions"],
-      "@actions/*": ["./actions/*"],
       "@components": ["./components"],
       "@components/*": ["./components/*"],
       "@containers": ["./containers"],
