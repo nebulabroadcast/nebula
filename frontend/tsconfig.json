@@ -28,6 +28,8 @@
       "@components/*": ["./components/*"],
       "@containers": ["./containers"],
       "@containers/*": ["./containers/*"],
+      "@features": ["./features"],
+      "@features/*": ["./features/*"],
       "@hooks": ["./hooks"],
       "@hooks/*": ["./hooks/*"],
       "@types": ["./types"],
