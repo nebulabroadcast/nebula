@@ -2,6 +2,12 @@ import { Table, Section } from '@components';
 import Pagination from '@containers/Pagination';
 import { useDialog } from '@features/Dialogs';
 import { useNebula } from '@features/Nebula';
+import {
+  getColumnWidth,
+  getFormatter,
+  formatRowHighlightColor,
+  formatRowHighlightStyle,
+} from '@lib/tableFormat';
 import { useLocalStorage } from '@lib/useLocalStorage';
 import clsx from 'clsx';
 import { debounce } from 'lodash';
@@ -12,12 +18,6 @@ import nebula from '/src/nebula';
 
 import BrowserNav from './BrowserNav';
 
-import {
-  getColumnWidth,
-  getFormatter,
-  formatRowHighlightColor,
-  formatRowHighlightStyle,
-} from '/src/tableFormat';
 import { useWebSocket } from '@/features/Websocket';
 
 const ROWS_PER_PAGE = 200;

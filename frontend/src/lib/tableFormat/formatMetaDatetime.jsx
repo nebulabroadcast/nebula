@@ -1,4 +1,4 @@
-import { Timestamp } from '/src/components';
+import { Timestamp } from '@components';
 
 const formatMetaDatetime = (rowData, key, mode = 'datetime') => {
   const timestamp = rowData[key];

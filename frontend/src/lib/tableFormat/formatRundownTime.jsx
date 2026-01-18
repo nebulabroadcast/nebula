@@ -1,4 +1,4 @@
-import { Timestamp } from '/src/components';
+import { Timestamp } from '@components';
 
 const formatRundownTime = (rowData, key) => {
   if (

@@ -1,17 +1,15 @@
 import nebula from '/src/nebula';
 
+import { Table, Button, Section } from '@components';
+import { useNebula } from '@features/Nebula';
+import formatMetaDatetime from '@lib/tableFormat/formatMetaDatetime';
 import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
-
-import { Table, Button, Section } from '/src/components';
-
 import { NavLink } from 'react-router-dom';
 
-import formatMetaDatetime from '/src/tableFormat/formatMetaDatetime';
-
 import JobsNav from './JobsNav';
+
 import { useWebSocket } from '@/features/Websocket';
-import { useNebula } from '@features/Nebula';
 
 const NOT_RESTARTABLE = ['import'];
 

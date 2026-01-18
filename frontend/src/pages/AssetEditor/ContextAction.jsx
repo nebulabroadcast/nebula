@@ -1,10 +1,9 @@
 import { Dialog, Table, Button } from '@components';
+import formatMetaDatetime from '@lib/tableFormat/formatMetaDatetime';
 import { formatTimeString } from '@lib/utils';
 import ReactMarkdown from 'react-markdown';
 import { toast } from 'react-toastify';
 import styled from 'styled-components';
-
-import formatMetaDatetime from '/src/tableFormat/formatMetaDatetime';
 
 const MarkdownWrapper = styled.div`
   padding: 12px;
