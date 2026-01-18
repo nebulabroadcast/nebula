@@ -1,6 +1,12 @@
-import { Navbar, Button, Spacer } from '/src/components';
+import { Navbar, Button, Spacer } from '@components';
 
-const Pagination = ({ page, setPage, hasMore }) => {
+interface PaginationProps {
+  page: number;
+  setPage: (page: number) => void;
+  hasMore: boolean;
+}
+
+const Pagination = ({ page, hasMore, setPage }: PaginationProps) => {
   if (page > 1 || hasMore)
     return (
       <Navbar>

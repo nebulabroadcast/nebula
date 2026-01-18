@@ -1,20 +1,18 @@
 import nebula from '/src/nebula';
-import { useLocalStorage } from '/src/hooks';
-
+import MainNavbar from '@containers/MainNavbar';
 import { DialogProvider } from '@features/Dialogs';
 import { MediaUploadProvider, MediaUploadMonitor } from '@features/MediaUpload';
 import { WebSocketProvider } from '@features/Websocket';
+import { useLocalStorage } from '@lib/useLocalStorage';
 import axios from 'axios';
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, useMemo, Suspense } from 'react';
 import { Routes, Route, Navigate, BrowserRouter } from 'react-router-dom';
 
-import MainNavbar from '/src/containers/MainNavbar';
 import LoginPage from '/src/pages/LoginPage';
 import LoadingPage from '/src/pages/LoadingPage';
 import MAMPage from '/src/pages/MAMPage';
 import JobsPage from '/src/pages/JobsPage';
 import ToolPage from '/src/pages/ToolPage';
-
 import ProfilePage from '/src/pages/Profile';
 import SystemPage from '/src/pages/System';
 
@@ -23,6 +21,11 @@ const App = () => {
   const [errorCode, setErrorCode] = useState(null);
   const [loading, setLoading] = useState(true);
   const [initData, setInitData] = useState(null);
+
+  const wsAddress = useMemo(() => {
+    const proto = window.location.protocol.replace('http', 'ws');
+    return `${proto}//${window.location.host}/ws`;
+  }, []);
 
   // Ensure server connection
 
@@ -72,12 +75,8 @@ const App = () => {
       />
     );
 
-  const proto = window.location.protocol.replace('http', 'ws');
-  const wsAddress = `${proto}//${window.location.host}/ws`;
-
   return (
     <Suspense fallback={<LoadingPage />}>
-      {/* <WebsocketListener /> Legacy websocket listener */}
       <WebSocketProvider url={wsAddress}>
         <DialogProvider>
           <MediaUploadProvider>

@@ -28,8 +28,8 @@
       "@containers/*": ["./containers/*"],
       "@features": ["./features"],
       "@features/*": ["./features/*"],
-      "@hooks": ["./hooks"],
-      "@hooks/*": ["./hooks/*"],
+      "@lib": ["./lib"],
+      "@lib/*": ["./lib/*"],
       "@types": ["./types"],
       "@": ["./"],
       "@/*": ["./*"]

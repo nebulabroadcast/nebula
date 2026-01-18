@@ -15,7 +15,7 @@ export default ({ mode }: ConfigEnv) => {
         '@containers': '/src/containers',
         '@components': '/src/components',
         '@features': '/src/features',
-        '@hooks': '/src/hooks',
+        '@lib': '/src/lib',
         '@types': '/src/types',
         '@': '/src',
       },

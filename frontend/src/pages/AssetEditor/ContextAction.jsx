@@ -1,10 +1,9 @@
+import { Dialog, Table, Button } from '@components';
+import { formatTimeString } from '@lib/utils';
 import ReactMarkdown from 'react-markdown';
 import { toast } from 'react-toastify';
 import styled from 'styled-components';
 
-import { Dialog, Table, Button } from '/src/components';
-
-import { formatTimeString } from '/src/utils';
 import formatMetaDatetime from '/src/tableFormat/formatMetaDatetime';
 
 const MarkdownWrapper = styled.div`

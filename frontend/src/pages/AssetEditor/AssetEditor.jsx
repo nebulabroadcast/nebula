@@ -1,13 +1,11 @@
 import nebula from '/src/nebula';
 
-import { useLocalStorage } from '/src/hooks';
-import { Loader, Section } from '/src/components';
-
-import MetadataEditor from '/src/containers/MetadataEditor';
-
+import { Loader, Section } from '@components';
+import MetadataEditor from '@containers/MetadataEditor';
 import { useDialog } from '@features/Dialogs';
 import { useNebula } from '@features/Nebula';
 import { useWebSocket } from '@features/Websocket';
+import { useLocalStorage } from '@lib/useLocalStorage';
 import clsx from 'clsx';
 import { isEqual, isEmpty } from 'lodash';
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react';

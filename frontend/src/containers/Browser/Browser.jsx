@@ -1,15 +1,14 @@
+import { Table, Section } from '@components';
+import Pagination from '@containers/Pagination';
+import { useDialog } from '@features/Dialogs';
+import { useNebula } from '@features/Nebula';
+import { useLocalStorage } from '@lib/useLocalStorage';
 import clsx from 'clsx';
 import { debounce } from 'lodash';
 import { useEffect, useState, useRef, useMemo } from 'react';
 import { toast } from 'react-toastify';
 
 import nebula from '/src/nebula';
-
-import { Table, Section } from '@components';
-import Pagination from '@containers/Pagination';
-import { useLocalStorage } from '@hooks';
-import { useDialog } from '@features/Dialogs';
-import { useNebula } from '@features/Nebula';
 
 import BrowserNav from './BrowserNav';
 

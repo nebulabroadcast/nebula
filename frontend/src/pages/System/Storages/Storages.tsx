@@ -1,7 +1,7 @@
 import { Form, FormRow, InputSwitch } from '@components';
 import { Section, Spacer } from '@components';
 import { useNebula } from '@features/Nebula';
-import { useLocalStorage } from '@hooks';
+import { useLocalStorage } from '@lib/useLocalStorage';
 import { useState, useEffect } from 'react';
 
 import { formatBytes } from './common';

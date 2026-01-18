@@ -1,12 +1,12 @@
+import Browser from '@containers/Browser';
 import Splitter, { SplitDirection } from '@devbookhq/splitter';
 import { DndContext, MouseSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { useNebula } from '@features/Nebula';
+import { useLocalStorage } from '@lib/useLocalStorage';
 import { useMemo, useEffect, useState, useRef } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { useLocalStorage } from '/src/hooks';
-import Browser from '/src/containers/Browser';
 import AssetEditor from '/src/pages/AssetEditor';
 import Scheduler from '/src/pages/Scheduler';
 

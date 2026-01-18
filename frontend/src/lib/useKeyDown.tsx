@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 
-const useKeyDown = (key: string, callback: () => void) => {
+export const useKeyDown = (key: string, callback: () => void) => {
   const callbackRef = useRef(callback);
 
   // Update the ref to the latest callback on each render
@@ -21,5 +21,3 @@ const useKeyDown = (key: string, callback: () => void) => {
     };
   }, [key]);
 };
-
-export default useKeyDown;

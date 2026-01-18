@@ -1,22 +1,11 @@
-import nebula from '/src/nebula';
+import { isEmpty, isEqual, xorWith } from 'lodash';
 
-import { isEmpty, isEqual, xorWith, cloneDeep } from 'lodash';
+import nebula from '@/nebula';
 
-const arrayEquals = (x, y) => isEmpty(xorWith(x, y, isEqual));
+export const arrayEquals = (x: Array<any>, y: Array<any>) =>
+  isEmpty(xorWith(x, y, isEqual));
 
-const deepCopy = (obj) => cloneDeep(obj);
-
-const sortByKey = (array, key) => {
-  // Return a copy of array of objects sorted
-  // by the given key
-  return array.sort(function (a, b) {
-    var x = a[key];
-    var y = b[key];
-    return x < y ? -1 : x > y ? 1 : 0;
-  });
-};
-
-const formatTimeString = (timestamp) => {
+export const formatTimeString = (timestamp: number) => {
   if (!timestamp) return '';
   const localDateTime = new Date(timestamp * 1000);
   const localTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -38,9 +27,10 @@ const formatTimeString = (timestamp) => {
   return `${localDate} ${localTime}`;
 };
 
-const zpad = (n) => String(n).padStart(2, '0');
+export const zpad = (n: string | number, len: number = 2) =>
+  String(n).padStart(len, '0');
 
-const dateToDateString = (localDateTime) => {
+export const dateToDateString = (localDateTime: Date) => {
   if (!localDateTime) return '';
   const yy = localDateTime.getFullYear();
   const mm = localDateTime.getMonth() + 1; // Months are zero-based
@@ -49,21 +39,11 @@ const dateToDateString = (localDateTime) => {
   return dateStr;
 };
 
-const dateToTimeString = (localDateTime) => {
+export const dateToTimeString = (localDateTime: Date) => {
   if (!localDateTime) return '';
   const hh = localDateTime.getHours();
   const min = localDateTime.getMinutes();
   const ss = localDateTime.getSeconds();
   const timeStr = `${zpad(hh)}:${zpad(min)}:${zpad(ss)}`;
   return timeStr;
-};
-
-export {
-  arrayEquals,
-  deepCopy,
-  isEmpty,
-  sortByKey,
-  formatTimeString,
-  dateToDateString,
-  dateToTimeString,
 };
