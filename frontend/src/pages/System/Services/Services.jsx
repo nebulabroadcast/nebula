@@ -2,13 +2,10 @@ import nebula from '/src/nebula';
 
 import { Duration } from 'luxon';
 import { useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
 
-import { Table, Button, InputSwitch, Spacer, Section } from '/src/components';
-
-import { setPageTitle } from '/src/actions';
-
-import { useWebSocket } from '@/features/Websocket';
+import { Table, Button, InputSwitch, Spacer, Section } from '@components';
+import { useWebSocket } from '@features/Websocket';
+import { useNebula } from '@features/Nebula';
 
 const formatStatus = (rowData, key) => {
   const status = rowData[key];
@@ -41,8 +38,8 @@ const formatLastSeen = (rowData, key) => {
 const ServicesPage = () => {
   const [loading, setLoading] = useState(true);
   const [services, setServices] = useState([]);
-  const dispatch = useDispatch();
   const ws = useWebSocket();
+  const { setPageTitle } = useNebula();
 
   const makeRequest = (action, id_service) => {
     const payload = {};
@@ -58,9 +55,9 @@ const ServicesPage = () => {
   };
 
   useEffect(() => {
-    dispatch(setPageTitle({ title: 'Services' }));
+    setPageTitle('Services');
     makeRequest();
-  }, []);
+  }, [setPageTitle]);
 
   const formatAutoStart = (rowData, key) => {
     const autoStart = rowData[key] || false;

@@ -1,10 +1,8 @@
-import { configureStore } from '@reduxjs/toolkit';
+import { NebulaProvider } from '@features/Nebula';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { Provider as ReduxProvider } from 'react-redux';
 import { ToastContainer, Flip } from 'react-toastify';
 
-import contextReducer from './actions';
 import App from './app';
 
 import 'react-toastify/dist/ReactToastify.css';
@@ -12,16 +10,10 @@ import 'material-symbols';
 import './index.scss';
 import './datepicker.scss';
 
-const store = configureStore({
-  reducer: {
-    context: contextReducer,
-  },
-});
-
 const root = createRoot(document.getElementById('root') as HTMLElement);
 root.render(
   <React.StrictMode>
-    <ReduxProvider store={store}>
+    <NebulaProvider>
       <App />
       <ToastContainer
         position="bottom-right"
@@ -34,6 +26,6 @@ root.render(
         autoClose={3000}
         limit={5}
       />
-    </ReduxProvider>
+    </NebulaProvider>
   </React.StrictMode>
 );

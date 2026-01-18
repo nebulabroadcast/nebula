@@ -2,9 +2,7 @@ import nebula from '/src/nebula';
 
 import contentType from 'content-type';
 import { useState, useMemo } from 'react';
-import { useDispatch } from 'react-redux';
 
-import { setCurrentViewId, setSearchQuery } from '/src/actions';
 import {
   Navbar,
   Button,
@@ -21,11 +19,13 @@ import AssigneesButton from './AssigneesButton';
 import ContextActionResult from './ContextAction';
 import MetadataDetail from './MetadataDetail';
 
+import { useNebula } from '/src/features/Nebula';
+
 const AssetEditorNav = ({ assetData, setMeta, enabledActions }) => {
   const [detailsVisible, setDetailsVisible] = useState(false);
   const [contextActionResult, setContextActionResult] = useState(null);
-  const dispatch = useDispatch();
   const showDialog = useDialog();
+  const { setCurrentView, setSearchQuery } = useNebula();
 
   const currentFolder = useMemo(() => {
     if (!nebula.settings.folders) return null;
@@ -74,8 +74,8 @@ const AssetEditorNav = ({ assetData, setMeta, enabledActions }) => {
       disabled: !assetData[l['source_key']],
       onClick: () => {
         const query = `${l['target_key']}:${assetData[l['source_key']]}`;
-        dispatch(setCurrentViewId(l.view));
-        dispatch(setSearchQuery(query));
+        setCurrentView(l.view);
+        setSearchQuery(query);
       },
     }));
   }, [assetData.id]); // dependency could be currentFolder, but only if assetData is a ref

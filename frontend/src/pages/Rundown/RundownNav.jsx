@@ -1,18 +1,16 @@
 import { useMemo } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
 
 import nebula from '/src/nebula';
 import { Navbar, Spacer, RadioButton } from '/src/components';
 import DateNav from '/src/containers/DateNav';
-import { setPageTitle } from '/src/actions';
+import { useNebula } from '/src/features/Nebula';
 
 const RundownNav = ({ setStartTime, rundownMode, setRundownMode }) => {
-  const currentChannel = useSelector((state) => state.context.currentChannel);
-  const dispatch = useDispatch();
+  const { setPageTitle, currentChannelId } = useNebula();
 
   const channelConfig = useMemo(() => {
-    return nebula.getPlayoutChannel(currentChannel);
-  }, [currentChannel]);
+    return nebula.getPlayoutChannel(currentChannelId);
+  }, [currentChannelId]);
 
   const onDateChange = (date) => {
     const [dsHH, dsMM] = channelConfig?.day_start || [7, 0];
@@ -24,7 +22,7 @@ const RundownNav = ({ setStartTime, rundownMode, setRundownMode }) => {
       weekday: 'long',
       day: 'numeric',
     })}`;
-    dispatch(setPageTitle({ title: pageTitle }));
+    setPageTitle(pageTitle);
     setStartTime(newDate);
   };
 

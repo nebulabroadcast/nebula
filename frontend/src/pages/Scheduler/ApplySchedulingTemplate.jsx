@@ -1,9 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useSelector } from 'react-redux';
 
 import nebula from '/src/nebula';
 import { useDialog } from '/src/hooks';
 import { Dropdown } from '/src/components';
+import { useNebula } from '/src/features/Nebula';
 
 const dmessage = `
 Are you sure you want to apply this template?
@@ -13,13 +13,13 @@ This operation cannot be undone.
 `;
 
 const ApplySchedulingTemplate = ({ loadEvents, date, loading, setLoading }) => {
-  const currentChannel = useSelector((state) => state.context.currentChannel);
+  const { currentChannelId } = useNebula();
   const [templates, setTemplates] = useState([]);
   const showDialog = useDialog();
 
   const channelConfig = useMemo(() => {
-    return nebula.getPlayoutChannel(currentChannel);
-  }, [currentChannel]);
+    return nebula.getPlayoutChannel(currentChannelId);
+  }, [currentChannelId]);
 
   const loadTemplates = () => {
     nebula.request('list-scheduling-templates', {}).then((response) => {
@@ -38,7 +38,7 @@ const ApplySchedulingTemplate = ({ loadEvents, date, loading, setLoading }) => {
   const applyTemplate = async (value) => {
     setLoading(true);
     const template_name = value;
-    const id_channel = currentChannel;
+    const id_channel = currentChannelId;
     const dtitle = `Apply template "${value}"?`;
     try {
       const _res = await showDialog('confirm', dtitle, { message: dmessage });

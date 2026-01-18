@@ -1,10 +1,8 @@
 import nebula from '/src/nebula';
 
+import { useNebula } from '@features/Nebula';
 import { useState, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
-
-import { setPageTitle } from '/src/actions';
 
 import {
   Form,
@@ -94,11 +92,10 @@ const ChangePasswordForm = () => {
 };
 
 const ProfilePage = () => {
-  const dispatch = useDispatch();
-
+  const { setPageTitle } = useNebula();
   useEffect(() => {
-    dispatch(setPageTitle({ title: 'User profile' }));
-  }, []);
+    setPageTitle('User profile');
+  }, [setPageTitle]);
 
   return (
     <main>

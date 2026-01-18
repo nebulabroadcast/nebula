@@ -2,16 +2,17 @@ import nebula from '/src/nebula';
 
 import { debounce } from 'lodash';
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
 
-import { setCurrentView, setSearchQuery } from '/src/actions';
+import { useNebula } from '/src/features/Nebula';
 import { Navbar, Button, Spacer, Dropdown, InputText } from '/src/components';
 
 const BrowserNav = () => {
-  const dispatch = useDispatch();
+  const { currentViewId, searchQuery, setCurrentView, setSearchQuery } = useNebula();
 
-  const currentView = useSelector((state) => state.context.currentView);
-  const searchQuery = useSelector((state) => state.context.searchQuery);
+  const currentView = useMemo(() => {
+    return nebula.settings.views.find((v) => v.id === currentViewId);
+  }, [currentViewId]);
+
   const [searchText, setSearchText] = useState(searchQuery);
 
   useEffect(() => {
@@ -24,7 +25,7 @@ const BrowserNav = () => {
       result.push({
         label: view.name,
         separator: view.separator,
-        onClick: () => dispatch(setCurrentView(view)),
+        onClick: () => setCurrentView(view.id),
       });
     }
     return result;
@@ -32,7 +33,7 @@ const BrowserNav = () => {
 
   const debounceSetQuery = useCallback(
     debounce((q) => {
-      dispatch(setSearchQuery(q));
+      setSearchQuery(q);
     }, 200),
     []
   );

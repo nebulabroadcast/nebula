@@ -1,33 +1,42 @@
-import React, { createContext, useState } from 'react';
+import React, { createContext, useState, useCallback } from 'react';
+
+export interface PageTitle {
+  title: string;
+  icon?: string;
+}
 
 export interface NebulaState {
-  browserRefresh: number;
-  currentView: number;
-  selectedAssets: number[];
-  searchQuery: string;
+  browserRefreshId: number;
+  currentChannelId: number | null;
+  currentViewId: number;
   focusedAsset: number | null;
-  pageTitle: string;
-  currentChannel: number | null;
+  pageTitle: PageTitle;
+  searchQuery: string;
+  selectedAssets: number[];
 }
 
 export interface NebulaContextType extends NebulaState {
-  setCurrentView: (viewId: number) => void;
   reloadBrowser: () => void;
+  setCurrentChannel: (channelId: number | null) => void;
+  setCurrentView: (viewId: number) => void;
+  setFocusedAsset: (assetId: number | null) => void;
+  setPageTitle: (title: string, icon?: string) => void;
   setSearchQuery: (query: string) => void;
   setSelectedAssets: (assetIds: number[]) => void;
-  setFocusedAsset: (assetId: number | null) => void;
-  setPageTitle: (title: string) => void;
-  setCurrentChannel: (channelId: number | null) => void;
 }
 
+const LS_KEY_CURRENT_CHANNEL = 'mam.currentChannelId';
+const LS_KEY_CURRENT_VIEW = 'mam.currentViewId';
+const LS_KEY_SEARCH_QUERY = 'mam.searchQuery';
+
 const DEFAULT_NEBULA_CONTEXT: NebulaState = {
-  browserRefresh: 0,
-  currentView: JSON.parse(localStorage.getItem('currentView') || 'null'),
-  searchQuery: JSON.parse(localStorage.getItem('searchQuery') || '""'),
-  selectedAssets: [],
+  pageTitle: { title: 'Nebula' },
+  browserRefreshId: 0,
+  currentChannelId: JSON.parse(localStorage.getItem(LS_KEY_CURRENT_CHANNEL) || 'null'),
+  currentViewId: JSON.parse(localStorage.getItem(LS_KEY_CURRENT_CHANNEL) || 'null'),
+  searchQuery: JSON.parse(localStorage.getItem(LS_KEY_SEARCH_QUERY) || '""'),
   focusedAsset: null,
-  pageTitle: '',
-  currentChannel: JSON.parse(localStorage.getItem('currentChannel') || 'null'),
+  selectedAssets: [],
 };
 
 export const NebulaContext = createContext<NebulaContextType | undefined>(undefined);
@@ -41,36 +50,39 @@ export const NebulaProvider: React.FC<NebulaProviderProps> = ({
 }: NebulaProviderProps) => {
   const [nebulaState, setNebulaState] = useState<NebulaState>(DEFAULT_NEBULA_CONTEXT);
 
-  const setCurrentView = (viewId: number) => {
-    localStorage.setItem('currentView', JSON.stringify(viewId));
-    setNebulaState((prev) => ({ ...prev, currentView: viewId }));
-  };
+  const setCurrentView = useCallback((viewId: number) => {
+    if (typeof viewId !== 'number') {
+      throw new Error('viewId must be a number');
+    }
+    localStorage.setItem(LS_KEY_CURRENT_VIEW, JSON.stringify(viewId));
+    setNebulaState((prev) => ({ ...prev, currentViewId: viewId }));
+  }, []);
 
-  const reloadBrowser = () => {
-    setNebulaState((prev) => ({ ...prev, browserRefresh: prev.browserRefresh + 1 }));
-  };
+  const reloadBrowser = useCallback(() => {
+    setNebulaState((prev) => ({ ...prev, browserRefresh: prev.browserRefreshId + 1 }));
+  }, []);
 
-  const setSearchQuery = (query: string) => {
-    localStorage.setItem('searchQuery', JSON.stringify(query));
+  const setSearchQuery = useCallback((query: string) => {
+    localStorage.setItem(LS_KEY_SEARCH_QUERY, JSON.stringify(query));
     setNebulaState((prev) => ({ ...prev, searchQuery: query }));
-  };
+  }, []);
 
-  const setSelectedAssets = (assetIds: number[]) => {
+  const setSelectedAssets = useCallback((assetIds: number[]) => {
     setNebulaState((prev) => ({ ...prev, selectedAssets: assetIds }));
-  };
+  }, []);
 
-  const setFocusedAsset = (assetId: number | null) => {
+  const setFocusedAsset = useCallback((assetId: number | null) => {
     setNebulaState((prev) => ({ ...prev, focusedAsset: assetId }));
-  };
+  }, []);
 
-  const setPageTitle = (title: string) => {
-    setNebulaState((prev) => ({ ...prev, pageTitle: title }));
-  };
+  const setPageTitle = useCallback((title: string, icon?: string) => {
+    setNebulaState((prev) => ({ ...prev, pageTitle: { title, icon } }));
+  }, []);
 
-  const setCurrentChannel = (channelId: number | null) => {
-    localStorage.setItem('currentChannel', JSON.stringify(channelId));
-    setNebulaState((prev) => ({ ...prev, currentChannel: channelId }));
-  };
+  const setCurrentChannel = useCallback((channelId: number | null) => {
+    localStorage.setItem(LS_KEY_CURRENT_CHANNEL, JSON.stringify(channelId));
+    setNebulaState((prev) => ({ ...prev, currentChannelId: channelId }));
+  }, []);
 
   const contextValue: NebulaContextType = {
     ...nebulaState,

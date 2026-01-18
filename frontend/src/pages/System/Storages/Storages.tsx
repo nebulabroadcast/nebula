@@ -1,9 +1,9 @@
 import { setPageTitle } from '@actions';
 import { Form, FormRow, InputSwitch } from '@components';
 import { Section, Spacer } from '@components';
+import { useNebula } from '@features/Nebula';
 import { useLocalStorage } from '@hooks';
 import { useState, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
 
 import { formatBytes } from './common';
 import type { StorageStats } from './common';
@@ -50,7 +50,7 @@ interface StoragesData {
 
 const StoragesPage = () => {
   const [data, setData] = useState<StoragesData>({ storages: [] });
-  const dispatch = useDispatch();
+  const { setPageTitle } = useNebula();
 
   const [showUntracked, setShowUntracked] = useLocalStorage(
     'system.storages.showUntracked',
@@ -59,12 +59,12 @@ const StoragesPage = () => {
   const [showFree, setShowFree] = useLocalStorage('system.storages.showFree', true);
 
   useEffect(() => {
-    dispatch(setPageTitle({ title: 'Storages' }));
+    setPageTitle('Storages');
     nebula.request('stats/storages').then((response) => {
       setData(response.data);
       console.log(response.data);
     });
-  }, [dispatch]);
+  }, [setPageTitle]);
 
   return (
     <Section className="transparent row grow">

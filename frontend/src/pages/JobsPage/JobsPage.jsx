@@ -1,18 +1,17 @@
 import nebula from '/src/nebula';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
 import { Table, Button, Section } from '/src/components';
 
 import { NavLink } from 'react-router-dom';
 
-import { setPageTitle } from '/src/actions';
 import formatMetaDatetime from '/src/tableFormat/formatMetaDatetime';
 
 import JobsNav from './JobsNav';
 import { useWebSocket } from '@/features/Websocket';
+import { useNebula } from '@features/Nebula';
 
 const NOT_RESTARTABLE = ['import'];
 
@@ -29,13 +28,13 @@ const JobsPage = () => {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const dispatch = useDispatch();
+  const { setPageTitle } = useNebula();
   const ws = useWebSocket();
 
   const loadJobs = useCallback(() => {
     setLoading(true);
     const cleanTitle = view ? view[0].toUpperCase() + view.slice(1) + ' jobs' : 'Jobs';
-    dispatch(setPageTitle({ title: cleanTitle }));
+    setPageTitle(cleanTitle);
     nebula
       .request('jobs', { view, search_query: searchQuery })
       .then((response) => {

@@ -1,14 +1,13 @@
 import clsx from 'clsx';
 import { debounce } from 'lodash';
-import { useEffect, useState, useRef } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { toast } from 'react-toastify';
 
 import nebula from '/src/nebula';
 import { Table, Section } from '/src/components';
 import Pagination from '/src/containers/Pagination';
-import { setCurrentView, setSelectedAssets, setFocusedAsset } from '/src/actions';
 import { useLocalStorage, useDialog } from '/src/hooks';
+import { useNebula } from '/src/features/Nebula';
 
 import BrowserNav from './BrowserNav';
 
@@ -23,13 +22,22 @@ import { useWebSocket } from '@/features/Websocket';
 const ROWS_PER_PAGE = 200;
 
 const BrowserTable = ({ isDragging }) => {
-  const currentView = useSelector((state) => state.context.currentView?.id);
-  const searchQuery = useSelector((state) => state.context.searchQuery);
-  const selectedAssets = useSelector((state) => state.context.selectedAssets);
-  const focusedAsset = useSelector((state) => state.context.focusedAsset);
-  const browserRefresh = useSelector((state) => state.context.browserRefresh);
+  const {
+    currentViewId,
+    searchQuery,
+    selectedAssets,
+    focusedAsset,
+    browserRefreshId,
+    setCurrentView,
+    setSelectedAssets,
+    setFocusedAsset,
+  } = useNebula();
 
-  const dispatch = useDispatch();
+  const currentView = useMemo(
+    () => nebula.settings.views.find((v) => v.id === currentViewId),
+    [currentViewId]
+  );
+
   const ws = useWebSocket();
 
   const [columns, setColumns] = useState([]);
@@ -62,7 +70,7 @@ const BrowserTable = ({ isDragging }) => {
     if (!currentView) {
       // No view selected, load the first available view
       if (nebula.settings.views.length) {
-        dispatch(setCurrentView(nebula.settings.views[0]));
+        setCurrentView(nebula.settings.views[0].id);
       }
       return;
     }
@@ -71,7 +79,7 @@ const BrowserTable = ({ isDragging }) => {
     // when objects are changed externally
 
     requestParamsRef.current = {
-      view: currentView,
+      view: currentViewId,
       query: searchQuery || '',
       limit: ROWS_PER_PAGE + 1,
       offset: page ? (page - 1) * ROWS_PER_PAGE : 0,
@@ -82,7 +90,7 @@ const BrowserTable = ({ isDragging }) => {
     // show loading indicator only if the user initiated the refresh
     setLoading(true);
     loadData();
-  }, [currentView, searchQuery, sortBy, sortDirection, page, browserRefresh]);
+  }, [currentView, searchQuery, sortBy, sortDirection, page, browserRefreshId]);
 
   useEffect(() => {
     // Reset page when view or search query changes
@@ -183,8 +191,8 @@ const BrowserTable = ({ isDragging }) => {
       newSelectedAssets = [rowData.id];
     }
 
-    dispatch(setSelectedAssets(newSelectedAssets));
-    dispatch(setFocusedAsset(rowData.id));
+    setSelectedAssets(newSelectedAssets);
+    setFocusedAsset(rowData.id);
   };
 
   const focusNext = (offset) => {
@@ -192,8 +200,8 @@ const BrowserTable = ({ isDragging }) => {
     const nextIndex = data.findIndex((row) => row.id === focusedAsset) + offset;
     if (nextIndex < data.length) {
       const nextRow = data[nextIndex];
-      dispatch(setSelectedAssets([nextRow.id]));
-      dispatch(setFocusedAsset(nextRow.id));
+      setSelectedAssets([nextRow.id]);
+      setFocusedAsset(nextRow.id);
     }
   };
 
