@@ -1,10 +1,18 @@
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 
-const SortIcon = ({ children }) => (
+import type { TableSortDirection, TableColumn } from './types';
+
+const SortIcon = ({ children }: { children: React.ReactNode }) => (
   <span className="icon material-symbols-outlined">{children}</span>
 );
 
-const HeaderCell = ({ name, width, title, sortDirection, onSort }) => {
+interface HeaderCellProps {
+  column: TableColumn;
+  sortDirection?: TableSortDirection;
+  onSort?: (name: string, direction: TableSortDirection) => void;
+}
+
+const HeaderCell = ({ column, sortDirection, onSort }: HeaderCellProps) => {
   const sortArrowElement = useMemo(() => {
     if (!onSort) return;
     if (sortDirection === 'asc') return <SortIcon>arrow_drop_up</SortIcon>;
@@ -15,15 +23,15 @@ const HeaderCell = ({ name, width, title, sortDirection, onSort }) => {
   const onClick = () => {
     if (!onSort) return;
     if (sortDirection === 'asc') {
-      onSort(name, 'desc');
+      onSort(column.name, 'desc');
     } else {
-      onSort(name, 'asc');
+      onSort(column.name, 'asc');
     }
   };
   return (
-    <th style={{ width: width }} onClick={onClick}>
+    <th style={{ width: column.width }} onClick={onClick}>
       <div>
-        {title}
+        {column.title || ''}
         {sortArrowElement}
       </div>
     </th>

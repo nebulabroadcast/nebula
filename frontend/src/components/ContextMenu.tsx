@@ -41,7 +41,7 @@ const ContextMenuWrapper = styled.div`
   }
 `;
 
-interface ContextMenuOption {
+export interface ContextMenuOption {
   label: string;
   icon?: string;
   hlColor?: string;

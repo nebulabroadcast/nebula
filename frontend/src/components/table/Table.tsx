@@ -1,11 +1,45 @@
-import { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 
-import ContextMenu from '../ContextMenu';
+import ContextMenu, { ContextMenuOption } from '../ContextMenu';
 import { Loader, LoaderWrapper } from '../Loader';
 
 import DataRow from './DataRow';
 import HeaderCell from './HeaderCell';
 import TableWrapper from './TableWrapper';
+import type {
+  TableRowData,
+  TableColumn,
+  TableSortDirection,
+  TableDroppable,
+  TableDraggableItem,
+} from './types';
+
+interface TableProps {
+  data: TableRowData[];
+  columns: TableColumn[];
+  className?: string;
+  style?: React.CSSProperties;
+  keyField?: string;
+  onRowClick?: (
+    rowData: TableRowData,
+    event: React.MouseEvent<HTMLTableRowElement, MouseEvent>
+  ) => void;
+  onKeyDown?: (event: React.KeyboardEvent<HTMLTableElement>) => void;
+  selection?: (string | number)[];
+  rowHighlightColor?: (rowData: TableRowData) => string | undefined;
+  rowHighlightStyle?: (
+    rowData: TableRowData
+  ) => 'none' | 'solid' | 'dotted' | undefined;
+  rowClass?: (rowData: TableRowData) => string;
+  sortBy?: string;
+  sortDirection?: TableSortDirection;
+  onSort?: (name: string, direction: TableSortDirection) => void;
+  onLoadMore?: () => void;
+  contextMenu?: () => ContextMenuOption[];
+  droppable?: TableDroppable;
+  onDrop?: (droppable: TableDroppable, dropIndex: number | null) => void;
+  loading?: boolean;
+}
 
 const Table = ({
   data,
@@ -27,11 +61,11 @@ const Table = ({
   droppable,
   onDrop,
   loading = false,
-}) => {
-  const tableRef = useRef(null);
-  const droppableRef = useRef(null);
-  const dropIndexRef = useRef(null);
-  const [dropHl, setDropHl] = useState(null);
+}: TableProps) => {
+  const tableRef = useRef<HTMLElement>(null);
+  const droppableRef = useRef<TableDroppable | undefined>(undefined);
+  const dropIndexRef = useRef<number | null>(null);
+  const [dropHl, setDropHl] = useState<number | null>(null);
 
   const head = useMemo(() => {
     return (
@@ -40,9 +74,9 @@ const Table = ({
           {columns.map((column) => (
             <HeaderCell
               key={column.name}
-              sortDirection={sortBy === column.name ? sortDirection : null}
+              column={column}
+              sortDirection={sortBy === column.name ? sortDirection : undefined}
               onSort={onSort}
-              {...column}
             />
           ))}
         </tr>
@@ -50,7 +84,7 @@ const Table = ({
     );
   }, [columns, sortBy, sortDirection, onSort]);
 
-  const handleKeyDown = (event) => {
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLTableElement>) => {
     if (onKeyDown) {
       onKeyDown(event);
     }
@@ -62,8 +96,8 @@ const Table = ({
   }, [droppable]);
 
   const body = useMemo(() => {
-    const draggableItems = [];
-    if (selection?.length > 0) {
+    const draggableItems: TableDraggableItem[] = [];
+    if (selection && selection.length > 0) {
       for (let i = 0; i < data.length; i++) {
         const row = data[i];
         if (selection.includes(keyField ? row[keyField] : i)) {
@@ -102,34 +136,61 @@ const Table = ({
         ))}
       </tbody>
     );
-  }, [columns, data, selection, keyField, rowHighlightColor, droppable]);
+  }, [
+    columns,
+    data,
+    selection,
+    keyField,
+    rowHighlightColor,
+    onRowClick,
+    rowClass,
+    rowHighlightStyle,
+  ]);
 
-  const handleScroll = (event) => {
+  const handleScroll = (event: React.UIEvent<HTMLElement>) => {
     if (!onLoadMore) return;
     const container = event.target;
+    if (!(container instanceof HTMLElement)) return;
     if (container.scrollHeight - container.scrollTop === container.clientHeight) {
       onLoadMore();
     }
   };
 
-  const onMouseMove = (event) => {
+  const onMouseMove = (event: MouseEvent) => {
     if (!droppableRef.current) return;
     const target = event.target;
     if (!target) return;
+    if (!(target instanceof HTMLElement)) return;
     // find the closest row
     const row = target.closest('tr');
-    const index = row ? row.getAttribute('data-index') : null;
+    let index = null;
+    if (row instanceof HTMLElement) {
+      index = row ? parseInt(row.getAttribute('data-index') || '', 10) : null;
+    }
+
+    if (index === null) {
+      setDropHl(null);
+      return;
+    }
+
     dropIndexRef.current = index;
     setDropHl(index);
   };
 
-  const onMouseUp = (event) => {
+  const onMouseUp = (event: MouseEvent) => {
     // are we dragging?
     if (!droppableRef.current) return;
+    if (!tableRef.current) return;
+    const target = event.target;
+    if (!target) return;
+    if (!(target instanceof HTMLElement)) return;
     // ensure mouse up event is triggered on the child element of the table
-    if (!tableRef.current.contains(event.target)) return;
-    if (onDrop) onDrop(droppableRef.current, dropIndexRef.current);
-    droppableRef.current = null;
+
+    if (!tableRef.current.contains(target)) return;
+    if (onDrop) {
+      onDrop(droppableRef.current, dropIndexRef.current);
+    }
+    droppableRef.current = undefined;
     setDropHl(null);
   };
 
@@ -151,18 +212,27 @@ const Table = ({
       onScroll={handleScroll}
       onKeyDown={handleKeyDown}
       onMouseLeave={() => setDropHl(null)}
-      $drophl={dropHl || null}
+      $drophl={dropHl || undefined}
     >
       {loading && (
         <LoaderWrapper>
           <Loader />
         </LoaderWrapper>
       )}
-      <table onKeyDown={handleKeyDown} tabIndex={0} ref={tableRef}>
+      <table
+        onKeyDown={handleKeyDown}
+        tabIndex={0}
+        ref={tableRef as React.RefObject<HTMLTableElement>}
+      >
         {head}
         {body}
       </table>
-      {contextMenu && <ContextMenu target={tableRef} options={contextMenu} />}
+      {contextMenu && tableRef && (
+        <ContextMenu
+          target={tableRef as React.RefObject<HTMLElement>}
+          options={contextMenu}
+        />
+      )}
     </TableWrapper>
   );
 };
