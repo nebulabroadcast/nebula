@@ -200,7 +200,6 @@ const Rundown = ({ draggedObjects }) => {
     const handlePubSub = (topic, message) => {
       if (topic === 'playout_status') {
         if (message.id_channel === currentChannelRef.current) {
-          console.log('Rundown: playout status update', message);
           setPlayoutStatus(message);
         }
       }
