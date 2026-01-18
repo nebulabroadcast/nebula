@@ -1,6 +1,10 @@
 import styled from 'styled-components';
 
-const TableWrapper = styled.div`
+interface TableWrapperProps {
+  $drophl?: number;
+}
+
+const TableWrapper = styled.div<TableWrapperProps>`
   --progress: 0% --progress-opacity: 0;
   overflow: auto;
 
