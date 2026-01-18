@@ -14,7 +14,7 @@ import {
   InputTimecode,
   Dialog,
 } from '/src/components';
-import { useDialog } from '/src/hooks';
+import { useDialog } from '@features/Dialogs';
 
 import AssigneesButton from './AssigneesButton';
 import ContextActionResult from './ContextAction';
@@ -32,7 +32,7 @@ const AssetEditorNav = ({ assetData, setMeta, enabledActions }) => {
       if (f.id !== assetData?.id_folder) continue;
       return f;
     }
-  }, [{ ...assetData }]);
+  }, [assetData.id_folder]);
 
   const folderOptions = useMemo(() => {
     return nebula.getWritableFolders().map((f) => ({

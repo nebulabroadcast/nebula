@@ -4,10 +4,12 @@ import { useEffect, useState, useRef, useMemo } from 'react';
 import { toast } from 'react-toastify';
 
 import nebula from '/src/nebula';
-import { Table, Section } from '/src/components';
-import Pagination from '/src/containers/Pagination';
-import { useLocalStorage, useDialog } from '/src/hooks';
-import { useNebula } from '/src/features/Nebula';
+
+import { Table, Section } from '@components';
+import Pagination from '@containers/Pagination';
+import { useLocalStorage } from '@hooks';
+import { useDialog } from '@features/Dialogs';
+import { useNebula } from '@features/Nebula';
 
 import BrowserNav from './BrowserNav';
 

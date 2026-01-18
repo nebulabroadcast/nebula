@@ -2,13 +2,14 @@ import { useMemo, useRef, useEffect } from 'react';
 import { useSearchParams, useLocation } from 'react-router-dom';
 
 import nebula from '/src/nebula';
-import { Table } from '/src/components';
-import { useDialog } from '/src/hooks';
+import { Table } from '@components';
 import { formatRowHighlightColor, formatRowHighlightStyle } from '/src/tableFormat';
+
+import { useDialog } from '@features/Dialogs';
+import { useNebula } from '@/features/Nebula';
 
 import RundownTableWrapper from './RundownTableWrapper';
 import { getRunModeOptions, getRundownColumns } from './utils';
-import { useNebula } from '@/features/Nebula';
 
 const RundownTable = ({
   data,

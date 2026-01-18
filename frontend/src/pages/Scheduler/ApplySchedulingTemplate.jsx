@@ -1,9 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
 
 import nebula from '/src/nebula';
-import { useDialog } from '/src/hooks';
-import { Dropdown } from '/src/components';
-import { useNebula } from '/src/features/Nebula';
+
+import { Dropdown } from '@components';
+import { useDialog } from '@features/Dialogs';
+import { useNebula } from '@features/Nebula';
 
 const dmessage = `
 Are you sure you want to apply this template?

@@ -3,13 +3,13 @@ import { useState, useEffect, useMemo } from 'react';
 import { toast } from 'react-toastify';
 
 import nebula from '/src/nebula';
-import { useDialog } from '/src/hooks';
-import { Loader, LoaderWrapper } from '/src/components';
-import Calendar from '/src/containers/Calendar';
-import { Section } from '/src/components';
+import Calendar from '@containers/Calendar';
+
+import { Section, Loader, LoaderWrapper } from '@components';
+import { useDialog } from '@features/Dialogs';
+import { useNebula } from '@/features/Nebula';
 
 import SchedulerNav from './SchedulerNav';
-import { useNebula } from '@/features/Nebula';
 
 const Scheduler = ({ draggedObjects }) => {
   const { currentChannelId } = useNebula();

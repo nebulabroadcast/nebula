@@ -1,21 +1,22 @@
 import nebula from '/src/nebula';
 
+import { useLocalStorage } from '/src/hooks';
+import { Loader, Section } from '/src/components';
+
+import MetadataEditor from '/src/containers/MetadataEditor';
+
+import { useDialog } from '@features/Dialogs';
+import { useNebula } from '@features/Nebula';
+import { useWebSocket } from '@features/Websocket';
 import clsx from 'clsx';
 import { isEqual, isEmpty } from 'lodash';
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
-import { useLocalStorage, useDialog } from '/src/hooks';
-import { Loader, Section } from '/src/components';
-
 import AssetMainProps from './AssetMainProps';
 import AssetEditorNav from './EditorNav';
-import MetadataEditor from '/src/containers/MetadataEditor';
 import Preview from './Preview';
-
-import { useNebula } from '@/features/Nebula';
-import { useWebSocket } from '@/features/Websocket';
 
 const getEnabledActions = ({ assetData, isChanged }) => {
   // Return an object with all the actions that are enabled

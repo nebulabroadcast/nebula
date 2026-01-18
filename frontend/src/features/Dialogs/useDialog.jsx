@@ -1,11 +1,10 @@
 import { createContext, useState, useRef, useContext, useMemo } from 'react';
 
 import DatePickerDialog from '/src/components/DatePickerDialog';
-
-import MetadataDialog from '/src/containers/Dialogs/MetadataDialog';
-import ConfirmDialog from '/src/containers/Dialogs/ConfirmDialog';
-import SendToDialog from '/src/containers/Dialogs/SendToDialog';
-import SubclipsDialog from '/src/containers/Dialogs/SubclipsDialog';
+import ConfirmDialog from './ConfirmDialog';
+import MetadataDialog from './MetadataDialog';
+import SendToDialog from './SendToDialog';
+import SubclipsDialog from './SubclipsDialog';
 
 const DialogContext = createContext();
 

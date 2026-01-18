@@ -1,5 +1,5 @@
 import { Button } from '@components';
-import { useDialog } from '@hooks/useDialog';
+import { useDialog } from '@features/Dialogs';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useLocalStorage, useDialog } from '/src/hooks';
+import { useLocalStorage } from '/src/hooks';
 
 import { toast } from 'react-toastify';
 
@@ -11,8 +11,9 @@ import RundownEditTools from './RundownEditTools';
 import RundownNav from './RundownNav';
 import RundownTable from './RundownTable';
 
-import { useNebula } from '@/features/Nebula';
-import { useWebSocket } from '@/features/Websocket';
+import { useDialog } from '@features/Dialogs';
+import { useNebula } from '@features/Nebula';
+import { useWebSocket } from '@features/Websocket';
 
 const Rundown = ({ draggedObjects }) => {
   const showDialog = useDialog();

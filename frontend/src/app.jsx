@@ -1,14 +1,13 @@
-import axios from 'axios';
 import nebula from '/src/nebula';
-import { useState, useEffect, Suspense } from 'react';
 import { useLocalStorage } from '/src/hooks';
+
+import { DialogProvider } from '@features/Dialogs';
+import { MediaUploadProvider, MediaUploadMonitor } from '@features/MediaUpload';
+import { WebSocketProvider } from '@features/Websocket';
+import axios from 'axios';
+import { useState, useEffect, Suspense } from 'react';
 import { Routes, Route, Navigate, BrowserRouter } from 'react-router-dom';
 
-import { MediaUploadProvider, MediaUploadMonitor } from './features/MediaUpload';
-import { WebSocketProvider } from './features/Websocket';
-import { DialogProvider } from './hooks/useDialog';
-
-//import WebsocketListener from '/src/websocket';
 import MainNavbar from '/src/containers/MainNavbar';
 import LoginPage from '/src/pages/LoginPage';
 import LoadingPage from '/src/pages/LoadingPage';
