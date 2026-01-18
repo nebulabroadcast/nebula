@@ -5,10 +5,11 @@ import { useLocalStorage } from '/src/hooks';
 import { Routes, Route, Navigate, BrowserRouter } from 'react-router-dom';
 
 import { MediaUploadMonitor } from './containers/MediaUpload/MediaUploadMonitor';
+import { WebSocketProvider } from './features/Websocket';
 import { DialogProvider } from './hooks/useDialog';
 import { MediaUploadProvider } from './hooks/useMediaUpload';
 
-import WebsocketListener from '/src/websocket';
+//import WebsocketListener from '/src/websocket';
 import MainNavbar from '/src/containers/MainNavbar';
 import LoginPage from '/src/pages/LoginPage';
 import LoadingPage from '/src/pages/LoadingPage';
@@ -73,40 +74,45 @@ const App = () => {
       />
     );
 
+  const proto = window.location.protocol.replace('http', 'ws');
+  const wsAddress = `${proto}//${window.location.host}/ws`;
+
   return (
     <Suspense fallback={<LoadingPage />}>
-      <WebsocketListener />
-      <DialogProvider>
-        <MediaUploadProvider>
-          <BrowserRouter>
-            <MainNavbar />
-            <Routes>
-              <Route path="/" exact element={<Navigate replace to="/mam/editor" />} />
-              <Route
-                path="/mam"
-                exact
-                element={<Navigate replace to="/mam/editor" />}
-              />
-              <Route path="/mam/:module" element={<MAMPage />} />
-              <Route
-                path="/jobs"
-                exact
-                element={<Navigate replace to="/jobs/active" />}
-              />
-              <Route
-                path="/system"
-                exact
-                element={<Navigate replace to="/system/services" />}
-              />
-              <Route path="/jobs/:view" element={<JobsPage />} />
-              <Route path="/system/:view" element={<SystemPage />} />
-              <Route path="/tool/:tool" element={<ToolPage />} />
-              <Route path="/profile" element={<ProfilePage />} />
-            </Routes>
-            <MediaUploadMonitor />
-          </BrowserRouter>
-        </MediaUploadProvider>
-      </DialogProvider>
+      {/* <WebsocketListener /> Legacy websocket listener */}
+      <WebSocketProvider url={wsAddress}>
+        <DialogProvider>
+          <MediaUploadProvider>
+            <BrowserRouter>
+              <MainNavbar />
+              <Routes>
+                <Route path="/" exact element={<Navigate replace to="/mam/editor" />} />
+                <Route
+                  path="/mam"
+                  exact
+                  element={<Navigate replace to="/mam/editor" />}
+                />
+                <Route path="/mam/:module" element={<MAMPage />} />
+                <Route
+                  path="/jobs"
+                  exact
+                  element={<Navigate replace to="/jobs/active" />}
+                />
+                <Route
+                  path="/system"
+                  exact
+                  element={<Navigate replace to="/system/services" />}
+                />
+                <Route path="/jobs/:view" element={<JobsPage />} />
+                <Route path="/system/:view" element={<SystemPage />} />
+                <Route path="/tool/:tool" element={<ToolPage />} />
+                <Route path="/profile" element={<ProfilePage />} />
+              </Routes>
+              <MediaUploadMonitor />
+            </BrowserRouter>
+          </MediaUploadProvider>
+        </DialogProvider>
+      </WebSocketProvider>
     </Suspense>
   );
 };

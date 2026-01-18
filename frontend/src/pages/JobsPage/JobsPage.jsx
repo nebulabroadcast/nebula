@@ -12,6 +12,7 @@ import { setPageTitle } from '/src/actions';
 import formatMetaDatetime from '/src/tableFormat/formatMetaDatetime';
 
 import JobsNav from './JobsNav';
+import { useWebSocket } from '@/features/Websocket';
 
 const NOT_RESTARTABLE = ['import'];
 
@@ -29,6 +30,7 @@ const JobsPage = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const dispatch = useDispatch();
+  const ws = useWebSocket();
 
   const loadJobs = useCallback(() => {
     setLoading(true);
@@ -147,33 +149,31 @@ const JobsPage = () => {
     },
     {
       name: 'controls',
-      title: '',
+      title: 'Action',
       className: 'job-controls',
       formatter: formatAction,
-      width: 75,
+      width: 100,
     },
   ];
 
-  const handlePubSub = (topic, message) => {
-    if (topic !== 'job_progress') return;
-    setJobs((prevData) => {
-      const newData = [...prevData];
-      const index = newData.findIndex((job) => job.id === message.id);
-      if (index !== -1) {
-        newData[index]['status'] = message.status;
-        newData[index]['progress'] = message.progress;
-        newData[index]['message'] = message.message;
-      }
-      return newData;
-    });
-  }; // handlePubSub
-
   useEffect(() => {
-    // eslint-disable-next-line no-undef
-    const token = PubSub.subscribe('job_progress', handlePubSub);
-    // eslint-disable-next-line no-undef
-    return () => PubSub.unsubscribe(token);
-  }, []);
+    const handlePubSub = (topic, message) => {
+      if (topic !== 'job_progress') return;
+      setJobs((prevData) => {
+        const newData = [...prevData];
+        const index = newData.findIndex((job) => job.id === message.id);
+        if (index !== -1) {
+          newData[index]['status'] = message.status;
+          newData[index]['progress'] = message.progress;
+          newData[index]['message'] = message.message;
+        }
+        return newData;
+      });
+    }; // handlePubSub
+
+    const unsubscribe = ws.subscribe('job_progress', handlePubSub);
+    return () => unsubscribe();
+  }, [ws]);
 
   return (
     <main className="column">

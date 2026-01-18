@@ -18,6 +18,7 @@ import {
   formatRowHighlightColor,
   formatRowHighlightStyle,
 } from '/src/tableFormat';
+import { useWebSocket } from '@/features/Websocket';
 
 const ROWS_PER_PAGE = 200;
 
@@ -29,6 +30,7 @@ const BrowserTable = ({ isDragging }) => {
   const browserRefresh = useSelector((state) => state.context.browserRefresh);
 
   const dispatch = useDispatch();
+  const ws = useWebSocket();
 
   const [columns, setColumns] = useState([]);
   const [data, setData] = useState([]);
@@ -128,27 +130,27 @@ const BrowserTable = ({ isDragging }) => {
   // Subscribe to objects_changed pubsub event
   //
 
-  const handlePubSub = (topic, message) => {
-    if (topic !== 'objects_changed') return;
-    if (message.object_type !== 'asset') return;
-    let changed = false;
-    for (const obj of message.objects) {
-      if (dataRef.current.find((row) => row.id === obj)) {
-        changed = true;
-        break;
-      }
-    }
-    if (changed) {
-      debouncingLoadData();
-    }
-  };
-
   useEffect(() => {
-    // eslint-disable-next-line no-undef
-    const token = PubSub.subscribe('objects_changed', handlePubSub);
-    // eslint-disable-next-line no-undef
-    return () => PubSub.unsubscribe(token);
-  }, []);
+    const handlePubSub = (topic, message) => {
+      if (topic !== 'objects_changed') return;
+      if (message.object_type !== 'asset') return;
+      let changed = false;
+      for (const obj of message.objects) {
+        if (dataRef.current.find((row) => row.id === obj)) {
+          changed = true;
+          break;
+        }
+      }
+      if (changed) {
+        debouncingLoadData();
+      }
+    };
+
+    const unsubscribe = ws.subscribe('objects_changed', handlePubSub);
+    return () => {
+      unsubscribe();
+    };
+  }, [ws]);
 
   //
   // User interaction

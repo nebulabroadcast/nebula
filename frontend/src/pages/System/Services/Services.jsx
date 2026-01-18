@@ -4,10 +4,11 @@ import { Duration } from 'luxon';
 import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
-import PubSub from '/src/pubsub';
 import { Table, Button, InputSwitch, Spacer, Section } from '/src/components';
 
 import { setPageTitle } from '/src/actions';
+
+import { useWebSocket } from '@/features/Websocket';
 
 const formatStatus = (rowData, key) => {
   const status = rowData[key];
@@ -41,6 +42,7 @@ const ServicesPage = () => {
   const [loading, setLoading] = useState(true);
   const [services, setServices] = useState([]);
   const dispatch = useDispatch();
+  const ws = useWebSocket();
 
   const makeRequest = (action, id_service) => {
     const payload = {};
@@ -114,29 +116,28 @@ const ServicesPage = () => {
       width: 70,
       formatter: formatAutoStart,
     },
-    { name: 'action', title: 'Action', width: 150, formatter: formatAction },
+    { name: 'action', title: 'Action', width: 100, formatter: formatAction },
   ];
 
-  // get random number between 0 and 1000
-  // this is used to force a reload of the table
-
-  const handlePubSub = async (topic, message) => {
-    setServices((prevData) => {
-      const newData = [...prevData];
-      const index = newData.findIndex((service) => service.id === message.id);
-      if (index !== -1) {
-        newData[index]['status'] = message.state;
-        newData[index]['last_seen'] = message.last_seen_before;
-        newData[index]['autostart'] = message.autostart;
-      }
-      return newData;
-    });
-  }; // handlePubSub
-
   useEffect(() => {
-    const token = PubSub.subscribe('service_state', handlePubSub);
-    return () => PubSub.unsubscribe(token);
-  }, []);
+    const handlePubSub = async (topic, message) => {
+      setServices((prevData) => {
+        const newData = [...prevData];
+        const index = newData.findIndex((service) => service.id === message.id);
+        if (index !== -1) {
+          newData[index]['status'] = message.state;
+          newData[index]['last_seen'] = message.last_seen_before;
+          newData[index]['autostart'] = message.autostart;
+        }
+        return newData;
+      });
+    }; // handlePubSub
+
+    const unsubscribe = ws.subscribe('service_state', handlePubSub);
+    return () => {
+      unsubscribe();
+    };
+  }, [ws]);
 
   return (
     <Section className="grow">
