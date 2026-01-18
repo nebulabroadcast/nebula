@@ -1,7 +1,7 @@
-import type { RowData, TableColumn } from './types';
+import type { TableRowData, TableColumn } from './types';
 
 interface BodyCellProps {
-  rowData: RowData;
+  rowData: TableRowData;
   column: TableColumn;
 }
 

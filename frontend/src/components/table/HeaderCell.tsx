@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 
-import type { SortDirection, TableColumn } from './types';
+import type { TableSortDirection, TableColumn } from './types';
 
 const SortIcon = ({ children }: { children: React.ReactNode }) => (
   <span className="icon material-symbols-outlined">{children}</span>
@@ -8,8 +8,8 @@ const SortIcon = ({ children }: { children: React.ReactNode }) => (
 
 interface HeaderCellProps {
   column: TableColumn;
-  sortDirection?: SortDirection;
-  onSort?: (name: string, direction: SortDirection) => void;
+  sortDirection?: TableSortDirection;
+  onSort?: (name: string, direction: TableSortDirection) => void;
 }
 
 const HeaderCell = ({ column, sortDirection, onSort }: HeaderCellProps) => {

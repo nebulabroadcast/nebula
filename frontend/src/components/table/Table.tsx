@@ -6,50 +6,27 @@ import { Loader, LoaderWrapper } from '../Loader';
 import DataRow from './DataRow';
 import HeaderCell from './HeaderCell';
 import TableWrapper from './TableWrapper';
-import type { RowData, TableColumn, SortDirection } from './types';
+import type { TableRowData, TableColumn, TableSortDirection, TableDroppable, TableDraggableItem, } from './types';
 
-interface TableDroppable {
-  type: string;
-  items: {
-    id: string | number;
-    type: string;
-    title?: string;
-    subtitle?: string;
-    duration?: number;
-    mark_in?: number;
-    mark_out?: number;
-  }[];
-}
-
-interface DraggableItem {
-  id: string | number;
-  type: string;
-  title?: string;
-  subtitle?: string;
-  duration?: number;
-  mark_in?: number;
-  mark_out?: number;
-  subclips?: any[];
-}
 
 interface TableProps {
-  data: RowData[];
+  data: TableRowData[];
   columns: TableColumn[];
   className?: string;
   style?: React.CSSProperties;
   keyField?: string;
   onRowClick?: (
-    rowData: RowData,
+    rowData: TableRowData,
     event: React.MouseEvent<HTMLTableRowElement, MouseEvent>
   ) => void;
   onKeyDown?: (event: React.KeyboardEvent<HTMLTableElement>) => void;
   selection?: (string | number)[];
-  rowHighlightColor?: (rowData: RowData) => string | undefined;
-  rowHighlightStyle?: (rowData: RowData) => 'none' | 'solid' | 'dotted' | undefined;
-  rowClass?: (rowData: RowData) => string;
+  rowHighlightColor?: (rowData: TableRowData) => string | undefined;
+  rowHighlightStyle?: (rowData: TableRowData) => 'none' | 'solid' | 'dotted' | undefined;
+  rowClass?: (rowData: TableRowData) => string;
   sortBy?: string;
-  sortDirection?: SortDirection;
-  onSort?: (name: string, direction: SortDirection) => void;
+  sortDirection?: TableSortDirection;
+  onSort?: (name: string, direction: TableSortDirection) => void;
   onLoadMore?: () => void;
   contextMenu?: () => ContextMenuOption[];
   droppable?: TableDroppable;
@@ -112,7 +89,7 @@ const Table = ({
   }, [droppable]);
 
   const body = useMemo(() => {
-    const draggableItems: DraggableItem[] = [];
+    const draggableItems: TableDraggableItem[] = [];
     if (selection && selection.length > 0) {
       for (let i = 0; i < data.length; i++) {
         const row = data[i];

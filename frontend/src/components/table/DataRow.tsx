@@ -3,30 +3,22 @@ import clsx from 'clsx';
 import React, { useMemo } from 'react';
 
 import BodyCell from './BodyCell';
-import { RowData, TableColumn } from './types';
+import { TableRowData, TableColumn, TableDraggableItem } from './types';
 
 interface DataRowProps {
-  rowData: RowData;
+  rowData: TableRowData;
   columns: TableColumn[];
   onRowClick?: (
-    rowData: RowData,
+    rowData: TableRowData,
     event: React.MouseEvent<HTMLTableRowElement, MouseEvent>
   ) => void;
-  rowHighlightColor?: (rowData: RowData) => string | undefined;
-  rowHighlightStyle?: (rowData: RowData) => 'none' | 'solid' | 'dotted' | undefined;
-  rowClass?: (rowData: RowData) => string;
+  rowHighlightColor?: (rowData: TableRowData) => string | undefined;
+  rowHighlightStyle?: (rowData: TableRowData) => 'none' | 'solid' | 'dotted' | undefined;
+  rowClass?: (rowData: TableRowData) => string;
   ident: string | number;
   index: number;
   selected?: boolean;
-  draggableItems?: {
-    id: string | number;
-    type: string;
-    title?: string;
-    subtitle?: string;
-    duration?: number;
-    mark_in?: number;
-    mark_out?: number;
-  }[];
+  draggableItems?: TableDraggableItem[];
 }
 
 const DataRow = ({
@@ -88,7 +80,10 @@ const DataRow = ({
   if (highlightColor) rowStyle['borderLeftColor'] = highlightColor;
   if (highlightStyle) rowStyle['borderLeftStyle'] = highlightStyle;
 
-  // Embedded progress bar
+  //
+  // Row-Embedded progress bar
+  //
+
   if (rowData.progress && rowData.progress > 0 && rowData.progress < 100) {
     rowStyle['--progress'] = rowData.progress + '%';
     rowStyle['--progress-opacity'] = 0.2;
