@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "lint": "eslint src/**/*.{jsx,tsx,js,ts}",
     "format": "prettier . --write",
+    "format:check": "prettier . --check",
     "generate": "openapi-ts"
   },
   "dependencies": {

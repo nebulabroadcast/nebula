@@ -3,7 +3,8 @@ VERSION=$(shell cd backend && uv run python -c 'import nebula' --version)
 
 check:
 	cd frontend && \
-		yarn format
+		yarn lint && \
+		yarn format:check
 
 	cd backend && \
 		sed -i "s/^version = \".*\"/version = \"$(VERSION)\"/" pyproject.toml && \
