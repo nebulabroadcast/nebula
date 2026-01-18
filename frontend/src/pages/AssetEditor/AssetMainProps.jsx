@@ -20,7 +20,6 @@ import AssigneesButton from './AssigneesButton';
 import ContextActionResult from './ContextAction';
 import MetadataDetail from './MetadataDetail';
 
-
 const AssetEditorNav = ({ assetData, setMeta, enabledActions }) => {
   const [detailsVisible, setDetailsVisible] = useState(false);
   const [contextActionResult, setContextActionResult] = useState(null);

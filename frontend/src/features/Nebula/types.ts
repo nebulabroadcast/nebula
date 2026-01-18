@@ -22,4 +22,3 @@ export interface NebulaContextType extends NebulaState {
   setSearchQuery: (query: string) => void;
   setSelectedAssets: (assetIds: number[]) => void;
 }
-

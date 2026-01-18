@@ -21,7 +21,6 @@ export interface MediaUploadTask {
   controller: AbortController; // Used for cancellation
 }
 
-
 export interface MediaUploadContextType {
   queue: MediaUploadTask[];
   addToQueue: (file: File, id: string, title: string) => void;

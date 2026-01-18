@@ -1,4 +1,7 @@
-export type WebSocketMessageData = Record<string, string | number | boolean | object | null>;
+export type WebSocketMessageData = Record<
+  string,
+  string | number | boolean | object | null
+>;
 
 export interface WebSocketContextType {
   isConnected: boolean;
@@ -8,4 +11,3 @@ export interface WebSocketContextType {
   ) => () => void;
   // Potentially: sendMessage: (message: any) => void;
 }
-
