@@ -226,7 +226,6 @@ const BrowserTable = ({ isDragging }) => {
       .request('ops', { operations })
       .then(() => {
         toast.success('Status updated');
-        //dispatch(reloadBrowser())
       })
       .catch((error) => {
         console.error(error);

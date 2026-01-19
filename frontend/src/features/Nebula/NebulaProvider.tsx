@@ -49,6 +49,9 @@ export const NebulaProvider: React.FC<NebulaProviderProps> = ({
   }, []);
 
   const setFocusedAsset = useCallback((assetId: number | null) => {
+    if (isNaN(assetId || 0) || assetId == 0) {
+      assetId = null;
+    }
     setNebulaState((prev) => ({ ...prev, focusedAsset: assetId }));
   }, []);
 
