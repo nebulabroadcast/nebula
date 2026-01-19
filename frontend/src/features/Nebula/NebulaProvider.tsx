@@ -54,6 +54,7 @@ export const NebulaProvider: React.FC<NebulaProviderProps> = ({
 
   const setPageTitle = useCallback((title: string, icon?: string) => {
     setNebulaState((prev) => ({ ...prev, pageTitle: { title, icon } }));
+    window.document.title = `${title} | NEBULA`;
   }, []);
 
   const setCurrentChannel = useCallback((channelId: number | null) => {
