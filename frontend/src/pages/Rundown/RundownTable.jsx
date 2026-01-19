@@ -1,14 +1,14 @@
-import { useMemo, useRef, useEffect } from 'react';
-import { useSelector } from 'react-redux';
-import { useSearchParams, useLocation } from 'react-router-dom';
-
 import nebula from '/src/nebula';
-import { Table } from '/src/components';
-import { useDialog } from '/src/hooks';
-import { formatRowHighlightColor, formatRowHighlightStyle } from '/src/tableFormat';
+import { Table } from '@components';
+import { useDialog } from '@features/Dialogs';
+import { formatRowHighlightColor, formatRowHighlightStyle } from '@lib/tableFormat';
+import { useMemo, useRef, useEffect } from 'react';
+import { useSearchParams, useLocation } from 'react-router';
 
 import RundownTableWrapper from './RundownTableWrapper';
 import { getRunModeOptions, getRundownColumns } from './utils';
+
+import { useNebula } from '@/features/Nebula';
 
 const RundownTable = ({
   data,
@@ -30,13 +30,13 @@ const RundownTable = ({
   const [_searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
   const lastHash = useRef('');
-  const currentChannel = useSelector((state) => state.context.currentChannel);
+  const { currentChannelId } = useNebula();
   const tableRef = useRef();
   const showDialog = useDialog();
 
   const channelConfig = useMemo(() => {
-    return nebula.getPlayoutChannel(currentChannel);
-  }, [currentChannel]);
+    return nebula.getPlayoutChannel(currentChannelId);
+  }, [currentChannelId]);
 
   //
   // Scroll to the event definded in the hash when the component mounts
@@ -252,7 +252,7 @@ const RundownTable = ({
       if (rundownMode === 'control' && rowData.type === 'item') {
         nebula
           .request('playout', {
-            id_channel: currentChannel,
+            id_channel: currentChannelId,
             action: 'cue',
             payload: { id_item: rowData.id },
           })

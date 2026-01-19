@@ -1,8 +1,8 @@
 import clsx from 'clsx';
 import { useState, useEffect, useRef } from 'react';
-import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import styled from 'styled-components';
+import { useNebula } from '/src/features/Nebula';
 
 import nebula from '/src/nebula';
 import { Button, Progress } from '/src/components';
@@ -66,7 +66,7 @@ const s2tc = (seconds, fps) => {
 };
 
 const PlayoutControls = ({ playoutStatus, rundownMode, loadRundown, onError }) => {
-  const currentChannel = useSelector((state) => state.context.currentChannel);
+  const { currentChannelId } = useNebula();
 
   const [progress, setProgress] = useState(0);
   const [progressClassName, setProgressClassName] = useState(null);
@@ -134,7 +134,7 @@ const PlayoutControls = ({ playoutStatus, rundownMode, loadRundown, onError }) =
     console.log('Command', command);
     nebula
       .request('playout', {
-        id_channel: currentChannel,
+        id_channel: currentChannelId,
         action: command,
         payload,
       })

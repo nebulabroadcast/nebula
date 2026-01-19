@@ -1,5 +1,5 @@
 import nebula from '/src/nebula';
-import { getColumnWidth, getFormatter } from '/src/tableFormat';
+import { getColumnWidth, getFormatter } from '@lib/tableFormat';
 
 const getRunModeOptions = (object_type, selection, func) => {
   if (object_type === 'event') {

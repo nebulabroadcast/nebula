@@ -1,13 +1,12 @@
+import Browser from '@containers/Browser';
 import Splitter, { SplitDirection } from '@devbookhq/splitter';
 import { DndContext, MouseSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { useNebula } from '@features/Nebula';
+import { useLocalStorage } from '@lib/useLocalStorage';
 import { useMemo, useEffect, useState, useRef } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router';
 import styled from 'styled-components';
 
-import { useLocalStorage } from '/src/hooks';
-import { setFocusedAsset, setSelectedAssets } from '/src/actions';
-import Browser from '/src/containers/Browser';
 import AssetEditor from '/src/pages/AssetEditor';
 import Scheduler from '/src/pages/Scheduler';
 
@@ -50,8 +49,7 @@ const MAMPage = () => {
   // It will render the correct page based on the URL
   // along with the browser component
 
-  const focusedAsset = useSelector((state) => state.context.focusedAsset);
-  const dispatch = useDispatch();
+  const { focusedAsset, setFocusedAsset, setSelectedAssets } = useNebula();
   const { module } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const [splitterSizes, setSplitterSizes] = useLocalStorage('mam.splitterSizes', null);
@@ -99,8 +97,8 @@ const MAMPage = () => {
       const assetId = parseInt(searchParams.get('asset'));
       if (isNaN(assetId)) return;
       if (assetId === focusedAsset) return;
-      dispatch(setFocusedAsset(assetId));
-      dispatch(setSelectedAssets([assetId]));
+      setFocusedAsset(assetId);
+      setSelectedAssets([assetId]);
     }
   }, [searchParams.get('asset')]);
 

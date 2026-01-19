@@ -1,19 +1,17 @@
+import { useDialog } from '@features/Dialogs';
+import { useNebula } from '@features/Nebula';
+import { useWebSocket } from '@features/Websocket';
+import { useLocalStorage } from '@lib/useLocalStorage';
+import { dateToDateString } from '@lib/utils';
 import { useState, useEffect, useRef } from 'react';
-import { useSelector } from 'react-redux';
-
-import { useLocalStorage, useDialog } from '/src/hooks';
-
 import { toast } from 'react-toastify';
 
 import nebula from '/src/nebula';
-import { dateToDateString } from '/src/utils';
 
 import PlayoutControls from './PlayoutControls';
 import RundownEditTools from './RundownEditTools';
 import RundownNav from './RundownNav';
 import RundownTable from './RundownTable';
-
-import { useWebSocket } from '@/features/Websocket';
 
 const Rundown = ({ draggedObjects }) => {
   const showDialog = useDialog();
@@ -23,7 +21,7 @@ const Rundown = ({ draggedObjects }) => {
   // States
   //
 
-  const currentChannel = useSelector((state) => state.context.currentChannel);
+  const { currentChannelId } = useNebula();
 
   const [startTime, setStartTime] = useState(null);
   const [rundownMode, setRundownMode] = useLocalStorage('mam.rundown.mode', 'edit');
@@ -42,7 +40,7 @@ const Rundown = ({ draggedObjects }) => {
 
   const rundownDataRef = useRef(rundown);
   const currentDateRef = useRef(startTime);
-  const currentChannelRef = useRef(currentChannel);
+  const currentChannelRef = useRef(currentChannelId);
   const rundownModeRef = useRef(rundownMode);
 
   useEffect(() => {
@@ -54,9 +52,9 @@ const Rundown = ({ draggedObjects }) => {
   }, [startTime]);
 
   useEffect(() => {
-    currentChannelRef.current = currentChannel;
+    currentChannelRef.current = currentChannelId;
     setPlayoutStatus(null);
-  }, [currentChannel]);
+  }, [currentChannelId]);
 
   useEffect(() => {
     rundownModeRef.current = rundownMode;
@@ -91,7 +89,7 @@ const Rundown = ({ draggedObjects }) => {
     loadRundown();
   }, [
     startTime,
-    currentChannel,
+    currentChannelId,
     playoutStatus?.current_item,
     playoutStatus?.cued_item,
   ]);

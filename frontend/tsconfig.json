@@ -22,14 +22,14 @@
     "types": ["vite/client"],
     "baseUrl": "src",
     "paths": {
-      "@actions": ["./actions"],
-      "@actions/*": ["./actions/*"],
       "@components": ["./components"],
       "@components/*": ["./components/*"],
       "@containers": ["./containers"],
       "@containers/*": ["./containers/*"],
-      "@hooks": ["./hooks"],
-      "@hooks/*": ["./hooks/*"],
+      "@features": ["./features"],
+      "@features/*": ["./features/*"],
+      "@lib": ["./lib"],
+      "@lib/*": ["./lib/*"],
       "@types": ["./types"],
       "@": ["./"],
       "@/*": ["./*"]

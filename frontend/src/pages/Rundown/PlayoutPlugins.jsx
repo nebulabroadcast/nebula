@@ -1,7 +1,7 @@
 import { useMemo, useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import styled from 'styled-components';
+import { useNebula } from '/src/features/Nebula';
 
 import nebula from '/src/nebula';
 import {
@@ -48,7 +48,7 @@ const PluginSlot = ({ slot, value, onChange }) => {
 };
 
 const PluginPanel = ({ plugin, onError }) => {
-  const currentChannel = useSelector((state) => state.context.currentChannel);
+  const { currentChannelId } = useNebula();
   const [formData, setFormData] = useState({});
 
   if (!plugin) {
@@ -67,7 +67,7 @@ const PluginPanel = ({ plugin, onError }) => {
               nebula
                 .request('playout', {
                   action: 'plugin_exec',
-                  id_channel: currentChannel,
+                  id_channel: currentChannelId,
                   payload: {
                     name: plugin.name,
                     action: slot.name,
@@ -123,14 +123,14 @@ const PluginPanel = ({ plugin, onError }) => {
 };
 
 const PlayoutPlugins = ({ onError }) => {
-  const currentChannel = useSelector((state) => state.context.currentChannel);
+  const { currentChannelId } = useNebula();
   const [pluginList, setPluginList] = useState([]);
   const [currentPlugin, setCurrentPlugin] = useState(null);
 
   useEffect(() => {
     nebula
       .request('playout', {
-        id_channel: currentChannel,
+        id_channel: currentChannelId,
         action: 'plugin_list',
       })
       .then((res) => {
@@ -141,7 +141,7 @@ const PlayoutPlugins = ({ onError }) => {
       })
       .catch(onError);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentChannel]);
+  }, [currentChannelId]);
 
   const pluginOptions = useMemo(() => {
     return pluginList

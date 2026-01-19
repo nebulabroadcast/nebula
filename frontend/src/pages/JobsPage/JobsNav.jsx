@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink } from 'react-router';
 
 import { Navbar, InputText, Button, Spacer } from '/src/components';
 

@@ -15,8 +15,8 @@ import VideoPlayer from '/src/containers/VideoPlayer';
 
 import Subclip from './Subclip';
 
-import { useKeyDown } from '/src/hooks';
-import { arrayEquals } from '/src/utils';
+import { useKeyDown } from '@lib/useKeyDown';
+import { arrayEquals } from '@lib/utils';
 
 const SubclipsPanel = ({ subclips, setSubclips, selection, setSelection, fps }) => {
   return (

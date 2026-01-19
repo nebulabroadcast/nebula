@@ -1,15 +1,14 @@
 import { useState, useMemo } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
 
 import nebula from '/src/nebula';
 
 import ApplySchedulingTemplate from './ApplySchedulingTemplate';
 import { createTitle } from './utils';
 
-import { setPageTitle } from '/src/actions';
 import { Navbar, Button, Spacer } from '/src/components';
 import DateNav from '/src/containers/DateNav';
 import DraggableIcon from '/src/containers/DraggableIcon';
+import { useNebula } from '/src/features/Nebula';
 
 const dragIcons = [
   {
@@ -30,13 +29,12 @@ const SchedulerNav = ({
   loading,
   setLoading,
 }) => {
-  const currentChannel = useSelector((state) => state.context.currentChannel);
-  const dispatch = useDispatch();
+  const { setPageTitle, currentChannelId } = useNebula();
   const [date, setDate] = useState();
 
   const channelConfig = useMemo(() => {
-    return nebula.getPlayoutChannel(currentChannel);
-  }, [currentChannel]);
+    return nebula.getPlayoutChannel(currentChannelId);
+  }, [currentChannelId]);
 
   const onDateChange = (date) => {
     const [dsHH, dsMM] = channelConfig?.day_start || [7, 0];
@@ -48,7 +46,7 @@ const SchedulerNav = ({
     weekStart.setHours(dsHH, dsMM, 0, 0);
 
     const pageTitle = createTitle(weekStart, channelConfig?.name || 'Unknown channel');
-    dispatch(setPageTitle({ title: pageTitle }));
+    setPageTitle(pageTitle);
     setStartTime(weekStart);
     setDate(date);
   };

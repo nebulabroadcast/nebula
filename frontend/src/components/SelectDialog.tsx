@@ -5,9 +5,8 @@ import styled from 'styled-components';
 import Button from './Button';
 import Dialog from './Dialog';
 import InputText from './InputText';
+import { sortByKey } from './lib/sortByKey';
 import { getTheme } from './theme';
-
-import { sortByKey } from '@/utils';
 
 export interface SelectOption {
   value: string; // Changed from string | number

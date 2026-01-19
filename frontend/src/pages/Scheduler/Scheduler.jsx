@@ -1,18 +1,18 @@
 import { DateTime } from 'luxon';
 import { useState, useEffect, useMemo } from 'react';
-import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 
 import nebula from '/src/nebula';
-import { useDialog } from '/src/hooks';
-import { Loader, LoaderWrapper } from '/src/components';
-import Calendar from '/src/containers/Calendar';
-import { Section } from '/src/components';
+import Calendar from '@containers/Calendar';
+
+import { Section, Loader, LoaderWrapper } from '@components';
+import { useDialog } from '@features/Dialogs';
+import { useNebula } from '@/features/Nebula';
 
 import SchedulerNav from './SchedulerNav';
 
 const Scheduler = ({ draggedObjects }) => {
-  const currentChannel = useSelector((state) => state.context.currentChannel);
+  const { currentChannelId } = useNebula();
   const [loading, setLoading] = useState(false);
 
   const [startTime, setStartTime] = useState();
@@ -20,8 +20,8 @@ const Scheduler = ({ draggedObjects }) => {
   const showDialog = useDialog();
 
   const channelConfig = useMemo(() => {
-    return nebula.getPlayoutChannel(currentChannel);
-  }, [currentChannel]);
+    return nebula.getPlayoutChannel(currentChannelId);
+  }, [currentChannelId]);
 
   const draggedAsset = useMemo(() => {
     if (!draggedObjects) return null;
@@ -57,7 +57,7 @@ const Scheduler = ({ draggedObjects }) => {
   };
 
   const requestParams = {
-    id_channel: currentChannel,
+    id_channel: currentChannelId,
     date: DateTime.fromJSDate(startTime).toFormat('yyyy-MM-dd'),
   };
 
@@ -235,7 +235,7 @@ const Scheduler = ({ draggedObjects }) => {
   useEffect(() => {
     if (!startTime) return;
     loadEvents();
-  }, [startTime, currentChannel]);
+  }, [startTime, currentChannelId]);
 
   return (
     <main className="column">

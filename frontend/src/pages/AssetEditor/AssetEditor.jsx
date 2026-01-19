@@ -1,27 +1,20 @@
 import nebula from '/src/nebula';
 
+import { Loader, Section } from '@components';
+import MetadataEditor from '@containers/MetadataEditor';
+import { useDialog } from '@features/Dialogs';
+import { useNebula } from '@features/Nebula';
+import { useWebSocket } from '@features/Websocket';
+import { useLocalStorage } from '@lib/useLocalStorage';
 import clsx from 'clsx';
 import { isEqual, isEmpty } from 'lodash';
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router';
 import { toast } from 'react-toastify';
-
-import { useLocalStorage, useDialog } from '/src/hooks';
-import {
-  setPageTitle,
-  reloadBrowser,
-  setSelectedAssets,
-  setFocusedAsset,
-} from '/src/actions';
-import { Loader, Section } from '/src/components';
 
 import AssetMainProps from './AssetMainProps';
 import AssetEditorNav from './EditorNav';
-import MetadataEditor from '/src/containers/MetadataEditor';
 import Preview from './Preview';
-
-import { useWebSocket } from '@/features/Websocket';
 
 const getEnabledActions = ({ assetData, isChanged }) => {
   // Return an object with all the actions that are enabled
@@ -67,8 +60,13 @@ const getEnabledActions = ({ assetData, isChanged }) => {
 };
 
 const AssetEditor = () => {
-  const focusedAsset = useSelector((state) => state.context.focusedAsset);
-  const dispatch = useDispatch();
+  const {
+    focusedAsset,
+    setPageTitle,
+    reloadBrowser,
+    setSelectedAssets,
+    setFocusedAsset,
+  } = useNebula();
   const [assetData, setAssetData] = useState({});
   const [originalData, setOriginalData] = useState({});
   const [loading, setLoading] = useState(false);
@@ -203,12 +201,12 @@ const AssetEditor = () => {
         const separator = nebula.settings.system.subtitle_separator || ' - ';
         title = `${title}${separator}${assetData.subtitle}`;
       }
-      dispatch(setPageTitle({ title }));
+      setPageTitle(title);
     } else {
       const folderName = assetData.id_folder
         ? nebula.getFolderName(assetData.id_folder).toLowerCase()
         : 'asset';
-      dispatch(setPageTitle({ title: folderName, icon: 'fiber_new' }));
+      setPageTitle(folderName, 'fiber_new');
     }
   }, [assetData?.id, assetData?.id_folder]);
 
@@ -282,7 +280,7 @@ const AssetEditor = () => {
               // reload browser if it's a new asset
               // (if it already exists, it will be updated over ws,
               // but new assets won't be displayed until the browser is reloaded)
-              if (!assetData.id) dispatch(reloadBrowser());
+              if (!assetData.id) reloadBrowser();
             })
             .catch((error) => {
               toast.error(
@@ -313,8 +311,8 @@ const AssetEditor = () => {
   const onNewAsset = () => {
     const currentFolder = assetData.id_folder;
     setEditorMode('metadata');
-    dispatch(setSelectedAssets([]));
-    dispatch(setFocusedAsset(null));
+    setSelectedAssets([]);
+    setFocusedAsset(null);
     if (
       nebula
         .getWritableFolders()
@@ -339,8 +337,8 @@ const AssetEditor = () => {
       )
         ndata[field] = assetData[field];
     }
-    dispatch(setSelectedAssets([]));
-    dispatch(setFocusedAsset(null));
+    setSelectedAssets([]);
+    setFocusedAsset(null);
     setAssetData(ndata);
   };
 
@@ -359,7 +357,7 @@ const AssetEditor = () => {
         .request('set', { id: assetData.id, data: payload || assetData })
         .then(() => {
           //reload browser if it's a new asset
-          if (!assetData.id) dispatch(reloadBrowser());
+          if (!assetData.id) reloadBrowser();
           // loadAsset(response.data.id);
           // Just wait for ws message to update the asset data
         })
@@ -375,7 +373,7 @@ const AssetEditor = () => {
       // we don't clear the loading state here,
       // we wait for the ws message that confirms the asset has been updated
     },
-    [assetData, enabledActions.save, dispatch, loadAsset]
+    [assetData, enabledActions.save, loadAsset]
   );
 
   // Keyboard shortcuts

@@ -8,8 +8,8 @@ export default ({ mode }) => {
       alias: {
         '@containers': '/src/containers',
         '@components': '/src/components',
-        '@actions': '/src/actions',
-        '@hooks': '/src/hooks',
+        '@features': '/src/features',
+        '@lib': '/src/lib',
         '@types': '/src/types',
         '@': '/src',
       },
@@ -39,6 +39,12 @@ export default ({ mode }) => {
         },
       },
     },
-    plugins: [react()],
+    plugins: [
+      react({
+        babel: {
+          plugins: ['babel-plugin-react-compiler'],
+        },
+      }),
+    ],
   });
 };

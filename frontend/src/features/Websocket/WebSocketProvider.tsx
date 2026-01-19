@@ -1,15 +1,6 @@
 import React, { createContext, useState, useEffect, useRef, useCallback } from 'react';
 
-type WebSocketMessageData = Record<string, string | number | boolean | object | null>;
-
-export interface WebSocketContextType {
-  isConnected: boolean;
-  subscribe: (
-    topic: string,
-    handler: (topic: string, message: WebSocketMessageData) => void
-  ) => () => void;
-  // Potentially: sendMessage: (message: any) => void;
-}
+import type { WebSocketMessageData, WebSocketContextType } from './types';
 
 export const WebSocketContext = createContext<WebSocketContextType | undefined>(
   undefined

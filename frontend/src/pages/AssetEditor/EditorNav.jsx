@@ -1,7 +1,11 @@
 import { Navbar, Button, Spacer, RadioButton, ToolbarSeparator } from '/src/components';
 
 const QC_STATE_OPTIONS = [
-  { value: 0, icon: 'flag', tooltip: 'Revert QC state' },
+  {
+    value: 0,
+    icon: 'flag',
+    tooltip: 'Revert QC state',
+  },
   {
     value: 3,
     icon: 'flag',

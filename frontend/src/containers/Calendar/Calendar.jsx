@@ -1,19 +1,16 @@
 import nebula from '/src/nebula';
 
+import { ContextMenu } from '@components';
+import { useLocalStorage } from '@lib/useLocalStorage';
+import { dateToDateString } from '@lib/utils';
 import { useRef, useMemo, useEffect, useState, useCallback } from 'react';
-import { NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation } from 'react-router';
 import styled from 'styled-components';
 
 import CalendarWrapper from './CalendarWrapper';
-
-import ContextMenu from '/src/components/ContextMenu';
-
 import drawEvents from './drawEvents';
 import drawMarks from './drawMarks';
 import ZoomControl from './ZoomControl';
-
-import { useLocalStorage } from '/src/hooks';
-import { dateToDateString } from '/src/utils';
 
 const CalendarCanvas = styled.canvas`
   background-color: #24202e;
@@ -177,11 +174,11 @@ const Calendar = ({
           timePos.x + 10,
           timePos.y,
           dayWidth - 10,
-          hourHeight * (draggedAsset.duration / 3600)
+          Math.max(hourHeight * (draggedAsset.duration / 3600), 4)
         );
         ctx.fill();
       } else if (draggedEvent.current) {
-        ctx.fillStyle = '#cff';
+        ctx.fillStyle = '#fff';
         ctx.fillText(
           `${cursorTime.current.toLocaleString()}: ${draggedEvent.current.title}`,
           x + 20,

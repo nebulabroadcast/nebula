@@ -1,8 +1,8 @@
 import nebula from '/src/nebula';
 
+import { useNebula } from '@features/Nebula';
 import { useMemo } from 'react';
-import { useSelector } from 'react-redux';
-import { NavLink, useNavigate, useSearchParams } from 'react-router-dom';
+import { NavLink, useNavigate, useSearchParams } from 'react-router';
 
 import { Navbar, Dropdown } from '/src/components';
 
@@ -12,7 +12,7 @@ import PageTitle from './PageTitle';
 
 const MainNavbar = () => {
   const navigate = useNavigate();
-  const focusedAsset = useSelector((state) => state.context.focusedAsset);
+  const { focusedAsset } = useNebula();
   const [searchParams, _setSearchParams] = useSearchParams();
 
   const mamSuffix = useMemo(() => {
