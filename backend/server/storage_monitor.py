@@ -70,7 +70,7 @@ async def handle_samba_storage(storage: Storage) -> None:
     try:
         await asyncio.to_thread(exec_mount, cmd)
     except RuntimeError as e:
-        if storage.mount_attempts < 5:
+        if storage.mount_attempts < 3:
             nebula.log.error(str(e))
         storage.last_mount_attempt = time.time()
         storage.mount_attempts += 1

@@ -295,16 +295,29 @@ def build_query(
 
     ft_cte = ft_join = ""
     if request.query:
-        q_list = [
-            f"'{f}%'" for f in slugify(request.query, make_set=True, min_length=3)
-        ]
-        if q_list:
-            ft_cte = f"""
-            WITH ft_cte AS (
-                SELECT DISTINCT id FROM ft
-                WHERE object_type = 0
-                AND value LIKE ANY(ARRAY[{",".join(q_list)}])
+        # use slugify to generate search terms
+        like_tokens = [
+            f"'{f}%'"
+            for f in slugify(
+                request.query,
+                make_set=True,
+                min_length=3,
             )
+        ]
+
+        if like_tokens:
+            ft_cte = f"""
+
+            WITH ft_cte AS (
+                SELECT ft.id
+                FROM ft
+                CROSS JOIN unnest(ARRAY[{",".join(like_tokens)}]) AS q(token)
+                WHERE ft.object_type = 0
+                AND ft.value LIKE q.token
+                GROUP BY ft.id
+                HAVING COUNT(DISTINCT q.token) = {len(like_tokens)}
+            )
+
             """
             ft_join = """JOIN ft_cte ON ft_cte.id = a.id"""
 
