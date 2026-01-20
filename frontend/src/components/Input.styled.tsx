@@ -57,7 +57,8 @@ export const InputStyle = css`
 
   &.textarea {
     padding: ${getTheme().inputPadding};
-    min-height: 60px;
+    min-height: 120px;
+    min-width: 300px;
     max-height: 400px !important;
     resize: vertical;
   }
