@@ -276,11 +276,15 @@ const AssetEditor = () => {
         .then(() => {
           nebula
             .request('set', { id: assetData.id, data: assetData })
-            .then(() => {
+            .then((res) => {
               // reload browser if it's a new asset
               // (if it already exists, it will be updated over ws,
               // but new assets won't be displayed until the browser is reloaded)
-              if (!assetData.id) reloadBrowser();
+              if (!assetData.id) {
+                const newId = res.data.id;
+                setFocusedAsset(newId);
+                reloadBrowser();
+              }
             })
             .catch((error) => {
               toast.error(
@@ -355,10 +359,14 @@ const AssetEditor = () => {
       setLoading(true);
       nebula
         .request('set', { id: assetData.id, data: payload || assetData })
-        .then(() => {
+        .then((res) => {
           //reload browser if it's a new asset
-          if (!assetData.id) reloadBrowser();
-          // loadAsset(response.data.id);
+          if (!assetData.id) {
+            const newId = res.data.id;
+            loadAsset(newId);
+            reloadBrowser();
+          }
+          // if asset already exists, we wait for the ws message to update the data
           // Just wait for ws message to update the asset data
         })
         .catch((error) => {
