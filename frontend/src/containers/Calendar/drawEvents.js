@@ -31,7 +31,7 @@ const drawEvents = (ctx, drawParams, events, draggedEvent) => {
     const gradientEnd = startPos.y + eventHeight;
     const gradient = ctx.createLinearGradient(0, startPos.y, 0, gradientEnd);
     const eventColor = event.color
-      ? `#${event.color.toString(16).padStart(6, '0')}`
+      ? `#${event.color.toString(16).padStart(6, '0')}`.slice(0, 7)
       : '#7287fd';
 
     gradient.addColorStop(0, eventColor);
