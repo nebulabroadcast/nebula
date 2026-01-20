@@ -26,7 +26,7 @@ const App = () => {
 
   useEffect(() => {
     axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
-    axios.defaults.headers.common['X-Sender'] = nebula.senderId;
+    axios.defaults.headers.common['X-Client-Id'] = nebula.senderId;
     axios
       .post('/api/init', {})
       .then((response) => {

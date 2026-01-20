@@ -12,7 +12,7 @@ interface IconProps {
 
 const Icon = ({ icon, style }: IconProps) => {
   return (
-    <StyledIcon className="icon material-symbols-outlined" style={style} translate='no'>
+    <StyledIcon className="icon material-symbols-outlined" style={style} translate="no">
       {icon}
     </StyledIcon>
   );

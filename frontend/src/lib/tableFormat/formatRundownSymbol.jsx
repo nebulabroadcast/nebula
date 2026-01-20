@@ -1,20 +1,17 @@
 import nebula from '/src/nebula';
-import { Icon } from '@components'
+import { Icon } from '@components';
 
 const formatRundownSymbol = (rowData) => {
   let icon = '';
   const style = {};
   if (rowData.type === 'event') {
-
-    icon = 'star'
+    icon = 'star';
     if (rowData.promoted) {
-      style.color = '#FFD700' // Gold color for promoted events
+      style.color = '#FFD700'; // Gold color for promoted events
     } else {
-      style.color = '#343434' // Silver color for non-promoted events
+      style.color = '#343434'; // Silver color for non-promoted events
     }
-
   } else if (rowData.type === 'item') {
-
     //style.fontSize = '18px'
     if (rowData.id_asset) {
       const folder = nebula.settings.folders.find((f) => f.id === rowData.id_folder);
@@ -35,7 +32,6 @@ const formatRundownSymbol = (rowData) => {
     } else {
       icon = 'question_mark';
     }
-
   } else {
     return <td></td>;
   }

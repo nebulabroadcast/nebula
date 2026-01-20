@@ -1,15 +1,16 @@
+import { Section, Loader, LoaderWrapper } from '@components';
+import Calendar from '@containers/Calendar';
+import { useDialog } from '@features/Dialogs';
+import { useWebSocket } from '@features/Websocket';
 import { DateTime } from 'luxon';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { toast } from 'react-toastify';
 
 import nebula from '/src/nebula';
-import Calendar from '@containers/Calendar';
-
-import { Section, Loader, LoaderWrapper } from '@components';
-import { useDialog } from '@features/Dialogs';
-import { useNebula } from '@/features/Nebula';
 
 import SchedulerNav from './SchedulerNav';
+
+import { useNebula } from '@/features/Nebula';
 
 const Scheduler = ({ draggedObjects }) => {
   const { currentChannelId } = useNebula();
@@ -18,6 +19,9 @@ const Scheduler = ({ draggedObjects }) => {
   const [startTime, setStartTime] = useState();
   const [events, setEvents] = useState([]);
   const showDialog = useDialog();
+
+  const eventIdsRef = useRef(new Set());
+  const ws = useWebSocket();
 
   const channelConfig = useMemo(() => {
     return nebula.getPlayoutChannel(currentChannelId);
@@ -40,6 +44,7 @@ const Scheduler = ({ draggedObjects }) => {
   const onResponse = (response) => {
     const events = response.data.events;
     const startTs = startTime.getTime() / 1000;
+    eventIdsRef.current = new Set(events.map((e) => e.id));
     setEvents(events.filter((e) => e.start >= startTs));
     setLoading(false);
   };
@@ -236,6 +241,19 @@ const Scheduler = ({ draggedObjects }) => {
     if (!startTime) return;
     loadEvents();
   }, [startTime, currentChannelId]);
+
+  useEffect(() => {
+    const handlePubSub = (topic, message) => {
+      if (message.initiator === nebula.senderId) return;
+      if (topic !== 'objects_changed') return;
+      const { object_type, objects } = message;
+      if (object_type !== 'event') return;
+      const shouldReload = objects.some((id) => eventIdsRef.current.has(id));
+      if (shouldReload) loadEvents();
+    }; // handlePubSub
+    const unsubscribe = ws.subscribe('objects_changed', handlePubSub);
+    return () => unsubscribe();
+  }, [ws]);
 
   return (
     <main className="column">

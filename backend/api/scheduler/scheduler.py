@@ -46,7 +46,6 @@ async def scheduler(
 
     for event_data in events:
         if not editable:
-            # weird syntax, but keeps indentation level low
             break
 
         event_at_position = await get_event_at_time(channel.id, event_data.start)

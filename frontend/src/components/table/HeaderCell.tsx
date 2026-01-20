@@ -3,7 +3,9 @@ import React, { useMemo } from 'react';
 import type { TableSortDirection, TableColumn } from './types';
 
 const SortIcon = ({ children }: { children: React.ReactNode }) => (
-  <span className="icon material-symbols-outlined" translate="no">{children}</span>
+  <span className="icon material-symbols-outlined" translate="no">
+    {children}
+  </span>
 );
 
 interface HeaderCellProps {

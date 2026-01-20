@@ -48,7 +48,7 @@ const UriComponent = ({ children, ...props }) => {
           toast.success('Copied to clipboard');
         }}
       >
-        <Icon icon='content_copy' />
+        <Icon icon="content_copy" />
       </button>
     </UriWrapper>
   );

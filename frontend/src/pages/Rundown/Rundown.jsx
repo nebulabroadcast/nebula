@@ -42,6 +42,7 @@ const Rundown = ({ draggedObjects }) => {
   const currentDateRef = useRef(startTime);
   const currentChannelRef = useRef(currentChannelId);
   const rundownModeRef = useRef(rundownMode);
+  const eventIdsRef = useRef(new Set());
 
   useEffect(() => {
     rundownDataRef.current = rundown || [];
@@ -69,6 +70,9 @@ const Rundown = ({ draggedObjects }) => {
       ...rest,
       ...meta,
     }));
+    eventIdsRef.current = new Set(
+      rows.filter((r) => r.type === 'event').map((r) => r.id)
+    );
     setRundown(rows);
     setLoading(false);
   };
@@ -208,6 +212,22 @@ const Rundown = ({ draggedObjects }) => {
     };
 
     const unsubscribe = ws.subscribe('playout_status', handlePubSub);
+    return () => {
+      unsubscribe();
+    };
+  }, [ws]);
+
+  useEffect(() => {
+    const handlePubSub = (topic, message) => {
+      if (message.initiator === nebula.senderId) return;
+      if (topic !== 'objects_changed') return;
+      const { object_type, objects } = message;
+      if (object_type !== 'event') return;
+      const shouldReload = objects.some((id) => eventIdsRef.current.has(id));
+      if (shouldReload) loadRundown();
+    };
+
+    const unsubscribe = ws.subscribe('objects_changed', handlePubSub);
     return () => {
       unsubscribe();
     };

@@ -7,7 +7,7 @@ const PageTitle = () => {
 
   return (
     <NavbarTitle>
-      {icon && <Icon icon={icon}/>}
+      {icon && <Icon icon={icon} />}
       <span className="text">{title}</span>
     </NavbarTitle>
   );

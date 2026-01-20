@@ -34,7 +34,7 @@ async def bin_refresh(
         await b.save(notify=False)
 
     query = """
-    SELECT DISTINCT(c.id) AS id_event FROM events as e, channels AS c
+    SELECT DISTINCT(e.id) AS id_event FROM events as e, channels AS c
     WHERE
         c.channel_type = 0 AND
         c.id = e.id_channel AND
