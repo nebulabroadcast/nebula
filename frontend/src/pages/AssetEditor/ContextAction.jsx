@@ -1,4 +1,4 @@
-import { Dialog, Table, Button } from '@components';
+import { Dialog, Table, Button, Icon } from '@components';
 import formatMetaDatetime from '@lib/tableFormat/formatMetaDatetime';
 import { formatTimeString } from '@lib/utils';
 import ReactMarkdown from 'react-markdown';
@@ -48,7 +48,7 @@ const UriComponent = ({ children, ...props }) => {
           toast.success('Copied to clipboard');
         }}
       >
-        <span className="icon material-symbols-outlined">content_copy</span>
+        <Icon icon='content_copy' />
       </button>
     </UriWrapper>
   );

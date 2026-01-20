@@ -1,4 +1,4 @@
-import { NavbarTitle } from '@components';
+import { Icon, NavbarTitle } from '@components';
 import { useNebula } from '@features/Nebula';
 
 const PageTitle = () => {
@@ -7,7 +7,7 @@ const PageTitle = () => {
 
   return (
     <NavbarTitle>
-      {icon && <span className="icon material-symbols-outlined">{icon}</span>}
+      {icon && <Icon icon={icon}/>}
       <span className="text">{title}</span>
     </NavbarTitle>
   );

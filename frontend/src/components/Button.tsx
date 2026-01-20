@@ -47,7 +47,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>((props: ButtonProps, r
     >
       {label && iconOnRight && <span>{label}</span>}
       {icon && (
-        <span className="icon material-symbols-outlined" style={_iconStyle}>
+        <span className="icon material-symbols-outlined" style={_iconStyle} translate="no">
           {icon}
         </span>
       )}

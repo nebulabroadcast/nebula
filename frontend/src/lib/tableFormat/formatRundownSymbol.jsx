@@ -1,10 +1,11 @@
 import nebula from '/src/nebula';
+import { Icon } from '@components'
 
 const formatRundownSymbol = (rowData) => {
   let icon = '';
   const style = {};
   if (rowData.type === 'event') {
-  
+
     icon = 'star'
     if (rowData.promoted) {
       style.color = '#FFD700' // Gold color for promoted events
@@ -41,9 +42,7 @@ const formatRundownSymbol = (rowData) => {
 
   return (
     <td style={{ padding: 0 }}>
-      <span className="icon material-symbols-outlined" style={style}>
-        {icon}
-      </span>
+      <Icon style={style} icon={icon} />
     </td>
   );
 };
