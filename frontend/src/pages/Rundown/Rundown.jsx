@@ -65,7 +65,11 @@ const Rundown = ({ draggedObjects }) => {
   //
 
   const onResponse = (response) => {
-    setRundown(response.data.rows);
+    const rows = response.data.rows.map(({ meta, ...rest }) => ({
+    ...rest,
+    ...meta,
+  }));
+    setRundown(rows);
     setLoading(false);
   };
 

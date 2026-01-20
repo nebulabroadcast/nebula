@@ -37,7 +37,7 @@ const InputColor = ({ value, onChange, tooltip, disabled }: InputColorProps) => 
 
   const hexValue = useMemo(() => {
     if (!value) return '#7287fd';
-    return `#${value.toString(16).padStart(6, '0')}`;
+    return `#${value.toString(16).padStart(6, '0')}`.slice(0, 7);
   }, [value]);
 
   const setColor = (hex: string) => {
