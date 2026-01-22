@@ -1,4 +1,6 @@
 import nebula from '/src/nebula';
+import { useKeyDown } from '@lib/useKeyDown';
+import { arrayEquals } from '@lib/utils';
 import axios from 'axios';
 import { useState, useEffect, useMemo } from 'react';
 import { toast } from 'react-toastify';
@@ -15,8 +17,6 @@ import VideoPlayer from '/src/containers/VideoPlayer';
 
 import Subclip from './Subclip';
 
-import { useKeyDown } from '@lib/useKeyDown';
-import { arrayEquals } from '@lib/utils';
 
 const SubclipsPanel = ({ subclips, setSubclips, selection, setSelection, fps }) => {
   return (
@@ -127,7 +127,7 @@ const Preview = ({ assetData, setAssetData }) => {
   useEffect(() => {
     // when subclip list changes, update it in asset data
     if (!assetData) return;
-    const existingSubclips = [];
+    const existingSubclips = assetData.subclips || [];
     if (!arrayEquals(existingSubclips, subclips)) {
       patchAsset({ subclips: subclips.length ? subclips : null });
     }
