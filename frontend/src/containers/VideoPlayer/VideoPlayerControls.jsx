@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 
 import { Button, InputTimecode, Navbar } from '/src/components';
+import { isEditableTarget } from '@lib/useKeyDown';
 
 const VideoPlayerControls = ({
   markIn,
@@ -110,6 +111,10 @@ const VideoPlayerControls = ({
     const handleKeyDown = (e) => {
       // abort if modifier keys are pressed
       if (e.ctrlKey || e.altKey || e.metaKey) return;
+
+      // abort if focused on editable element
+      if (isEditableTarget(e.target)) return;
+
       // abort when shift key is pressed
       if (e.shiftKey) return;
 
