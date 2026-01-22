@@ -177,6 +177,7 @@ const Calendar = ({
           Math.max(hourHeight * (draggedAsset.duration / 3600), 4)
         );
         ctx.fill();
+
       } else if (draggedEvent.current) {
         ctx.fillStyle = '#fff';
         ctx.fillText(
@@ -192,7 +193,7 @@ const Calendar = ({
           timePos.x + 10,
           timePos.y,
           dayWidth - 10,
-          hourHeight * ((draggedEvent.current.duration || 300) / 3600)
+          Math.max(hourHeight * (draggedEvent.current.duration / 3600), 4)
         );
         ctx.fill();
       }
