@@ -52,14 +52,7 @@ const Scheduler = ({ draggedObjects }) => {
 
   const onError = (error) => {
     setLoading(false);
-    toast.error(
-      <div>
-        <p>
-          <strong>Scheduler API error</strong>
-        </p>
-        <p>{error.response?.data?.detail || 'Unknown error'}</p>
-      </div>
-    );
+    toast.error("Scheduler API error");
   };
 
   const requestParams = {
