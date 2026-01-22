@@ -27,13 +27,14 @@ const Scheduler = ({ draggedObjects }) => {
     return nebula.getPlayoutChannel(currentChannelId);
   }, [currentChannelId]);
 
-  const draggedAsset = useMemo(() => {
+  const draggedExternal = useMemo(() => {
     if (!draggedObjects) return null;
     if (draggedObjects?.length !== 1) {
       toast.error('Please drag only one asset');
       return;
     }
     if (!['asset', 'event'].includes(draggedObjects[0]?.type)) return null;
+    console.log('Dragged external object', draggedObjects[0]);
     return draggedObjects[0];
   }, [draggedObjects]);
 
@@ -99,15 +100,13 @@ const Scheduler = ({ draggedObjects }) => {
     try {
       const title = `Copy event: ${initialData.title || 'Untitled'}`;
       const res = await showDialog('metadata', title, { fields, initialData });
-      console.log('res', res);
       for (const field of fields) {
         finalData[field.name] = res[field.name] || null;
       }
+      saveEvent(finalData);
     } catch {
-      //
+      console.log('User cancelled event copy');
     }
-    console.log('finalData', finalData);
-    saveEvent(finalData);
   };
 
   const saveEvent = async (event) => {
@@ -271,7 +270,7 @@ const Scheduler = ({ draggedObjects }) => {
             events={events}
             saveEvent={saveEvent}
             copyEvent={copyEvent}
-            draggedAsset={draggedAsset}
+            draggedExternal={draggedExternal}
             contextMenu={contextMenu}
           />
         )}

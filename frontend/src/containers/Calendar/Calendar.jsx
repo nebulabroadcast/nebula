@@ -21,7 +21,7 @@ const DRAG_THRESHOLD = 10;
 
 const Calendar = ({
   startTime,
-  draggedAsset,
+  draggedExternal,
   events,
   saveEvent,
   copyEvent,
@@ -159,7 +159,7 @@ const Calendar = ({
     if (cursorTime.current && mousePos) {
       const { x, y } = mousePos;
 
-      if (draggedAsset) {
+      if (draggedExternal) {
         ctx.fillStyle = '#fff';
         ctx.fillText(
           `${cursorTime.current.toLocaleString(nebula.locale)}`,
@@ -174,7 +174,7 @@ const Calendar = ({
           timePos.x + 10,
           timePos.y,
           dayWidth - 10,
-          Math.max(hourHeight * (draggedAsset.duration / 3600), 4)
+          Math.max(hourHeight * ((draggedExternal.duration || 600) / 3600), 4)
         );
         ctx.fill();
 
@@ -282,10 +282,10 @@ const Calendar = ({
 
   const onMouseUp = (e) => {
     if (!calendarRef?.current) return;
-    if (draggedAsset && cursorTime.current) {
-      console.debug('Dropped asset', draggedAsset, cursorTime.current);
+    if (draggedExternal && cursorTime.current) {
+      console.debug('Dropped external', draggedExternal, cursorTime.current);
       saveEvent({
-        id_asset: draggedAsset.id,
+        id_asset: draggedExternal.id,
         is_empty_event: true,
         start: Math.floor(cursorTime.current.getTime() / 1000),
       });
