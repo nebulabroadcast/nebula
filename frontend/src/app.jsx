@@ -6,7 +6,7 @@ import { WebSocketProvider } from '@features/Websocket';
 import { useLocalStorage } from '@lib/useLocalStorage';
 import axios from 'axios';
 import { useState, useEffect, useMemo, Suspense } from 'react';
-import { Outlet } from 'react-router';
+import { Outlet, useLocation } from 'react-router';
 
 import LoadingPage from './pages/LoadingPage';
 import LoginPage from './pages/LoginPage';
@@ -21,6 +21,8 @@ const App = () => {
     const proto = window.location.protocol.replace('http', 'ws');
     return `${proto}//${window.location.host}/ws`;
   }, []);
+
+  const location = useLocation();
 
   // Ensure server connection
 
@@ -52,6 +54,13 @@ const App = () => {
       .catch((err) => setErrorCode(err.response?.status))
       .finally(() => setLoading(false));
   }, [accessToken]);
+
+  useEffect(() => {
+    // if we are logged in, but we are at  the root, redirect to /mam
+    if (initData?.user && location.pathname === '/') {
+      window.location.href = '/mam/editor';
+    }
+  }, [initData, location]);
 
   // Render
 

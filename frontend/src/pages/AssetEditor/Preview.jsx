@@ -17,7 +17,6 @@ import VideoPlayer from '/src/containers/VideoPlayer';
 
 import Subclip from './Subclip';
 
-
 const SubclipsPanel = ({ subclips, setSubclips, selection, setSelection, fps }) => {
   return (
     <Section className="grow">

@@ -13,11 +13,6 @@ const routes: RouteObject[] = [
     Component: App,
     ErrorBoundary: AppErrorBoundary,
     children: [
-      // Default / MAM
-      {
-        index: true,
-        loader: () => redirect('/mam/editor'),
-      },
       {
         path: 'mam',
         loader: () => redirect('/mam/editor'),

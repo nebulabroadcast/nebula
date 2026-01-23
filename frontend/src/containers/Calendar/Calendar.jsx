@@ -177,7 +177,6 @@ const Calendar = ({
           Math.max(hourHeight * ((draggedExternal.duration || 600) / 3600), 4)
         );
         ctx.fill();
-
       } else if (draggedEvent.current) {
         ctx.fillStyle = '#fff';
         ctx.fillText(

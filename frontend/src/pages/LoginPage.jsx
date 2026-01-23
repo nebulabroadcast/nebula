@@ -40,6 +40,12 @@ const LoginPage = ({ motd, onLogin, ssoOptions }) => {
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('authorize');
     const error = urlParams.get('error');
+    console.log(
+      'LoginPage useEffect triggered with token:',
+      token,
+      'and error:',
+      error
+    );
     // clear token from url
     window.history.replaceState({}, document.title, window.location.pathname);
     if (token) {

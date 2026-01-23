@@ -52,7 +52,7 @@ const Scheduler = ({ draggedObjects }) => {
 
   const onError = (error) => {
     setLoading(false);
-    toast.error("Scheduler API error");
+    toast.error('Scheduler API error');
   };
 
   const requestParams = {
