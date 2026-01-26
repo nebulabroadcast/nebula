@@ -12,6 +12,8 @@ import PlayoutControls from './PlayoutControls';
 import RundownEditTools from './RundownEditTools';
 import RundownNav from './RundownNav';
 import RundownTable from './RundownTable';
+import { useKeyDown } from '@lib/useKeyDown';
+import { useNavigate } from 'react-router';
 
 const Rundown = ({ draggedObjects }) => {
   const showDialog = useDialog();
@@ -43,6 +45,8 @@ const Rundown = ({ draggedObjects }) => {
   const currentChannelRef = useRef(currentChannelId);
   const rundownModeRef = useRef(rundownMode);
   const eventIdsRef = useRef(new Set());
+  const playoutStatusRef = useRef(playoutStatus);
+  const navigate = useNavigate();
 
   useEffect(() => {
     rundownDataRef.current = rundown || [];
@@ -60,6 +64,31 @@ const Rundown = ({ draggedObjects }) => {
   useEffect(() => {
     rundownModeRef.current = rundownMode;
   }, [rundownMode]);
+
+  useEffect(() => {
+    playoutStatusRef.current = playoutStatus;
+  }, [playoutStatus]);
+
+  //
+  // Go to now
+  //
+
+  useKeyDown('n', () => {
+    const currentEvent = playoutStatusRef.current?.id_event;
+    const currentItem = playoutStatusRef.current?.current_item;
+    if (!currentEvent) return;
+
+    const currentPath = window.location.pathname;
+    const query = new URLSearchParams(window.location.search);
+    query.set('item', currentItem);
+    query.set('rqts', Math.floor(Date.now() / 1000));
+
+    if (currentEvent) {
+      let newPath = `${currentPath}?${query.toString()}`;
+      newPath += `#${currentEvent}`;
+      navigate(newPath, { replace: true });
+    }
+  });
 
   //
   // Load rundown

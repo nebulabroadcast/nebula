@@ -30,6 +30,7 @@ const RundownTable = ({
   const [_searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
   const lastHash = useRef('');
+  const lastRqTs = useRef(0);
   const { currentChannelId } = useNebula();
   const tableRef = useRef();
   const showDialog = useDialog();
@@ -47,7 +48,11 @@ const RundownTable = ({
     if (!data?.length) return;
     if (!tableRef.current) return;
     // already scrolled to this hash
-    if (lastHash.current === location.hash.slice(1)) return;
+    if (
+      lastHash.current === location.hash.slice(1) &&
+      lastRqTs.current === location?.query?.rqts
+    )
+      return;
 
     // find the index of the event to scroll to
     let scrollToIndex = null;
@@ -66,6 +71,7 @@ const RundownTable = ({
       const parent = row.parentNode.parentNode.parentNode; // he he he
       parent.scrollTop = pos;
       lastHash.current = location.hash.slice(1);
+      lastRqTs.current = location?.query?.rqts || 0;
     }
   }, [location, data]);
 
