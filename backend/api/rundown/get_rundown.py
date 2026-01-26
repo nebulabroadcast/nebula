@@ -127,8 +127,7 @@ async def get_rundown(id_channel: int, date: str | None = None) -> RundownRespon
         airstatus: ObjectStatus | None = None
 
         if (as_start := record["as_start"]) is not None:
-            if as_start > ts_broadcast:
-                ts_broadcast = as_start
+            ts_broadcast = as_start
             as_stop = record["as_stop"]
             airstatus = ObjectStatus.AIRED if as_stop else ObjectStatus.ONAIR
 
