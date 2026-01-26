@@ -19,7 +19,7 @@ const ZoomControl = ({ zoom, setZoom }) => {
       <Icon icon="zoom_out_map" style={iconStyle} />
       <RangeSlider
         min="1"
-        max="4"
+        max="8"
         step=".1"
         onChange={(e) => setZoom(e.target.value)}
         value={zoom}
