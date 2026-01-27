@@ -4,7 +4,6 @@ import sys
 from typing import Any
 
 import aiofiles
-import httpx
 from pydantic import ValidationError
 
 from nebula.common import import_module
