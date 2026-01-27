@@ -288,7 +288,7 @@ async def setup_settings(db: DatabaseConnection) -> None:
         if mset.get("cs"):
             used_urns.add(mset["cs"])
 
-    classification = []
+    classifications = []
     classification_path = "schema/classification.json"
     try:
         async with aiofiles.open(classification_path) as f:
@@ -296,9 +296,9 @@ async def setup_settings(db: DatabaseConnection) -> None:
     except (FileNotFoundError, json.JSONDecodeError) as e:
         log.error(f"Failed to load default classifications: {e}")
 
-    classification.extend(TEMPLATE["cs"])
+    classifications.extend(TEMPLATE["cs"])
 
-    for scheme in classification:
+    for scheme in classifications:
         name = scheme["cs"]
         if name not in used_urns:
             log.trace(f"Skipping unused classification scheme: {name}")
