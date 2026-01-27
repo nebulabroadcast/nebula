@@ -1,7 +1,9 @@
+import json
 import os
 import sys
 from typing import Any
 
+import aiofiles
 import httpx
 from pydantic import ValidationError
 
@@ -286,14 +288,17 @@ async def setup_settings(db: DatabaseConnection) -> None:
         if mset.get("cs"):
             used_urns.add(mset["cs"])
 
-    classifications = []
-    async with httpx.AsyncClient() as client:
-        response = await client.get("https://cs.nbla.xyz/dump")
-        classifications = response.json()
+    classification = []
+    classification_path = "schema/classification.json"
+    try:
+        async with aiofiles.open(classification_path) as f:
+            classifications = json.loads(await f.read())
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        log.error(f"Failed to load default classifications: {e}")
 
-    classifications.extend(TEMPLATE["cs"])
+    classification.extend(TEMPLATE["cs"])
 
-    for scheme in classifications:
+    for scheme in classification:
         name = scheme["cs"]
         if name not in used_urns:
             log.trace(f"Skipping unused classification scheme: {name}")
