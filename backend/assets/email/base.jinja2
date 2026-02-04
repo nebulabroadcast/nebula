@@ -1,3 +1,4 @@
+{% import "components.jinja2" as ui with context%}{% if not __plain__ %}
 <html dir="ltr" lang="en">
   <head>
     <link rel="preload" as="image" href="https://static.nebulabroadcast.com/logo-nebula-broadcast-black-no-padding.png">
@@ -36,16 +37,11 @@
       <tbody>
         <tr style="width:100%">
           <td>
-            {% block content %}
-
-
-
-            {% endblock %}
+{% endif %}{% block content %} {% endblock %}{% if not __plain__ %}
           </td>
         </tr>
       </tbody>
     </table>
   </body>
 </html>
-
-
+{% endif %}

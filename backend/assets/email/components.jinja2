@@ -1,5 +1,5 @@
-
 {% macro logo() -%}
+{% if not __plain__ %}
 <table align="center" width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="margin-top:32px">
   <tbody>
     <tr>
@@ -23,12 +23,13 @@
     </tr>
   </tbody>
 </table>
+{% endif %}
 {%- endmacro %}
-
 
 <!-- Title -->
 
 {% macro title() -%}
+{% if not __plain__ %}
 <h1 
   style="
     color:rgb(0,0,0);
@@ -43,17 +44,21 @@
   >
   {{ caller() }}
 </h1>
+{% else %}{% endif %}
 {%- endmacro %}
 
+<!-- Paragraph -->
 
-{% macro paragraph() -%}
+{% macro paragraph() -%}{% if not __plain__ %}
 <p style="color:rgb(0,0,0);font-size:14px;line-height:24px;margin-bottom:16px;margin-top:16px">
   {{ caller() }}
-</p>
+</p>{% else %}{{ caller() }}{% endif %}
 {%- endmacro %}
 
+<!-- Call to Action Button -->
 
 {% macro call_to_action(button_text, button_link) -%}
+{% if not __plain__ %}
 <table 
   align="center" 
   width="100%" 
@@ -97,11 +102,13 @@
     </tr>
   </tbody>
 </table>
+{% else %}{{ button_link }}{% endif %}
 {%- endmacro %}
 
-
+<!-- Footer -->
 
 {% macro footer() -%}
+{% if not __plain__ %}
 <hr 
   style="
     border-width:1px;
@@ -119,4 +126,5 @@
 <p style="color:rgb(102,102,102);font-size:12px;line-height:24px;margin-bottom:16px;margin-top:16px">
   {{ caller() }}
 </p>
+{% else %}{{ caller() }}{% endif %}
 {%- endmacro %}
