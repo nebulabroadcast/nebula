@@ -2,6 +2,8 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
+import jinja2
+
 import nebula
 
 try:
@@ -36,6 +38,22 @@ def markdown2email(text: str) -> MIMEMultipart | MIMEText:
         return msg
     else:
         return MIMEText(text, "plain")
+
+def render_email_template(template_name: str, **kwargs) -> MIMEMultipart:
+    env = jinja2.Environment(
+        loader=jinja2.FileSystemLoader("assets/email"),
+        autoescape=jinja2.select_autoescape(['html', 'xml'])
+    )
+    template = env.get_template(f"{template_name}.jinja2")
+
+    rendered_html = template.render(**kwargs).strip()
+    rendered_plain = template.render(__plain__=True, **kwargs).strip()
+    msg = MIMEMultipart("alternative")
+    part1 = MIMEText(rendered_plain, "plain")
+    part2 = MIMEText(rendered_html, "html")
+    msg.attach(part1)
+    msg.attach(part2)
+    return msg
 
 
 def send_mail(
