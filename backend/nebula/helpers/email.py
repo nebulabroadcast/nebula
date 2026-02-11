@@ -1,9 +1,9 @@
 import asyncio
-import json
 import smtplib
 import ssl
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from typing import Any
 
 import jinja2
 
@@ -43,7 +43,7 @@ def markdown2email(text: str) -> MIMEMultipart | MIMEText:
         return MIMEText(text, "plain")
 
 
-async def render_email_template(template_name: str, **kwargs) -> MIMEMultipart:
+async def render_email_template(template_name: str, **kwargs: Any) -> MIMEMultipart:
     env = jinja2.Environment(
         loader=jinja2.FileSystemLoader("assets/email"),
         autoescape=jinja2.select_autoescape(["html", "xml"]),
@@ -80,7 +80,7 @@ def _send_mail(
         smtp_port = nebula.settings.system.smtp_port
         smtp_user = nebula.settings.system.smtp_user
         smtp_pass = nebula.settings.system.smtp_pass
-        smtp_tls  = nebula.settings.system.smtp_tls
+        smtp_tls = nebula.settings.system.smtp_tls
 
         if not (smtp_host and smtp_port):
             nebula.log.error("SMTP host is not configured, cannot send email")
@@ -93,11 +93,8 @@ def _send_mail(
         msg["From"] = reply_address
         msg["To"] = ",".join(addresses)
 
-        nebula.log.trace(
-            f"Connecting to SMTP server {smtp_host}:{smtp_port}"
-        )
+        nebula.log.trace(f"Connecting to SMTP server {smtp_host}:{smtp_port}")
         with smtplib.SMTP(smtp_host, smtp_port) as smtp:
-
             if smtp_tls:
                 context = ssl.create_default_context()
                 smtp.starttls(context=context)

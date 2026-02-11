@@ -37,7 +37,7 @@ class TokenManager:
             data = {}
 
         blocking_hash = None
-        if blocking_id is not None and False:
+        if blocking_id is not None:
             blocking_hash = hash_data(blocking_id)
             block_expires_at = None
             with suppress(KeyError):
@@ -79,7 +79,7 @@ class TokenManager:
         )
 
     @classmethod
-    async def validate(cls, token: str) -> ShortLivedToken:
+    async def verify(cls, token: str) -> ShortLivedToken:
         payload = await nebula.redis.get_json("short-lived-token", token)
         if payload is None:
             raise KeyError("Invalid or expired token")
