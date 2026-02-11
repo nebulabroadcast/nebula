@@ -1,4 +1,5 @@
 export { default as Button } from './Button';
+export { default as ButtonLink } from './ButtonLink';
 export { default as Canvas } from './Canvas';
 export { default as ContextMenu } from './ContextMenu';
 export { default as Dialog } from './Dialog';

@@ -23,6 +23,7 @@ const nebula = {
   senderId: uuidv4(),
   experimental: false,
   locale: typeof window !== 'undefined' ? navigator.language || 'en-US' : 'en-US',
+  loginBackground: false,
 
   // API
 
