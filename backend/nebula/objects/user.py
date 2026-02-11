@@ -69,6 +69,11 @@ class User(BaseObject):
     def name(self, value: str) -> None:
         self.meta["login"] = value
 
+    @property
+    def display_name(self) -> str:
+        """Return the display name of the user."""
+        return self.meta.get("full_name", self.name)
+
     @classmethod
     async def by_login(cls, login: str) -> "User":
         """Return the user with the given login."""
