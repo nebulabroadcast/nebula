@@ -51,7 +51,7 @@ class PasswordResetCallbackModel(RequestModel):
 class PasswordResetRequest(APIRequest):
     """Request a password reset for the given email"""
 
-    name = "pasword-reset"
+    name = "password-reset"
     title = "Password reset request"
 
     async def handle(
@@ -68,7 +68,11 @@ class PasswordResetRequest(APIRequest):
     async def request_password_reset(self, email: str, request: Request) -> None:
         nebula.log.info(f"Password reset requested for email: {email}")
         try:
-            query = "SELECT meta FROM users WHERE meta->>'email' = $1"
+            query = """
+                SELECT meta FROM users
+                WHERE meta->>'email' ILIKE $1
+                OR login ILIKE $1
+            """
             res = await nebula.db.fetchrow(query, email)
             if res is None:
                 # Don't reveal whether the email exists or not
@@ -88,10 +92,10 @@ class PasswordResetRequest(APIRequest):
                     "ip": ip_address,
                 },
                 ttl=600,
-                blocking_id=email,
+                blocking_id=ip_address,
             )
 
-            reset_link = f"{server_url}/reset-password?token={token.token}"
+            reset_link = f"{server_url}?rp={token.token}"
 
             email_body = await render_email_template(
                 "password-reset",
@@ -121,6 +125,7 @@ class PasswordResetCallbackRequest(APIRequest):
         try:
             token_data = await TokenManager.verify(payload.token)
         except KeyError as e:
+            nebula.log.warning(f"Invalid password reset token used: {e}")
             raise nebula.BadRequestException(
                 "Invalid or expired password reset token"
             ) from e

@@ -98,9 +98,9 @@ class User(BaseObject):
         """Return the user with the given email."""
         row = await db.fetch(
             """
-            SELECT meta FROM users WHERE LOWER(meta->>'email') = $1
+            SELECT meta FROM users WHERE meta->>'email') ILIKE $1
             """,
-            email.lower(),
+            email,
         )
         if not row:
             raise NotFoundException(f"User with email {email} not found")
@@ -116,7 +116,8 @@ class User(BaseObject):
             res = await db.fetch(
                 """
                 SELECT meta FROM users
-                WHERE login = $1 AND meta->>'password' = $2
+                WHERE (login ILIKE $1 OR meta->>'email' ILIKE $1)
+                AND meta->>'password' = $2
                 """,
                 username,
                 passhash,
