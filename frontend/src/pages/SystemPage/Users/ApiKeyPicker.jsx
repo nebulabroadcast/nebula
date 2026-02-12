@@ -93,23 +93,22 @@ const ApiKeyPicker = ({ setApiKey, apiKeyPreview }) => {
 
   return (
     <>
-      <SubRow>
-        <InputText
-          value={apiKeyPreview}
-          readOnly
-          style={{
-            flexGrow: 1,
-            fontFamily: 'monospace',
-            fontStyle: 'normal',
-            textAlign: 'center',
-          }}
-        />
-        <Button
-          icon="key"
-          label="Create API key"
-          onClick={() => setDialogVisible(true)}
-        />
-      </SubRow>
+      <InputText
+        value={apiKeyPreview}
+        readOnly
+        style={{
+          flexGrow: 1,
+          fontFamily: 'monospace',
+          fontStyle: 'normal',
+          textAlign: 'center',
+        }}
+      />
+      <Button
+        icon="key"
+        label="Create API key"
+        style={{ maxWidth: 150 }}
+        onClick={() => setDialogVisible(true)}
+      />
       {dialog}
     </>
   );
