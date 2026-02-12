@@ -53,11 +53,16 @@ def server_url_from_request(request: Request) -> str:
     if request.client:
         scheme = request.headers.get("X-Forwarded-Proto", request.url.scheme)
         host = request.headers.get("X-Forwarded-Host", request.client.host)
-        port = request.headers.get("X-Forwarded-Port", request.url.port)
+        # Prefer an explicitly forwarded port, otherwise fall back to the request URL port.
+        forwarded_port = request.headers.get("X-Forwarded-Port")
+        url_port = request.url.port
+        port = forwarded_port or (str(url_port) if url_port is not None else None)
 
-        if port and port not in ("80", "443"):
+        # For standard ports (80, 443) or when port is not specified, omit the port.
+        if port is None or port in ("80", "443"):
             return f"{scheme}://{host}"
 
-        return f"{scheme}://{host}"
+        # For non-standard ports, include the port in the URL.
+        return f"{scheme}://{host}:{port}"
 
     return "http://localhost:5000"
