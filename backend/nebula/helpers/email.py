@@ -94,9 +94,14 @@ def _send_mail(
         msg["To"] = ",".join(addresses)
 
         nebula.log.trace(f"Connecting to SMTP server {smtp_host}:{smtp_port}")
-        with smtplib.SMTP(smtp_host, smtp_port) as smtp:
-            if smtp_tls:
-                context = ssl.create_default_context()
+        context = ssl.create_default_context() if smtp_tls else None
+        if smtp_tls and smtp_port == 465:
+            smtp_cls = smtplib.SMTP_SSL
+        else:
+            smtp_cls = smtplib.SMTP
+
+        with smtp_cls(smtp_host, smtp_port, context=context) as smtp:
+            if smtp_tls and smtp_port != 465:
                 smtp.starttls(context=context)
 
             if smtp_user and smtp_pass:
