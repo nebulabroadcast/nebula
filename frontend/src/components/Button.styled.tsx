@@ -1,8 +1,8 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
 import { getTheme } from './theme';
 
-export const BaseButton = styled.button`
+export const ButtonStyle = css`
   border: 0;
   border-radius: ${getTheme().inputBorderRadius};
   background: ${getTheme().inputBackground};
@@ -68,4 +68,8 @@ export const BaseButton = styled.button`
       background 0.2s,
       color 0.2s;
   }
+`;
+
+export const BaseButton = styled.button`
+  ${ButtonStyle}
 `;

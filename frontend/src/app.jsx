@@ -9,7 +9,7 @@ import { useState, useEffect, useMemo, Suspense } from 'react';
 import { Outlet, useLocation } from 'react-router';
 
 import LoadingPage from './pages/LoadingPage';
-import LoginPage from './pages/LoginPage';
+import LoginPage from './pages/LoginPage/LoginPage';
 
 const App = () => {
   const [accessToken, setAccessToken] = useLocalStorage('accessToken', null);

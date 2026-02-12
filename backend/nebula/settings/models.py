@@ -163,38 +163,60 @@ class SystemSettings(BaseSystemSettings):
     upload_base_name: str = Field(default="{id}")
     sso_providers: list[SSOProvider] = Field(default_factory=list)
 
-    smtp_host: str | None = Field(
-        default=None,
-        title="SMTP host",
-        examples=["smtp.example.com"],
-    )
-    smtp_port: int | None = Field(
-        default=None,
-        title="SMTP port",
-        examples=[465],
-    )
-    smtp_user: str | None = Field(
-        default=None,
-        title="SMTP user",
-        examples=["smtpuser"],
-    )
-    smtp_pass: str | None = Field(
-        default=None,
-        title="SMTP password",
-        examples=["smtppass.1"],
-    )
+    smtp_host: Annotated[
+        str | None,
+        Field(
+            title="SMTP host",
+            examples=["smtp.example.com"],
+        ),
+    ] = None
 
-    mail_from: str | None = Field(
-        default="Nebula <noreply@nebulabroadcast.com>",
-        title="Mail from",
-        description="Email address used as the sender",
-        examples=["Nebula <noreply@example.com>"],
-    )
+    smtp_port: Annotated[
+        int | None,
+        Field(
+            title="SMTP port",
+            examples=[465],
+        ),
+    ] = None
+
+    smtp_user: Annotated[
+        str | None,
+        Field(
+            title="SMTP user",
+            examples=["smtpuser"],
+        ),
+    ] = None
+
+    smtp_pass: Annotated[
+        str | None,
+        Field(
+            title="SMTP password",
+            examples=["smtppass.1"],
+        ),
+    ] = None
+
+    smtp_tls: Annotated[
+        bool,
+        Field(
+            title="SMTP TLS",
+            description="Use TLS for SMTP connection",
+        ),
+    ] = True
+
+    mail_from: Annotated[
+        str | None,
+        Field(
+            default=None,
+            title="Mail from",
+            description="Email address used as the sender",
+            examples=["Nebula <noreply@example.com>"],
+        ),
+    ] = None
 
 
 class BaseListItemModel(SettingsModel):
-    id: int = Field(..., title="ID", examples=[1])
-    name: str = Field(..., title="Name", examples=["Name"])
+    id: Annotated[int, Field(title="ID", examples=[1])]
+    name: Annotated[str, Field(title="Name", examples=["Name"])]
 
 
 #

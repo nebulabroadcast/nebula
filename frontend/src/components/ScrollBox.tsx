@@ -14,7 +14,7 @@ const ScrollContent = styled.div`
   bottom: 0;
   display: flex;
   flex-direction: column;
-  overflow-y: scroll;
+  overflow-y: auto;
   overflow-x: auto;
   gap: 6px;
 `;

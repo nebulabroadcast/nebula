@@ -1,6 +1,12 @@
+import asyncio
+import contextlib
 import smtplib
+import ssl
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from typing import Any
+
+import jinja2
 
 import nebula
 
@@ -38,48 +44,91 @@ def markdown2email(text: str) -> MIMEMultipart | MIMEText:
         return MIMEText(text, "plain")
 
 
-def send_mail(
+async def render_email_template(template_name: str, **kwargs: Any) -> MIMEMultipart:
+    env = jinja2.Environment(
+        loader=jinja2.FileSystemLoader("assets/email"),
+        autoescape=jinja2.select_autoescape(["html", "xml"]),
+    )
+    template = env.get_template(f"{template_name}.jinja2")
+
+    rendered_html = template.render(**kwargs).strip()
+    rendered_plain = template.render(__plain__=True, **kwargs).strip()
+    msg = MIMEMultipart("alternative")
+    part1 = MIMEText(rendered_plain, "plain")
+    part2 = MIMEText(rendered_html, "html")
+    msg.attach(part1)
+    msg.attach(part2)
+    return msg
+
+
+def _send_mail(
     to: str | list[str],
     subject: str,
     body: str | MIMEText | MIMEMultipart,
     reply_address: str | None = None,
 ) -> None:
-    addresses: list[str] = []
-    if isinstance(to, str):
-        addresses.append(to)
-    else:
-        addresses.extend(to)
-
-    if reply_address is None:
-        reply_address = nebula.settings.system.mail_from or "nebula@localhost"
-
-    msg: MIMEText | MIMEMultipart
-    msg = MIMEText(body) if isinstance(body, str) else body
-
-    msg["Subject"] = subject
-    msg["From"] = reply_address
-    msg["To"] = ",".join(to)
-
     try:
-        assert nebula.settings.system.smtp_host is not None, "SMTP host not set"
-        assert nebula.settings.system.smtp_port is not None, "SMTP port not set"
-    except AssertionError as e:
-        nebula.log.error(f"Unable to send email: {e}")
-        return
+        addresses: list[str] = []
+        if isinstance(to, str):
+            addresses.append(to)
+        else:
+            addresses.extend(to)
 
-    if nebula.settings.system.smtp_port == 25:
-        s = smtplib.SMTP(nebula.settings.system.smtp_host, port=25)
-    else:
-        s = smtplib.SMTP_SSL(
-            nebula.settings.system.smtp_host, port=nebula.settings.system.smtp_port
-        )
+        if reply_address is None:
+            reply_address = nebula.settings.system.mail_from or "nebula@localhost"
 
-    user = nebula.settings.system.smtp_user
-    password = nebula.settings.system.smtp_pass
+        smtp_host = nebula.settings.system.smtp_host
+        smtp_port = nebula.settings.system.smtp_port
+        smtp_user = nebula.settings.system.smtp_user
+        smtp_pass = nebula.settings.system.smtp_pass
+        smtp_tls = nebula.settings.system.smtp_tls
 
-    if user:
-        assert password is not None, "SMTP user set but no password"
+        if not (smtp_host and smtp_port):
+            nebula.log.error("SMTP host is not configured, cannot send email")
+            return
 
-    if user and password:
-        s.login(user, password)
-    s.sendmail(reply_address, addresses, msg.as_string())
+        msg: MIMEText | MIMEMultipart
+        msg = MIMEText(body) if isinstance(body, str) else body
+
+        msg["Subject"] = subject
+        msg["From"] = reply_address
+        msg["To"] = ",".join(addresses)
+
+        nebula.log.trace(f"Connecting to SMTP server {smtp_host}:{smtp_port}")
+
+        smtp: smtplib.SMTP | smtplib.SMTP_SSL
+        context: ssl.SSLContext | None = None
+
+        if smtp_tls:
+            context = ssl.create_default_context()
+
+        try:
+            if smtp_tls and smtp_port == 465:
+                smtp = smtplib.SMTP_SSL(smtp_host, smtp_port, context=context)
+            else:
+                smtp = smtplib.SMTP(smtp_host, smtp_port)
+                if smtp_tls:
+                    smtp.starttls(context=context)
+
+            if smtp_user and smtp_pass:
+                nebula.log.trace("Logging in to SMTP server")
+                smtp.login(smtp_user, smtp_pass)
+
+            nebula.log.debug(f"Sending email to {addresses}")
+            smtp.sendmail(reply_address, addresses, msg.as_string())
+
+        finally:
+            with contextlib.suppress(Exception):
+                smtp.quit()
+
+    except Exception as e:
+        nebula.log.error(f"Error sending email to {to}: {e}")
+
+
+async def send_mail(
+    to: str | list[str],
+    subject: str,
+    body: str | MIMEText | MIMEMultipart,
+    reply_address: str | None = None,
+) -> None:
+    await asyncio.to_thread(_send_mail, to, subject, body, reply_address)

@@ -1,5 +1,6 @@
 __all__ = ["Session"]
 
+import secrets
 import time
 from collections.abc import AsyncGenerator
 from typing import Any
@@ -8,7 +9,6 @@ from fastapi import Request
 from pydantic import BaseModel, Field
 
 import nebula
-from nebula.common import create_hash
 from nebula.exceptions import LoginFailedException
 from server.clientinfo import ClientInfo, get_client_info, get_real_ip
 from server.utils import is_internal_ip
@@ -102,7 +102,7 @@ class Session:
         ):
             raise LoginFailedException("You can only log in from local network")
 
-        token = create_hash()
+        token = secrets.token_hex(32)
         session = SessionModel(
             user=user.meta,
             token=token,
