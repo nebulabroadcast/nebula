@@ -1,44 +1,35 @@
 {% extends "base.jinja2" %}
 {% import "components.jinja2" as ui %}
-
 {% block content %}
-
 {{ ui.logo() }}
-
 {% call ui.title() %}
-  Join <strong>{{ site_name | upper }}</strong>
-{% endcall %}
-
-
-{% call ui.paragraph() %}
-  Hello {{ full_name }},
+Join <strong>{{ site_name | upper }}</strong>
 {% endcall %}
 
 {% call ui.paragraph() %}
-  You’ve been invited to join the {{ site_name | upper }} Nebula instance.
+Hello {{ full_name }},
 {% endcall %}
 
-
-{{ ui.call_to_action("Join the team", reset_link ) }}
-
-
 {% call ui.paragraph() %}
-  If you don't have your password already, please use the "Reset&nbsp;password" option 
-  to set up your credentials. If you run into any issues or have questions, 
-  feel free to reach out.
+You’ve been invited to join the {{ site_name | upper }} Nebula instance.
 {% endcall %}
 
+{{ ui.call_to_action("Join the team", url) }}
 
 {% call ui.paragraph() %}
-  Welcome aboard!
+Use your email address or login name '{{ login_name }}' to sign in to your account.
+{% endcall %}
+
+{% call ui.paragraph() %}
+If you don't have your password already, please use the "Reset password" option to set up your credentials. If you run into any issues or have questions, feel free to reach out.
+{% endcall %}
+
+{% call ui.paragraph() %}
+Welcome aboard!
 {% endcall %}
 
 {% call ui.footer() %}
-  This invitation was intended for <span style="color:rgb(0,0,0)">{{ email }}</span>. 
-  If you were not expecting this invitation, you can ignore this email. 
+This invitation was intended for {{ email }}. If you were not expecting this invitation, you can ignore this email. 
 {% endcall %}
-
-
-
 {% endblock %}
 

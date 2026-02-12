@@ -72,7 +72,7 @@ class User(BaseObject):
     @property
     def display_name(self) -> str:
         """Return the display name of the user."""
-        return self.meta.get("full_name", self.name)
+        return self.meta.get("full_name") or self.name
 
     @classmethod
     async def by_login(cls, login: str) -> "User":
