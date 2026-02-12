@@ -12,13 +12,13 @@ from server.utils import server_url_from_request
 
 
 class SendInvitationEmailRequestModel(RequestModel):
-    """Response model for listing users"""
+    """Request model for sending an invitation email to a user."""
 
     id: Annotated[int, Field(title="User ID", gt=0)]
 
 
 class SendInvitationRequest(APIRequest):
-    """Get a list of users"""
+    """Handle sending an invitation email to the specified user."""
 
     name = "send-invitation-email"
     title = "Send Invitation Email"
