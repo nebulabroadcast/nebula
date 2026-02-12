@@ -91,7 +91,7 @@ class PasswordResetRequest(APIRequest):
                     "user_id": user.id,
                     "ip": ip_address,
                 },
-                ttl=600,
+                ttl=1800,
                 blocking_id=ip_address,
             )
 
