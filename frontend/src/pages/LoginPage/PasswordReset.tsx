@@ -20,7 +20,18 @@ export const PasswordReset = ({ token, onGoBack }: PasswordResetProps) => {
 
   const onResetRequest = (event: React.FormEvent) => {
     event.preventDefault();
-    axios.post('/api/password-reset', { email });
+    axios
+      .post('/api/password-reset', { email })
+      .then(() => {
+        toast.info(
+          'If an account with that email exists, a password reset link has been sent.'
+        );
+      })
+      .catch(() => {
+        toast.error(
+          'Unable to process password reset request. Please try again later.'
+        );
+      });
   };
 
   const onResetCallback = (event: React.FormEvent) => {
