@@ -114,6 +114,7 @@ def _send_mail(
                 nebula.log.trace("Logging in to SMTP server")
                 smtp.login(smtp_user, smtp_pass)
 
+            nebula.log.debug(f"Sending email to {addresses}")
             smtp.sendmail(reply_address, addresses, msg.as_string())
 
         finally:
