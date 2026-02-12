@@ -26,6 +26,7 @@ export const PasswordReset = ({ token, onGoBack }: PasswordResetProps) => {
         toast.info(
           'If an account with that email exists, a password reset link has been sent.'
         );
+        onGoBack();
       })
       .catch(() => {
         toast.error(
