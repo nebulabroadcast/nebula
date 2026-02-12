@@ -77,6 +77,7 @@ export const PasswordReset = ({ token, onGoBack }: PasswordResetProps) => {
           onChange={setConfirmPassword}
         />
         <Button label="Reset password" type="submit" ref={buttonRef} />
+        <Button label="Back to login" type="button" onClick={onGoBack} />
       </LoginForm>
     );
   }

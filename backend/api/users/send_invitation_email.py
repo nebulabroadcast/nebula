@@ -1,4 +1,5 @@
 from typing import Annotated
+
 from fastapi import Request
 from pydantic import Field
 
@@ -24,16 +25,16 @@ class SendInvitationRequest(APIRequest):
     title = "Send Invitation Email"
 
     async def handle(
-        self, 
-        user: CurrentUser, 
-        request: Request, 
-        payload: SendInvitationEmailRequestModel
+        self,
+        user: CurrentUser,
+        request: Request,
+        payload: SendInvitationEmailRequestModel,
     ) -> None:
         if not user.is_admin:
             raise nebula.ForbiddenException("Only admins can send invitation emails")
 
-        user = await User.load(payload.id)
-        if not user.get("email"):
+        target_user = await User.load(payload.id)
+        if not target_user.get("email"):
             raise nebula.BadRequestException("User does not have an email address")
 
         server_url = server_url_from_request(request)
@@ -42,13 +43,11 @@ class SendInvitationRequest(APIRequest):
         email_subject = f"Invitation to {nebula.config.site_name.upper()}"
         email_body = await render_email_template(
             "user-invite",
-            email=user["email"],
-            login_name=user.name,
-            full_name=user.display_name,
+            email=target_user["email"],
+            login_name=target_user.name,
+            full_name=target_user.display_name,
             site_name=site_name,
             url=server_url,
-
         )
 
-        await send_mail(user["email"], email_subject, email_body)
-
+        await send_mail(target_user["email"], email_subject, email_body)

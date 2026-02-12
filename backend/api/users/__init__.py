@@ -1,6 +1,6 @@
 __all__ = [
-    "ListUsersRequest", 
-    "SaveUserRequest", 
+    "ListUsersRequest",
+    "SaveUserRequest",
     "SendInvitationRequest",
 ]
 

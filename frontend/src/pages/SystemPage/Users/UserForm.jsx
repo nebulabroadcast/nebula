@@ -9,7 +9,6 @@ import {
   InputSwitch,
   ScrollBox,
   Section,
-  Spacer,
 } from '/src/components';
 
 import { toast } from 'react-toastify';

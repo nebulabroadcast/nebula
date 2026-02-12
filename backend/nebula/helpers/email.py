@@ -1,4 +1,5 @@
 import asyncio
+import contextlib
 import smtplib
 import ssl
 from email.mime.multipart import MIMEMultipart
@@ -94,22 +95,30 @@ def _send_mail(
         msg["To"] = ",".join(addresses)
 
         nebula.log.trace(f"Connecting to SMTP server {smtp_host}:{smtp_port}")
-        context = ssl.create_default_context() if smtp_tls else None
-        if smtp_tls and smtp_port == 465:
-            smtp_cls = smtplib.SMTP_SSL
-        else:
-            smtp_cls = smtplib.SMTP
 
-        with smtp_cls(smtp_host, smtp_port, context=context) as smtp:
-            if smtp_tls and smtp_port != 465:
-                smtp.starttls(context=context)
+        smtp: smtplib.SMTP | smtplib.SMTP_SSL
+        context: ssl.SSLContext | None = None
+
+        if smtp_tls:
+            context = ssl.create_default_context()
+
+        try:
+            if smtp_tls and smtp_port == 465:
+                smtp = smtplib.SMTP_SSL(smtp_host, smtp_port, context=context)
+            else:
+                smtp = smtplib.SMTP(smtp_host, smtp_port)
+                if smtp_tls:
+                    smtp.starttls(context=context)
 
             if smtp_user and smtp_pass:
                 nebula.log.trace("Logging in to SMTP server")
                 smtp.login(smtp_user, smtp_pass)
 
-            nebula.log.trace(f"Sending email to {','.join(addresses)}")
             smtp.sendmail(reply_address, addresses, msg.as_string())
+
+        finally:
+            with contextlib.suppress(Exception):
+                smtp.quit()
 
     except Exception as e:
         nebula.log.error(f"Error sending email to {to}: {e}")

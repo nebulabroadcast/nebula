@@ -98,7 +98,7 @@ class User(BaseObject):
         """Return the user with the given email."""
         row = await db.fetch(
             """
-            SELECT meta FROM users WHERE meta->>'email') ILIKE $1
+            SELECT meta FROM users WHERE meta->>'email' ILIKE $1
             """,
             email,
         )

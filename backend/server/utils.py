@@ -53,7 +53,8 @@ def server_url_from_request(request: Request) -> str:
     if request.client:
         scheme = request.headers.get("X-Forwarded-Proto", request.url.scheme)
         host = request.headers.get("X-Forwarded-Host", request.client.host)
-        # Prefer an explicitly forwarded port, otherwise fall back to the request URL port.
+        # Prefer an explicitly forwarded port,
+        # otherwise fall back to the request URL port.
         forwarded_port = request.headers.get("X-Forwarded-Port")
         url_port = request.url.port
         port = forwarded_port or (str(url_port) if url_port is not None else None)
