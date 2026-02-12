@@ -1,4 +1,5 @@
 import {
+  Button,
   Icon,
   InputText,
   InputPassword,
@@ -8,10 +9,15 @@ import {
   InputSwitch,
   ScrollBox,
   Section,
+  Spacer,
 } from '/src/components';
+
+import { toast } from 'react-toastify';
 
 import AccessControl from './AccessControl';
 import ApiKeyPicker from './ApiKeyPicker';
+
+import nebula from '/src/nebula';
 
 const apiKeyPreview = (apiKey) => {
   const start = apiKey.substring(0, 4);
@@ -22,6 +28,18 @@ const apiKeyPreview = (apiKey) => {
 const UserForm = ({ userData, setUserData }) => {
   const setValue = (key, value) => {
     setUserData((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const sendInviteEmail = () => {
+    if (!userData?.email || !userData?.id) return;
+    nebula
+      .request('send-invitation-email', { id: userData.id })
+      .then(() => {
+        toast.success('Invite email sent');
+      })
+      .catch(() => {
+        toast.error('Failed to send invite email');
+      });
   };
 
   return (
@@ -49,6 +67,15 @@ const UserForm = ({ userData, setUserData }) => {
             <InputText
               value={userData?.email || ''}
               onChange={(value) => setValue('email', value)}
+            />
+            <Button
+              label="Send invite email"
+              icon="email"
+              disabled={!userData?.email || !userData?.id}
+              style={{ maxWidth: 150 }}
+              onClick={() => {
+                sendInviteEmail();
+              }}
             />
           </FormRow>
         </Form>

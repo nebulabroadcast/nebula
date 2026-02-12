@@ -36,6 +36,7 @@ const Form = styled.div`
   .form-control {
     display: flex;
     flex-grow: 1;
+    gap: 4px;
     > * {
       width: 100%;
     }
