@@ -30,7 +30,7 @@ export const PasswordReset = ({ token, onGoBack }: PasswordResetProps) => {
       return;
     }
 
-    if (!password.length) {
+    if (password.length < 8) {
       toast.error('Password must be at least 8 characters');
       return;
     }
