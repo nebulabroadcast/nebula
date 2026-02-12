@@ -89,7 +89,6 @@ class TokenManager:
         try:
             created_at = payload["created_at"]
             expires_at = payload["expires_at"]
-            lock_hash = payload.get("lock_hash")
             if time.time() > expires_at:
                 await nebula.redis.delete("short-lived-token", token)
                 raise KeyError("Token has expired")
