@@ -22,6 +22,7 @@ class Solve(APIRequest):
 
     name = "solve"
     title = "Solve rundown placeholder"
+    category = "Scheduling"
 
     async def handle(
         self,

@@ -11,8 +11,8 @@ class OrderRequest(APIRequest):
     """Set the order of items of a rundown"""
 
     name = "order"
-    title = "Order"
-    response_model = OrderResponseModel
+    title = "Order items"
+    category = "Scheduling"
 
     async def handle(
         self,

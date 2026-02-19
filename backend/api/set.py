@@ -166,7 +166,7 @@ class OperationsRequest(APIRequest):
 
     name = "ops"
     title = "Operations"
-    response_model = OperationsResponseModel
+    category = "Asset management"
 
     async def handle(
         self,
@@ -283,7 +283,7 @@ class SetRequest(APIRequest):
 
     name = "set"
     title = "Save an object"
-    response_model = OperationResponseModel
+    category = "Asset management"
 
     async def handle(
         self,

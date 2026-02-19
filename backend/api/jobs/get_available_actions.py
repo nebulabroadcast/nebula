@@ -40,6 +40,7 @@ class GetAvailableActions(APIRequest):
 
     name = "actions"
     title = "Get available actions"
+    category = "Jobs"
 
     async def handle(
         self,

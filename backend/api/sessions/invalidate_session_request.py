@@ -21,13 +21,13 @@ class InvalidateSessionRequest(APIRequest):
 
     name = "invalidate-session"
     title = "Invalidate session"
-    responses = [204]
+    category = "Authentication"
 
     async def handle(
         self,
         payload: InvalidateSessionRequestModel,
         user: CurrentUser,
-    ) -> Response:
+    ) -> None:
         session = await Session.check(payload.token)
         if session is None:
             raise nebula.NotFoundException("Session not found")
@@ -38,5 +38,3 @@ class InvalidateSessionRequest(APIRequest):
             )
 
         await Session.delete(payload.token)
-
-        return Response(status_code=204)

@@ -14,6 +14,7 @@ class Logout(APIRequest):
 
     name = "logout"
     title = "Logout"
+    category = "Authentication"
 
     async def handle(self, authorization: str | None = Header(None)) -> None:
         if not authorization:

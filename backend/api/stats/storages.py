@@ -143,7 +143,7 @@ class NebulaStoragesRequest(APIRequest):
 
     name = "stats/storages"
     title = "Get storage usage statistics"
-    response_model = NebulaStoragesUsage
+    category = "System"
 
     async def handle(
         self,

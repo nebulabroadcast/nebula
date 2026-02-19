@@ -16,6 +16,7 @@ class ListSessionsRequest(APIRequest):
 
     name = "list-sessions"
     title = "List sessions"
+    category = "Authentication"
 
     async def handle(
         self,

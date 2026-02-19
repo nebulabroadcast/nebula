@@ -21,7 +21,7 @@ class UploadRequest(APIRequest):
     name = "upload"
     path = "/upload/{id_asset}"
     title = "Get objects"
-    response_class = Response
+    category = "Asset management"
 
     async def handle(
         self,

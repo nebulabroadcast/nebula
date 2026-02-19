@@ -38,6 +38,7 @@ class SetPassword(APIRequest):
 
     name = "password"
     title = "Set password"
+    category = "Authentication"
 
     async def handle(
         self,

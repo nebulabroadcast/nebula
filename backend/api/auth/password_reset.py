@@ -52,6 +52,7 @@ class PasswordReset(APIRequest):
 
     name = "password-reset"
     title = "Password reset request"
+    category = "Authentication"
 
     async def handle(
         self,

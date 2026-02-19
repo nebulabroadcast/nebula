@@ -13,7 +13,9 @@ class TokenExchange(APIRequest):
     The original access token will be invalidated.
     """
 
-    name: str = "token-exchange"
+    name = "token-exchange"
+    title = "Token exchange"
+    category = "Authentication"
 
     async def handle(
         self,

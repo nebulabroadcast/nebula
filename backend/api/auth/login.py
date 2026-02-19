@@ -56,7 +56,9 @@ class Login(APIRequest):
     the IP address will be banned for a certain amount of time (configurable).
     """
 
-    name: str = "login"
+    name = "login"
+    title = "Login"
+    category = "Authentication"
 
     async def handle(self, request: Request, payload: LoginRequest) -> LoginResponse:
         if request is not None:

@@ -363,7 +363,7 @@ class Request(APIRequest):
 
     name = "browse"
     title = "Browse assets"
-    response_model = BrowseResponseModel
+    category = "Asset management"
 
     async def handle(
         self,

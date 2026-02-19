@@ -93,6 +93,7 @@ class ManageJobs(APIRequest):
 
     name = "jobs"
     title = "Manage jobs"
+    category = "Jobs"
 
     async def handle(
         self,

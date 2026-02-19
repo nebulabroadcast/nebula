@@ -19,7 +19,7 @@ class SchedulerRequest(APIRequest):
 
     name = "scheduler"
     title = "Scheduler"
-    response_model = SchedulerResponseModel
+    category = "Scheduling"
 
     async def handle(
         self,

@@ -56,7 +56,7 @@ class Request(APIRequest):
 
     name = "services"
     title = "Service control"
-    response_model = ServicesResponseModel
+    category = "System"
 
     async def handle(
         self,

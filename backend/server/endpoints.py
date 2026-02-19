@@ -90,7 +90,7 @@ def install_endpoints(app: fastapi.FastAPI) -> None:
             additional_params["response_model_exclude_unset"] = endpoint.exclude_unset
 
         if isinstance(endpoint.__doc__, str):
-            docstring = "\n".join([r.strip() for r in endpoint.__doc__.split("\n")])
+            docstring = inspect.cleandoc(endpoint.__doc__)
         else:
             docstring = ""
 
@@ -110,5 +110,6 @@ def install_endpoints(app: fastapi.FastAPI) -> None:
             operation_id=slugify(endpoint.name, separator="_"),
             methods=endpoint.methods,
             description=docstring,
+            tags=[endpoint.category] if endpoint.category else None,
             **additional_params,
         )

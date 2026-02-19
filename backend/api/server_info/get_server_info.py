@@ -110,6 +110,7 @@ class GetServerInfo(APIRequest):
 
     name = "init"
     title = "Get server info"
+    category = "System"
 
     async def handle(
         self,

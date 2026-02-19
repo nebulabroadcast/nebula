@@ -31,6 +31,7 @@ class ServeProxy(APIRequest):
     name = "proxy"
     path = "/proxy/{id_asset}"
     title = "Serve proxy"
+    category = "Asset management"
     methods = ["GET"]
 
     async def handle(self, id_asset: int, user: CurrentUser) -> FileResponse:
@@ -52,6 +53,7 @@ class GetProxyInfo(APIRequest):
     name = "get_proxy_info"
     path = "/proxy/{id_asset}/info"
     title = "Get proxy info"
+    category = "Asset management"
     methods = ["GET"]
 
     async def handle(self, id_asset: int, user: CurrentUser) -> ProxyInfo:

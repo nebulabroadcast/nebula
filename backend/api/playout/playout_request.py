@@ -12,7 +12,7 @@ class PlayoutRequest(APIRequest):
 
     name = "playout"
     title = "Playout"
-    response_model = PlayoutResponseModel
+    category = "Playout"
 
     def handle(
         self,

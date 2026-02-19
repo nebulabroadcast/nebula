@@ -155,6 +155,7 @@ class SendTo(APIRequest):
 
     name = "send"
     title = "Send to"
+    category = "Jobs"
 
     async def handle(
         self,

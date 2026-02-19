@@ -14,3 +14,4 @@ class APIRequest:
     exclude_none: bool = True
     exclude_unset: bool = False
     scopes: list[str] | None = None
+    category: str | None = None

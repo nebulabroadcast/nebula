@@ -25,7 +25,7 @@ class RundownRequest(APIRequest):
 
     name = "rundown"
     title = "Get rundown"
-    response_model = RundownResponseModel
+    category = "Scheduling"
 
     async def handle(
         self,

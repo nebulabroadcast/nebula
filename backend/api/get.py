@@ -62,7 +62,7 @@ class Request(APIRequest):
 
     name = "get"
     title = "Get objects"
-    response_model = GetResponseModel
+    category = "Asset management"
 
     async def handle(
         self,

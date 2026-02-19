@@ -1,6 +1,6 @@
 import nebula
 from nebula.helpers.create_new_event import create_new_event
-from server.dependencies import CurrentUser, RequestInitiator
+from server.dependencies import CurrentUser
 from server.request import APIRequest
 
 from .models import (
@@ -13,23 +13,14 @@ from .utils import list_templates, load_template
 
 
 class ListTemplatesRequest(APIRequest):
-    """Retrieve or update the schedule for a channel
-
-    This endpoint handles chanel macro-scheduling,
-    including the creation, modification, and deletion of playout events.
-
-    Schedule is represented as a list of events, typically for one week.
-    """
+    """List available scheduling templates"""
 
     name = "list-scheduling-templates"
     title = "List scheduling templates"
-    response_model = ListTemplatesResponseModel
+    category = "Scheduling"
 
-    async def handle(
-        self,
-        #        user: CurrentUser,
-        initiator: RequestInitiator,
-    ) -> ListTemplatesResponseModel:
+    async def handle(self, user: CurrentUser) -> ListTemplatesResponseModel:
+        _ = user  # Currently not used, but may be used in the future for permissions
         template_names = list_templates()
 
         return ListTemplatesResponseModel(
@@ -45,12 +36,12 @@ class ApplyTemplateRequest(APIRequest):
 
     name = "apply-scheduling-template"
     title = "Apply scheduling template"
+    category = "Scheduling"
 
     async def handle(
         self,
         user: CurrentUser,
         request: ApplyTemplateRequestModel,
-        initiator: RequestInitiator,
     ) -> None:
         if not (channel := nebula.settings.get_playout_channel(request.id_channel)):
             raise nebula.BadRequestException(f"No such channel {request.id_channel}")
