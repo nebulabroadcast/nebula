@@ -27,7 +27,6 @@ class Request(APIRequest):
     name = "delete"
     title = "Delete objects"
     category = "Asset management"
-    responses: list[int] = [204, 401, 403]
 
     async def handle(
         self,

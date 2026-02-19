@@ -6,29 +6,29 @@ from pydantic import Field
 import nebula
 from nebula.helpers.email import render_email_template, send_mail
 from nebula.objects.user import User
+from server import APIModel, APIRequest
 from server.dependencies import CurrentUser
-from server.models import RequestModel
-from server.request import APIRequest
 from server.utils import server_url_from_request
 
 
-class SendInvitationEmailRequestModel(RequestModel):
+class SendInvitationEmailRequest(APIModel):
     """Request model for sending an invitation email to a user."""
 
     id: Annotated[int, Field(title="User ID", gt=0)]
 
 
-class SendInvitationRequest(APIRequest):
+class SendInvitationEmail(APIRequest):
     """Handle sending an invitation email to the specified user."""
 
     name = "send-invitation-email"
     title = "Send Invitation Email"
+    category = "User management"
 
     async def handle(
         self,
         user: CurrentUser,
         request: Request,
-        payload: SendInvitationEmailRequestModel,
+        payload: SendInvitationEmailRequest,
     ) -> None:
         if not user.is_admin:
             raise nebula.ForbiddenException("Only admins can send invitation emails")

@@ -175,7 +175,7 @@ async def ws_endpoint(websocket: WebSocket) -> None:
 #
 
 
-@app.get("/api/login-background.jpg")
+@app.get("/api/login-background.jpg", tags=["System"])
 def login_background() -> FileResponse:
     """Serve the login background image."""
     img_path = f"/mnt/{nebula.config.site_name}_01/.nx/login-background.jpg"

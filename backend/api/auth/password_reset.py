@@ -116,6 +116,7 @@ class PasswordResetCallback(APIRequest):
 
     name = "password-reset-callback"
     title = "Password reset callback"
+    category = "Authentication"
 
     async def handle(
         self,

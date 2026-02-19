@@ -1,9 +1,9 @@
 __all__ = [
-    "ListUsersRequest",
-    "SaveUserRequest",
-    "SendInvitationRequest",
+    "ListUsers",
+    "SaveUser",
+    "SendInvitationEmail",
 ]
 
-from .list_users_request import ListUsersRequest
-from .save_user_request import SaveUserRequest
-from .send_invitation_email import SendInvitationRequest
+from .list_users import ListUsers
+from .save_user import SaveUser
+from .send_invitation_email import SendInvitationEmail

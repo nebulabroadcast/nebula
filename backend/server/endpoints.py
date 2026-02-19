@@ -110,6 +110,6 @@ def install_endpoints(app: fastapi.FastAPI) -> None:
             operation_id=slugify(endpoint.name, separator="_"),
             methods=endpoint.methods,
             description=docstring,
-            tags=[endpoint.category] if endpoint.category else None,
+            tags=[endpoint.category] if endpoint.category else ["Plugins"],
             **additional_params,
         )

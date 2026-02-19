@@ -161,7 +161,7 @@ async def can_modify_object(obj: BaseObject, user: nebula.User) -> None:
         raise nebula.ForbiddenException("It is not allowed to edit bins directly")
 
 
-class OperationsRequest(APIRequest):
+class Operations(APIRequest):
     """Create or update multiple objects in one requests."""
 
     name = "ops"
@@ -278,11 +278,11 @@ class OperationsRequest(APIRequest):
         return OperationsResponseModel(operations=result, success=overall_success)
 
 
-class SetRequest(APIRequest):
+class SetMetadata(APIRequest):
     """Create or update an object."""
 
     name = "set"
-    title = "Save an object"
+    title = "Set metadata"
     category = "Asset management"
 
     async def handle(
@@ -290,7 +290,7 @@ class SetRequest(APIRequest):
         request: OperationModel,
         user: CurrentUser,
     ) -> OperationResponseModel:
-        operation = OperationsRequest()
+        operation = Operations()
         result = await operation.handle(
             OperationsRequestModel(operations=[request]),
             user=user,

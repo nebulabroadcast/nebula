@@ -1,51 +1,76 @@
 import time
+from typing import Annotated
 
 from pydantic import Field
 
 import nebula
 from nebula.enum import ServiceState
+from server import APIModel, APIRequest
 from server.dependencies import CurrentUser
-from server.models import RequestModel, ResponseModel
-from server.request import APIRequest
 
 
-class ServiceItemModel(RequestModel):
-    id: int = Field(..., title="Service ID")
-    name: str = Field(..., title="Service name")
-    type: str = Field(..., title="Service type")
-    hostname: str = Field(..., title="Hostname")
-    status: ServiceState = Field(
-        ...,
-        title="Service status",
-        description="Current status of the service",
-    )
-    autostart: bool = Field(..., title="Autostart")
-    last_seen: float = Field(
-        ...,
-        title="Last seen",
-        description="Number of seconds since service was last seen",
-    )
+class ServiceListItem(APIModel):
+    id: Annotated[int, Field(title="Service ID", gt=0)]
+    name: Annotated[str, Field(title="Service name")]
+    type: Annotated[str, Field(title="Service type")]
+    hostname: Annotated[str, Field(title="Hostname")]
+    status: Annotated[
+        ServiceState,
+        Field(
+            title="Service status",
+            description="Current status of the service",
+        ),
+    ]
+
+    autostart: Annotated[
+        bool,
+        Field(
+            title="Autostart",
+        ),
+    ]
+
+    last_seen: Annotated[
+        float,
+        Field(
+            title="Last seen",
+            description="Number of seconds since service was last seen",
+        ),
+    ]
 
 
-class ServiceRequestModel(RequestModel):
-    stop: int | None = Field(
-        None, title="Stop ID", description="ID of service to stop", examples=[42]
-    )
-    start: int | None = Field(
-        None, title="Start ID", description="ID of service to start", examples=[None]
-    )
-    auto: int | None = Field(
-        False,
-        title="Toggle autostart",
-        description="ID of service to toggle autostart",
-    )
+class ManageServicesRequest(APIModel):
+    stop: Annotated[
+        int | None,
+        Field(
+            title="Stop ID",
+            description="ID of service to stop",
+            examples=[42],
+        ),
+    ] = None
+
+    start: Annotated[
+        int | None,
+        Field(
+            title="Start ID",
+            description="ID of service to start",
+            examples=[None],
+        ),
+    ] = None
+
+    auto: Annotated[
+        int | None,
+        Field(
+            title="Toggle autostart",
+            description="ID of service to toggle autostart",
+        ),
+    ] = None
 
 
-class ServicesResponseModel(ResponseModel):
-    services: list[ServiceItemModel] = Field(default_factory=list)
+class ManageServicesResponse(APIModel):
+    services: list[ServiceListItem] = Field(default_factory=list)
 
 
-class Request(APIRequest):
+class ManageServices(APIRequest):
     """
     List and control installed services.
 
@@ -55,14 +80,14 @@ class Request(APIRequest):
     """
 
     name = "services"
-    title = "Service control"
+    title = "Manage services"
     category = "System"
 
     async def handle(
         self,
-        request: ServiceRequestModel,
+        request: ManageServicesRequest,
         user: CurrentUser,
-    ) -> ServicesResponseModel:
+    ) -> ManageServicesResponse:
         if not user.can("service_control", anyval=True):
             msg = "You do not have permission to list or control services"
             raise nebula.ForbiddenException(msg)
@@ -115,7 +140,7 @@ class Request(APIRequest):
 
         async for row in nebula.db.iterate(query):
             data.append(
-                ServiceItemModel(
+                ServiceListItem(
                     id=row["id"],
                     name=row["title"],
                     type=row["service_type"],
@@ -126,4 +151,4 @@ class Request(APIRequest):
                 )
             )
 
-        return ServicesResponseModel(services=data)
+        return ManageServicesResponse(services=data)

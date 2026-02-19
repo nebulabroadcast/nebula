@@ -1,20 +1,17 @@
-from fastapi import Response
-
 import nebula
+from server import APIRequest, UserModel
 from server.dependencies import CurrentUser
-from server.models import UserModel
-from server.request import APIRequest
 from server.session import Session
 
 
-class SaveUserRequest(APIRequest):
+class SaveUser(APIRequest):
     """Save user data"""
 
     name = "save-user"
     title = "Save user"
-    responses = [204, 201]
+    category = "User management"
 
-    async def handle(self, current_user: CurrentUser, payload: UserModel) -> Response:
+    async def handle(self, current_user: CurrentUser, payload: UserModel) -> None:
         new_user = payload.id is None
 
         if not current_user.is_admin:
@@ -47,8 +44,3 @@ class SaveUserRequest(APIRequest):
 
         async for session in Session.list(user_name=user.name):
             await Session.update(session.token, user)
-
-        if new_user:
-            return Response(status_code=201)
-        else:
-            return Response(status_code=204)
