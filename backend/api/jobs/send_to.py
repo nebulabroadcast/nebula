@@ -4,12 +4,11 @@ from typing import Any
 from pydantic import Field
 
 import nebula
+from server import APIModel, APIRequest
 from server.dependencies import CurrentUser
-from server.models import RequestModel, ResponseModel
-from server.request import APIRequest
 
 
-class SendRequestModel(RequestModel):
+class SendToRequest(APIModel):
     ids: list[int] = Field(
         default_factory=list,
         title="Asset IDs",
@@ -36,7 +35,7 @@ class SendRequestModel(RequestModel):
     priority: int = Field(3, title="Job priority")
 
 
-class SendResponseModel(ResponseModel):
+class SendToResponse(APIModel):
     ids: list[int | None] = Field(
         default_factory=list,
         title="Job IDs",
@@ -151,18 +150,17 @@ async def send_to(
     return None
 
 
-class SendRequest(APIRequest):
+class SendTo(APIRequest):
     """Create jobs for a given list of assets."""
 
     name = "send"
     title = "Send to"
-    response_model = SendResponseModel
 
     async def handle(
         self,
-        request: SendRequestModel,
+        request: SendToRequest,
         user: CurrentUser,
-    ) -> SendResponseModel:
+    ) -> SendToResponse:
         if not user.can("job_control", request.id_action):
             raise nebula.ForbiddenException()
 
@@ -184,4 +182,4 @@ class SendRequest(APIRequest):
             )
             result.append(id_job)
 
-        return SendResponseModel(ids=result)
+        return SendToResponse(ids=result)

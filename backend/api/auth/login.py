@@ -4,7 +4,7 @@ from fastapi import Request
 
 import nebula
 from server.clientinfo import get_real_ip
-from server.models.login import LoginRequestModel, LoginResponseModel
+from server.models.login import LoginRequest, LoginResponse
 from server.request import APIRequest
 from server.session import Session
 
@@ -45,7 +45,7 @@ async def clear_failed_login(ip_address: str) -> None:
     await nebula.redis.delete("login-failed-ip", ip_address)
 
 
-class LoginRequest(APIRequest):
+class Login(APIRequest):
     """Login using a username and password
 
     This request will return an access token that can be used in the
@@ -57,13 +57,8 @@ class LoginRequest(APIRequest):
     """
 
     name: str = "login"
-    response_model = LoginResponseModel
 
-    async def handle(
-        self,
-        request: Request,
-        payload: LoginRequestModel,
-    ) -> LoginResponseModel:
+    async def handle(self, request: Request, payload: LoginRequest) -> LoginResponse:
         if request is not None:
             await check_failed_login(get_real_ip(request))
 
@@ -79,4 +74,4 @@ class LoginRequest(APIRequest):
             await clear_failed_login(get_real_ip(request))
 
         session = await Session.create(user, request)
-        return LoginResponseModel(access_token=session.token)
+        return LoginResponse(access_token=session.token)

@@ -3,12 +3,11 @@ from pydantic import Field
 import nebula
 from nebula.enum import *  # noqa
 from nx.utils import xml
+from server import APIModel, APIRequest
 from server.dependencies import CurrentUser
-from server.models import RequestModel, ResponseModel
-from server.request import APIRequest
 
 
-class ActionsRequestModel(RequestModel):
+class GetAvailableActionsRequest(APIModel):
     ids: list[int] = Field(
         ...,
         title="Asset IDs",
@@ -17,12 +16,12 @@ class ActionsRequestModel(RequestModel):
     )
 
 
-class ActionItemModel(ResponseModel):
+class ActionItemModel(APIModel):
     id: int = Field(..., title="Action ID", examples=[1])
     name: str = Field(..., title="Action name", examples=["proxy"])
 
 
-class ActionsResponseModel(ResponseModel):
+class GetaAvailableActionsResponse(APIModel):
     actions: list[ActionItemModel] = Field(
         default_factory=list,
         title="Actions",
@@ -30,18 +29,23 @@ class ActionsResponseModel(ResponseModel):
     )
 
 
-class ActionsRequest(APIRequest):
-    """List available actions for given list of assets"""
+class GetAvailableActions(APIRequest):
+    """Get available actions for given list of assets
+
+    Every action is evaluated for each asset using the `allow_if` condition
+    in the action settings and only returned if the condition is true for all assets.
+
+    This allows to start jobs on multiple assets at once.
+    """
 
     name = "actions"
     title = "Get available actions"
-    response_model = ActionsResponseModel
 
     async def handle(
         self,
-        request: ActionsRequestModel,
+        request: GetAvailableActionsRequest,
         user: CurrentUser,
-    ) -> ActionsResponseModel:
+    ) -> GetaAvailableActionsResponse:
         result = []
 
         query = """
@@ -76,4 +80,4 @@ class ActionsRequest(APIRequest):
                         )
                     )
         nebula.log.trace(f"Actions for assets {request.ids} are {result}")
-        return ActionsResponseModel(actions=result)
+        return GetaAvailableActionsResponse(actions=result)

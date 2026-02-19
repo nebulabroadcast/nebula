@@ -9,10 +9,9 @@ import nebula
 from nebula.plugins.frontend import PluginItemModel, get_frontend_plugins
 from nebula.settings import load_settings
 from nebula.settings.common import LanguageCode
+from server import APIModel, APIRequest, UserModel
 from server.context import ScopedEndpoint, server_context
 from server.dependencies import CurrentUserOptional
-from server.models import ResponseModel, UserModel
-from server.request import APIRequest
 from server.sso import NebulaSSO, SSOOption
 
 from .client_settings import ClientSettingsModel, get_client_settings
@@ -24,7 +23,7 @@ def is_login_background_enabled() -> bool:
     return os.path.isfile(img_path)
 
 
-class InitResponseModel(ResponseModel):
+class ServerInfoResponse(APIModel):
     installed: Annotated[
         bool | None,
         Field(
@@ -91,8 +90,16 @@ class InitResponseModel(ResponseModel):
         bool | None, Field(title="Enable experimental features")
     ] = None
 
+    is_login_background_enabled: Annotated[
+        bool | None,
+        Field(
+            title="Is login background enabled",
+            description="Whether the login background image is enabled",
+        ),
+    ] = None
 
-class InitRequest(APIRequest):
+
+class GetServerInfo(APIRequest):
     """Initial client request to ensure user is logged in.
 
     If a valid access token is provided, user information
@@ -102,14 +109,13 @@ class InitRequest(APIRequest):
     """
 
     name = "init"
-    title = "Init"
-    response_model = InitResponseModel
+    title = "Get server info"
 
     async def handle(
         self,
         request: fastapi.Request,
         user: CurrentUserOptional,
-    ) -> InitResponseModel:
+    ) -> ServerInfoResponse:
         default_motd = f"Nebula {nebula.__version__} @ {nebula.config.site_name}"
         motd = nebula.config.motd or default_motd
 
@@ -118,16 +124,16 @@ class InitRequest(APIRequest):
         if not nebula.settings.installed:
             await load_settings()
             if not nebula.settings.installed:
-                return InitResponseModel(installed=False)
+                return ServerInfoResponse(installed=False)
 
         # Not logged in. Only return motd and oauth2 options.
         if user is None:
             sso_options = await NebulaSSO.options() or None
-            return InitResponseModel(
+            return ServerInfoResponse(
                 motd=motd,
                 sso_options=sso_options,
                 experimental=nebula.config.enable_experimental or None,
-                is_login_background=is_login_background_enabled(),
+                is_login_background_enabled=is_login_background_enabled(),
             )
 
         # User preferred language
@@ -148,7 +154,7 @@ class InitRequest(APIRequest):
 
         # Return response
 
-        return InitResponseModel(
+        return ServerInfoResponse(
             installed=True,
             motd=motd,
             user=UserModel.from_meta(user.meta),

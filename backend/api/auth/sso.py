@@ -1,3 +1,4 @@
+from typing import cast
 from urllib.parse import urlparse
 
 from fastapi import Request
@@ -9,8 +10,8 @@ from server.session import Session
 from server.sso import NebulaSSO
 
 
-class SSOLoginRequest(APIRequest):
-    name = "sso_login"
+class SSOLogin(APIRequest):
+    name = "sso-login"
     path = "/api/sso/login/{provider}"
     methods = ["GET"]
 
@@ -33,7 +34,7 @@ class SSOLoginRequest(APIRequest):
 
 
 class SSOLoginCallback(APIRequest):
-    name = "sso_callback"
+    name = "sso-callback"
     path = "/api/sso/callback/{provider}"
     methods = ["GET"]
 
@@ -65,7 +66,7 @@ class SSOLoginCallback(APIRequest):
         if not user_info:
             return RedirectResponse("/?error=Invalid response from provider")
 
-        email = user_info.get("email")
+        email = cast(str, user_info.get("email"))
 
         if not email:
             return RedirectResponse("/?error=User email not found")

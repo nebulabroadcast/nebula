@@ -7,12 +7,11 @@ from pydantic import Field
 import nebula
 from nebula.helpers.email import render_email_template, send_mail
 from nebula.helpers.tokens import TokenManager
-from server.models import RequestModel
-from server.request import APIRequest
+from server import APIModel, APIRequest
 from server.utils import get_real_ip, server_url_from_request
 
 
-class PasswordResetRequestModel(RequestModel):
+class PasswordResetRequest(APIModel):
     email: Annotated[
         str,
         Field(
@@ -26,7 +25,7 @@ class PasswordResetRequestModel(RequestModel):
     ]
 
 
-class PasswordResetCallbackModel(RequestModel):
+class PasswordResetCallbackRequest(APIModel):
     token: Annotated[
         str,
         Field(
@@ -48,7 +47,7 @@ class PasswordResetCallbackModel(RequestModel):
     ]
 
 
-class PasswordResetRequest(APIRequest):
+class PasswordReset(APIRequest):
     """Request a password reset for the given email"""
 
     name = "password-reset"
@@ -56,7 +55,7 @@ class PasswordResetRequest(APIRequest):
 
     async def handle(
         self,
-        payload: PasswordResetRequestModel,
+        payload: PasswordResetRequest,
         request: Request,
     ) -> None:
         # Don't await this, we don't want to make the user wait for the email to be sent
@@ -111,7 +110,7 @@ class PasswordResetRequest(APIRequest):
         await send_mail(email, "Nebula Password Reset Request", email_body)
 
 
-class PasswordResetCallbackRequest(APIRequest):
+class PasswordResetCallback(APIRequest):
     """Reset the password using the token from the password reset email"""
 
     name = "password-reset-callback"
@@ -119,7 +118,7 @@ class PasswordResetCallbackRequest(APIRequest):
 
     async def handle(
         self,
-        payload: PasswordResetCallbackModel,
+        payload: PasswordResetCallbackRequest,
         request: Request,
     ) -> None:
         try:

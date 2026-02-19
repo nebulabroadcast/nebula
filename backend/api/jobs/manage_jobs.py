@@ -1,103 +1,11 @@
 import time
-from typing import Literal
-
-from pydantic import Field
 
 import nebula
-from nebula.enum import JobState
 from nx.utils import slugify
+from server import APIRequest
 from server.dependencies import CurrentUser
-from server.models import RequestModel, ResponseModel
-from server.request import APIRequest
 
-#
-# Jobs
-#
-
-VIEW_FIELD_DESCRIPTION = """Defines, what jobs should be returned.
-When set to none, 204 response is returned instead of list of jobs"""
-
-
-class JobsRequestModel(ResponseModel):
-    view: Literal["all", "active", "finished", "failed"] | None = Field(
-        None,
-        title="View",
-        description=VIEW_FIELD_DESCRIPTION,
-    )
-    ids: list[int] | None = Field(
-        None,
-        title="Job IDs",
-        description="Return only the jobs with the given IDs",
-        examples=[[42]],
-    )
-    asset_ids: list[int] | None = Field(
-        None,
-        title="Asset IDs",
-        description="Return jobs of asset with the given IDs",
-        examples=[[69]],
-    )
-    search_query: str | None = Field(
-        None,
-        title="Search query",
-        description="Search for jobs with given string in title",
-    )
-    abort: int | None = Field(
-        None,
-        title="Abort",
-        description="Abort job with given id",
-    )
-    restart: int | None = Field(
-        None,
-        title="Restart",
-        description="Restart job with given id",
-    )
-    priority: tuple[int, int] | None = Field(
-        None,
-        title="Priority",
-        description="Set priority of job with given id. "
-        "First value is the job id, second is the priority",
-        examples=[[42, 3]],
-    )
-
-
-TS_EXAMPLE = f"{int(time.time())}"
-
-
-class JobsItemModel(RequestModel):
-    id: int = Field(..., title="Job ID")
-    status: JobState = Field(..., title="Job status")
-    progress: float = Field(..., title="Progress", examples=[24])
-    id_action: int = Field(..., title="Action ID", examples=[1])
-    id_service: int | None = Field(None, title="Service ID", examples=[3])
-    id_asset: int = Field(..., title="Asset ID")
-    id_user: int | None = Field(
-        None,
-        title="User ID",
-        description="ID of the user who started the job",
-    )
-    priority: int = Field(3, title="Priority", examples=[3])
-    message: str = Field(..., title="Status description", examples=["Encoding 24%"])
-    ctime: float | None = Field(None, title="Created at", examples=[TS_EXAMPLE])
-    stime: float | None = Field(None, title="Started at", examples=[TS_EXAMPLE])
-    etime: float | None = Field(None, title="Finished at", examples=[TS_EXAMPLE])
-    asset_name: str | None = Field(
-        None,
-        title="Asset name",
-        description="Asset full title (title + subtitle)",
-        examples=["Star Trek IV: The voyage home"],
-    )
-    idec: str | None = Field(
-        None,
-        title="Primary identifier",
-        examples=["A123456"],
-    )
-    action_name: str | None = Field(None, examples=["proxy"])
-    service_name: str | None = Field(None, examples=["conv01"])
-    service_type: str | None = Field(None, examples=["conv"])
-
-
-class JobsResponseModel(ResponseModel):
-    jobs: list[JobsItemModel] | None = Field(default=None)
+from .models import JobListItem, ManageJobsRequest, ManageJobsResponse
 
 
 async def can_user_control_job(user: nebula.User, id_job: int) -> bool:
@@ -180,18 +88,17 @@ async def set_priority(id_job: int, priority: int, user: nebula.User) -> None:
     await nebula.db.execute(query, priority, id_job)
 
 
-class JobsRequest(APIRequest):
+class ManageJobs(APIRequest):
     """Get list of jobs, abort or restart them"""
 
     name = "jobs"
-    title = "List and control jobs"
-    response_model = JobsResponseModel
+    title = "Manage jobs"
 
     async def handle(
         self,
-        request: JobsRequestModel,
+        request: ManageJobsRequest,
         user: CurrentUser,
-    ) -> JobsResponseModel:
+    ) -> ManageJobsResponse:
         if request.abort:
             await abort_job(request.abort, user)
 
@@ -226,7 +133,7 @@ class JobsRequest(APIRequest):
             # failed
             conds.append("j.status IN (3)")
         elif request.view is None:
-            return JobsResponseModel()
+            return ManageJobsResponse()
 
         if request.asset_ids is not None:
             ids = ",".join([str(id) for id in request.asset_ids])
@@ -276,6 +183,6 @@ class JobsRequest(APIRequest):
             if subtitle := row["asset_subtitle"]:
                 separator = nebula.settings.system.subtitle_separator
                 asset_name = f"{asset_name}{separator}{subtitle}"
-            jobs.append(JobsItemModel(asset_name=asset_name, **row))
+            jobs.append(JobListItem(asset_name=asset_name, **row))
 
-        return JobsResponseModel(jobs=jobs)
+        return ManageJobsResponse(jobs=jobs)

@@ -1,18 +1,33 @@
+from typing import Annotated
+
 from fastapi import Response
 from pydantic import Field
 
 import nebula
 from server.dependencies import CurrentUser
-from server.models import RequestModel
+from server.models import APIModel
 from server.request import APIRequest
 
 
-class PasswordRequestModel(RequestModel):
-    login: str | None = Field(None, title="Login", examples=["admin"])
-    password: str = Field(..., title="Password", examples=["Password.123"])
+class SetPasswordRequest(APIModel):
+    login: Annotated[
+        str | None,
+        Field(
+            title="Login",
+            examples=["admin"],
+        ),
+    ] = None
+
+    password: Annotated[
+        str,
+        Field(
+            title="Password",
+            examples=["Password.123"],
+        ),
+    ]
 
 
-class SetPasswordRequest(APIRequest):
+class SetPassword(APIRequest):
     """Set a new password for the current (or a given) user.
 
     Normal users can only change their own password.
@@ -26,7 +41,7 @@ class SetPasswordRequest(APIRequest):
 
     async def handle(
         self,
-        request: PasswordRequestModel,
+        request: SetPasswordRequest,
         user: CurrentUser,
     ) -> Response:
         if request.login:

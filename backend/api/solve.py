@@ -1,4 +1,3 @@
-from fastapi import Response
 from pydantic import Field
 
 import nebula
@@ -18,18 +17,17 @@ class SolveRequestModel(RequestModel):
     )
 
 
-class Request(APIRequest):
+class Solve(APIRequest):
     """Solve a rundown placeholder"""
 
     name = "solve"
-    title = "Solve"
-    responses: list[int] = [200]
+    title = "Solve rundown placeholder"
 
     async def handle(
         self,
         request: SolveRequestModel,
         user: CurrentUser,
-    ) -> Response:
+    ) -> None:
         # Get the list of channels of the requested items
 
         query = """
@@ -52,5 +50,3 @@ class Request(APIRequest):
 
         for item in request.items:
             await solver(item)
-
-        return Response(status_code=200)

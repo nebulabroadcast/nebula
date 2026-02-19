@@ -6,7 +6,7 @@ from server.session import Session
 from server.utils import parse_access_token
 
 
-class LogoutRequest(APIRequest):
+class Logout(APIRequest):
     """Log out the current user.
 
     This request will invalidate the access token used in the Authorization header.

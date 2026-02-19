@@ -1,17 +1,17 @@
 __all__ = [
-    "LoginRequest",
-    "LogoutRequest",
-    "PasswordResetRequest",
-    "PasswordResetCallbackRequest",
-    "SetPasswordRequest",
-    "SSOLoginRequest",
+    "Login",
+    "Logout",
+    "PasswordReset",
+    "PasswordResetCallback",
+    "SetPassword",
+    "SSOLogin",
     "SSOLoginCallback",
-    "TokenExchangeRequest",
+    "TokenExchange",
 ]
 
-from .login_request import LoginRequest
-from .logout_request import LogoutRequest
-from .reset_password import PasswordResetCallbackRequest, PasswordResetRequest
-from .set_password_request import SetPasswordRequest
-from .sso import SSOLoginCallback, SSOLoginRequest
-from .token_exchange import TokenExchangeRequest
+from .login import Login
+from .logout import Logout
+from .password_reset import PasswordReset, PasswordResetCallback
+from .set_password import SetPassword
+from .sso import SSOLogin, SSOLoginCallback
+from .token_exchange import TokenExchange

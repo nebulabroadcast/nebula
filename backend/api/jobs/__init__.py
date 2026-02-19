@@ -1,5 +1,5 @@
-__all__ = ["JobsRequest", "ActionsRequest", "SendRequest"]
+__all__ = ["GetAvailableActions", "ManageJobs", "SendTo"]
 
-from .actions_request import ActionsRequest
-from .jobs_request import JobsRequest
-from .send_request import SendRequest
+from .get_available_actions import GetAvailableActions
+from .manage_jobs import ManageJobs
+from .send_to import SendTo
