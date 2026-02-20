@@ -16,7 +16,7 @@
     "@devbookhq/splitter": "^1.4.2",
     "@dnd-kit/core": "^6.3.1",
     "@wfoxall/timeframe": "^1.2.0",
-    "axios": "^1.12.2",
+    "axios": "^1.13.5",
     "clsx": "^2.1.1",
     "content-type": "^1.0.5",
     "lodash": "^4.17.23",
