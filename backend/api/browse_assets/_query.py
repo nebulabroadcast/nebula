@@ -1,184 +1,11 @@
-from typing import Annotated, Literal
-
-from pydantic import Field
-
 import nebula
 from nebula.common import SerializableValue, sql_list
 from nebula.enum import MetaClass
 from nebula.exceptions import NebulaException
 from nebula.metadata.normalize import normalize_meta
 from nx.utils import slugify
-from server.dependencies import CurrentUser
-from server.models import RequestModel, ResponseModel
-from server.request import APIRequest
 
-# The following columns will be appended to the result
-# regardless the view configuration (needed for UI)
-
-REQUIRED_COLUMNS = [
-    "id",
-    "id_folder",
-    "title",
-    "subtitle",
-    "status",
-    "content_type",
-    "media_type",
-    "ctime",
-    "mtime",
-    "video/fps_f",
-    "subclips",
-]
-
-#
-# Models
-#
-
-OrderDirection = Literal["asc", "desc"]
-
-ConditionOperator = Literal[
-    "=",
-    "LIKE",
-    "ILIKE",
-    "IN",
-    "NOT IN",
-    "IS NULL",
-    "IS NOT NULL",
-    ">",
-    ">=",
-    "<",
-    "<=",
-]
-
-
-class ConditionModel(RequestModel):
-    key: Annotated[str, Field(title="Key", examples=["status"])]
-    value: Annotated[SerializableValue, Field(title="Value", examples=[1])] = None
-    operator: Annotated[ConditionOperator, Field(examples=["="])] = "="
-
-
-class BrowseRequestModel(RequestModel):
-    view: Annotated[
-        int | None,
-        Field(
-            title="View ID",
-            examples=[1],
-        ),
-    ] = None
-
-    query: Annotated[
-        str | None,
-        Field(
-            title="Search query",
-            examples=["star trek"],
-        ),
-    ] = None
-
-    conditions: Annotated[
-        list[ConditionModel] | None,
-        Field(
-            title="Conditions",
-            description="List of additional conditions",
-            examples=[
-                [
-                    {"key": "id_folder", "value": 1, "operator": "="},
-                ]
-            ],
-        ),
-    ] = None
-
-    columns: Annotated[
-        list[str] | None,
-        Field(
-            title="Columns",
-            description="Override the view columns."
-            "Note that several columns are always included.",
-            examples=[["title", "subtitle", "id_folder"]],
-        ),
-    ] = None
-
-    ignore_view_conditions: Annotated[
-        bool,
-        Field(
-            title="Ignore view conditions",
-        ),
-    ] = False
-
-    limit: Annotated[
-        int,
-        Field(
-            title="Limit",
-            description="Maximum number of items",
-        ),
-    ] = 500
-
-    offset: Annotated[
-        int,
-        Field(
-            title="Offset",
-            description="Offset",
-        ),
-    ] = 0
-
-    order_by: Annotated[
-        str,
-        Field(
-            title="Order by",
-        ),
-    ] = "ctime"
-
-    order_dir: Annotated[
-        OrderDirection,
-        Field(
-            title="Order direction",
-        ),
-    ] = "desc"
-
-
-class BrowseResponseModel(ResponseModel):
-    columns: Annotated[
-        list[str],
-        Field(
-            title="Columns",
-            examples=[["id", "title", "duration"]],
-        ),
-    ]
-
-    data: Annotated[
-        list[dict[str, SerializableValue]],
-        Field(
-            examples=[
-                [
-                    {
-                        "id": 1,
-                        "title": "Star Trek IV",
-                        "subtitle": "The Voyage Home",
-                        "id_folder": 1,
-                        "status": 1,
-                        "duration": 6124.3,
-                    }
-                ]
-            ],
-        ),
-    ]
-
-    order_by: Annotated[
-        str,
-        Field(
-            title="Order by",
-        ),
-    ]
-
-    order_dir: Annotated[
-        OrderDirection,
-        Field(
-            title="Order direction",
-        ),
-    ]
-
-
-#
-# Request
-#
+from ._models import BrowseAssetsRequest, ConditionModel
 
 
 def sanitize_value(value: SerializableValue) -> str:
@@ -212,7 +39,7 @@ def build_conditions(conditions: list[ConditionModel]) -> list[str]:
     return cond_list
 
 
-def process_inline_conditions(request: BrowseRequestModel) -> None:
+def process_inline_conditions(request: BrowseAssetsRequest) -> None:
     if request.query:
         query_elements = request.query.split(" ")
         reduced_query = []
@@ -260,7 +87,7 @@ def build_order(order_by: str) -> str:
 
 
 def build_query(
-    request: BrowseRequestModel,
+    request: BrowseAssetsRequest,
     columns: set[str],
     user: nebula.User,
 ) -> str:
@@ -357,45 +184,3 @@ def build_query(
     """
     return query
 
-
-class Request(APIRequest):
-    """Browse the assets database."""
-
-    name = "browse"
-    title = "Browse assets"
-    category = "Asset management"
-
-    async def handle(
-        self,
-        request: BrowseRequestModel,
-        user: CurrentUser,
-    ) -> BrowseResponseModel:
-        columns: list[str] = ["title", "duration"]
-        if request.view is not None and not request.columns:
-            assert isinstance(request.view, int), "View must be an integer"
-            view = nebula.settings.get_view(request.view)
-            if (view is not None) and (view.columns is not None):
-                columns = view.columns
-        elif request.columns:
-            columns = request.columns
-
-        all_columns = set(REQUIRED_COLUMNS + columns)
-        if "duration" in all_columns:
-            all_columns.add("mark_in")
-            all_columns.add("mark_out")
-
-        query = build_query(request, all_columns, user)
-
-        records = []
-        async for record in nebula.db.iterate(query):
-            row = {}
-            for column in all_columns:
-                if column in record["meta"]:
-                    row[column] = record["meta"][column]
-            records.append(row)
-        return BrowseResponseModel(
-            columns=columns,
-            data=records,
-            order_by=request.order_by,
-            order_dir=request.order_dir,
-        )

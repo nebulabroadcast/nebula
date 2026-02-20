@@ -2,7 +2,7 @@ import os
 import time
 
 import aiofiles
-from fastapi import Request, Response
+from fastapi import Request
 from starlette.requests import ClientDisconnect
 
 import nebula
