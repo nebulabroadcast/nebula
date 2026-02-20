@@ -4,21 +4,21 @@ import nebula
 from server.dependencies import CurrentUser
 from server.request import APIRequest
 
-from .models import PlayoutRequestModel, PlayoutResponseModel
+from ._models import PlayoutControlRequest, PlayoutControlResponse
 
 
-class PlayoutRequest(APIRequest):
+class PlayoutControl(APIRequest):
     """Control a playout server"""
 
     name = "playout"
-    title = "Playout"
+    title = "Playout control"
     category = "Playout"
 
     def handle(
         self,
-        request: PlayoutRequestModel,
+        request: PlayoutControlRequest,
         user: CurrentUser,
-    ) -> PlayoutResponseModel:
+    ) -> PlayoutControlResponse:
         channel = nebula.settings.get_playout_channel(request.id_channel)
         if not channel:
             raise nebula.NotFoundException("Channel not found")
@@ -30,7 +30,7 @@ class PlayoutRequest(APIRequest):
 
         # For dummy engine, return empty response
         if channel.engine == "dummy":
-            return PlayoutResponseModel(plugins=[])
+            return PlayoutControlResponse(plugins=[])
 
         #
         # Make a request to the playout controller
@@ -68,4 +68,4 @@ class PlayoutRequest(APIRequest):
         if not response:
             raise nebula.NebulaException(data.get("message", "Unknown error"))
 
-        return PlayoutResponseModel(plugins=data.get("plugins"))
+        return PlayoutControlResponse(plugins=data.get("plugins"))

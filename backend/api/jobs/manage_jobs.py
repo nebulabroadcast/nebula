@@ -5,7 +5,7 @@ from nx.utils import slugify
 from server import APIRequest
 from server.dependencies import CurrentUser
 
-from .models import JobListItem, ManageJobsRequest, ManageJobsResponse
+from ._models import JobListItem, ManageJobsRequest, ManageJobsResponse
 
 
 async def can_user_control_job(user: nebula.User, id_job: int) -> bool:

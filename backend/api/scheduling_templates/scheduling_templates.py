@@ -3,35 +3,35 @@ from nebula.helpers.create_new_event import create_new_event
 from server.dependencies import CurrentUser
 from server.request import APIRequest
 
-from .models import (
-    ApplyTemplateRequestModel,
-    ListTemplatesResponseModel,
-    TemplateItemModel,
+from ._models import (
+    ApplySchedulingTemplateRequest,
+    ListSchedulingTemplatesResponse,
+    SchedulingTemplateItemModel,
 )
-from .template_importer import TemplateImporter
-from .utils import list_templates, load_template
+from ._template_importer import TemplateImporter
+from ._utils import list_templates, load_template
 
 
-class ListTemplatesRequest(APIRequest):
+class ListSchedulingTemplates(APIRequest):
     """List available scheduling templates"""
 
     name = "list-scheduling-templates"
     title = "List scheduling templates"
     category = "Scheduling"
 
-    async def handle(self, user: CurrentUser) -> ListTemplatesResponseModel:
+    async def handle(self, user: CurrentUser) -> ListSchedulingTemplatesResponse:
         _ = user  # Currently not used, but may be used in the future for permissions
         template_names = list_templates()
 
-        return ListTemplatesResponseModel(
+        return ListSchedulingTemplatesResponse(
             templates=[
-                TemplateItemModel(name=name, title=name.capitalize())
+                SchedulingTemplateItemModel(name=name, title=name.capitalize())
                 for name in template_names
             ]
         )
 
 
-class ApplyTemplateRequest(APIRequest):
+class ApplySchedulingTemplate(APIRequest):
     """Apply a template to a channel"""
 
     name = "apply-scheduling-template"
@@ -41,7 +41,7 @@ class ApplyTemplateRequest(APIRequest):
     async def handle(
         self,
         user: CurrentUser,
-        request: ApplyTemplateRequestModel,
+        request: ApplySchedulingTemplateRequest,
     ) -> None:
         if not (channel := nebula.settings.get_playout_channel(request.id_channel)):
             raise nebula.BadRequestException(f"No such channel {request.id_channel}")

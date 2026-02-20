@@ -1,3 +1,3 @@
-__all__ = ["RundownRequest"]
+__all__ = ["GetRundown"]
 
-from .rundown_request import RundownRequest
+from .get_rundown import GetRundown

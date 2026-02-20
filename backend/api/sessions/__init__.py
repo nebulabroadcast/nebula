@@ -1,4 +1,4 @@
-__all__ = ["ListSessionsRequest", "InvalidateSessionRequest"]
+__all__ = ["ListSessions", "InvalidateSession"]
 
-from .invalidate_session_request import InvalidateSessionRequest
-from .list_sessions_request import ListSessionsRequest
+from .invalidate_session import InvalidateSession
+from .list_sessions import ListSessions

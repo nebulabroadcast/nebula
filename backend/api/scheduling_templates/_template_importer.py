@@ -3,7 +3,7 @@ from typing import Any, Literal
 
 from nebula.helpers.create_new_event import EventData
 
-from .utils import get_week_start
+from ._utils import get_week_start
 
 DayKey = Literal[
     "monday",

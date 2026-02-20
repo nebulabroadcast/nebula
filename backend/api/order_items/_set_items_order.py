@@ -2,13 +2,18 @@ import nebula
 from nebula.exceptions import NotFoundException
 from nebula.helpers.scheduling import can_append
 
-from .models import OrderRequestModel, OrderResponseModel
+from ._models import OrderRequest, OrderResponse
 
 
-async def set_rundown_order(
-    request: OrderRequestModel,
-    user: nebula.User,
-) -> OrderResponseModel:
+async def set_items_order(request: OrderRequest, user: nebula.User) -> OrderResponse:
+    """Set the order of items in a bin
+
+    Source item can be either an existing item,i n which case it will be
+    moved to the new position, or a new item, in which case it will be
+    created and inserted to the new position. It is possible to move items
+    between bins, but all items in the request must be moved to the same bin.
+    """
+
     if (channel := nebula.settings.get_playout_channel(request.id_channel)) is None:
         raise NotFoundException(f"Channel ID {request.id_channel} not found")
 
@@ -108,4 +113,4 @@ async def set_rundown_order(
                 await item.save(notify=False)
             pos += 1
 
-    return OrderResponseModel(affected_bins=affected_bins)
+    return OrderResponse(affected_bins=affected_bins)

@@ -1,5 +1,3 @@
-from fastapi import Query, Response
-
 import nebula
 from server.dependencies import CurrentUser
 from server.models import RequestModel
@@ -7,11 +5,11 @@ from server.request import APIRequest
 from server.session import Session
 
 
-class InvalidateSessionRequestModel(RequestModel):
-    token: str = Query(...)
+class InvalidateSessionRequest(RequestModel):
+    token: str
 
 
-class InvalidateSessionRequest(APIRequest):
+class InvalidateSession(APIRequest):
     """Invalidate a user session.
 
     This endpoint is used to invalidate an user session. It can be used
@@ -25,7 +23,7 @@ class InvalidateSessionRequest(APIRequest):
 
     async def handle(
         self,
-        payload: InvalidateSessionRequestModel,
+        payload: InvalidateSessionRequest,
         user: CurrentUser,
     ) -> None:
         session = await Session.check(payload.token)

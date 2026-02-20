@@ -1,18 +1,31 @@
 from typing import Annotated
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
-from server.models import RequestModel, ResponseModel
-
-
-class TemplateItemModel(BaseModel):
-    name: Annotated[str, Field(..., title="Template name", examples=["my_template"])]
-    title: Annotated[str, Field(..., title="Template title", examples=["My Template"])]
+from server.models import APIModel
 
 
-class ListTemplatesResponseModel(ResponseModel):
+class SchedulingTemplateItemModel(APIModel):
+    name: Annotated[
+        str,
+        Field(
+            title="Template name",
+            examples=["my_template"],
+        ),
+    ]
+
+    title: Annotated[
+        str,
+        Field(
+            title="Template title",
+            examples=["My Template"],
+        ),
+    ]
+
+
+class ListSchedulingTemplatesResponse(APIModel):
     templates: Annotated[
-        list[TemplateItemModel],
+        list[SchedulingTemplateItemModel],
         Field(
             default_factory=lambda: [],
             title="Templates",
@@ -20,27 +33,31 @@ class ListTemplatesResponseModel(ResponseModel):
     ]
 
 
-class ApplyTemplateRequestModel(RequestModel):
+class ApplySchedulingTemplateRequest(APIModel):
     id_channel: Annotated[
         int,
         Field(
-            ...,
             title="Channel ID",
             examples=[1],
         ),
     ]
+
     template_name: Annotated[
         str,
-        Field(..., title="Template name", examples=["my_template"]),
+        Field(
+            title="Template name",
+            examples=["my_template"],
+        ),
     ]
+
     date: Annotated[
         str,
         Field(
-            ...,
             title="Date",
             examples=["2022-12-31"],
         ),
     ]
+
     clear: Annotated[
         bool,
         Field(

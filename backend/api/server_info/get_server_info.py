@@ -1,20 +1,20 @@
 import functools
 import os
-from typing import Annotated, get_args
+from typing import get_args
 
 import fastapi
-from pydantic import Field
 
 import nebula
-from nebula.plugins.frontend import PluginItemModel, get_frontend_plugins
+from nebula.plugins.frontend import get_frontend_plugins
 from nebula.settings import load_settings
 from nebula.settings.common import LanguageCode
-from server import APIModel, APIRequest, UserModel
-from server.context import ScopedEndpoint, server_context
+from server import APIRequest, UserModel
+from server.context import server_context
 from server.dependencies import CurrentUserOptional
-from server.sso import NebulaSSO, SSOOption
+from server.sso import NebulaSSO
 
-from .client_settings import ClientSettingsModel, get_client_settings
+from ._client_settings import get_client_settings
+from ._models import ServerInfoResponse
 
 
 @functools.cache
@@ -22,81 +22,6 @@ def is_login_background_enabled() -> bool:
     img_path = f"/mnt/{nebula.config.site_name}_01/.nx/login-background.jpg"
     return os.path.isfile(img_path)
 
-
-class ServerInfoResponse(APIModel):
-    installed: Annotated[
-        bool | None,
-        Field(
-            title="Installed",
-            description="Is Nebula installed?",
-        ),
-    ] = True
-
-    motd: Annotated[
-        str | None,
-        Field(
-            title="Message of the day",
-            description="Server welcome string (displayed on login page)",
-        ),
-    ] = None
-
-    background: Annotated[
-        bool,
-        Field(
-            title="Background",
-            description="Is the login background image enabled?",
-        ),
-    ] = False
-
-    user: Annotated[
-        UserModel | None,
-        Field(
-            title="Current user",
-            description="User data if user is logged in",
-        ),
-    ] = None
-
-    settings: Annotated[
-        ClientSettingsModel | None,
-        Field(
-            title="Client settings",
-        ),
-    ] = None
-
-    frontend_plugins: Annotated[
-        list[PluginItemModel] | None,
-        Field(
-            title="Frontend plugins",
-            description="List of plugins available for the web frontend",
-        ),
-    ] = None
-
-    scoped_endpoints: Annotated[
-        list[ScopedEndpoint] | None,
-        Field(
-            title="Scoped endpoints",
-            description="List of available scoped endpoints",
-        ),
-    ] = None
-
-    sso_options: Annotated[
-        list[SSOOption] | None,
-        Field(
-            title="SSO options",
-        ),
-    ] = None
-
-    experimental: Annotated[
-        bool | None, Field(title="Enable experimental features")
-    ] = None
-
-    is_login_background_enabled: Annotated[
-        bool | None,
-        Field(
-            title="Is login background enabled",
-            description="Whether the login background image is enabled",
-        ),
-    ] = None
 
 
 class GetServerInfo(APIRequest):

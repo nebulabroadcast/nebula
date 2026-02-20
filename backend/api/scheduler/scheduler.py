@@ -1,147 +1,74 @@
 import nebula
-from nebula.helpers.create_new_event import EventData, create_new_event
-from nebula.helpers.scheduling import parse_rundown_date
+from nebula.helpers.coalescer import Coalescer
+from nebula.helpers.scheduling import bin_refresh
+from server.dependencies import CurrentUser, RequestInitiator
+from server.request import APIRequest
 
-from .models import SchedulerResponseModel
-from .utils import delete_events, get_event_at_time, get_events_in_range
+from ._models import SchedulerRequest, SchedulerResponse
+from ._scheduler import scheduler
 
 
-async def scheduler(
-    id_channel: int,
-    date: str | None = None,
-    days: int = 7,
-    delete: list[int] | None = None,
-    events: list[EventData] | None = None,
-    editable: bool = True,
-    user: nebula.User | None = None,
-) -> SchedulerResponseModel:
-    """Modify and display channel schedule"""
+class Scheduler(APIRequest):
+    """Retrieve or update the schedule for a channel
 
-    username = user.name if user else None
-    start_time: float | None = None
-    end_time: float | None = None
-    delete = delete or []
-    events = events or []
+    This endpoint handles chanel macro-scheduling,
+    including the creation, modification, and deletion of playout events.
 
-    if not (channel := nebula.settings.get_playout_channel(id_channel)):
-        raise nebula.BadRequestException(f"No such channel {id_channel}")
+    Schedule is represented as a list of events, typically for one week.
+    """
 
-    if date:
-        start_time = parse_rundown_date(date, channel)
-        end_time = start_time + (days * 86400)
+    name = "scheduler"
+    title = "Scheduler"
+    category = "Scheduling"
 
-    affected_events: list[int] = []
-    affected_bins: list[int] = []
+    async def handle(
+        self,
+        request: SchedulerRequest,
+        user: CurrentUser,
+        initiator: RequestInitiator,
+    ) -> SchedulerResponse:
+        if not user.can("scheduler_view", request.id_channel):
+            raise nebula.ForbiddenException("You are not allowed to view this channel")
 
-    #
-    # Delete events
-    #
-
-    if delete and editable:
-        deleted_event_ids = await delete_events(delete, user=user)
-        affected_events.extend(deleted_event_ids)
-    #
-    # Create / update events
-    #
-
-    for event_data in events:
-        if not editable:
-            break
-
-        event_at_position = await get_event_at_time(channel.id, event_data.start)
-
-        if (event_at_position is not None) and event_at_position.id != event_data.id:
-            # Replace event at position
-
-            assert event_at_position.id is not None, (
-                "Event at position returned event without ID. This should not happen."
+        if not (request.events or request.delete):
+            # Read-only request. coalesce the requests and
+            # Return directly
+            coalesce = Coalescer()
+            result = await coalesce(
+                scheduler,
+                request.id_channel,
+                date=request.date,
+                days=request.days,
+                user=user,
             )
-            affected_events.append(event_at_position.id)
+            return result
 
-            if event_data.id_asset:
-                # Replace event with another asset.
-                # This should be supported, but is not yet.
+        # Write request. Do not coalesce, and send notifications
 
-                if event_data.id_asset == event_at_position["id_asset"]:
-                    # Replace event with itself. This is a no-op.
-                    continue
+        editable = user.can("scheduler_edit", request.id_channel)
 
-                asset = await nebula.Asset.load(event_data.id_asset, username=username)
-                assert asset
-
-                # load the existing bin
-                ex_bin = await nebula.Bin.load(
-                    event_at_position["id_magic"], username=username
-                )
-                await ex_bin.get_items()
-
-                for item in ex_bin.items:
-                    if item["id_asset"] == event_at_position["id_asset"]:
-                        # replace the asset in the bin
-                        item["id_asset"] = event_data.id_asset
-                        item["mark_in"] = asset["mark_in"]
-                        item["mark_out"] = asset["mark_out"]
-                        await item.save()
-                        break
-                else:
-                    # no primary asset found, so append it
-                    new_item = nebula.Item(username=username)
-                    new_item["id_asset"] = event_data.id_asset
-                    new_item["id_bin"] = ex_bin.id
-                    new_item["position"] = len(ex_bin.items)
-                    new_item["mark_in"] = asset["mark_in"]
-                    new_item["mark_out"] = asset["mark_out"]
-                    await new_item.save()
-                    ex_bin.items.append(new_item)
-                    assert ex_bin.id is not None, (
-                        "Bin ID should not be None at this point"
-                    )
-                    affected_bins.append(ex_bin.id)
-
-                # update the event
-                event_at_position["id_asset"] = event_data.id_asset
-                for field in channel.fields:
-                    if field.name in ["color", "start", "stop", "promoted"]:
-                        continue
-                    event_at_position[field.name] = asset[field.name]
-                affected_events.append(event_at_position.id)
-                await ex_bin.save()
-                await event_at_position.save()
-
-                # TODO: Implement replacing events
-
-            else:
-                # Replace event with an event without an asset.
-                # This does not make sense so it is not supported
-                raise nebula.BadRequestException("Replacing events is not supported")
-
-        elif event_data.id:
-            # Update existing event
-            event = await nebula.Event.load(event_data.id, username=username)
-            event["start"] = event_data.start
-            for field in channel.fields:
-                if event_data.meta and (field.name in event_data.meta):
-                    event[field.name] = event_data.meta[field.name]
-            affected_events.append(event_data.id)
-            await event.save(notify=False)
-
-        else:
-            # create new event
-            await create_new_event(channel, event_data, user=user)
-
-    # Return existing events
-
-    if (start_time is not None) and (end_time is not None):
-        c_events = await get_events_in_range(
-            channel.id,
-            start_time,
-            end_time,
+        result = await scheduler(
+            request.id_channel,
+            date=request.date,
+            days=request.days,
+            editable=editable,
+            events=request.events,
+            delete=request.delete,
             user=user,
         )
-    else:
-        c_events = []
-    return SchedulerResponseModel(
-        events=[e.meta for e in c_events],
-        affected_events=affected_events,
-        affected_bins=affected_bins,
-    )
+
+        if result.affected_bins:
+            await bin_refresh(
+                result.affected_bins,
+                initiator=initiator,
+                user=user,
+            )
+
+        if result.affected_events:
+            await nebula.msg(
+                "objects_changed",
+                objects=result.affected_events,
+                object_type="event",
+                initiator=initiator,
+            )
+        return result

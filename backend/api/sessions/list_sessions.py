@@ -1,17 +1,14 @@
-from fastapi import Query
-
 import nebula
+from server import APIModel, APIRequest
 from server.dependencies import CurrentUser
-from server.models import RequestModel
-from server.request import APIRequest
 from server.session import Session, SessionModel
 
 
-class ListSessionsRequestModel(RequestModel):
-    id_user: int = Query(..., examples=[1])
+class ListSessionsRequest(APIModel):
+    id_user: int
 
 
-class ListSessionsRequest(APIRequest):
+class ListSessions(APIRequest):
     """List user sessions."""
 
     name = "list-sessions"
@@ -20,7 +17,7 @@ class ListSessionsRequest(APIRequest):
 
     async def handle(
         self,
-        request: ListSessionsRequestModel,
+        request: ListSessionsRequest,
         user: CurrentUser,
     ) -> list[SessionModel]:
         id_user = request.id_user
