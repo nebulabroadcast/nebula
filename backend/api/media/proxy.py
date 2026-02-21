@@ -1,11 +1,10 @@
 import os
 
-from fastapi.responses import FileResponse
+from starlette.responses import FileResponse
 
 import nebula
+from server import APIModel, APIRequest
 from server.dependencies import CurrentUser
-from server.models import ResponseModel
-from server.request import APIRequest
 
 
 def get_proxy_path(id_asset: int) -> str:
@@ -40,8 +39,11 @@ class ServeProxy(APIRequest):
             raise nebula.NotFoundException("Proxy not found")
         return FileResponse(video_path, media_type="video/mp4")
 
+#
+# Proxy info
+#
 
-class ProxyInfo(ResponseModel):
+class ProxyInfo(APIModel):
     id: int
     available: bool
     timestamp: float | None

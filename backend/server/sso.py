@@ -4,7 +4,7 @@ from authlib.integrations.starlette_client import OAuth
 from authlib.integrations.starlette_client.apps import StarletteOAuth2App
 
 import nebula
-from server.models import ResponseModel
+from server import APIModel
 
 PROFILES = {
     "github": {
@@ -22,7 +22,7 @@ PROFILES = {
 }
 
 
-class SSOOption(ResponseModel):
+class SSOOption(APIModel):
     name: str
     title: str
 

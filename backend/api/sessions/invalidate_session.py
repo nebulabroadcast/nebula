@@ -1,11 +1,10 @@
 import nebula
+from server import APIModel, APIRequest
 from server.dependencies import CurrentUser
-from server.models import RequestModel
-from server.request import APIRequest
 from server.session import Session
 
 
-class InvalidateSessionRequest(RequestModel):
+class InvalidateSessionRequest(APIModel):
     token: str
 
 

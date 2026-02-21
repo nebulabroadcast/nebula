@@ -6,22 +6,23 @@ import user_agents
 from fastapi import Request
 from pydantic import BaseModel, Field
 
+from server.models import APIModel
 from server.utils import is_internal_ip
 
 
-class LocationInfo(BaseModel):
+class LocationInfo(APIModel):
     country: str | None = Field(None, title="Country")
     subdivision: str | None = Field(None, title="Subdivision")
     city: str | None = Field(None, title="City")
 
 
-class AgentInfo(BaseModel):
+class AgentInfo(APIModel):
     platform: str | None = Field(None, title="Platform")
     client: str | None = Field(None, title="Client")
     device: str | None = Field(None, title="Device")
 
 
-class ClientInfo(BaseModel):
+class ClientInfo(APIModel):
     ip: str
     languages: list[str] = Field(default_factory=list)
     location: LocationInfo | None = Field(None)

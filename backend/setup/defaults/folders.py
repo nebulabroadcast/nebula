@@ -1,6 +1,7 @@
 from nebula.settings.models import FolderField, FolderLink, FolderSettings
 
-content_alert_scheme = {"filter": r"^53\.1\.\d", "default": "53.1.1"}
+content_alert_default = "53.1.1"
+content_alert_pattern = r"^53\.1\.\d"
 movie_genre_pattern = r"^3\.(1|4|5|7|8|9)(\.\d+){0,2}$"
 music_genre_pattern = r"^3\.6\.(\d|4.(\d|14(.\d)?))$"
 
@@ -31,7 +32,10 @@ content_description: FieldList = [
     FolderField(name="intention", filter=r"^1\.(1|2|3|4|5|6|7|8)$"),
     FolderField(name="intended_audience"),
     FolderField(name="content_alert"),
-    FolderField(name="content_alert/scheme", **content_alert_scheme),
+    FolderField(
+        name="content_alert/scheme",
+        filter=content_alert_pattern,
+    ),
 ]
 
 production_description: FieldList = [

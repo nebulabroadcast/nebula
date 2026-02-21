@@ -6,12 +6,12 @@ from typing import Literal
 from pydantic import Field
 
 import nebula
-from server.models import ResponseModel
+from server import APIModel
 
 FrontendScope = Literal["tool", "mam"]
 
 
-class PluginItemModel(ResponseModel):
+class PluginItemModel(APIModel):
     """Plugin item model.
 
     This model is used to describe a plugin in the frontend.

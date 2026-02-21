@@ -5,19 +5,18 @@ import subprocess
 import aiocache
 
 import nebula
+from server import APIModel, APIRequest
 from server.dependencies import CurrentUser
-from server.models import ResponseModel
-from server.request import APIRequest
 
 
-class NebulaStorageUsage(ResponseModel):
+class NebulaStorageUsage(APIModel):
     label: str
     color: str | None = None
     usage: int = 0
     duration: int = 0
 
 
-class StorageStat(ResponseModel):
+class StorageStat(APIModel):
     storage_id: int
     label: str
     total: int
@@ -134,7 +133,7 @@ async def get_storage_map() -> dict[int, dict[str, str]]:
     return storages
 
 
-class NebulaStoragesUsage(ResponseModel):
+class NebulaStoragesUsage(APIModel):
     storages: list[StorageStat]
 
 

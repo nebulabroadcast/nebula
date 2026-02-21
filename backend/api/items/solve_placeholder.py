@@ -3,12 +3,11 @@ from pydantic import Field
 import nebula
 from nebula.exceptions import BadRequestException
 from nebula.plugins.library import plugin_library
+from server import APIModel, APIRequest
 from server.dependencies import CurrentUser
-from server.models import RequestModel
-from server.request import APIRequest
 
 
-class SolveRequestModel(RequestModel):
+class SolveRequest(APIModel):
     solver: str = Field(..., examples=["dramatica"])
     items: list[int] = Field(
         ...,
@@ -17,7 +16,7 @@ class SolveRequestModel(RequestModel):
     )
 
 
-class Solve(APIRequest):
+class SolvePlaceholder(APIRequest):
     """Solve a rundown placeholder"""
 
     name = "solve"
@@ -26,7 +25,7 @@ class Solve(APIRequest):
 
     async def handle(
         self,
-        request: SolveRequestModel,
+        request: SolveRequest,
         user: CurrentUser,
     ) -> None:
         # Get the list of channels of the requested items

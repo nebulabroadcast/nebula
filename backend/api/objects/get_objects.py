@@ -7,6 +7,8 @@ from nebula.enum import ObjectType
 from server import APIModel, APIRequest
 from server.dependencies import CurrentUser
 
+from ._utils import can_access_object
+
 
 class GetObjectsRequest(APIModel):
     object_type: Annotated[
@@ -48,24 +50,6 @@ class GetObjectsResponse(APIModel):
     ]
 
 
-def can_access_object(user: nebula.User, meta: dict[str, Any]) -> bool:
-    if user.is_admin or (user.id in meta.get("assignees", [])):
-        return True
-    elif user.is_limited:
-        return meta.get("created_by") == user.id
-    if id_folder := meta.get("id_folder"):
-        # Users can view assets in folders they have access to
-        return user.can("asset_view", id_folder)
-
-    if login := meta.get("login"):
-        # Users can view their own data
-        return login == user.name
-
-    # Normal users don't need to access items, bins or events
-    # using get requests.
-    return False
-
-
 class GetObjects(APIRequest):
     """Get a list of objects"""
 
@@ -83,7 +67,7 @@ class GetObjects(APIRequest):
 
         data = []
         async for row in nebula.db.iterate(query, request.ids):
-            if not can_access_object(user, row["meta"]):
+            if not can_access_object(row["meta"], user):
                 raise nebula.ForbiddenException(
                     "You are not allowed to access this object"
                 )

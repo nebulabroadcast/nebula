@@ -1,27 +1,35 @@
+from typing import Annotated
+
 import asyncpg
-from fastapi import Response
 from pydantic import Field
 
 import nebula
 from nebula.enum import ObjectType
 from nebula.helpers.scheduling import bin_refresh
 from nebula.objects.utils import get_object_class_by_name
+from server import APIModel, APIRequest
 from server.dependencies import CurrentUser, RequestInitiator
-from server.models import RequestModel
-from server.request import APIRequest
 
 
-class DeleteRequestModel(RequestModel):
-    object_type: ObjectType = Field(ObjectType.ASSET, title="Object type")
-    ids: list[int] = Field(
-        ...,
-        title="Object IDs",
-        description="A list of object IDs to delete",
-        examples=[[1, 2, 3]],
-    )
+class DeleteObjectsRequest(APIModel):
+    object_type: Annotated[
+        ObjectType,
+        Field(
+            title="Object type",
+        ),
+    ] = ObjectType.ASSET
+
+    ids: Annotated[
+        list[int],
+        Field(
+            title="Object IDs",
+            description="A list of object IDs to delete",
+            examples=[[1, 2, 3]],
+        ),
+    ]
 
 
-class Request(APIRequest):
+class DeleteObjects(APIRequest):
     """Delete one or multiple objects from the database"""
 
     name = "delete"
@@ -30,10 +38,10 @@ class Request(APIRequest):
 
     async def handle(
         self,
-        request: DeleteRequestModel,
+        request: DeleteObjectsRequest,
         user: CurrentUser,
         initiator: RequestInitiator,
-    ) -> Response:
+    ) -> None:
         """Delete given objects."""
         match request.object_type:
             case ObjectType.ITEM:
@@ -55,7 +63,7 @@ class Request(APIRequest):
                         "Cannot delete item because it was already aired"
                     ) from e
                 await bin_refresh(list(affected_bins), initiator=initiator)
-                return Response(status_code=204)
+                return None
 
             case ObjectType.USER:
                 if not user["is_admin"]:
@@ -87,4 +95,4 @@ class Request(APIRequest):
             except Exception:
                 nebula.log.traceback(f"Unable to delete {obj}")
 
-        return Response(status_code=204)
+        return None

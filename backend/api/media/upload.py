@@ -12,7 +12,7 @@ from server.dependencies import AssetInPath, CurrentUser
 from server.request import APIRequest
 
 
-class UploadRequest(APIRequest):
+class UploadMedia(APIRequest):
     """Upload a media file for a given asset.
 
     This endpoint is used by the web frontend to upload media files.
