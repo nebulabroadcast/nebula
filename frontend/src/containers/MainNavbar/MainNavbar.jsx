@@ -4,11 +4,20 @@ import { useNebula } from '@features/Nebula';
 import { useMemo } from 'react';
 import { NavLink, useNavigate, useSearchParams } from 'react-router';
 
-import { Navbar, Dropdown } from '/src/components';
+import { Navbar, Dropdown, Icon } from '/src/components';
 
 import ChannelSwitcher from './ChannelSwitcher';
 import Logo from './Logo';
 import PageTitle from './PageTitle';
+
+const NavbarLink = ({ to, label, icon }) => {
+  return (
+    <NavLink to={to} className="navbar-link">
+      {icon && <Icon icon={icon} tooltip={label} />}
+      {label && <span className="navbar-link-label">{label}</span>}
+    </NavLink>
+  );
+};
 
 const MainNavbar = () => {
   const navigate = useNavigate();
@@ -70,17 +79,36 @@ const MainNavbar = () => {
     <Navbar>
       <div className="left">
         <Logo />
-        <NavLink to={`/mam/editor${mamSuffix}`}>Assets</NavLink>
+        <NavbarLink
+          to={`/mam/editor${mamSuffix}`}
+          label="Assets"
+          icon="photo_library"
+        />
+
         {show.scheduler && (
-          <NavLink to={`/mam/scheduler${mamSuffix}`}>Scheduler</NavLink>
+          <NavbarLink
+            to={`/mam/scheduler${mamSuffix}`}
+            label="Scheduler"
+            icon="schedule"
+          />
         )}
-        {show.rundown && <NavLink to={`/mam/rundown${mamSuffix}`}>Rundown</NavLink>}
-        {show.jobs && <NavLink to="/jobs">Jobs</NavLink>}
-        {show.system && <NavLink to="/system">System</NavLink>}
+
+        {show.rundown && (
+          <NavbarLink
+            to={`/mam/rundown${mamSuffix}`}
+            label="Rundown"
+            icon="view_list"
+          />
+        )}
+
+        {show.jobs && <NavbarLink to="/jobs" label="Jobs" icon="settings" />}
+        {show.system && <NavbarLink to="/system" label="System" icon="build" />}
       </div>
+
       <div className="center">
         <PageTitle />
       </div>
+
       <div className="right">
         <ChannelSwitcher />
         <Dropdown

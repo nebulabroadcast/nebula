@@ -108,7 +108,7 @@ const AssetEditorNav = ({ assetData, setMeta, enabledActions }) => {
   }, [assetData['video/fps_f']]);
 
   return (
-    <Navbar>
+    <Navbar maxWidth="920px">
       {detailsVisible && (
         <Dialog
           style={{ height: '80%', width: '80%' }}

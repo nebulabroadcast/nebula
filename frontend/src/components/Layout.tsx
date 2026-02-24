@@ -2,57 +2,6 @@ import styled from 'styled-components';
 
 import { getTheme } from './theme';
 
-const Navbar = styled.nav`
-  display: flex;
-  flex-direction: row;
-  gap: var(--gap-size);
-  border-radius: ${getTheme().navBorderRadius};
-  background-color: ${getTheme().colors.surface02};
-  padding: 4px 10px;
-  align-items: center;
-
-  a {
-    margin-right: 15px;
-    text-transform: uppercase;
-    text-decoration: none;
-    transition: text-shadow 0.2s;
-    color: #b0b0b0;
-    user-select: none !important;
-
-    &:hover {
-      color: white
-      text-shadow: 0 0 5px #aaa
-      transition: text-shadow 0.2s
-    }
-
-    &.active {
-      color: white
-    }
-  }
-
-
-  .left {
-    flex: 1;
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-  }
-
-  .center {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-
-  .right {
-    flex: 1;
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-  }
-`;
-
 const NavbarTitle = styled.div`
   font-size: 1.1rem;
   font-weight: 500;
@@ -106,4 +55,4 @@ const PanelHeader = styled.h2`
   gap: 8px;
 `;
 
-export { Navbar, NavbarTitle, Spacer, ToolbarSeparator, PanelHeader, Section };
+export { NavbarTitle, Spacer, ToolbarSeparator, PanelHeader, Section };

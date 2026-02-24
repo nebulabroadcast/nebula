@@ -25,10 +25,12 @@ export { default as TextArea } from './TextArea';
 export { default as Timestamp } from './Timestamp';
 export { getTheme } from './theme';
 
+export { Navbar } from './Navbar';
+
 export { Form, FormRow } from './Form';
 export { Loader, LoaderWrapper } from './Loader';
 export {
-  Navbar,
+  //Navbar,
   NavbarTitle,
   Spacer,
   ToolbarSeparator,

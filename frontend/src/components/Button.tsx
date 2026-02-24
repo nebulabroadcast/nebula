@@ -37,15 +37,24 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>((props: ButtonProps, r
     _iconStyle.color = props.hlColor;
   }
 
+  // icon on right is in the condition to prevent
+  // dropdown text from disappearing from collapsed navbars
+  const labelClass = icon && !iconOnRight ? 'nebula-button-label' : '';
+
   return (
     <BaseButton
-      className={clsx(className, active && 'active', !label && 'icon-only')}
+      className={clsx(
+        'nebula-button',
+        className,
+        active && 'active',
+        !label && 'icon-only'
+      )}
       style={_buttonStyle}
       title={tooltip}
       ref={ref}
       {...buttonProps}
     >
-      {label && iconOnRight && <span>{label}</span>}
+      {label && iconOnRight && <span className={labelClass}>{label}</span>}
       {icon && (
         <span
           className="icon material-symbols-outlined"
@@ -55,7 +64,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>((props: ButtonProps, r
           {icon}
         </span>
       )}
-      {!iconOnRight && label && <span>{label}</span>}
+      {!iconOnRight && label && <span className={labelClass}>{label}</span>}
     </BaseButton>
   );
 });

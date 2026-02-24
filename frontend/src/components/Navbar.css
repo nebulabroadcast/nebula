@@ -1,0 +1,85 @@
+.nebula-navbar {
+  container-type: inline-size;
+  container-name: navbar;
+
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
+
+  gap: var(--gap-size);
+  border-radius: var(--nav-border-radius);
+  background-color: var(--color-surface-02);
+  padding: 4px 10px;
+
+  a {
+    margin-right: 15px;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: text-shadow 0.2s;
+    color: #b0b0b0;
+    user-select: none !important;
+
+    &:hover {
+      color: white;
+      text-shadow: 0 0 5px #aaa;
+      transition: text-shadow 0.2s;
+    }
+
+    &.active {
+      color: white;
+    }
+  }
+
+  .left,
+  .center,
+  .right {
+    display: flex;
+    align-items: center;
+  }
+
+  .left {
+    flex: 1;
+    justify-content: flex-start;
+  }
+  .center {
+    flex: 1;
+    justify-content: center;
+  }
+  .right {
+    flex: 1;
+    justify-content: flex-end;
+  }
+
+  .navbar-link .icon {
+    display: none;
+  }
+
+  @container navbar (max-width: 800px) {
+    .navbar-link .icon {
+      display: inline-block;
+    }
+
+    .navbar-link span,
+    .nebula-button-label {
+      display: none;
+    }
+
+    .center {
+      order: 2; /* move it after left+right */
+      flex-basis: 100%; /* force it onto its own row */
+      justify-content: center;
+      margin-top: 0.25rem; /* optional spacing */
+    }
+
+    .left {
+      order: 0;
+      flex: 1;
+    }
+
+    .right {
+      order: 1;
+      flex: 1;
+    }
+  }
+}

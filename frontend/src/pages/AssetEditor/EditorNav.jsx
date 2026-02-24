@@ -32,7 +32,7 @@ const AssetEditorNav = ({
   enabledActions,
 }) => {
   return (
-    <Navbar>
+    <Navbar maxWidth="920px">
       <Button
         icon="add"
         onClick={onNewAsset}

@@ -27,7 +27,7 @@ const MAMContainer = styled.div`
   }
 
   .__dbk__child-wrapper:last-child {
-    min-width: 1000px;
+    //    min-width: 1000px;
   }
 `;
 

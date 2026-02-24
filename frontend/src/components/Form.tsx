@@ -10,10 +10,6 @@ const Form = styled.div`
     color: #555;
   }
 
-  // .form-title, .form-control {
-  //   border: 1px solid red;
-  // }
-
   .form-section {
     grid-column: 1 / -1;
     h3 {
