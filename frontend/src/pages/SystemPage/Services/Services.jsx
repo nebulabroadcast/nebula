@@ -1,11 +1,41 @@
 import nebula from '/src/nebula';
 
-import { Duration } from 'luxon';
-import { useEffect, useState } from 'react';
-
-import { Table, Button, InputSwitch, Spacer, Section } from '@components';
-import { useWebSocket } from '@features/Websocket';
+import { Table, Button, InputSwitch, Spacer, Section, Icon } from '@components';
 import { useNebula } from '@features/Nebula';
+import { useWebSocket } from '@features/Websocket';
+import { Duration } from 'luxon';
+import { useEffect, useState, useMemo } from 'react';
+import styled, { keyframes } from 'styled-components';
+
+const blink = keyframes`
+  0% { opacity: 1; transform: scale(1.2); }
+  50% { opacity: 1; }
+  100% { opacity: 0.3;  transform: scale(1); }
+`;
+
+const BlinkIcon = styled(Icon)`
+  font-size: 14px !important;
+  margin-right: 8px;
+  vertical-align: middle;
+  animation: ${blink} 1s ease-out;
+  opacity: 0.3;
+
+  &.status-0 {
+    color: var(--color-red);
+  }
+  &.status-1 {
+    color: var(--color-green);
+  }
+  &.status-2 {
+    color: var(--color-yellow);
+  }
+  &.status-3 {
+    color: var(--color-yellow);
+  }
+  &.status-4 {
+    color: var(--color-red);
+  }
+`;
 
 const formatStatus = (rowData, key) => {
   const status = rowData[key];
@@ -27,12 +57,26 @@ const formatStatus = (rowData, key) => {
 
 const formatLastSeen = (rowData, key) => {
   const lastSeen = rowData[key];
-  if (lastSeen < 2) return <td>Now</td>;
 
-  if (lastSeen > 1234567890) return <td>Never</td>;
+  const when =
+    lastSeen < 2
+      ? 'Now'
+      : lastSeen > 1234567890
+        ? 'Never'
+        : Duration.fromObject({ seconds: lastSeen })
+            .rescale()
+            .toHuman({ stripZeroUnits: 'all' }) + ' ago';
 
-  const duration = Duration.fromObject({ seconds: lastSeen });
-  return <td>{duration.toHuman({ stripZeroUnits: 'all' })} ago </td>;
+  return (
+    <td>
+      <BlinkIcon
+        key={rowData.last_updated || 0}
+        icon="circle"
+        className={`status-${rowData.status}`}
+      />
+      {when}
+    </td>
+  );
 };
 
 const ServicesPage = () => {
@@ -95,37 +139,45 @@ const ServicesPage = () => {
     return <td className="action">{b}</td>;
   };
 
-  const columns = [
-    { name: 'id', title: '#', width: 1 },
-    { name: 'name', title: 'Name' },
-    { name: 'type', title: 'Type', width: 200 },
-    { name: 'hostname', title: 'Hostname', width: 200 },
-    { name: 'status', title: 'Status', width: 200, formatter: formatStatus },
-    {
-      name: 'last_seen',
-      title: 'Last seen',
-      width: 300,
-      formatter: formatLastSeen,
-    },
-    {
-      name: 'autostart',
-      title: 'Auto start',
-      width: 70,
-      formatter: formatAutoStart,
-    },
-    { name: 'action', title: 'Action', width: 100, formatter: formatAction },
-  ];
+  const columns = useMemo(
+    () => [
+      { name: 'id', title: '#', width: 1 },
+      { name: 'name', title: 'Name' },
+      { name: 'type', title: 'Type', width: 200 },
+      { name: 'hostname', title: 'Hostname', width: 200 },
+      { name: 'status', title: 'Status', width: 200, formatter: formatStatus },
+      {
+        name: 'last_seen',
+        title: 'Last seen',
+        width: 300,
+        formatter: formatLastSeen,
+      },
+      {
+        name: 'autostart',
+        title: 'Auto start',
+        width: 70,
+        formatter: formatAutoStart,
+      },
+      { name: 'action', title: 'Action', width: 100, formatter: formatAction },
+    ],
+    []
+  );
 
   useEffect(() => {
-    const handlePubSub = async (topic, message) => {
+    const handlePubSub = (topic, message) => {
+      console.log('WS Message:', topic, message.id, message.state);
       setServices((prevData) => {
+        const index = prevData.findIndex((service) => service.id === message.id);
+        if (index === -1) return prevData;
+
         const newData = [...prevData];
-        const index = newData.findIndex((service) => service.id === message.id);
-        if (index !== -1) {
-          newData[index]['status'] = message.state;
-          newData[index]['last_seen'] = message.last_seen_before;
-          newData[index]['autostart'] = message.autostart;
-        }
+        newData[index] = {
+          ...newData[index],
+          status: message.state,
+          last_seen: message.last_seen_before,
+          autostart: message.autostart,
+          last_updated: Date.now(),
+        };
         return newData;
       });
     }; // handlePubSub

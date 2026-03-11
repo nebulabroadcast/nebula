@@ -156,13 +156,16 @@ const JobsPage = () => {
     const handlePubSub = (topic, message) => {
       if (topic !== 'job_progress') return;
       setJobs((prevData) => {
+        const index = prevData.findIndex((job) => job.id === message.id);
+        if (index === -1) return prevData;
+
         const newData = [...prevData];
-        const index = newData.findIndex((job) => job.id === message.id);
-        if (index !== -1) {
-          newData[index]['status'] = message.status;
-          newData[index]['progress'] = message.progress;
-          newData[index]['message'] = message.message;
-        }
+        newData[index] = {
+          ...newData[index],
+          status: message.status,
+          progress: message.progress,
+          message: message.message,
+        };
         return newData;
       });
     }; // handlePubSub

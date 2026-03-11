@@ -8,11 +8,16 @@ const StyledIcon = styled.span`
 interface IconProps {
   icon: string;
   style?: React.CSSProperties;
+  className?: string;
 }
 
-const Icon = ({ icon, style }: IconProps) => {
+const Icon = ({ icon, style, className }: IconProps) => {
   return (
-    <StyledIcon className="icon material-symbols-outlined" style={style} translate="no">
+    <StyledIcon
+      className={`icon material-symbols-outlined ${className || ''}`}
+      style={style}
+      translate="no"
+    >
       {icon}
     </StyledIcon>
   );
