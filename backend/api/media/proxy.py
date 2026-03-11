@@ -39,9 +39,11 @@ class ServeProxy(APIRequest):
             raise nebula.NotFoundException("Proxy not found")
         return FileResponse(video_path, media_type="video/mp4")
 
+
 #
 # Proxy info
 #
+
 
 class ProxyInfo(APIModel):
     id: int

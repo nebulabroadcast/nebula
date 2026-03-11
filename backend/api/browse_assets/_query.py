@@ -183,4 +183,3 @@ def build_query(
         OFFSET {request.offset}
     """
     return query
-

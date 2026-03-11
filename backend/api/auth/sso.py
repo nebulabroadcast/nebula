@@ -13,7 +13,6 @@ from server.sso import NebulaSSO
 class SSOLogin(APIRequest):
     """Redirect the user to the SSO provider's login page"""
 
-
     name = "sso-login"
     title = "SSO Login"
     path = "/api/sso/login/{provider}"

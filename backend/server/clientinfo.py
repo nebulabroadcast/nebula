@@ -4,7 +4,7 @@ import geoip2
 import geoip2.database
 import user_agents
 from fastapi import Request
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from server.models import APIModel
 from server.utils import is_internal_ip

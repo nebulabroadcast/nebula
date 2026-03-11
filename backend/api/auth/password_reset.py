@@ -1,7 +1,6 @@
-import asyncio
 from typing import Annotated
 
-from fastapi import Request
+from fastapi import BackgroundTasks, Request
 from pydantic import Field
 
 import nebula
@@ -58,12 +57,13 @@ class PasswordReset(APIRequest):
         self,
         payload: PasswordResetRequest,
         request: Request,
+        background_tasks: BackgroundTasks,
     ) -> None:
         # Don't await this, we don't want to make the user wait for the email to be sent
         # and we don't care about the result of this operation
         # This also prevents timing attacks that could reveal
         # whether the email exists or not,
-        asyncio.create_task(self.request_password_reset(payload.email, request))
+        background_tasks.add_task(self.request_password_reset, payload.email, request)
 
     async def request_password_reset(self, email: str, request: Request) -> None:
         nebula.log.info(f"Password reset requested for email: {email}")

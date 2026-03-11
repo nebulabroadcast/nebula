@@ -108,7 +108,7 @@ class JobListItem(APIModel):
         Field(
             title="Action ID",
             description="ID of the action this job is running",
-            gt=1,
+            gt=0,
             examples=[1],
         ),
     ]
@@ -212,7 +212,6 @@ class JobListItem(APIModel):
         Field(
             examples=["proxy"],
         ),
-
     ] = None
 
     service_name: Annotated[

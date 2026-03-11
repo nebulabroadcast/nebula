@@ -8,6 +8,7 @@ from nebula.enum import ObjectType
 if TYPE_CHECKING:
     pass
 
+
 class Validator:
     validators: dict[str, Any] | None = None
 
@@ -45,4 +46,3 @@ class Validator:
 
             nebula.log.debug(f"Loaded validator {validator_name}")
             cls.validators[object_type.name] = validator.validate
-

@@ -84,4 +84,3 @@ class ServerInfoResponse(APIModel):
             description="Whether the login background image is enabled",
         ),
     ] = None
-

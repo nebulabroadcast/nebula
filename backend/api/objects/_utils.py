@@ -67,4 +67,3 @@ async def can_modify_object(obj: BaseObject, user: nebula.User) -> None:
 
     elif isinstance(obj, nebula.Bin):
         raise nebula.ForbiddenException("It is not allowed to edit bins directly")
-

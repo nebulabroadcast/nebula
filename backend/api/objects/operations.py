@@ -103,6 +103,7 @@ class OperationsResponse(APIModel):
         ),
     ]
 
+
 class Operations(APIRequest):
     """Create or update multiple objects in one requests."""
 
@@ -218,4 +219,3 @@ class Operations(APIRequest):
 
         overall_success = all(x.success for x in result)
         return OperationsResponse(operations=result, success=overall_success)
-

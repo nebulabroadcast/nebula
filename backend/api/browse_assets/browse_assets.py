@@ -22,7 +22,8 @@ REQUIRED_COLUMNS = [
     "subclips",
 ]
 
-class Request(APIRequest):
+
+class BrowseAssets(APIRequest):
     """Browse the assets database."""
 
     name = "browse"

@@ -23,7 +23,6 @@ def is_login_background_enabled() -> bool:
     return os.path.isfile(img_path)
 
 
-
 class GetServerInfo(APIRequest):
     """Initial client request to ensure user is logged in.
 
