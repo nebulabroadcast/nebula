@@ -1,6 +1,5 @@
 from nebula.settings.models import FolderField, FolderLink, FolderSettings
 
-content_alert_default = "53.1.1"
 content_alert_pattern = r"^53\.1\.\d"
 movie_genre_pattern = r"^3\.(1|4|5|7|8|9)(\.\d+){0,2}$"
 music_genre_pattern = r"^3\.6\.(\d|4.(\d|14(.\d)?))$"

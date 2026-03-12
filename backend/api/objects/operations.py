@@ -160,7 +160,7 @@ class Operations(APIRequest):
                             )
 
                         if not user.is_admin:
-                            for key in operation.data:
+                            for key in list(operation.data.keys()):
                                 if key.startswith("can/") or key.startswith("is_"):
                                     operation.data.pop(key, None)
 
