@@ -1,6 +1,5 @@
 import enum
 import logging
-import sys
 import traceback
 from typing import Any
 
@@ -35,16 +34,11 @@ class Logger:
         if level < self.level:
             return
 
-        lvl = level.name.upper()
+        level.name.upper()
         usr = user or self.user
         usr = usr[: self.user_max_length].ljust(self.user_max_length)
-        msg = " ".join([str(arg) for arg in args])
+        " ".join([str(arg) for arg in args])
 
-        print(
-            f"{lvl:<8} {usr} {msg}",
-            file=sys.stderr,
-            flush=True,
-        )
 
     def trace(self, *args: Any, user: str | None = None) -> None:
         self(LogLevel.TRACE, *args, user=user)

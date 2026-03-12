@@ -1,33 +1,33 @@
 __all__ = [
-    "config",
-    "settings",
-    "db",
     "DB",
-    "redis",
     "Asset",
-    "Item",
-    "Bin",
-    "Event",
-    "User",
-    "msg",
-    "log",
-    "run",
-    "Storage",
-    "storages",
     # Exceptions
     "BadRequestException",
-    "ForbiddenException",
-    "NebulaException",
-    "NotFoundException",
-    "RequestSettingsReload",
-    "UnauthorizedException",
-    "LoginFailedException",
-    "NotImplementedException",
-    "ConflictException",
-    "ValidationException",
+    "Bin",
     # Plugins
     "CLIPlugin",
+    "ConflictException",
+    "Event",
+    "ForbiddenException",
+    "Item",
+    "LoginFailedException",
+    "NebulaException",
+    "NotFoundException",
+    "NotImplementedException",
+    "RequestSettingsReload",
+    "Storage",
+    "UnauthorizedException",
+    "User",
+    "ValidationException",
     "__version__",
+    "config",
+    "db",
+    "log",
+    "msg",
+    "redis",
+    "run",
+    "settings",
+    "storages",
 ]
 
 import sys
@@ -35,7 +35,6 @@ import sys
 from nebula.version import __version__
 
 if "--version" in sys.argv:
-    print(__version__)
     sys.exit(0)
 
 import asyncio

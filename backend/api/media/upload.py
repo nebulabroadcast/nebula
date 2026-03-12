@@ -77,7 +77,6 @@ class UploadMedia(APIRequest):
                 os.remove(temp_path)
             except OSError:
                 nebula.log.error(f"Unable to remove temp file {temp_path}")
-                pass
             return
 
         os.rename(temp_path, target_path)

@@ -97,8 +97,7 @@ def normalize_meta(key: str, value: Any) -> Any:
 
         case MetaClass.COLOR:
             if isinstance(value, str):
-                if value.startswith("#"):
-                    value = value[1:]
+                value = value.removeprefix("#")
                 return int(value, 16)
             return int(value)
 

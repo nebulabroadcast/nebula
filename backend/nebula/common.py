@@ -52,7 +52,7 @@ def import_module(name: str, path: str) -> ModuleType:
     return module
 
 
-def classes_from_module(superclass: T, module: ModuleType) -> list[T]:
+def classes_from_module[T: type](superclass: T, module: ModuleType) -> list[T]:
     classes = []
     for name in dir(module):
         # It could be anything at this point

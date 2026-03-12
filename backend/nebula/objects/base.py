@@ -1,5 +1,5 @@
 import time
-from typing import Any, TypeVar
+from typing import Any, Self, TypeVar
 
 import asyncpg
 
@@ -83,10 +83,9 @@ class BaseObject:
         obid = f"id={self.id or 'UNSAVED'}"
         if self.object_type == "user":
             return f"{self.object_type} {obid} ({self.meta.get('login', 'Anonymous')})"
-        elif title := self.meta.get("title"):
+        if title := self.meta.get("title"):
             return f"{self.object_type} {obid} ({title})"
-        else:
-            return f"{self.object_type} {obid}"
+        return f"{self.object_type} {obid}"
 
     @property
     def id(self) -> int | None:
@@ -110,8 +109,7 @@ class BaseObject:
         if key == "id" and not value:
             return None
         if value is None and key in settings.metatypes:
-            default = settings.metatypes[key].default
-            return default
+            return settings.metatypes[key].default
         return value
 
     def __setitem__(self, key: str, value: Any) -> None:
@@ -154,11 +152,11 @@ class BaseObject:
 
     @classmethod
     async def load(
-        cls: type[T],
+        cls,
         id: int,
         connection: DatabaseConnection | None = None,
         username: str | None = None,
-    ) -> T:
+    ) -> Self:
         """Load an object from the database"""
         conn = connection or db
         res = await conn.fetch(f"SELECT meta FROM {cls.object_type}s WHERE id = $1", id)
@@ -168,11 +166,11 @@ class BaseObject:
 
     @classmethod
     def from_row(
-        cls: type[T],
+        cls,
         row: asyncpg.Record,
         connection: DatabaseConnection | None = None,
         username: str | None = None,
-    ) -> T:
+    ) -> Self:
         """Return an object from a database row.
 
         meta is expected to be one of the column of the row.
@@ -183,11 +181,11 @@ class BaseObject:
 
     @classmethod
     def from_meta(
-        cls: type[T],
+        cls,
         meta: dict[str, Any],
         connection: DatabaseConnection | None = None,
         username: str | None = None,
-    ) -> T:
+    ) -> Self:
         """Return an object from a metadata dict.
 
         Note that no validation is performed.
@@ -197,11 +195,11 @@ class BaseObject:
 
     @classmethod
     def from_untrusted(
-        cls: type[T],
+        cls,
         meta: dict[str, Any],
         connection: DatabaseConnection | None = None,
         username: str | None = None,
-    ) -> T:
+    ) -> Self:
         """Return an object from a metadata dict.
 
         Values are normalized and validated.

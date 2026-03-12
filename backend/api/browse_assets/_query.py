@@ -164,7 +164,7 @@ def build_query(
 
     # Build order
 
-    if request.order_by in list(columns) + ["ctime"]:
+    if request.order_by in [*list(columns), "ctime"]:
         order_by = request.order_by
     else:
         order_by = "ctime"
@@ -173,7 +173,7 @@ def build_query(
 
     # Build query
 
-    query = f"""
+    return f"""
         {ft_cte}
         SELECT meta FROM assets a
         {ft_join}
@@ -182,4 +182,3 @@ def build_query(
         LIMIT {request.limit}
         OFFSET {request.offset}
     """
-    return query

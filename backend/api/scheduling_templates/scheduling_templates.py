@@ -92,5 +92,5 @@ class ApplySchedulingTemplate(APIRequest):
                         )
                         edata.pop(new_ts)
 
-            for _, event_data in edata.items():
+            for event_data in edata.values():
                 await create_new_event(channel, event_data, user, conn)

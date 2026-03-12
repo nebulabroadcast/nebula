@@ -63,7 +63,7 @@ class DeleteObjects(APIRequest):
                         "Cannot delete item because it was already aired"
                     ) from e
                 await bin_refresh(list(affected_bins), initiator=initiator)
-                return None
+                return
 
             case ObjectType.USER:
                 if not user["is_admin"]:
@@ -95,4 +95,4 @@ class DeleteObjects(APIRequest):
             except Exception:
                 nebula.log.traceback(f"Unable to delete {obj}")
 
-        return None
+        return

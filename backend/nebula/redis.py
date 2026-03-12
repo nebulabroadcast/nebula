@@ -40,8 +40,7 @@ class Redis:
         if not cls.connected:
             await cls.connect()
         assert cls.redis_pool is not None
-        value = await cls.redis_pool.get(f"{namespace}-{key}")
-        return value
+        return await cls.redis_pool.get(f"{namespace}-{key}")
 
     @classmethod
     async def get_json(cls, namespace: str, key: str) -> Any:

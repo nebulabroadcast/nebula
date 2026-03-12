@@ -163,7 +163,7 @@ class SendTo(APIRequest):
         user: CurrentUser,
     ) -> SendToResponse:
         if not user.can("job_control", request.id_action):
-            raise nebula.ForbiddenException()
+            raise nebula.ForbiddenException
 
         nebula.log.info(
             f"Starting action {request.id_action} "

@@ -48,8 +48,7 @@ class Asset(BaseObject):
         if not (id_storage and path):
             return None
         storage_path = storages[id_storage].local_path
-        full_path = os.path.join(storage_path, path)
-        return full_path
+        return os.path.join(storage_path, path)
 
     @property
     def local_path(self) -> str | None:

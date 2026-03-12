@@ -128,6 +128,6 @@ class PlayoutControlResponse(APIModel):
     plugins: Annotated[
         list[PlayoutPluginManifest] | None,
         Field(
-            default_factory=lambda: [],
+            default_factory=list,
         ),
     ]

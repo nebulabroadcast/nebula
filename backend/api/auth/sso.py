@@ -74,7 +74,7 @@ class SSOLoginCallback(APIRequest):
         if not user_info:
             return RedirectResponse("/?error=Invalid response from provider")
 
-        email = cast(str, user_info.get("email"))
+        email = cast("str", user_info.get("email"))
 
         if not email:
             return RedirectResponse("/?error=User email not found")

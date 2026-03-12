@@ -7,7 +7,7 @@ from nebula.objects.base import BaseObject
 def can_access_object(meta: dict[str, Any], user: nebula.User) -> bool:
     if user.is_admin or (user.id in meta.get("assignees", [])):
         return True
-    elif user.is_limited:
+    if user.is_limited:
         return meta.get("created_by") == user.id
     if id_folder := meta.get("id_folder"):
         # Users can view assets in folders they have access to
@@ -35,7 +35,7 @@ async def can_modify_object(obj: BaseObject, user: nebula.User) -> None:
         acl = user.get("can/asset_edit", False)
         if not acl:
             raise nebula.ForbiddenException("You are not allowed to edit assets")
-        elif isinstance(acl, list) and obj["id_folder"] not in acl:
+        if isinstance(acl, list) and obj["id_folder"] not in acl:
             raise nebula.ForbiddenException(
                 "You are not allowed to edit assets in this folder"
             )
@@ -44,7 +44,7 @@ async def can_modify_object(obj: BaseObject, user: nebula.User) -> None:
         acl = user.get("can/scheduler_edit", False)
         if not acl:
             raise nebula.ForbiddenException("You are not allowed to edit schedule")
-        elif isinstance(acl, list) and obj["id_channel"] not in acl:
+        if isinstance(acl, list) and obj["id_channel"] not in acl:
             raise nebula.ForbiddenException(
                 "You are not allowed to edit schedule for this channel"
             )
@@ -53,7 +53,7 @@ async def can_modify_object(obj: BaseObject, user: nebula.User) -> None:
         acl = user.get("can/rundown_edit", False)
         if not acl:
             raise nebula.ForbiddenException("You are not allowed to edit rundown")
-        elif isinstance(acl, list):
+        if isinstance(acl, list):
             q = "SELECT id_channel FROM events WHERE id_magic = $1"
             res = await nebula.db.fetch(q, obj["id_bin"])
             if not res:

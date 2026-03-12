@@ -125,7 +125,7 @@ class Session:
         try:
             data = await nebula.redis.get_json(cls.ns, token)
         except KeyError:
-            return None
+            return
 
         session = SessionModel.model_validate(data)
         session.user = user.meta

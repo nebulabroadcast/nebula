@@ -804,7 +804,7 @@ class PlayoutChannelSettings(BasePlayoutChannelSettings):
 T = TypeVar("T", bound=BaseListItemModel)
 
 
-def unique_item(values: list[T]) -> list[T]:
+def unique_item[T: BaseListItemModel](values: list[T]) -> list[T]:
     """Check if all items in the list have unique IDs and names."""
 
     ids = set()

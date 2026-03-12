@@ -1,4 +1,4 @@
-__all__ = ["hash_data", "create_hash", "create_uuid"]
+__all__ = ["create_hash", "create_uuid", "hash_data"]
 
 import hashlib
 import json

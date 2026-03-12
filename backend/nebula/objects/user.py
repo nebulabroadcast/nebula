@@ -62,7 +62,7 @@ class User(BaseObject):
 
     @property
     def name(self) -> str:
-        return cast(str, self.meta["login"])
+        return cast("str", self.meta["login"])
 
     # setter for name
     @name.setter

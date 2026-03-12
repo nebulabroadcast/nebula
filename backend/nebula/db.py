@@ -1,4 +1,4 @@
-__all__ = ["db", "DB", "DatabaseConnection"]
+__all__ = ["DB", "DatabaseConnection", "db"]
 
 from collections.abc import AsyncGenerator
 from typing import Any

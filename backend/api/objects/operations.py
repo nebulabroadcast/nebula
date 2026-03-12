@@ -1,11 +1,10 @@
-from typing import Annotated, Any
+from typing import TYPE_CHECKING, Annotated, Any
 
 from pydantic import Field
 
 import nebula
 from nebula.enum import ObjectType
 from nebula.helpers.scheduling import bin_refresh
-from nebula.objects.base import BaseObject
 from nebula.objects.utils import get_object_class_by_name
 from nebula.settings import load_settings
 from server import APIModel, APIRequest
@@ -13,6 +12,9 @@ from server.dependencies import CurrentUser
 
 from ._utils import can_modify_object
 from ._validator import Validator
+
+if TYPE_CHECKING:
+    from nebula.objects.base import BaseObject
 
 
 class Operation(APIModel):
@@ -161,7 +163,7 @@ class Operations(APIRequest):
 
                         if not user.is_admin:
                             for key in list(operation.data.keys()):
-                                if key.startswith("can/") or key.startswith("is_"):
+                                if key.startswith(("can/", "is_")):
                                     operation.data.pop(key, None)
 
                         password = operation.data.pop("password", None)

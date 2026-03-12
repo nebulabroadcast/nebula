@@ -3,9 +3,9 @@ __all__ = [
     "Logout",
     "PasswordReset",
     "PasswordResetCallback",
-    "SetPassword",
     "SSOLogin",
     "SSOLoginCallback",
+    "SetPassword",
     "TokenExchange",
 ]
 

@@ -28,7 +28,7 @@ class EventData(BaseModel):
         examples=[123],
     )
 
-    items: list[dict[str, Serializable]] | None = Field(default_factory=lambda: [])
+    items: list[dict[str, Serializable]] | None = Field(default_factory=list)
 
     meta: dict[str, Serializable] | None = Field(
         default=None,
@@ -114,7 +114,7 @@ async def _create_new_event(
         await new_event.save()
         await new_bin.save()
     except Exception as e:
-        raise nebula.ConflictException() from e
+        raise nebula.ConflictException from e
 
 
 async def create_new_event(

@@ -43,11 +43,10 @@ def get_week_start(date: str, hour: int = 0, minute: int = 0) -> datetime.dateti
     """Get the start of the week for the given date"""
     this_date = datetime.datetime.strptime(date, "%Y-%m-%d")
     week_start_midnight = this_date - datetime.timedelta(days=this_date.weekday())
-    week_start = datetime.datetime(
+    return datetime.datetime(
         week_start_midnight.year,
         week_start_midnight.month,
         week_start_midnight.day,
         hour,
         minute,
     )
-    return week_start

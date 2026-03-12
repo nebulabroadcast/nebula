@@ -77,7 +77,7 @@ class Storage:
 
         if os.path.exists(storage_ident_path):
             with open(storage_ident_path) as f:
-                storage_strings = [line.strip() for line in f.readlines()]
+                storage_strings = [line.strip() for line in f]
                 if storage_string in storage_strings:
                     return
 

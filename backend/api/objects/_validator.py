@@ -1,12 +1,9 @@
 import os
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import nebula
 from nebula.common import import_module
 from nebula.enum import ObjectType
-
-if TYPE_CHECKING:
-    pass
 
 
 class Validator:

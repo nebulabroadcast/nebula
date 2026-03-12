@@ -1,11 +1,11 @@
 __all__ = [
     "datestr2ts",
-    "tc2s",
-    "s2time",
     "f2tc",
-    "s2tc",
-    "s2words",
     "format_time",
+    "s2tc",
+    "s2time",
+    "s2words",
+    "tc2s",
 ]
 
 
@@ -29,8 +29,7 @@ def datestr2ts(datestr: str, hh: int = 0, mm: int = 0, ss: int = 0) -> int:
         int(split[2].lstrip("0")),
     )
     offset = datetime.timedelta(hours=hh, minutes=mm, seconds=ss)
-    tstamp = int(time.mktime((dt + offset).timetuple()))
-    return tstamp
+    return int(time.mktime((dt + offset).timetuple()))
 
 
 def tc2s(tc: str, base: float = 25) -> float:
@@ -151,12 +150,11 @@ def s2words(secs: int) -> str:
     s = int(secs)
     if s < 60:
         return f"{s} seconds".format(s)
-    elif s < 120:
+    if s < 120:
         return f"1 minute {int(s - 60)} seconds"
-    elif s < 7200:
+    if s < 7200:
         return f"{int(s / 60)} minutes"
-    else:
-        return f"{int(s / 3600)} hours"
+    return f"{int(s / 3600)} hours"
 
 
 def format_time(

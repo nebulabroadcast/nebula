@@ -23,7 +23,7 @@ class ListSessions(APIRequest):
         id_user = request.id_user
 
         if id_user != user.id and (not user.is_admin):
-            raise nebula.ForbiddenException()
+            raise nebula.ForbiddenException
 
         result = []
         async for session in Session.list():

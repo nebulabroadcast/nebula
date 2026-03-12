@@ -184,7 +184,6 @@ class ManageJobs(APIRequest):
             if subtitle := row["asset_subtitle"]:
                 separator = nebula.settings.system.subtitle_separator
                 asset_name = f"{asset_name}{separator}{subtitle}"
-            print(row)
             jobs.append(JobListItem(asset_name=asset_name, **row))
 
         return ManageJobsResponse(jobs=jobs)

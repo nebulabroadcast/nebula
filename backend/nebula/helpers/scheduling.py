@@ -16,7 +16,7 @@ async def bin_refresh(
     user: nebula.User | None = None,
 ) -> None:
     if not bins:
-        return None
+        return
 
     username = user.name if user else None
 
@@ -54,7 +54,7 @@ async def bin_refresh(
             objects=changed_events,
             initiator=initiator,
         )
-    return None
+    return
 
 
 async def get_item_runs(id_channel: int, start_time: int, end_time: int) -> ItemRuns:
@@ -117,8 +117,7 @@ def parse_rundown_date(
     if not date:
         date = datetime.datetime.now().strftime("%Y-%m-%d")
     hh, mm = channel_config.day_start
-    start_time = datestr2ts(date, hh=hh, mm=mm)
-    return start_time
+    return datestr2ts(date, hh=hh, mm=mm)
 
 
 def can_append(asset: nebula.Asset, conditions: "AcceptModel") -> bool:

@@ -27,7 +27,7 @@ class ListSchedulingTemplatesResponse(APIModel):
     templates: Annotated[
         list[SchedulingTemplateItemModel],
         Field(
-            default_factory=lambda: [],
+            default_factory=list,
             title="Templates",
         ),
     ]

@@ -66,11 +66,11 @@ class Login(APIRequest):
 
         try:
             user = await nebula.User.login(payload.username, payload.password)
-        except nebula.LoginFailedException as e:
+        except nebula.LoginFailedException:
             if request is not None:
                 await set_failed_login(get_real_ip(request))
             # re-raise the exception
-            raise e
+            raise
 
         if request is not None:
             await clear_failed_login(get_real_ip(request))
