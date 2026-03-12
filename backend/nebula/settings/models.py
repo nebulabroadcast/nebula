@@ -1,6 +1,6 @@
 from typing import Annotated, Any, Literal, TypeVar
 
-from pydantic import AfterValidator, Field
+from pydantic import AfterValidator, BeforeValidator, Field
 
 from nebula.config import config
 from nebula.enum import ContentType, MediaType, ServiceState
@@ -11,13 +11,35 @@ CSItemRole = Literal["hidden", "header", "label", "option"]
 
 
 class CSAlias(SettingsModel):
-    title: str
-    description: str | None = None
+    title: Annotated[
+        str,
+        Field(
+            title="Option title",
+        ),
+    ]
+    description: Annotated[
+        str | None,
+        Field(
+            title="Option description",
+            description="Describes the classification value. Displayed as a tooltip",
+        ),
+    ] = None
 
 
 class CSItemModel(SettingsModel):
-    role: CSItemRole | None = Field(default=None)
-    aliases: dict[str, CSAlias] = Field(default_factory=dict)
+    role: Annotated[
+        CSItemRole | None,
+        Field(
+            title="Special item role",
+        ),
+    ] = None
+    aliases: Annotated[
+        dict[str, CSAlias],
+        Field(
+            title="Classification option value localization",
+            default_factory=dict,
+        ),
+    ]
 
     @classmethod
     def from_settings(cls, value: str, settings: dict[str, Any]) -> "CSItemModel":
@@ -53,44 +75,58 @@ class BaseSystemSettings(SettingsModel):
     Not all settings are used by the client.
     """
 
-    site_name: str = Field(
-        default=config.site_name,
-        pattern=r"^[a-zA-Z0-9_]+$",
-        title="Site name",
-        description="A name used as the site (instance) identification",
-    )
+    site_name: Annotated[
+        str,
+        Field(
+            default=config.site_name,
+            pattern=r"^[a-zA-Z0-9_]+$",
+            title="Site name",
+            description="A name used as the site (instance) identification",
+        ),
+    ]
 
-    language: LanguageCode = Field(
-        default="en",
-        title="Default language",
-        examples=["en", "cs"],
-    )
+    language: Annotated[
+        LanguageCode,
+        Field(
+            default="en",
+            title="Default language",
+            examples=["en", "cs"],
+        ),
+    ]
 
-    ui_asset_create: bool = Field(
-        default=True,
-        title="Create assets in UI",
-        description="Allow creating assets in the UI"
-        "(when set to false, assets can only be created via API and watch folders)",
-    )
+    ui_asset_create: Annotated[
+        bool,
+        Field(
+            title="Create assets in UI",
+            description="Allow creating assets in the UI"
+            "(when set to false, assets can only be created via API and watch folders)",
+        ),
+    ] = True
 
-    ui_asset_preview: bool = Field(
-        default=True,
-        title="Preview assets in UI",
-        description="Allow previewing low-res proxies of assets in the UI",
-    )
+    ui_asset_preview: Annotated[
+        bool,
+        Field(
+            title="Preview assets in UI",
+            description="Allow previewing low-res proxies of assets in the UI",
+        ),
+    ] = True
 
-    ui_asset_upload: bool = Field(
-        default=False,
-        title="Upload assets in UI",
-        description="Allow uploading asset media files in the UI "
-        "(when set to false, assets can only be uploaded via API and watch folders)",
-    )
+    ui_asset_upload: Annotated[
+        bool,
+        Field(
+            title="Upload assets in UI",
+            description="Allow uploading asset media files in the UI "
+            "(when set to false, assets can  be uploaded via API and watch folders)",
+        ),
+    ] = True
 
-    subtitle_separator: str = Field(
-        default=": ",
-        title="Subtitle separator",
-        description="String used to separate title and subtitle in displayed title",
-    )
+    subtitle_separator: Annotated[
+        str,
+        Field(
+            title="Subtitle separator",
+            description="String used to separate title and subtitle in displayed title",
+        ),
+    ] = ": "
 
 
 class SSOProvider(SettingsModel):
@@ -154,14 +190,63 @@ class SystemSettings(BaseSystemSettings):
     Contains settings that are used only by the server.
     """
 
-    proxy_storage: int = Field(default=1, title="Proxy storage", examples=[1])
-    proxy_path: str = Field(default=".nx/proxy/{id1000:04d}/{id}.mp4")
-    worker_plugin_storage: int = Field(default=1)
-    worker_plugin_path: str = Field(default=".nx/plugins")
-    upload_storage: int | None = Field(default=None)
-    upload_dir: str | None = Field(default=None)
-    upload_base_name: str = Field(default="{id}")
-    sso_providers: list[SSOProvider] = Field(default_factory=list)
+    proxy_storage: Annotated[
+        int,
+        Field(
+            title="Proxy storage",
+            examples=[1],
+        ),
+    ] = 1
+
+    proxy_path: Annotated[
+        str,
+        Field(
+            title="Proxy path",
+        ),
+    ] = ".nx/proxy/{id1000:04d}/{id}.mp4"
+
+    worker_plugin_storage: Annotated[
+        int,
+        Field(
+            title="Worker plugin storage",
+        ),
+    ] = 1
+
+    worker_plugin_path: Annotated[
+        str,
+        Field(
+            title="Worker plugin path",
+        ),
+    ] = ".nx/plugins"
+
+    upload_storage: Annotated[
+        int | None,
+        Field(
+            title="Upload storage",
+        ),
+    ] = None
+
+    upload_dir: Annotated[
+        str | None,
+        Field(
+            title="Upload directory",
+        ),
+    ] = None
+
+    upload_base_name: Annotated[
+        str,
+        Field(
+            title="Upload base name",
+        ),
+    ] = "{id}"
+
+    sso_providers: Annotated[
+        list[SSOProvider],
+        Field(
+            title="List of SSO providers",
+            default_factory=list,
+        ),
+    ]
 
     smtp_host: Annotated[
         str | None,
@@ -215,8 +300,21 @@ class SystemSettings(BaseSystemSettings):
 
 
 class BaseListItemModel(SettingsModel):
-    id: Annotated[int, Field(title="ID", examples=[1])]
-    name: Annotated[str, Field(title="Name", examples=["Name"])]
+    id: Annotated[
+        int,
+        Field(
+            title="ID",
+            examples=[1],
+        ),
+    ]
+
+    name: Annotated[
+        str,
+        Field(
+            title="Name",
+            examples=["Name"],
+        ),
+    ]
 
 
 #
@@ -225,11 +323,22 @@ class BaseListItemModel(SettingsModel):
 
 
 class BaseActionSettings(BaseListItemModel):
-    type: str = Field(..., title="Action type", examples=["conv"])
+    type: Annotated[
+        str,
+        Field(
+            title="Action type",
+            examples=["conv"],
+        ),
+    ]
 
 
 class ActionSettings(BaseActionSettings):
-    settings: str = Field("<action/>")
+    settings: Annotated[
+        str,
+        Field(
+            title="Action settings",
+        ),
+    ] = "<action/>"
 
 
 #
@@ -238,14 +347,52 @@ class ActionSettings(BaseActionSettings):
 
 
 class BaseServiceSettings(BaseListItemModel):
-    type: str = Field(..., title="Service type", examples=["conv"])
-    host: str = Field(..., title="Host", examples=["node01"])
-    autostart: bool = Field(True, title="Autostart", examples=[True])
-    loop_delay: int = Field(
-        5, title="Loop delay", description="Seconds of sleep between runs"
-    )
-    state: ServiceState = Field(ServiceState.STOPPED)
-    last_seen: int = Field(0, title="Last seen", examples=[1949155890])
+    type: Annotated[
+        str,
+        Field(
+            title="Service type",
+            examples=["conv"],
+        ),
+    ]
+
+    host: Annotated[
+        str,
+        Field(
+            title="Host",
+            examples=["node01"],
+        ),
+    ]
+
+    autostart: Annotated[
+        bool,
+        Field(
+            title="Autostart",
+            examples=[True],
+        ),
+    ] = True
+
+    loop_delay: Annotated[
+        int,
+        Field(
+            title="Loop delay",
+            description="Seconds of sleep between runs",
+        ),
+    ] = 5
+
+    state: Annotated[
+        ServiceState,
+        Field(
+            ServiceState.STOPPED,
+        ),
+    ]
+
+    last_seen: Annotated[
+        int,
+        Field(
+            title="Last seen",
+            examples=[1949155890],
+        ),
+    ] = 0
 
 
 class ServiceSettings(BaseServiceSettings):
@@ -352,13 +499,55 @@ class StorageSettings(ExtendedStorageSettings):
 
 
 class FolderField(SettingsModel):
-    name: str = Field(..., title="Field name")
-    section: str | None = Field(default=None, title="Section")
-    mode: str | None = None
-    format: str | None = None
-    order: str | None = None
-    filter: str | None = None
-    links: list[Any] = Field(default_factory=list)
+    name: Annotated[
+        str,
+        Field(
+            title="Field name",
+        ),
+    ]
+
+    section: Annotated[
+        str | None,
+        Field(
+            title="Section",
+        ),
+    ] = None
+
+    mode: Annotated[
+        str | None,
+        Field(
+            title="Editor mode",
+        ),
+    ] = None
+
+    format: Annotated[
+        str | None,
+        Field(
+            title="Value format",
+        ),
+    ] = None
+
+    order: Annotated[
+        str | None,
+        Field(
+            title="Enumerator order mode",
+        ),
+    ] = None
+
+    filter: Annotated[
+        str | None,
+        Field(
+            title="Enumerator filter",
+        ),
+    ] = None
+
+    links: Annotated[
+        list[dict[str, Any]] | None,
+        Field(
+            title="Links to other fields",
+        ),
+        BeforeValidator(lambda v: v if isinstance(v, list) else []),
+    ] = None
 
 
 class FolderLink(SettingsModel):
@@ -389,31 +578,90 @@ DayStart = tuple[int, int]
 
 
 class AcceptModel(SettingsModel):
-    folders: list[int] | None = Field(
-        default=None,
-        title="Folders",
-        description="List of folder IDs",
-    )
-    content_types: list[ContentType] | None = Field(
-        default_factory=lambda: [ContentType.VIDEO],
-        title="Content types",
-        description="List of content types that are accepted. "
-        "None means all types are accepted.",
-    )
-    media_types: list[MediaType] | None = Field(
-        default_factory=lambda: [MediaType.FILE],
-        title="Media types",
-        description="List of media types that are accepted. "
-        "None means all types are accepted.",
-    )
+    folders: Annotated[
+        list[int] | None,
+        Field(
+            default=None,
+            title="Folders",
+            description="List of folder IDs",
+        ),
+    ]
+
+    content_types: Annotated[
+        list[ContentType] | None,
+        Field(
+            default_factory=lambda: [ContentType.VIDEO],
+            title="Content types",
+            description=(
+                "List of content types that are accepted. "
+                "None means all types are accepted."
+            ),
+        ),
+    ]
+
+    media_types: Annotated[
+        list[MediaType] | None,
+        Field(
+            default_factory=lambda: [MediaType.FILE],
+            title="Media types",
+            description=(
+                "List of media types that are accepted. "
+                "None means all types are accepted."
+            ),
+        ),
+    ]
 
 
 class BasePlayoutChannelSettings(BaseListItemModel):
-    fps: float = Field(default=25.0)
-    plugins: list[str] = Field(default_factory=list)
-    solvers: list[str] = Field(default_factory=list)
-    day_start: DayStart = Field(default=(7, 0))
-    rundown_columns: list[str] = Field(default_factory=list)
+    fps: Annotated[
+        float,
+        Field(
+            title="Playout frame rate",
+            description="Frame rate used for scheduling and playout",
+        ),
+    ] = 25.0
+
+    plugins: Annotated[
+        list[str],
+        Field(
+            title="Playout plugins",
+            description=(
+                "List of playout plugins used by the channel"
+                "e.g. for secondary events or graphic layers"
+            ),
+            default_factory=list,
+        ),
+    ]
+
+    solvers: Annotated[
+        list[str],
+        Field(
+            title="Playout solvers",
+            description="List of rundown solver plugins enabled for the channel. ",
+            default_factory=list,
+        ),
+    ]
+
+    day_start: Annotated[
+        DayStart,
+        Field(
+            title="Day start time",
+            description=(
+                "Time of day when the scheduling day starts, in hours and minutes. "
+            ),
+            examples=[(7, 0)],
+        ),
+    ] = 7, 0
+
+    rundown_columns: Annotated[
+        list[str],
+        Field(
+            title="Rundown columns",
+            description="List of columns that are displayed in the rundown table",
+            default_factory=list,
+        ),
+    ]
+
     fields: list[FolderField] = Field(
         title="Fields",
         description="Metadata fields available for the channel events",
@@ -424,25 +672,129 @@ class BasePlayoutChannelSettings(BaseListItemModel):
             FolderField(name="color"),  # to distinguish events in the scheduler view
         ],
     )
-    send_action: int | None = Field(default=None)
-    scheduler_accepts: AcceptModel = Field(default_factory=AcceptModel)
-    rundown_accepts: AcceptModel = Field(default_factory=AcceptModel)
-    default_template: str | None = Field(default=None)
+
+    send_action: Annotated[
+        int | None,
+        Field(
+            title="Send to playout action",
+            description=(
+                "ID of the action that is used to send media files to playout. "
+            ),
+            examples=[2],
+        ),
+    ] = None
+
+    scheduler_accepts: Annotated[
+        AcceptModel,
+        Field(
+            title="Scheduler accepts",
+            description=(
+                "Criteria for accepting assets to be added to the channel scheduler."
+            ),
+            default_factory=AcceptModel,
+        ),
+    ]
+
+    rundown_accepts: Annotated[
+        AcceptModel,
+        Field(
+            title="Rundown accepts",
+            description=(
+                "Criteria for accepting assets to be added to the channel rundown."
+            ),
+            default_factory=AcceptModel,
+        ),
+    ]
+
+    default_template: Annotated[
+        str | None,
+        Field(
+            title="Default template",
+            description=(
+                "Name of the default template used to auto-populate "
+                "the channel schedule."
+            ),
+            default=None,
+        ),
+    ] = None
 
 
 class PlayoutChannelSettings(BasePlayoutChannelSettings):
-    engine: str = Field(..., title="Playout engine")
-    config: dict[str, Any] = Field(
-        default_factory=dict,
-        title="Engine configuration",
-        description="Engine specific configuration",
-    )
-    playout_storage: int | None = None
-    playout_dir: str | None = None
-    playout_container: str | None = None
-    allow_remote: bool = Field(False)
-    controller_host: str | None = None
-    controller_port: int | None = None
+    engine: Annotated[
+        str,
+        Field(
+            title="Playout engine",
+            examples=["casparcg", "dummy"],
+        ),
+    ]
+
+    config: Annotated[
+        dict[str, Any],
+        Field(
+            default_factory=dict,
+            title="Engine configuration",
+            description="Engine specific configuration",
+        ),
+    ]
+
+    playout_storage: Annotated[
+        int | None,
+        Field(
+            title="Playout storage",
+            description="ID of the storage playout media files are stored",
+            examples=[2],
+        ),
+    ] = None
+
+    playout_dir: Annotated[
+        str | None,
+        Field(
+            title="Playout directory",
+            description=(
+                "Relative path from the playout storage root "
+                "to the directory playout media are stored in"
+            ),
+            examples=["content/media"],
+        ),
+    ] = None
+
+    playout_container: Annotated[
+        str | None,
+        Field(
+            title="Playout media container",
+            description="Format (extension) of playout media files",
+            examples=["mxf"],
+        ),
+    ] = None
+
+    allow_remote: Annotated[
+        bool,
+        Field(
+            title="Allow playback from remote storage",
+            description=(
+                "Indicates the playout media don't need to be transferred "
+                "to the playout storage before playback, but can be played "
+                "directly from their original storage (e.g. via SMB or NFS). "
+                "Not supported by CasparCG"
+            ),
+        ),
+    ] = False
+
+    controller_host: Annotated[
+        str | None,
+        Field(
+            title="Controller host",
+            description="Host name or IP address of the playout controller service",
+        ),
+    ] = None
+
+    controller_port: Annotated[
+        int | None,
+        Field(
+            title="Controller port",
+            description="Port the playout service is listening on",
+        ),
+    ] = None
 
 
 #
@@ -479,17 +831,70 @@ PlayoutChannelList = Annotated[
 
 
 class ServerSettings(SettingsModel):
-    installed: bool = True
-    system: SystemSettings = Field(default_factory=lambda: SystemSettings())
-    storages: StorageList = Field(default_factory=list)
-    folders: FolderList = Field(default_factory=list)
-    views: ViewList = Field(default_factory=list)
-    metatypes: dict[str, MetaType] = Field(default_factory=dict)
-    cs: dict[str, CSModel] = Field(
-        default_factory=dict,
-        description="Key is a URN, value is CSModel `{value: CSItemModel}` dict",
-    )
-    playout_channels: PlayoutChannelList = Field(default_factory=list)
+    installed: Annotated[
+        bool,
+        Field(
+            title="Is server installed",
+            description="Set to false if the server is not fully set up yet",
+        ),
+    ] = True
+
+    system: Annotated[
+        SystemSettings,
+        Field(
+            title="System settings",
+            default_factory=lambda: SystemSettings(),
+        ),
+    ]
+
+    storages: Annotated[
+        StorageList,
+        Field(
+            title="Storages settings",
+            default_factory=list,
+        ),
+    ]
+
+    folders: Annotated[
+        FolderList,
+        Field(
+            title="Folders settings",
+            default_factory=list,
+        ),
+    ]
+
+    views: Annotated[
+        ViewList,
+        Field(
+            title="Browser views settings",
+            default_factory=list,
+        ),
+    ]
+
+    metatypes: Annotated[
+        dict[str, MetaType],
+        Field(
+            title="Metadata types settings",
+            default_factory=dict,
+        ),
+    ]
+
+    cs: Annotated[
+        dict[str, CSModel],
+        Field(
+            title="Controlled vocabularies settings",
+            default_factory=dict,
+            description="Key is a URN, value is CSModel `{value: CSItemModel}` dict",
+        ),
+    ]
+
+    playout_channels: Annotated[
+        PlayoutChannelList,
+        Field(
+            title="Playout channels settings",
+            default_factory=list,
+        ),
+    ]
 
     def get_folder(self, id_folder: int) -> FolderSettings | None:
         for item in self.folders:
@@ -523,5 +928,16 @@ class SetupServerModel(ServerSettings):
     model, but they are included here to validate the setup template
     """
 
-    actions: list[ActionSettings] = Field(default_factory=list)
-    services: list[ServiceSettings] = Field(default_factory=list)
+    actions: Annotated[
+        list[ActionSettings],
+        Field(
+            default_factory=list,
+        ),
+    ]
+
+    services: Annotated[
+        list[ServiceSettings],
+        Field(
+            default_factory=list,
+        ),
+    ]

@@ -11,10 +11,19 @@ from nebula.settings.models import (
     PlayoutChannelSettings,
     ServerSettings,
     StorageSettings,
+    SystemSettings,
     ViewSettings,
 )
 
-settings = ServerSettings()
+settings = ServerSettings(
+    system=SystemSettings(site_name=config.site_name, language="en", sso_providers=[]),
+    storages=[],
+    playout_channels=[],
+    folders=[],
+    views=[],
+    metatypes={},
+    cs={},
+)
 
 
 #

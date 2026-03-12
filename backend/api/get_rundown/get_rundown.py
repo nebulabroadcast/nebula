@@ -1,3 +1,5 @@
+from typing import cast
+
 import nebula
 from nebula.helpers.coalescer import Coalescer
 from server.dependencies import CurrentUser
@@ -37,4 +39,4 @@ class GetRundown(APIRequest):
 
         coalesce = Coalescer()
         rundown = await coalesce(load_rundown, request.id_channel, request.date)
-        return rundown
+        return cast("RundownResponse", rundown)
