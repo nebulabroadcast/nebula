@@ -7,7 +7,7 @@ from server.session import Session
 
 
 class TokenExchange(APIRequest):
-    """Exachange a transient access token for a normal one
+    """Exchange a transient access token for a normal one
 
     This request will exchange an access token for a new one.
     The original access token will be invalidated.
