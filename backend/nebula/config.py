@@ -57,6 +57,14 @@ class NebulaConfig(BaseModel):
         "after too many failed login attempts",
     )
 
+    geoip_db_path: str | None = Field(
+        None,
+        description=(
+            "Path to the GeoIP database file. "
+            "If not set, geolocation features will be disabled"
+        ),
+    )
+
     log_level: Literal[
         "trace", "debug", "info", "success", "warning", "error", "critical"
     ] = Field(

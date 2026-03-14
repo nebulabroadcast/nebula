@@ -1,5 +1,5 @@
 IMAGE_NAME=nebulabroadcast/nebula-server:dev
-VERSION=$(shell cd backend && uv run python -c 'import nebula' --version)
+VERSION=$(shell cd backend && python -c 'import nebula' --version)
 
 check-backend:
 	cd backend && \

@@ -1,11 +1,13 @@
 import asyncio
+import traceback
+from typing import Any
 
 import nebula
 
 
 class BackgroundTask:
     def __init__(self) -> None:
-        self.task: asyncio.Task | None = None  # type: ignore
+        self.task: asyncio.Task[Any] | None = None
         self.shutting_down = False
         self.initialize()
 
@@ -39,8 +41,6 @@ class BackgroundTask:
         except asyncio.CancelledError:
             self.shutting_down = True
         except Exception:
-            import traceback
-
             traceback.print_exc()
         finally:
             await self.finalize()

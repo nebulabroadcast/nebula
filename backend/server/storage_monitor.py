@@ -12,7 +12,7 @@ from server.background import BackgroundTask
 
 
 def exec_mount(cmd: list[str]) -> None:
-    proc = subprocess.run(cmd, capture_output=True)  # noqa: S603
+    proc = subprocess.run(cmd, capture_output=True, check=False)  # noqa: S603
     if proc.returncode != 0:
         raise RuntimeError(
             f"Mount failed with return code {proc.returncode}"
@@ -25,10 +25,7 @@ def exec_mount(cmd: list[str]) -> None:
 #     exec_mount(cmd)
 
 
-async def handle_samba_storage(storage: Storage) -> None:
-    if time.time() - storage.last_mount_attempt < min(storage.mount_attempts * 5, 120):
-        return
-
+async def ensure_local_path(storage: Storage) -> bool:
     if not os.path.exists(storage.local_path):
         try:
             os.mkdir(storage.local_path)
@@ -41,23 +38,33 @@ async def handle_samba_storage(storage: Storage) -> None:
                 storage.id,
             )
             nebula.log.error(f"Disabling storage {storage}")
-            return
+            return False
+    return True
+
+
+async def handle_samba_storage(storage: Storage) -> None:  # noqa: C901
+    if time.time() - storage.last_mount_attempt < min(storage.mount_attempts * 5, 120):
+        return
+
+    if not await ensure_local_path(storage):
+        return
 
     nebula.log.debug(f"Mounting {storage} (attempt {storage.mount_attempts + 1})...")
 
     smbopts = []
     for key, value in storage.options.items():
-        if key == "login":
-            key = "user"
-        elif key == "password":
-            key = "pass"
+        _key = key
+        if _key == "login":
+            _key = "user"
+        elif _key == "password":
+            _key = "pass"
         elif key == "samba_version":
-            key = "vers"
+            _key = "vers"
 
         if value is None:
-            smbopts.append(key)
+            smbopts.append(_key)
         else:
-            smbopts.append(f"{key}={value}")
+            smbopts.append(f"{_key}={value}")
 
     cmd = ["mount.cifs", storage.path, storage.local_path]
     if smbopts:
@@ -74,9 +81,10 @@ async def handle_samba_storage(storage: Storage) -> None:
             nebula.log.error(str(e))
         storage.last_mount_attempt = time.time()
         storage.mount_attempts += 1
-    else:
-        nebula.log.success(f"{storage} mounted successfully")
-        storage.mount_attempts = 0
+        return
+
+    nebula.log.success(f"{storage} mounted successfully")
+    storage.mount_attempts = 0
 
 
 class StorageMonitor(BackgroundTask):

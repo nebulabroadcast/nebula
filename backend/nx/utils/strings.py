@@ -141,7 +141,7 @@ def slugify(
 ) -> set[str]: ...
 
 
-def slugify(
+def slugify(  # noqa: PLR0913
     input_string: str,
     *,
     separator: str = "-",

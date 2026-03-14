@@ -39,7 +39,6 @@ class Logger:
         usr = usr[: self.user_max_length].ljust(self.user_max_length)
         " ".join([str(arg) for arg in args])
 
-
     def trace(self, *args: Any, user: str | None = None) -> None:
         self(LogLevel.TRACE, *args, user=user)
 

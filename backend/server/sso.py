@@ -78,12 +78,10 @@ class NebulaSSO:
 
     @classmethod
     async def options(cls) -> list[SSOOption]:
-        result = []
-        for provider in nebula.settings.system.sso_providers:
-            result.append(
-                SSOOption(
-                    name=provider.name,
-                    title=provider.title or provider.name.capitalize(),
-                )
+        return [
+            SSOOption(
+                name=provider.name,
+                title=provider.title or provider.name.capitalize(),
             )
-        return result
+            for provider in nebula.settings.system.sso_providers
+        ]

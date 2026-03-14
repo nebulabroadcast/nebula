@@ -35,6 +35,7 @@ import sys
 from nebula.version import __version__
 
 if "--version" in sys.argv:
+    sys.stdout.write(__version__)
     sys.exit(0)
 
 import asyncio

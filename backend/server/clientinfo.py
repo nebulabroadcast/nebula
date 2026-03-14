@@ -6,6 +6,7 @@ import user_agents
 from fastapi import Request
 from pydantic import Field
 
+from nebula import config
 from server.models import APIModel
 from server.utils import is_internal_ip
 
@@ -36,7 +37,7 @@ def get_real_ip(request: Request) -> str:
 
 
 def geo_lookup(ip: str) -> LocationInfo | None:
-    geoip_db_path = None  # TODO
+    geoip_db_path = config.geoip_db_path
 
     if geoip_db_path is None:
         return None

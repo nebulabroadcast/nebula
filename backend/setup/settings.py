@@ -41,22 +41,22 @@ def load_overrides() -> None:
             continue
         mod = import_module(sname, spath)
 
-        for key in TEMPLATE:
+        for key, value in TEMPLATE.items():
             if not hasattr(mod, key.upper()):
                 continue
             override = getattr(mod, key.upper())
             log.info(f"Found overrides for {key}")
 
-            if isinstance(override, dict) and isinstance(TEMPLATE[key], dict):
-                assert hasattr(TEMPLATE[key], "update")
-                TEMPLATE[key].update(override)
-            elif isinstance(override, list) and isinstance(TEMPLATE[key], list):
+            if isinstance(override, dict) and isinstance(value, dict):
+                assert hasattr(value, "update")
+                value.update(override)
+            elif isinstance(override, list) and isinstance(value, list):
                 TEMPLATE[key] = override
             else:
                 log.error(f"Invalid settings override: {spath}")
 
 
-async def setup_settings(db: DatabaseConnection) -> None:
+async def setup_settings(db: DatabaseConnection) -> None:  # noqa: C901, PLR0912, PLR0915
     """Validate and save settings to the database"""
 
     log.trace("Loading settings overrides")
