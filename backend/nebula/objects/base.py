@@ -20,33 +20,32 @@ from nx.utils import slugify
 T = TypeVar("T", bound="BaseObject")
 
 
-def create_ft_index(meta: dict[str, Any]) -> dict[str, float]:
+def create_ft_index(meta: dict[str, Any]) -> dict[str, float]:  # noqa: C901, PLR0912
     ft: dict[str, float] = {}
     if "subclips" in meta:
         weight = 8
         for sc in [k.get("title", "") for k in meta["subclips"]]:
             try:
                 for word in slugify(sc, make_set=True, min_length=3):
-                    word = str(word)
                     if word not in ft:
                         ft[word] = weight
                     else:
                         ft[word] = max(ft[word], weight)
             except Exception:
                 log.error("Unable to slugify subclips data")
-    for key in meta:
+    for key, value in meta.items():
         if key not in settings.metatypes:
             continue
         if not (weight := settings.metatypes[key].fulltext):
             continue
         try:
-            for word in slugify(meta[key], make_set=True, min_length=3):
+            for word in slugify(value, make_set=True, min_length=3):
                 if word not in ft:
                     ft[word] = weight
                 else:
                     ft[word] = max(ft[word], weight)
         except Exception:
-            log.error(f"Unable to slugify key {key} with value {meta[key]}")
+            log.error(f"Unable to slugify key {key} with value {value}")
     return ft
 
 
@@ -89,12 +88,12 @@ class BaseObject:
 
     @property
     def id(self) -> int | None:
-        id = self.meta.get("id")
+        object_id = self.meta.get("id")
         # Handle false and other weird values
         # Yes. It happens.
         if not id:
             return None
-        return int(id)
+        return object_id
 
     def show(self, key: str, **kwargs: Any) -> str:
         """Return a formated value of a given key"""
@@ -153,15 +152,19 @@ class BaseObject:
     @classmethod
     async def load(
         cls,
-        id: int,
+        object_id: int,
         connection: DatabaseConnection | None = None,
         username: str | None = None,
     ) -> Self:
         """Load an object from the database"""
         conn = connection or db
-        res = await conn.fetch(f"SELECT meta FROM {cls.object_type}s WHERE id = $1", id)
+        res = await conn.fetch(
+            f"SELECT meta FROM {cls.object_type}s WHERE id = $1", object_id
+        )
         if not res:
-            raise NotFoundException(f"{cls.object_type.capitalize()} ID {id} not found")
+            raise NotFoundException(
+                f"{cls.object_type.capitalize()} ID {object_id} not found"
+            )
         return cls(meta=res[0]["meta"], connection=connection, username=username)
 
     @classmethod

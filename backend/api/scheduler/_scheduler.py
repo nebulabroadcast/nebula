@@ -6,7 +6,7 @@ from ._models import SchedulerResponse
 from ._utils import delete_events, get_event_at_time, get_events_in_range
 
 
-async def scheduler(
+async def scheduler(  # noqa: C901, PLR0913, PLR0915, PLR0912
     id_channel: int,
     date: str | None = None,
     days: int = 7,

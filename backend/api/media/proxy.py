@@ -12,12 +12,12 @@ def get_proxy_path(id_asset: int) -> str:
     proxy_storage_path = nebula.storages[sys_settings.proxy_storage].local_path
     proxy_path_template = os.path.join(proxy_storage_path, sys_settings.proxy_path)
 
-    vars = {
+    _vars = {
         "id": id_asset,
         "id1000": id_asset // 1000,
     }
 
-    return proxy_path_template.format(**vars)
+    return proxy_path_template.format(**_vars)
 
 
 class ServeProxy(APIRequest):
@@ -34,6 +34,7 @@ class ServeProxy(APIRequest):
     methods = ["GET"]
 
     async def handle(self, id_asset: int, user: CurrentUser) -> FileResponse:
+        _ = user  # Not used for now, but we might want to check permissions
         video_path = get_proxy_path(id_asset)
         if not os.path.exists(video_path):
             raise nebula.NotFoundException("Proxy not found")
@@ -61,6 +62,7 @@ class GetProxyInfo(APIRequest):
     methods = ["GET"]
 
     async def handle(self, id_asset: int, user: CurrentUser) -> ProxyInfo:
+        _ = user  # Not used for now, but we might want to check permissions
         video_path = get_proxy_path(id_asset)
         exists = os.path.exists(video_path)
         timestamp = os.path.getmtime(video_path) if exists else None

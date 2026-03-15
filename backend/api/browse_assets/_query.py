@@ -32,7 +32,7 @@ def build_conditions(conditions: list[ConditionModel]) -> list[str]:
         else:
             value = sanitize_value(condition.value)
             assert value, "Value must not be empty"
-            # TODO casting to numbers for <, >, <=, >=
+            # TODO: casting to numbers for <, >, <=, >=
             cond_list.append(
                 f"a.meta->>'{condition.key}' {condition.operator} '{value}'"
             )
@@ -86,7 +86,7 @@ def build_order(order_by: str) -> str:
     return order_by
 
 
-def build_query(
+def build_query(  # noqa: C901, PLR0912
     request: BrowseAssetsRequest,
     columns: set[str],
     user: nebula.User,

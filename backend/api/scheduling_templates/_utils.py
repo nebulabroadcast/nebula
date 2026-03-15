@@ -18,11 +18,7 @@ def list_templates() -> list[str]:
     templates_dir = get_templates_dir()
     if templates_dir is None:
         return []
-    result = []
-    for fname in os.listdir(templates_dir):
-        if fname.endswith(".json"):
-            result.append(fname[:-5])
-    return result
+    return [f[:-5] for f in os.listdir(templates_dir) if f.endswith(".json")]
 
 
 def load_template(name: str) -> dict[str, Any]:
@@ -41,9 +37,9 @@ def load_template(name: str) -> dict[str, Any]:
 
 def get_week_start(date: str, hour: int = 0, minute: int = 0) -> datetime.datetime:
     """Get the start of the week for the given date"""
-    this_date = datetime.datetime.strptime(date, "%Y-%m-%d")
+    this_date = datetime.datetime.strptime(date, "%Y-%m-%d")  # noqa: DTZ007
     week_start_midnight = this_date - datetime.timedelta(days=this_date.weekday())
-    return datetime.datetime(
+    return datetime.datetime(  # noqa: DTZ001
         week_start_midnight.year,
         week_start_midnight.month,
         week_start_midnight.day,

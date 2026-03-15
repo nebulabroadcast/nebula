@@ -62,7 +62,7 @@ from .objects.event import Event
 from .objects.item import Item
 from .objects.user import User
 from .plugins import CLIPlugin
-from .redis import Redis as redis
+from .redis import Redis as redis  # noqa: N813
 from .settings import load_settings, settings
 from .storages import Storage, storages
 
@@ -70,7 +70,7 @@ log.user = "nebula"
 log.level = LogLevel[config.log_level.upper()]
 
 
-def run(entrypoint) -> None:  # type: ignore
+def run(entrypoint) -> None:
     """Run a coroutine in the event loop.
 
     This function is used to run the main entrypoint of CLI scripts.

@@ -5,7 +5,7 @@ from nebula.helpers.scheduling import can_append
 from ._models import OrderRequest, OrderResponse
 
 
-async def set_items_order(request: OrderRequest, user: nebula.User) -> OrderResponse:
+async def set_items_order(request: OrderRequest, user: nebula.User) -> OrderResponse:  # noqa: C901, PLR0912
     """Set the order of items in a bin
 
     Source item can be either an existing item,i n which case it will be

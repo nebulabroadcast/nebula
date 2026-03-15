@@ -95,7 +95,7 @@ class ManageJobs(APIRequest):
     title = "Manage jobs"
     category = "Jobs"
 
-    async def handle(
+    async def handle(  # noqa: C901, PLR0912
         self,
         request: ManageJobsRequest,
         user: CurrentUser,
@@ -114,6 +114,7 @@ class ManageJobs(APIRequest):
         conds = []
         if request.search_query:
             for elm in slugify(request.search_query, make_set=True):
+                assert elm, "Empty search element"
                 conds.append(f"a.id IN (SELECT id FROM ft WHERE value LIKE '{elm}%')")
 
         if user.is_limited:
@@ -137,10 +138,10 @@ class ManageJobs(APIRequest):
             return ManageJobsResponse()
 
         if request.asset_ids is not None:
-            ids = ",".join([str(id) for id in request.asset_ids])
+            ids = ",".join([str(_id) for _id in request.asset_ids])
             conds.append(f"j.id_asset IN ({ids})")
         if request.ids is not None:
-            ids = ",".join([str(id) for id in request.ids])
+            ids = ",".join([str(_id) for _id in request.ids])
             conds.append(f"j.id IN ({ids})")
 
         query = f"""

@@ -1,6 +1,6 @@
 import functools
 import os
-from typing import get_args
+from typing import cast, get_args
 
 import fastapi
 
@@ -69,7 +69,7 @@ class GetServerInfo(APIRequest):
         if len(preferred_language) > 2:
             preferred_language = preferred_language[:2]
         if preferred_language in get_args(LanguageCode):
-            lang = user.meta.get("language") or preferred_language  # type: ignore
+            lang = cast("LanguageCode", user.meta.get("language")) or preferred_language
 
         # Construct client settings
 

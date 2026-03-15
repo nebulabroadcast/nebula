@@ -22,7 +22,7 @@ def can_access_object(meta: dict[str, Any], user: nebula.User) -> bool:
     return False
 
 
-async def can_modify_object(obj: BaseObject, user: nebula.User) -> None:
+async def can_modify_object(obj: BaseObject, user: nebula.User) -> None:  # noqa: C901, PLR0912
     """Check if user can modify an object.
 
     Raises ForbiddenException if user is not allowed to modify the object.

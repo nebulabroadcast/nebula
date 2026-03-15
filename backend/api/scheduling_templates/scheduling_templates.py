@@ -11,6 +11,8 @@ from ._models import (
 from ._template_importer import TemplateImporter
 from ._utils import list_templates, load_template
 
+MINIMUM_GAP_SECONDS = 5 * 60
+
 
 class ListSchedulingTemplates(APIRequest):
     """List available scheduling templates"""
@@ -75,13 +77,13 @@ class ApplySchedulingTemplate(APIRequest):
                     SELECT start FROM events
                     WHERE start >= $1 AND start <= $2 AND id_channel = $3
                 """
-                existing_times = []
-                async for row in nebula.db.iterate(
-                    query, first_ts, last_ts, request.id_channel
-                ):
-                    existing_times.append(row["start"])
+                existing_times = [
+                    row["start"]
+                    for row in await conn.fetch(
+                        query, first_ts, last_ts, request.id_channel
+                    )
+                ]
 
-                MINIMUM_GAP_SECONDS = 5 * 60
                 for new_ts in list(edata.keys()):
                     if any(
                         abs(new_ts - existing_ts) < MINIMUM_GAP_SECONDS

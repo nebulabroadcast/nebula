@@ -43,7 +43,7 @@ class SendToResponse(APIModel):
     )
 
 
-async def send_to(
+async def send_to(  # noqa: PLR0913
     id_asset: int,
     id_action: int,
     params: dict[str, Any],
@@ -167,7 +167,7 @@ class SendTo(APIRequest):
 
         nebula.log.info(
             f"Starting action {request.id_action} "
-            f"for assets {', '.join([str(id) for id in request.ids])}"
+            f"for assets {', '.join([str(_id) for _id in request.ids])}"
         )
 
         result: list[int | None] = []

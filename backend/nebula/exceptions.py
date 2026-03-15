@@ -3,11 +3,11 @@ from typing import Any
 from nebula.log import log as logger
 
 
-class RequestSettingsReload(Exception):
+class RequestSettingsReload(Exception):  # noqa: N818
     pass
 
 
-class NebulaException(Exception):
+class NebulaException(Exception):  # noqa: N818
     """Base class for all Nebula exceptions."""
 
     detail: str = "Error"

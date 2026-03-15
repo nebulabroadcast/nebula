@@ -74,19 +74,17 @@ class ManageServices(APIRequest):
             FROM services
             ORDER BY id
         """
-        data = []
-
-        async for row in nebula.db.iterate(query):
-            data.append(
-                ServiceListItem(
-                    id=row["id"],
-                    name=row["title"],
-                    type=row["service_type"],
-                    hostname=row["host"],
-                    status=row["state"],
-                    autostart=row["autostart"],
-                    last_seen=time.time() - row["last_seen"],
-                )
+        data = [
+            ServiceListItem(
+                id=row["id"],
+                name=row["title"],
+                type=row["service_type"],
+                hostname=row["host"],
+                status=row["state"],
+                autostart=row["autostart"],
+                last_seen=time.time() - row["last_seen"],
             )
+            async for row in nebula.db.iterate(query)
+        ]
 
         return ManageServicesResponse(services=data)

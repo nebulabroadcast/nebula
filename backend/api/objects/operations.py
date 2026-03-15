@@ -113,7 +113,7 @@ class Operations(APIRequest):
     title = "Operations"
     category = "Asset management"
 
-    async def handle(
+    async def handle(  # noqa: C901, PLR0912, PLR0915
         self,
         request: OperationsRequest,
         user: CurrentUser,
@@ -136,28 +136,28 @@ class Operations(APIRequest):
                     acl_obj: BaseObject
 
                     if operation.id is None:
-                        object = object_class(connection=conn, username=user.name)
+                        obj = object_class(connection=conn, username=user.name)
                         operation.data.pop("id", None)
-                        object["created_by"] = user.id
-                        object["updated_by"] = user.id
+                        obj["created_by"] = user.id
+                        obj["updated_by"] = user.id
 
                         acl_obj = object_class.from_meta(operation.data)
                     else:
-                        object = await object_class.load(
+                        obj = await object_class.load(
                             operation.id,
                             connection=conn,
                             username=user.name,
                         )
-                        object["updated_by"] = user.id
-                        acl_obj = object_class.from_meta({**object.meta})
+                        obj["updated_by"] = user.id
+                        acl_obj = object_class.from_meta({**obj.meta})
 
                     #
                     # Modyfiing users
                     #
 
                     if isinstance(object, nebula.User):
-                        if not (user.is_admin or object.id == user.id):
-                            raise nebula.ForbiddenException(
+                        if not (user.is_admin or obj.id == user.id):
+                            raise nebula.ForbiddenException(  # noqa: TRY301
                                 "Unable to modify other users"
                             )
 
@@ -168,7 +168,8 @@ class Operations(APIRequest):
 
                         password = operation.data.pop("password", None)
                         if password:
-                            object.set_password(password)
+                            assert isinstance(obj, nebula.User)
+                            obj.set_password(password)
 
                     #
                     # ACL
@@ -191,15 +192,15 @@ class Operations(APIRequest):
                         except nebula.RequestSettingsReload:
                             reload_settings = True
                     else:
-                        object.update(operation.data)
-                    await object.save()
+                        obj.update(operation.data)
+                    await obj.save()
                     if (
                         isinstance(object, nebula.Item)
-                        and object["id_bin"]
-                        and object["id_bin"] not in affected_bins
+                        and obj["id_bin"]
+                        and obj["id_bin"] not in affected_bins
                     ):
-                        affected_bins.append(object["id_bin"])
-                    op_id = object.id
+                        affected_bins.append(obj["id_bin"])
+                    op_id = obj.id
             except Exception as e:
                 error = str(e)
                 success = False

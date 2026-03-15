@@ -36,7 +36,7 @@ class DeleteObjects(APIRequest):
     title = "Delete objects"
     category = "Asset management"
 
-    async def handle(
+    async def handle(  # noqa: C901
         self,
         request: DeleteObjectsRequest,
         user: CurrentUser,

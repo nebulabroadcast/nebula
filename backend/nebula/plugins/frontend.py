@@ -25,7 +25,7 @@ class PluginItemModel(APIModel):
 
 
 @functools.lru_cache
-def get_frontend_plugins() -> list[PluginItemModel]:
+def get_frontend_plugins() -> list[PluginItemModel]:  # noqa: C901
     """Return a list of frontend plugins.
 
     Each plugin is scoped to a specific part of the UI.

@@ -23,8 +23,8 @@ class ListUsers(APIRequest):
             raise nebula.ForbiddenException("You are not allowed to list users")
 
         query = "SELECT meta FROM users ORDER BY login ASC"
-        users = []
-        async for row in nebula.db.iterate(query):
-            users.append(UserModel.from_meta(row["meta"]))
+        users = [
+            UserModel.from_meta(row["meta"]) async for row in nebula.db.iterate(query)
+        ]
 
         return ListUsersResponse(users=users)

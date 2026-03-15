@@ -30,7 +30,7 @@ class StorageStat(APIModel):
 
 def exec_df(path: str) -> tuple[int, int]:
     cmd = ["df", "--output=size,used", path]
-    proc = subprocess.run(cmd, capture_output=True, text=True)  # noqa: S603
+    proc = subprocess.run(cmd, capture_output=True, text=True, check=False)  # noqa: S603
     if proc.returncode != 0:
         raise RuntimeError(f"df command failed: {proc.stderr.strip()}")
 
@@ -148,6 +148,7 @@ class NebulaStoragesRequest(APIRequest):
         self,
         user: CurrentUser,
     ) -> NebulaStoragesUsage:
+        _ = user  # not used for now
         results: list[StorageStat] = []
         site_name = nebula.config.site_name
         storage_map = await get_storage_map()

@@ -2,6 +2,7 @@ import os
 import tomllib
 from typing import Any
 
+import nebula
 from nebula.common import classes_from_module, import_module
 from nebula.config import config
 from nebula.log import log
@@ -14,6 +15,19 @@ PLUGIN_TYPES = {
     "cli": CLIPlugin,
     "api": APIRequest,
 }
+
+
+def load_manifest(manifest_path: str) -> dict[str, Any]:
+    if not os.path.isfile(manifest_path):
+        raise nebula.NebulaException(f"Manifest not found: {manifest_path}")
+
+    try:
+        with open(manifest_path, "rb") as f:
+            manifest = tomllib.load(f)
+    except Exception as e:
+        nebula.log.traceback(f"Error loading plugein manifest {manifest_path}")
+        raise nebula.NebulaException(f"Error loading manifest {manifest_path}") from e
+    return manifest
 
 
 class PluginLibrary:
@@ -68,17 +82,13 @@ class PluginLibrary:
         for package_fname in os.listdir(config.plugin_dir):
             package_dir = os.path.join(config.plugin_dir, package_fname)
             manifest_path = os.path.join(package_dir, "package.toml")
-            if not os.path.isfile(manifest_path):
+
+            try:
+                manifest = load_manifest(manifest_path)
+            except nebula.NebulaException:
                 continue
 
             log.trace(f"Loading package {manifest_path}")
-
-            try:
-                with open(manifest_path, "rb") as f:
-                    manifest = tomllib.load(f)
-            except Exception:
-                log.traceback(f"Error loading package {package_fname}")
-                continue
 
             module_guide = manifest.get("modules", {})
             for module_fname, plugin_types in module_guide.items():

@@ -61,4 +61,4 @@ def classes_from_module[T: type](superclass: T, module: ModuleType) -> list[T]:
             continue
         if issubclass(obj, superclass):
             classes.append(obj)
-    return classes  # type: ignore
+    return classes

@@ -1,7 +1,7 @@
 from pydantic import Field
 
 import nebula
-from nebula.enum import *  # noqa
+from nebula.enum import *  # noqa: F403
 from nx.utils import xml
 from server import APIModel, APIRequest
 from server.dependencies import CurrentUser
@@ -71,7 +71,7 @@ class GetAvailableActions(APIRequest):
                 for id_asset in request.ids:
                     asset = await nebula.Asset.load(id_asset)
                     assert asset
-                    if not eval(allow_if_cond):
+                    if not eval(allow_if_cond):  # noqa: S307
                         break
                 else:
                     result.append(

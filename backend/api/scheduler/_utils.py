@@ -72,7 +72,7 @@ async def get_events_in_range(
     result: list[nebula.Event] = []
 
     if not (start_time and end_time):
-        # TODO raise bad request?
+        # TODO: raise bad request?
         return []
 
     nebula.log.trace(

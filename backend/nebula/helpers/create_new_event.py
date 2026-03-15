@@ -129,5 +129,5 @@ async def create_new_event(
         return await _create_new_event(channel, event_data, user, conn)
 
     pool = await nebula.db.pool()
-    async with pool.acquire() as conn, conn.transaction():
-        return await _create_new_event(channel, event_data, user, conn)
+    async with pool.acquire() as _conn, _conn.transaction():
+        return await _create_new_event(channel, event_data, user, _conn)

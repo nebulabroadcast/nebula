@@ -7,7 +7,10 @@ from nebula.helpers.scheduling import get_pending_assets, parse_rundown_date
 from ._models import RundownResponse, RundownRow
 
 
-async def load_rundown(id_channel: int, date: str | None = None) -> RundownResponse:
+async def load_rundown(  # noqa: C901, PLR0915, PLR0912
+    id_channel: int,
+    date: str | None = None,
+) -> RundownResponse:
     """Get a rundown"""
     if not (channel := nebula.settings.get_playout_channel(id_channel)):
         raise nebula.BadRequestException(f"No such channel: {id_channel}")
@@ -131,7 +134,7 @@ async def load_rundown(id_channel: int, date: str | None = None) -> RundownRespo
             as_stop = record["as_stop"]
             airstatus = ObjectStatus.AIRED if as_stop else ObjectStatus.ONAIR
 
-        # TODO
+        # TODO: fix eventually?
         # if rundown_event_asset:
         #     item.meta["rundown_event_asset"] = rundown_event_asset
 
