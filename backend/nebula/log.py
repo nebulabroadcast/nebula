@@ -69,7 +69,7 @@ class Logger:
     def traceback(self, *args: Any, user: str | None = None) -> str:
         msg = " ".join([str(arg) for arg in args])
         tb = traceback.format_exc()
-        msg = f"{msg}\n\n{indent(tb)}"
+        msg += f"{msg}\n\n{indent(tb)}"
         self(LogLevel.ERROR, msg, user=user)
         return msg
 

@@ -25,7 +25,6 @@ def load_manifest(manifest_path: str) -> dict[str, Any]:
         with open(manifest_path, "rb") as f:
             manifest = tomllib.load(f)
     except Exception as e:
-        nebula.log.traceback(f"Error loading plugein manifest {manifest_path}")
         raise nebula.NebulaException(f"Error loading manifest {manifest_path}") from e
     return manifest
 

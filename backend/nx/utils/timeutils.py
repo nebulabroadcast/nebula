@@ -23,11 +23,10 @@ def datestr2ts(datestr: str, hh: int = 0, mm: int = 0, ss: int = 0) -> int:
         raise ValueError("Invalid date string")
     if not all(e.isdigit() for e in split):
         raise ValueError("Invalid date string")
-    dt = datetime.datetime(
+    dt = datetime.datetime(  # noqa: DTZ001
         int(split[0]),
         int(split[1].lstrip("0")),
         int(split[2].lstrip("0")),
-        tzinfo=datetime.UTC,
     )
     offset = datetime.timedelta(hours=hh, minutes=mm, seconds=ss)
     return int(time.mktime((dt + offset).timetuple()))

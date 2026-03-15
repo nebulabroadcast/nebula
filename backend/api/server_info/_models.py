@@ -76,11 +76,3 @@ class ServerInfoResponse(APIModel):
     experimental: Annotated[
         bool | None, Field(title="Enable experimental features")
     ] = None
-
-    is_login_background_enabled: Annotated[
-        bool | None,
-        Field(
-            title="Is login background enabled",
-            description="Whether the login background image is enabled",
-        ),
-    ] = None

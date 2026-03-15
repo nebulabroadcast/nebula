@@ -1,4 +1,4 @@
-from collections.abc import Iterable
+from collections.abc import AsyncGenerator
 
 import nebula
 from nebula.helpers.scheduling import bin_refresh
@@ -185,7 +185,7 @@ class SolverPlugin:
     async def main(self) -> None:
         nebula.log.info(f"Solving {self.placeholder}", user=self.name)
         try:
-            for new_item in await self.solve():
+            async for new_item in self.solve():
                 await new_item.get_asset()
                 self.new_items.append(new_item)
         except Exception as e:
@@ -231,9 +231,9 @@ class SolverPlugin:
     # Solver implementation
     #
 
-    async def solve(self) -> Iterable[nebula.Item]:
+    async def solve(self) -> AsyncGenerator[nebula.Item]:
         """This method must return a list or yield items
         (no need to specify order or bin values) which
         replaces the original placeholder.
         """
-        return []
+        yield self.placeholder

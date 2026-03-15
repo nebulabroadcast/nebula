@@ -58,7 +58,7 @@ class GetServerInfo(APIRequest):
                 motd=motd,
                 sso_options=sso_options,
                 experimental=nebula.config.enable_experimental or None,
-                is_login_background_enabled=is_login_background_enabled(),
+                background=is_login_background_enabled(),
             )
 
         # User preferred language
