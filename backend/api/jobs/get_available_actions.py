@@ -21,7 +21,7 @@ class ActionItemModel(APIModel):
     name: str = Field(..., title="Action name", examples=["proxy"])
 
 
-class GetaAvailableActionsResponse(APIModel):
+class GetAvailableActionsResponse(APIModel):
     actions: list[ActionItemModel] = Field(
         default_factory=list,
         title="Actions",
@@ -46,7 +46,7 @@ class GetAvailableActions(APIRequest):
         self,
         request: GetAvailableActionsRequest,
         user: CurrentUser,
-    ) -> GetaAvailableActionsResponse:
+    ) -> GetAvailableActionsResponse:
         result = []
 
         query = """
@@ -81,4 +81,4 @@ class GetAvailableActions(APIRequest):
                         )
                     )
         nebula.log.trace(f"Actions for assets {request.ids} are {result}")
-        return GetaAvailableActionsResponse(actions=result)
+        return GetAvailableActionsResponse(actions=result)
