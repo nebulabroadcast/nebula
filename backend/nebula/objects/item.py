@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, cast
 
 from nebula.objects.asset import Asset
 from nebula.objects.base import BaseObject
@@ -63,7 +63,7 @@ class Item(BaseObject):
     @property
     def duration(self) -> float:
         if not self["id_asset"]:
-            return self["duration"]
+            return cast("float", self["duration"])
 
         if self.meta.get("mark_out"):
             return (self.meta.get("mark_out") or 0) - (self.meta.get("mark_in") or 0)
@@ -73,4 +73,4 @@ class Item(BaseObject):
         # marks from items must be used
 
         assert self._asset is not None, "Asset not loaded"
-        return self._asset["duration"]
+        return cast("float", self._asset["duration"])

@@ -82,6 +82,8 @@ async def setup_settings(db: DatabaseConnection) -> None:  # noqa: C901, PLR0912
             actions=TEMPLATE.pop("actions", []),
             services=TEMPLATE.pop("services", []),
             storages=TEMPLATE.pop("storages", []),
+            cs={},
+            metatypes={},
         )
     except ValidationError as e:
         log.error(f"Invalid settings: {e}")

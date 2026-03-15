@@ -15,7 +15,7 @@ def can_access_object(meta: dict[str, Any], user: nebula.User) -> bool:
 
     if login := meta.get("login"):
         # Users can view their own data
-        return login == user.name
+        return bool(login == user.name)
 
     # Normal users don't need to access items, bins or events
     # using get requests.

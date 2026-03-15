@@ -6,7 +6,7 @@ import random
 import sys
 import time
 from types import ModuleType
-from typing import Any, Literal, TypeVar
+from typing import Any, Literal, TypeVar, cast
 
 T = TypeVar("T", bound=type)
 
@@ -53,12 +53,12 @@ def import_module(name: str, path: str) -> ModuleType:
 
 
 def classes_from_module[T: type](superclass: T, module: ModuleType) -> list[T]:
-    classes = []
+    classes: list[T] = []
     for name in dir(module):
         # It could be anything at this point
         obj = getattr(module, name)
         if not inspect.isclass(obj) or obj is superclass:
             continue
         if issubclass(obj, superclass):
-            classes.append(obj)
+            classes.append(cast("T", obj))
     return classes

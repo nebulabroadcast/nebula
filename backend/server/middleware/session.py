@@ -29,7 +29,7 @@ async def get_session_key() -> str:
     if res["value"] == key_candidate:
         nebula.log.info("Created new session key")
 
-    return res["value"]
+    return typing.cast("str", res["value"])
 
 
 class SessionMiddleware:

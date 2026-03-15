@@ -14,7 +14,7 @@ from nebula.exceptions import NebulaException
 class DB:
     _pool: asyncpg.pool.Pool | None = None
 
-    async def init_connection(self, conn) -> None:
+    async def init_connection(self, conn) -> None:  # type: ignore[no-untyped-def]
         await conn.set_type_codec(
             "jsonb",
             encoder=json_dumps,

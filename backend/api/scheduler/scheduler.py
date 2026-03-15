@@ -1,3 +1,5 @@
+from typing import cast
+
 import nebula
 from nebula.helpers.coalescer import Coalescer
 from nebula.helpers.scheduling import bin_refresh
@@ -34,12 +36,15 @@ class Scheduler(APIRequest):
             # Read-only request. coalesce the requests and
             # Return directly
             coalesce = Coalescer()
-            return await coalesce(
-                scheduler,
-                request.id_channel,
-                date=request.date,
-                days=request.days,
-                user=user,
+            return cast(
+                "SchedulerResponse",
+                await coalesce(
+                    scheduler,
+                    request.id_channel,
+                    date=request.date,
+                    days=request.days,
+                    user=user,
+                ),
             )
 
         # Write request. Do not coalesce, and send notifications

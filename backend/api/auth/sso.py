@@ -34,7 +34,7 @@ class SSOLogin(APIRequest):
 
         redirect_uri = f"{base_url}/api/sso/callback/{provider}"
         nebula.log.debug(f"Redirect URI: {redirect_uri}")
-        return await client.authorize_redirect(request, redirect_uri)
+        return await client.authorize_redirect(request, redirect_uri)  # type: ignore[no-untyped-call, no-any-return]
 
 
 class SSOLoginCallback(APIRequest):
@@ -58,7 +58,7 @@ class SSOLoginCallback(APIRequest):
         user_info = {}
 
         if code:
-            token = await remote.authorize_access_token(request)
+            token = await remote.authorize_access_token(request)  # type: ignore[no-untyped-call]
             user_info = token.get("userinfo", {})
 
         if id_token and not user_info:
@@ -66,7 +66,7 @@ class SSOLoginCallback(APIRequest):
             user_info = await remote.parse_id_token(request, token)
 
         if oauth_verifier and not user_info:
-            token = await remote.authorize_access_token(request)
+            token = await remote.authorize_access_token(request)  # type: ignore[no-untyped-call]
 
         if token and not user_info:
             user_info = await remote.userinfo(token=token)

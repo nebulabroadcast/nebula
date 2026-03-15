@@ -1,4 +1,5 @@
 import os
+from typing import cast
 
 from nebula.enum import ContentType, MediaType, ObjectStatus
 from nebula.objects.base import BaseObject
@@ -86,7 +87,7 @@ class Asset(BaseObject):
 
         if subtitle := self.get("subtitle"):
             return f"{title}{separator}{subtitle}"
-        return title
+        return str(title)
 
     @property
     def duration(self) -> float:
@@ -100,4 +101,4 @@ class Asset(BaseObject):
             duration = min(duration, mark_out)
         if mark_in := self["mark_in"]:
             duration -= mark_in
-        return duration
+        return cast("float", duration)

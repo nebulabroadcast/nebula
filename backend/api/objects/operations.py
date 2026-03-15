@@ -155,7 +155,7 @@ class Operations(APIRequest):
                     # Modyfiing users
                     #
 
-                    if isinstance(object, nebula.User):
+                    if isinstance(obj, nebula.User):
                         if not (user.is_admin or obj.id == user.id):
                             raise nebula.ForbiddenException(  # noqa: TRY301
                                 "Unable to modify other users"
@@ -184,7 +184,7 @@ class Operations(APIRequest):
                     if validator := Validator.for_object(operation.object_type):
                         try:
                             await validator(
-                                object,
+                                obj,
                                 operation.data,
                                 connection=conn,
                                 user=user,
@@ -195,7 +195,7 @@ class Operations(APIRequest):
                         obj.update(operation.data)
                     await obj.save()
                     if (
-                        isinstance(object, nebula.Item)
+                        isinstance(obj, nebula.Item)
                         and obj["id_bin"]
                         and obj["id_bin"] not in affected_bins
                     ):

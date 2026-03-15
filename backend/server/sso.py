@@ -74,7 +74,7 @@ class NebulaSSO:
 
     @classmethod
     def client(cls, provider: str) -> StarletteOAuth2App:
-        return cls.get_oauth().create_client(provider)
+        return cls.get_oauth().create_client(provider)  # type: ignore[no-untyped-call, no-any-return]
 
     @classmethod
     async def options(cls) -> list[SSOOption]:

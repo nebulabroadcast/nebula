@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING, Any
 
 from nebula.enum import ContentType, MediaType, MetaClass, ObjectStatus, QCState
+from nebula.log import log
 from nebula.metadata.utils import get_cs_titles
 from nebula.settings import settings
 from nx.utils import format_filesize, format_time, s2tc
@@ -24,6 +25,9 @@ def format_meta(obj: "BaseObject", key: str, **kwargs: dict[str, Any]) -> str:  
 
     match key:
         case "title" | "subtitle" | "description":
+            if not isinstance(value, str):
+                log.warning(f"Expected string for {key}, got {type(value).__name__}")
+                return str(value)
             return value  # Most common, so test it first
         case "content_type":
             return ContentType(int(value)).name

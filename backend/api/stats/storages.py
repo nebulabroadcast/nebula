@@ -41,7 +41,7 @@ def exec_df(path: str) -> tuple[int, int]:
     return total_kb * 1024, used_kb * 1024
 
 
-@aiocache.cached(ttl=60)
+@aiocache.cached(ttl=60)  # type: ignore[untyped-decorator]
 async def get_disk_usage(path: str) -> tuple[int, int]:
     """Returns total and used space in bytes"""
     try:
@@ -51,7 +51,7 @@ async def get_disk_usage(path: str) -> tuple[int, int]:
         return 0, 0
 
 
-@aiocache.cached(ttl=60)
+@aiocache.cached(ttl=60)  # type: ignore[untyped-decorator]
 async def get_nebula_folders_usage(storage_id: int) -> list[NebulaStorageUsage]:
     query = """
         SELECT
@@ -78,7 +78,7 @@ async def get_nebula_folders_usage(storage_id: int) -> list[NebulaStorageUsage]:
     ]
 
 
-@aiocache.cached(ttl=60)
+@aiocache.cached(ttl=60)  # type: ignore[untyped-decorator]
 async def get_nebula_playout_usage(storage_id: int) -> NebulaStorageUsage:
     channel_keys = [
         f"playout_status/{channel.id}"

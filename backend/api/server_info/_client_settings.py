@@ -102,7 +102,7 @@ class ClientSettingsModel(SettingsModel):
     /api/init request along with the current user information.
     """
 
-    system: BaseSystemSettings = Field(default_factory=BaseSystemSettings)
+    system: BaseSystemSettings
     folders: list[FolderSettings] = Field(default_factory=list)
     views: list[ViewSettings] = Field(default_factory=list)
     users: list[UserInfo] = Field(default_factory=list)

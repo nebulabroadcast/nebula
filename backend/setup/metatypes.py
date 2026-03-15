@@ -19,7 +19,7 @@ async def setup_metatypes(meta_types: dict[str, Any], db: DatabaseConnection) ->
             adata = json_loads(await f.read())
 
         for key, alias, header, description in adata:
-            _header = header if header else alias
+            _header = header if header is not None else alias
             aliases[lang][key] = [alias, _header, description]
 
     for key, data in meta_types.items():

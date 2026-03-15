@@ -21,7 +21,7 @@ class Redis:
     async def connect(cls) -> None:
         """Create a Redis connection pool"""
         if cls.redis_pool is None:
-            cls.redis_pool = aioredis.from_url(config.redis)
+            cls.redis_pool = aioredis.from_url(config.redis)  # type: ignore[no-untyped-call]
         try:
             await cls.redis_pool.set("CONN", "alive")
         except ConnectionError:
@@ -67,7 +67,7 @@ class Redis:
         command = ["set", f"{namespace}-{key}", value]
         if ttl:
             command.extend(["ex", str(ttl)])
-        await cls.redis_pool.execute_command(*command)
+        await cls.redis_pool.execute_command(*command)  # type: ignore[no-untyped-call]
 
     @classmethod
     async def set_json(cls, namespace: str, key: str, value: Any, ttl: int = 0) -> None:

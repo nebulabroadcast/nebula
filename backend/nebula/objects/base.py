@@ -1,5 +1,5 @@
 import time
-from typing import Any, Self, TypeVar
+from typing import Any, Self, TypeVar, cast
 
 import asyncpg
 
@@ -91,9 +91,9 @@ class BaseObject:
         object_id = self.meta.get("id")
         # Handle false and other weird values
         # Yes. It happens.
-        if not id:
+        if not object_id:
             return None
-        return object_id
+        return cast("int", object_id)
 
     def show(self, key: str, **kwargs: Any) -> str:
         """Return a formated value of a given key"""
