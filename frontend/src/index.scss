@@ -26,10 +26,15 @@
   --color-red-muted: #cc1414;
   --color-green-muted: #2e8b57;
 
+  --input-border-radius: 4px;
+  --input-background: var(--color-surface-04);
   --input-height: 32px;
+  --input-padding: 4px;
+  --input-color: var(--color-text);
   --font-size: 0.8rem;
   --gap-size: 6px;
   --section-gap: 6px;
+
   color-scheme: dark;
 }
 
