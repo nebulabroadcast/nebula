@@ -46,6 +46,13 @@ select::picker(select) {
 
   option {
     padding: var(--input-padding);
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+
+    .option-label {
+      flex: 1;
+    }
 
     &::checkmark {
       display: none;

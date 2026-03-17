@@ -33,7 +33,7 @@ interface RadioButtonProps {
     value: string;
     title: string;
     icon?: string;
-    tooltip?: string;
+    description?: string;
     buttonStyle?: React.CSSProperties;
   }[];
   value: string;
@@ -50,7 +50,7 @@ const RadioButton = ({ options, value, onChange }: RadioButtonProps) => {
           className={clsx({ active: option.value === value })}
           icon={option.icon}
           label={option.title}
-          tooltip={option.tooltip}
+          tooltip={option.description}
           style={option.buttonStyle}
         />
       ))}

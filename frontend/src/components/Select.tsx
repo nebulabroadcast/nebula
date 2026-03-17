@@ -123,7 +123,9 @@ const Select: React.FC<SelectProps> = (props) => {
         </option>
         {props.options.map((option) => (
           <option key={option.value} value={option.value}>
-            {option.title}
+            <div className="option-label" title={option.description}>
+              {option.title}
+            </div>
           </option>
         ))}
       </select>
