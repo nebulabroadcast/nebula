@@ -118,14 +118,10 @@ const Select: React.FC<SelectProps> = (props) => {
         style={props.style}
         disabled={props.disabled}
       >
-        <option value={''}>
-          <span className="null-value" />
-        </option>
+        <option value={''} className="null-value"></option>
         {props.options.map((option) => (
-          <option key={option.value} value={option.value}>
-            <div className="option-label" title={option.description}>
-              {option.title}
-            </div>
+          <option key={option.value} value={option.value} title={option.description}>
+            {option.title}
           </option>
         ))}
       </select>

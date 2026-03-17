@@ -1,5 +1,7 @@
 import styled from 'styled-components';
 
+import Icon from './Icon';
+
 const Form = styled.div`
   display: grid;
   grid-template-columns: auto 1fr;
@@ -9,10 +11,6 @@ const Form = styled.div`
   > label {
     color: #555;
   }
-
-  // .form-title, .form-control {
-  //   border: 1px solid red;
-  // }
 
   .form-section {
     grid-column: 1 / -1;
@@ -25,11 +23,17 @@ const Form = styled.div`
   }
 
   .form-title {
-    padding-top: 0.3rem;
     user-select: none;
     user-drag: none;
-    span {
-      white-space: nowrap;
+    padding-top: 5px;
+
+    .form-title-content {
+      span {
+        white-space: nowrap;
+      }
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
   }
 
@@ -47,9 +51,17 @@ interface FormRowProps extends React.HTMLAttributes<HTMLDivElement> {
   title: string;
   tooltip?: string;
   section?: string;
+  changed?: boolean;
 }
 
-const FormRow = ({ title, tooltip, section, children, ...props }: FormRowProps) => {
+const FormRow = ({
+  title,
+  tooltip,
+  section,
+  children,
+  changed,
+  ...props
+}: FormRowProps) => {
   return (
     <>
       {section && (
@@ -58,7 +70,24 @@ const FormRow = ({ title, tooltip, section, children, ...props }: FormRowProps) 
         </div>
       )}
       <div className="form-title">
-        <span title={tooltip}>{title}</span>
+        <div className="form-title-content" title={tooltip}>
+          <span>{title}</span>
+          {tooltip && (
+            <Icon
+              icon="info"
+              style={{ fontSize: '0.9em', color: 'var(--color-text-dim)' }}
+            />
+          )}
+          <span
+            style={{
+              color: 'var(--color-violet)',
+              opacity: changed ? 1 : 0,
+            }}
+          >
+            {' '}
+            *
+          </span>
+        </div>
       </div>
       <div className="form-control" {...props}>
         {children}

@@ -50,10 +50,6 @@ select::picker(select) {
     align-items: center;
     flex-direction: row;
 
-    .option-label {
-      flex: 1;
-    }
-
     &::checkmark {
       display: none;
     }
