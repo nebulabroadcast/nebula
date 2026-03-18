@@ -75,6 +75,7 @@ const FormRow = ({
           {tooltip && (
             <Icon
               icon="info"
+              aria-hidden="true"
               style={{ fontSize: '0.9em', color: 'var(--color-text-dim)' }}
             />
           )}
