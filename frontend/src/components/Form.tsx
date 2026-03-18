@@ -70,7 +70,7 @@ const FormRow = ({
         </div>
       )}
       <div className="form-title">
-        <div className="form-title-content" title={tooltip}>
+        <div className="form-title-content" data-tooltip={tooltip}>
           <span>{title}</span>
           {tooltip && (
             <Icon

@@ -108,6 +108,9 @@ const Select: React.FC<SelectProps> = (props) => {
   }, [dialogVisible, props.options, props.selectionMode, props.value, onDialogClose]);
 
   if ((props.selectionMode || 'single') === 'single' && props.options.length < 20) {
+    const selectedOption = props.options.find((opt) => opt.value === props.value);
+    const tooltip = selectedOption ? selectedOption.description : undefined;
+
     return (
       <select
         value={(props.value as string) || ''}
@@ -117,10 +120,11 @@ const Select: React.FC<SelectProps> = (props) => {
         }}
         style={props.style}
         disabled={props.disabled}
+        data-tooltip={tooltip}
       >
         <option value={''} className="null-value"></option>
         {props.options.map((option) => (
-          <option key={option.value} value={option.value} title={option.description}>
+          <option key={option.value} value={option.value}>
             {option.title}
           </option>
         ))}

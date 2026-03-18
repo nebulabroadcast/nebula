@@ -50,7 +50,7 @@ const InputColor = ({ value, onChange, tooltip, disabled }: InputColorProps) => 
       <BaseColorInput
         type="color"
         value={hexValue}
-        title={tooltip}
+        data-tooltip={tooltip}
         list="presetColors"
         onChange={(e) => setColor(e.target.value)}
         disabled={disabled}

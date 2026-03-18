@@ -112,7 +112,7 @@ const InputTimecode: React.FC<InputTimecodeProps> = ({
       onBlur={onSubmit}
       onFocus={(e) => e.target.select()}
       placeholder="--:--:--:--"
-      title={tooltip}
+      data-tooltip={tooltip}
       {...props}
     />
   );

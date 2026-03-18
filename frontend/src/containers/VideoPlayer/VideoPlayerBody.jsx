@@ -40,7 +40,7 @@ const VideoPlayerWarning = styled.div`
   top: 10px;
   left: 50%;
   transform: translateX(-50%);
-  background-color: rgba(255, 0, 0, 0.8);
+  background-color: var(--color-red);
   white-space: nowrap;
   color: white;
   padding: 8px 16px;

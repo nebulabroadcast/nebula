@@ -55,6 +55,28 @@ const Preview = ({ assetData, setAssetData }) => {
   const [proxyInfo, setProxyInfo] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const onSetPosition = (newPosition) => {
+    if (isNaN(newPosition)) return;
+    if (newPosition === position) return;
+    setPosition(newPosition);
+  };
+
+  const onSetMarkIn = (mark_in) => {
+    setSelection((s) => {
+      if (isNaN(mark_in)) return s;
+      if (mark_in === s.mark_in) return s;
+      return { ...s, mark_in };
+    });
+  };
+
+  const onSetMarkOut = (mark_out) => {
+    setSelection((s) => {
+      if (isNaN(mark_out)) return s;
+      if (mark_out === s.mark_out) return s;
+      return { ...s, mark_out };
+    });
+  };
+
   useEffect(() => {
     setLoading(true);
     if (!assetData.id) {
@@ -108,6 +130,7 @@ const Preview = ({ assetData, setAssetData }) => {
   }, [assetData]);
 
   const patchAsset = (data) => {
+    console.log('Patching asset with data', data);
     // helper function to update asset data
     if (!data) return;
     setAssetData((o) => {
@@ -189,7 +212,8 @@ const Preview = ({ assetData, setAssetData }) => {
 
   useKeyDown('v', onNewSubclip);
 
-  // Render
+  //setMarkIn={(mark_in) => setSelection((s) => ({ ...s, mark_in }))}
+  //setMarkOut={(mark_out) => setSelection((s) => ({ ...s, mark_out }))}
 
   return (
     <div className="grow row">
@@ -198,11 +222,11 @@ const Preview = ({ assetData, setAssetData }) => {
           src={videoSrc}
           frameRate={frameRate}
           position={position}
-          setPosition={setPosition}
+          setPosition={onSetPosition}
           markIn={selection.mark_in}
           markOut={selection.mark_out}
-          setMarkIn={(mark_in) => setSelection((s) => ({ ...s, mark_in }))}
-          setMarkOut={(mark_out) => setSelection((s) => ({ ...s, mark_out }))}
+          setMarkIn={onSetMarkIn}
+          setMarkOut={onSetMarkOut}
           marks={{
             poster_frame: assetData.poster_frame,
           }}

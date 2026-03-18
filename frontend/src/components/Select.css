@@ -55,12 +55,8 @@ select::picker(select) {
     }
 
     &:checked {
-      color: var(--color-cyan);
-      background: var(--color-surface-05);
-
-      .null-value {
-        color: var(--color-cyan);
-      }
+      color: var(--active-item-color);
+      background: var(--active-item-background);
     }
 
     &:focus {
@@ -69,22 +65,12 @@ select::picker(select) {
   }
 }
 
-select::picker-icon {
-  margin-right: 10px;
-  color: var(--color-text);
-  transition: 0.3s rotate;
-}
-
-select:open::picker-icon {
-  rotate: 180deg;
-}
+/* Option picker */
 
 select::picker(select) {
-  padding: var(--input-padding);
-  background: var(--color-surface-02);
   border: 1px solid var(--color-surface-04);
-  border-radius: 0.5rem;
-  background-color: var(--color-surface-03);
+  border-radius: var(--input-border-radius);
+  background-color: var(--dropdown-background);
   box-shadow: 4px 4px 10px 4px rgba(0, 0, 0, 0.7);
 
   transition: all 0.2s;
@@ -96,4 +82,16 @@ select:open::picker(select) {
   @starting-style {
     opacity: 0;
   }
+}
+
+/* Picker icon */
+
+select::picker-icon {
+  margin-right: 10px;
+  color: var(--color-text);
+  transition: 0.3s rotate;
+}
+
+select:open::picker-icon {
+  rotate: 180deg;
 }

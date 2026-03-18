@@ -12,7 +12,7 @@ const InputInteger = ({ value, onChange, tooltip, ...props }: InputIntegerProps)
     <Input
       type="number"
       value={value || ''}
-      title={tooltip}
+      data-tooltip={tooltip}
       onChange={(e) => {
         if (e.target.value === '') onChange(null);
         else onChange(e.target.value ? parseInt(e.target.value, 10) : null);

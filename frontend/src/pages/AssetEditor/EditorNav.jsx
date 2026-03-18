@@ -4,6 +4,7 @@ const QC_STATE_OPTIONS = [
   {
     value: 0,
     icon: 'flag',
+    buttonStyle: { color: 'var(--color-text)' },
     tooltip: 'Revert QC state',
   },
   {

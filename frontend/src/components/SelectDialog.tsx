@@ -51,7 +51,7 @@ const Option: React.FC<OptionProps> = ({ option, selected, onClick }) => {
       className={clsx(selected && 'selected', option.role === 'label' && 'label')}
       style={{ paddingLeft: (option.level || 0) * 15 }}
       onClick={option.role === 'label' ? undefined : onClick}
-      title={option.description}
+      data-tooltip={option.description}
     >
       {option.title}
     </BaseOption>
@@ -204,7 +204,7 @@ const SelectDialog: React.FC<SelectDialogProps> = ({
         <Button
           onClick={() => setFilter('')}
           icon="filter_alt_off"
-          title="Clear filter"
+          data-tooltip="Clear filter"
         />
       </div>
     </div>

@@ -38,10 +38,10 @@ const defaultTheme: {
   inputBorderRadius: '4px',
   inputPadding: '4px',
   inputBackground: colors.surface04,
-  fontSize: '0.9rem',
+  fontSize: '12px',
   gapSize: '4px',
   sectionGap: '6px',
-  navBorderRadius: '6px',
+  navBorderRadius: '8px',
 };
 
 const getTheme = (): typeof defaultTheme => {
