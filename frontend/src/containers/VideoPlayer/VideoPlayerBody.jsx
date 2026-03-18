@@ -110,14 +110,15 @@ const VideoPlayerBody = ({ ...props }) => {
   useEffect(() => {
     if (props.markIn || null !== markIn) {
       setMarkIn(props.markIn);
-      if (
-        !isPlaying &&
-        videoRef.current &&
-        props.markIn !== undefined &&
-        posFrames !== time2frames(props.markIn, props.frameRate)
-      ) {
-        seekToFrame(time2frames(props.markIn, props.frameRate));
-      }
+      // TODO: this ends in an infinite loop upon video load
+      // if (
+      //   !isPlaying &&
+      //   videoRef.current &&
+      //   props.markIn !== undefined &&
+      //   posFrames !== time2frames(props.markIn, props.frameRate)
+      // ) {
+      //   seekToFrame(time2frames(props.markIn, props.frameRate));
+      // }
     }
   }, [props.markIn]);
 

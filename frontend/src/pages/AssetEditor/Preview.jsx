@@ -55,13 +55,7 @@ const Preview = ({ assetData, setAssetData }) => {
   const [proxyInfo, setProxyInfo] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const onSetPosition = (newPosition) => {
-    if (isNaN(newPosition)) return;
-    if (newPosition === position) return;
-    setPosition(newPosition);
-  };
-
-  const onSetMarkIn = (mark_in) => {
+  const setMarkIn = (mark_in) => {
     setSelection((s) => {
       if (isNaN(mark_in)) return s;
       if (mark_in === s.mark_in) return s;
@@ -69,7 +63,7 @@ const Preview = ({ assetData, setAssetData }) => {
     });
   };
 
-  const onSetMarkOut = (mark_out) => {
+  const setMarkOut = (mark_out) => {
     setSelection((s) => {
       if (isNaN(mark_out)) return s;
       if (mark_out === s.mark_out) return s;
@@ -219,11 +213,11 @@ const Preview = ({ assetData, setAssetData }) => {
           src={videoSrc}
           frameRate={frameRate}
           position={position}
-          setPosition={onSetPosition}
+          setPosition={setPosition}
           markIn={selection.mark_in}
           markOut={selection.mark_out}
-          setMarkIn={onSetMarkIn}
-          setMarkOut={onSetMarkOut}
+          setMarkIn={setMarkIn}
+          setMarkOut={setMarkOut}
           marks={{
             poster_frame: assetData.poster_frame,
           }}
