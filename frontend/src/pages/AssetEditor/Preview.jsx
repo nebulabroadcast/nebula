@@ -212,9 +212,6 @@ const Preview = ({ assetData, setAssetData }) => {
 
   useKeyDown('v', onNewSubclip);
 
-  //setMarkIn={(mark_in) => setSelection((s) => ({ ...s, mark_in }))}
-  //setMarkOut={(mark_out) => setSelection((s) => ({ ...s, mark_out }))}
-
   return (
     <div className="grow row">
       <div className="column" style={{ minWidth: 300, flexGrow: 1 }}>
