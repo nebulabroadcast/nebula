@@ -5,19 +5,19 @@ const QC_STATE_OPTIONS = [
     value: 0,
     icon: 'flag',
     buttonStyle: { color: 'var(--color-text)' },
-    tooltip: 'Revert QC state',
+    description: 'Revert QC state',
   },
   {
     value: 3,
     icon: 'flag',
     buttonStyle: { color: 'var(--color-red)' },
-    tooltip: 'Reject asset',
+    description: 'Reject asset',
   },
   {
     value: 4,
     icon: 'flag',
     buttonStyle: { color: 'var(--color-green)' },
-    tooltip: 'Approve asset',
+    description: 'Approve asset',
   },
 ];
 
