@@ -1,10 +1,11 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import styled from 'styled-components';
 
 import Button from './Button';
 import InputText from './InputText';
 import SelectDialog, { SelectOption } from './SelectDialog';
-import { getTheme } from './theme';
+
+import './Select.css';
 
 // ... (rest of the styled-components definitions)
 const DialogBasedSelect = styled.div`
@@ -29,124 +30,119 @@ const DialogBasedSelect = styled.div`
   }
 `;
 
-const StyledHTMLSelect = styled.select`
-  border: 0;
-  border-radius: ${getTheme().inputBorderRadius};
-  background: ${getTheme().inputBackground};
-  color: ${getTheme().colors.text};
-  min-height: ${getTheme().inputHeight};
-  font-size: ${getTheme().fontSize};
-  padding-left: ${getTheme().inputPadding};
-  padding-right: ${getTheme().inputPadding};
-  min-width: 200px;
-
-  &:focus {
-    outline: 1px solid ${getTheme().colors.cyan};
-  }
-
-  &:hover {
-    color: ${getTheme().colors.text};
-  }
-
-  &:disabled {
-    cursor: not-allowed;
-    background: ${getTheme().colors.surface03};
-    color: ${getTheme().colors.surface08};
-  }
-
-  &:invalid,
-  &.error {
-    outline: 1px solid ${getTheme().colors.red} !important;
-  }
-`;
-
-interface SelectProps {
+interface BaseSelectProps {
   options: SelectOption[];
-  value?: string | string[] | null;
-  onChange: (value: string | string[] | null) => void;
   placeholder?: string;
   style?: React.CSSProperties;
   disabled?: boolean;
-  selectionMode?: 'single' | 'multiple';
 }
 
-const Select: React.FC<SelectProps> = ({
-  options,
-  value,
-  onChange,
-  placeholder,
-  style,
-  disabled,
-  selectionMode = 'single',
-}) => {
+interface DefaultSingleSelectProps extends BaseSelectProps {
+  selectionMode?: undefined;
+  value?: string | null;
+  onChange: (value: string | null) => void;
+}
+
+interface SingleSelectProps extends BaseSelectProps {
+  selectionMode: 'single';
+  value?: string | null;
+  onChange: (value: string | null) => void;
+}
+
+interface MultiSelectProps extends BaseSelectProps {
+  selectionMode: 'multiple';
+  value?: string[];
+  onChange: (value: string[]) => void;
+}
+
+type SelectProps = DefaultSingleSelectProps | SingleSelectProps | MultiSelectProps;
+
+const Select: React.FC<SelectProps> = (props) => {
   const [dialogVisible, setDialogVisible] = useState<boolean>(false);
 
   const displayValue = useMemo(() => {
-    if (!value) return '';
+    if (!props.value) return '';
     const result: string[] = [];
-    for (const opt of options) {
-      if (selectionMode === 'single' && value === opt.value) {
+    for (const opt of props.options) {
+      if ((props.selectionMode || 'single') === 'single' && props.value === opt.value) {
         result.push(opt.title);
         break;
       } else if (
-        Array.isArray(value) &&
-        selectionMode === 'multiple' &&
-        value.includes(opt.value)
+        Array.isArray(props.value) &&
+        props.selectionMode === 'multiple' &&
+        props.value.includes(opt.value)
       ) {
         result.push(opt.title);
       }
     }
     return result.join(', ');
-  }, [options, value, selectionMode]);
+  }, [props.options, props.value, props.selectionMode]);
 
-  const onDialogClose = (newValue: string | string[] | null) => {
-    onChange(newValue);
-    setDialogVisible(false);
-  };
+  const onDialogClose = useCallback(
+    (newValue: string | string[] | null) => {
+      if (
+        (props.selectionMode || 'single') === 'single' &&
+        (typeof newValue === 'string' || newValue === null)
+      ) {
+        const { onChange } = props as SingleSelectProps;
+        onChange(newValue);
+      } else if (props.selectionMode === 'multiple' && Array.isArray(newValue)) {
+        const { onChange } = props as MultiSelectProps;
+        onChange(newValue);
+      }
+      setDialogVisible(false);
+    },
+    [props]
+  );
 
   const dialog = useMemo(() => {
     if (!dialogVisible) return null;
     return (
       <SelectDialog
-        options={options}
-        selectionMode={selectionMode}
-        initialValue={value}
+        options={props.options}
+        selectionMode={props.selectionMode}
+        initialValue={props.value}
         onHide={onDialogClose}
       />
     );
-  }, [dialogVisible, options, selectionMode, value, onDialogClose]);
+  }, [dialogVisible, props.options, props.selectionMode, props.value, onDialogClose]);
 
-  if (selectionMode === 'single' && options.length < 20) {
+  if ((props.selectionMode || 'single') === 'single' && props.options.length < 20) {
+    const selectedOption = props.options.find((opt) => opt.value === props.value);
+    const tooltip = selectedOption ? selectedOption.description : undefined;
+
     return (
-      <StyledHTMLSelect
-        value={(value as string) || ''}
+      <select
+        value={(props.value as string) || ''}
         onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+          const { onChange } = props as SingleSelectProps;
           onChange(e.target.value || null);
         }}
-        style={style}
-        disabled={disabled}
+        style={props.style}
+        disabled={props.disabled}
+        data-tooltip={tooltip}
       >
-        <option value={''}></option>
-        {options.map((option) => (
+        <option value={''} className="null-value"></option>
+        {props.options.map((option) => (
           <option key={option.value} value={option.value}>
             {option.title}
           </option>
         ))}
-      </StyledHTMLSelect>
+      </select>
     );
   }
 
   return (
-    <DialogBasedSelect style={style}>
+    <DialogBasedSelect style={props.style}>
       {dialog}
       <InputText
         value={displayValue}
-        placeholder={placeholder}
+        placeholder={props.placeholder}
         readOnly={true}
-        disabled={disabled}
+        disabled={props.disabled}
         style={{ flexGrow: 1 }}
         onDoubleClick={() => {
-          if (disabled) return;
+          if (props.disabled) return;
           setDialogVisible(true);
         }}
         onChange={() => {}}
@@ -154,7 +150,11 @@ const Select: React.FC<SelectProps> = ({
           if (e.key === 'Enter') setDialogVisible(true);
         }}
       />
-      <Button label="..." onClick={() => setDialogVisible(true)} disabled={disabled} />
+      <Button
+        label="..."
+        onClick={() => setDialogVisible(true)}
+        disabled={props.disabled}
+      />
     </DialogBasedSelect>
   );
 };

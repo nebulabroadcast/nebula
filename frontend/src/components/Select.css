@@ -1,0 +1,97 @@
+select {
+  border: 0;
+  border-radius: var(--input-border-radius);
+  background: var(--input-background);
+  color: var(--input-color);
+  min-height: var(--input-height);
+  max-height: var(--input-height);
+  padding-left: var(--input-padding);
+  padding-right: var(--input-padding);
+  display: flex;
+  align-items: center;
+
+  &:focus,
+  &:open {
+    outline: 1px solid var(--color-cyan);
+  }
+
+  &:hover {
+    color: var(--color-text);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    background: var(--color-surface-03);
+    color: var(--color-surface-08);
+  }
+
+  &:invalid,
+  &.error {
+    outline: 1px solid var(--color-red) !important;
+  }
+}
+
+select .null-value {
+  display: block;
+  color: var(--color-text-dim);
+  font-style: italic;
+  &:after {
+    content: 'No value';
+  }
+}
+
+select,
+select::picker(select) {
+  appearance: base-select;
+
+  option {
+    padding: var(--input-padding);
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+
+    &::checkmark {
+      display: none;
+    }
+
+    &:checked {
+      color: var(--active-item-color);
+      background: var(--active-item-background);
+    }
+
+    &:focus {
+      outline: 1px solid var(--color-surface-05);
+    }
+  }
+}
+
+/* Option picker */
+
+select::picker(select) {
+  border: 1px solid var(--color-surface-04);
+  border-radius: var(--input-border-radius);
+  background-color: var(--dropdown-background);
+  box-shadow: 4px 4px 10px 4px rgba(0, 0, 0, 0.7);
+
+  transition: all 0.2s;
+}
+
+select:open::picker(select) {
+  opacity: 1;
+
+  @starting-style {
+    opacity: 0;
+  }
+}
+
+/* Picker icon */
+
+select::picker-icon {
+  margin-right: 10px;
+  color: var(--color-text);
+  transition: 0.3s rotate;
+}
+
+select:open::picker-icon {
+  rotate: 180deg;
+}

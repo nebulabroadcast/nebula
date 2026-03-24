@@ -7,7 +7,7 @@ export const DropdownContainer = styled.div`
   .dropdown-content {
     display: none;
     position: absolute;
-    background-color: var(--color-surface-02);
+    background-color: var(--dropdown-background);
     min-width: 100px;
     box-shadow: 4px 4px 10px 4px rgba(0, 0, 0, 0.7);
     z-index: 5;
@@ -26,13 +26,15 @@ export const DropdownContainer = styled.div`
       padding: 25px 8px;
 
       &:hover {
-        background-color: var(--color-surface-04);
+        background-color: var(--hover-item-background);
+        color: var(--hover-item-color);
       }
 
       &.active,
       &:focus {
         outline: none !important;
-        background-color: var(--color-surface-04);
+        background: var(--active-item-background);
+        color: var(--active-item-color);
         text-shadow: none !important;
       }
 

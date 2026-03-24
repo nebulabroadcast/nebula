@@ -45,9 +45,9 @@ export const ButtonStyle = css`
   }
 
   &:hover {
-    background: ${getTheme().colors.surface06};
-    color: ${getTheme().colors.text};
-    text-decoration: none; // when rendered as a
+    background: var(--hover-item-background);
+    color: var(--hover-item-color);
+    text-decoration: none; // when rendered as <a>
   }
 
   &:invalid,
@@ -56,8 +56,8 @@ export const ButtonStyle = css`
   }
 
   &.active {
-    background: ${getTheme().colors.surface06};
-    text-shadow: 0 0 4px ${getTheme().colors.highlight};
+    background: var(--active-item-background);
+    color: var(--active-item-color);
   }
 
   &:disabled {

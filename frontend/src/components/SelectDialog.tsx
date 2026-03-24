@@ -6,7 +6,6 @@ import Button from './Button';
 import Dialog from './Dialog';
 import InputText from './InputText';
 import { sortByKey } from './lib/sortByKey';
-import { getTheme } from './theme';
 
 export interface SelectOption {
   value: string; // Changed from string | number
@@ -23,24 +22,26 @@ interface OptionProps {
 }
 
 const BaseOption = styled.div`
-  padding: 3px;
+  padding: var(--input-padding);
   cursor: pointer;
   white-space: nowrap;
   user-select: none;
   user-drag: none;
-  background-color: ${getTheme().colors.surface05};
+  background-color: var(--color-surface-03);
 
   &.selected {
-    background-color: ${getTheme().colors.violet};
+    color: var(--color-cyan);
+    background-color: var(--color-surface-05);
   }
 
   &.label {
     font-weight: bold;
-    background-color: ${getTheme().colors.surface03};
+    background-color: transparent;
   }
 
   &.header {
     font-weight: bold;
+    background-color: transparent;
   }
 `;
 
@@ -50,7 +51,7 @@ const Option: React.FC<OptionProps> = ({ option, selected, onClick }) => {
       className={clsx(selected && 'selected', option.role === 'label' && 'label')}
       style={{ paddingLeft: (option.level || 0) * 15 }}
       onClick={option.role === 'label' ? undefined : onClick}
-      title={option.description}
+      data-tooltip={option.description}
     >
       {option.title}
     </BaseOption>
@@ -203,7 +204,7 @@ const SelectDialog: React.FC<SelectDialogProps> = ({
         <Button
           onClick={() => setFilter('')}
           icon="filter_alt_off"
-          title="Clear filter"
+          data-tooltip="Clear filter"
         />
       </div>
     </div>

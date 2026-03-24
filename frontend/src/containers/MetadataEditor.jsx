@@ -153,9 +153,10 @@ const EditorField = ({ field, value, originalValue, onFieldChanged, disabled }) 
 
   return (
     <FormRow
-      title={`${metaType.title}${changed ? ' *' : ''}`}
+      title={metaType.title}
       tooltip={metaType.description}
       section={metaType.section}
+      changed={changed}
     >
       {editor}
     </FormRow>

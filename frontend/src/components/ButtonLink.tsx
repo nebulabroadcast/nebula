@@ -46,7 +46,7 @@ const ButtonLink = (props: ButtonLinkProps) => {
     <StyledAnchor
       className={clsx(className, active && 'active', !label && 'icon-only')}
       style={_anchorStyle}
-      title={tooltip}
+      data-tooltip={tooltip}
       {...anchorProps}
     >
       {label && iconOnRight && <span>{label}</span>}

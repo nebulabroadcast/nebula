@@ -17,7 +17,12 @@ const InputNumber = ({ value, onChange, tooltip }: InputNumberProps) => {
   };
 
   return (
-    <Input type="number" value={value || ''} onChange={handleChange} title={tooltip} />
+    <Input
+      type="number"
+      value={value || ''}
+      onChange={handleChange}
+      data-tooltip={tooltip}
+    />
   );
 };
 
