@@ -124,6 +124,10 @@ export const TooltipProvider: React.FC<{ children: React.ReactNode }> = ({
       window.removeEventListener('mouseout', handleMouseOut);
       window.removeEventListener('mousedown', hideTooltip);
       window.removeEventListener('scroll', hideTooltip, true);
+      if (timerRef.current) {
+        window.clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
     };
   }, [showTooltip, hideTooltip]);
 
