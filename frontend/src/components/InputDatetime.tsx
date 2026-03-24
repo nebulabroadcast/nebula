@@ -33,7 +33,7 @@ const CalendarDialog = ({ value, onChange, onClose }: CalendarDialogProps) => {
 
   return (
     <DatePickerDialog
-      data-tooltip="Select Date"
+      title="Select Date"
       value={date.toFormat('yyyy-MM-dd')}
       handleCancel={onClose}
       handleConfirm={(newDateString: string) => {
