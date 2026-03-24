@@ -11,7 +11,7 @@ import jinja2
 import nebula
 
 try:
-    import mistune  # noqa
+    import mistune
 
     has_mistune = True
 except ModuleNotFoundError:
@@ -40,8 +40,7 @@ def markdown2email(text: str) -> MIMEMultipart | MIMEText:
         msg.attach(part1)
         msg.attach(part2)
         return msg
-    else:
-        return MIMEText(text, "plain")
+    return MIMEText(text, "plain")
 
 
 async def render_email_template(template_name: str, **kwargs: Any) -> MIMEMultipart:

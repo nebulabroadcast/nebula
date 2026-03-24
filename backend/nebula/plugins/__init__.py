@@ -1,4 +1,4 @@
-__all__ = ["SolverPlugin", "CLIPlugin"]
+__all__ = ["CLIPlugin", "SolverPlugin"]
 
 from .cli import CLIPlugin
 from .common import modules_root

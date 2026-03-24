@@ -1,9 +1,9 @@
 __all__ = ["xml"]
 
-from xml.etree import ElementTree
+from xml.etree import ElementTree as ET
 
 
-def xml(data: str) -> ElementTree.Element | None:
+def xml(data: str) -> ET.Element | None:
     """Parse an XML string using ElementTree
 
     Args:
@@ -12,4 +12,4 @@ def xml(data: str) -> ElementTree.Element | None:
     Returns:
         ElementTree.Element: The root element of the parsed XML string
     """
-    return ElementTree.XML(data)
+    return ET.XML(data)

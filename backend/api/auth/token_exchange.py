@@ -1,26 +1,27 @@
 from fastapi import Request
 
 import nebula
-from server.models.login import LoginResponseModel, TokenExchangeRequestModel
+from server.models.login import LoginResponse, TokenExchangeRequest
 from server.request import APIRequest
 from server.session import Session
 
 
-class TokenExchangeRequest(APIRequest):
-    """Exachange a transient access token for a normal one
+class TokenExchange(APIRequest):
+    """Exchange a transient access token for a normal one
 
     This request will exchange an access token for a new one.
     The original access token will be invalidated.
     """
 
-    name: str = "token-exchange"
-    response_model = LoginResponseModel
+    name = "token-exchange"
+    title = "Token exchange"
+    category = "Authentication"
 
     async def handle(
         self,
         request: Request,
-        payload: TokenExchangeRequestModel,
-    ) -> LoginResponseModel:
+        payload: TokenExchangeRequest,
+    ) -> LoginResponse:
         session = await Session.check(payload.access_token, request, transient=True)
         if not session:
             raise nebula.UnauthorizedException("Invalid token")
@@ -29,4 +30,4 @@ class TokenExchangeRequest(APIRequest):
         session = await Session.create(user, request)
         nebula.log.debug(f"{user} token exchanged")
         await Session.delete(payload.access_token)
-        return LoginResponseModel(access_token=session.token)
+        return LoginResponse(access_token=session.token)

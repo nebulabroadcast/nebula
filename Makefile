@@ -1,16 +1,19 @@
 IMAGE_NAME=nebulabroadcast/nebula-server:dev
-VERSION=$(shell cd backend && uv run python -c 'import nebula' --version)
+VERSION=$(shell cd backend && python -c 'import nebula' --version)
 
-check:
-	cd frontend && \
-		yarn lint && \
-		yarn format:check
-
+check-backend:
 	cd backend && \
 		sed -i "s/^version = \".*\"/version = \"$(VERSION)\"/" pyproject.toml && \
 		uv run ruff format . && \
 		uv run ruff check --fix . && \
 		uv run mypy .
+
+check-frontend:
+	cd frontend && \
+		yarn lint && \
+		yarn format:check
+
+check: check-backend check-frontend
 
 build:
 	docker build -t $(IMAGE_NAME) .

@@ -1,6 +1,7 @@
 import asyncio
 import contextlib
 import os
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 import aiofiles
@@ -20,7 +21,7 @@ from server.websocket import messaging
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):  # type: ignore
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     _ = app
     async with aiofiles.open("/var/run/nebula.pid", "w") as f:
         await f.write(str(os.getpid()))
@@ -175,7 +176,7 @@ async def ws_endpoint(websocket: WebSocket) -> None:
 #
 
 
-@app.get("/api/login-background.jpg")
+@app.get("/api/login-background.jpg", tags=["System"])
 def login_background() -> FileResponse:
     """Serve the login background image."""
     img_path = f"/mnt/{nebula.config.site_name}_01/.nx/login-background.jpg"

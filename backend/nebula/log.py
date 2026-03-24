@@ -38,13 +38,12 @@ class Logger:
         lvl = level.name.upper()
         usr = user or self.user
         usr = usr[: self.user_max_length].ljust(self.user_max_length)
-        msg = " ".join([str(arg) for arg in args])
+        " ".join([str(arg) for arg in args])
 
-        print(
-            f"{lvl:<8} {usr} {msg}",
-            file=sys.stderr,
-            flush=True,
+        sys.stderr.write(
+            f"{lvl:<8} {usr} {' '.join([str(arg) for arg in args])}\n",
         )
+        sys.stderr.flush()
 
     def trace(self, *args: Any, user: str | None = None) -> None:
         self(LogLevel.TRACE, *args, user=user)
@@ -70,7 +69,7 @@ class Logger:
     def traceback(self, *args: Any, user: str | None = None) -> str:
         msg = " ".join([str(arg) for arg in args])
         tb = traceback.format_exc()
-        msg = f"{msg}\n\n{indent(tb)}"
+        msg += f"{msg}\n\n{indent(tb)}"
         self(LogLevel.ERROR, msg, user=user)
         return msg
 

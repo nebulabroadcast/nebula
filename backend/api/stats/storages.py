@@ -5,19 +5,18 @@ import subprocess
 import aiocache
 
 import nebula
+from server import APIModel, APIRequest
 from server.dependencies import CurrentUser
-from server.models import ResponseModel
-from server.request import APIRequest
 
 
-class NebulaStorageUsage(ResponseModel):
+class NebulaStorageUsage(APIModel):
     label: str
     color: str | None = None
     usage: int = 0
     duration: int = 0
 
 
-class StorageStat(ResponseModel):
+class StorageStat(APIModel):
     storage_id: int
     label: str
     total: int
@@ -31,7 +30,7 @@ class StorageStat(ResponseModel):
 
 def exec_df(path: str) -> tuple[int, int]:
     cmd = ["df", "--output=size,used", path]
-    proc = subprocess.run(cmd, capture_output=True, text=True)  # noqa: S603
+    proc = subprocess.run(cmd, capture_output=True, text=True, check=False)  # noqa: S603
     if proc.returncode != 0:
         raise RuntimeError(f"df command failed: {proc.stderr.strip()}")
 
@@ -42,7 +41,7 @@ def exec_df(path: str) -> tuple[int, int]:
     return total_kb * 1024, used_kb * 1024
 
 
-@aiocache.cached(ttl=60)
+@aiocache.cached(ttl=60)  # type: ignore[untyped-decorator]
 async def get_disk_usage(path: str) -> tuple[int, int]:
     """Returns total and used space in bytes"""
     try:
@@ -52,7 +51,7 @@ async def get_disk_usage(path: str) -> tuple[int, int]:
         return 0, 0
 
 
-@aiocache.cached(ttl=60)
+@aiocache.cached(ttl=60)  # type: ignore[untyped-decorator]
 async def get_nebula_folders_usage(storage_id: int) -> list[NebulaStorageUsage]:
     query = """
         SELECT
@@ -79,7 +78,7 @@ async def get_nebula_folders_usage(storage_id: int) -> list[NebulaStorageUsage]:
     ]
 
 
-@aiocache.cached(ttl=60)
+@aiocache.cached(ttl=60)  # type: ignore[untyped-decorator]
 async def get_nebula_playout_usage(storage_id: int) -> NebulaStorageUsage:
     channel_keys = [
         f"playout_status/{channel.id}"
@@ -134,7 +133,7 @@ async def get_storage_map() -> dict[int, dict[str, str]]:
     return storages
 
 
-class NebulaStoragesUsage(ResponseModel):
+class NebulaStoragesUsage(APIModel):
     storages: list[StorageStat]
 
 
@@ -143,12 +142,13 @@ class NebulaStoragesRequest(APIRequest):
 
     name = "stats/storages"
     title = "Get storage usage statistics"
-    response_model = NebulaStoragesUsage
+    category = "System"
 
     async def handle(
         self,
         user: CurrentUser,
     ) -> NebulaStoragesUsage:
+        _ = user  # not used for now
         results: list[StorageStat] = []
         site_name = nebula.config.site_name
         storage_map = await get_storage_map()

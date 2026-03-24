@@ -14,12 +14,14 @@ from nebula.log import log
 class Redis:
     connected: bool = False
     unavailable: bool = False
-    redis_pool: aioredis.Redis = aioredis.from_url(config.redis)
+    redis_pool: aioredis.Redis | None = None
     channel: str = f"nebula-{config.site_name}"
 
     @classmethod
     async def connect(cls) -> None:
         """Create a Redis connection pool"""
+        if cls.redis_pool is None:
+            cls.redis_pool = aioredis.from_url(config.redis)  # type: ignore[no-untyped-call]
         try:
             await cls.redis_pool.set("CONN", "alive")
         except ConnectionError:
@@ -37,8 +39,8 @@ class Redis:
         """Get a value from Redis"""
         if not cls.connected:
             await cls.connect()
-        value = await cls.redis_pool.get(f"{namespace}-{key}")
-        return value
+        assert cls.redis_pool is not None
+        return await cls.redis_pool.get(f"{namespace}-{key}")
 
     @classmethod
     async def get_json(cls, namespace: str, key: str) -> Any:
@@ -61,10 +63,11 @@ class Redis:
         """
         if not cls.connected:
             await cls.connect()
+        assert cls.redis_pool is not None
         command = ["set", f"{namespace}-{key}", value]
         if ttl:
             command.extend(["ex", str(ttl)])
-        await cls.redis_pool.execute_command(*command)
+        await cls.redis_pool.execute_command(*command)  # type: ignore[no-untyped-call]
 
     @classmethod
     async def set_json(cls, namespace: str, key: str, value: Any, ttl: int = 0) -> None:
@@ -82,6 +85,7 @@ class Redis:
         """Delete a record from Redis"""
         if not cls.connected:
             await cls.connect()
+        assert cls.redis_pool is not None
         await cls.redis_pool.delete(f"{namespace}-{key}")
 
     @classmethod
@@ -89,6 +93,7 @@ class Redis:
         """Increment a value in Redis"""
         if not cls.connected:
             await cls.connect()
+        assert cls.redis_pool is not None
         res: int = await cls.redis_pool.incr(f"{namespace}-{key}")
         return res
 
@@ -97,6 +102,7 @@ class Redis:
         """Set a TTL for a key in Redis"""
         if not cls.connected:
             await cls.connect()
+        assert cls.redis_pool is not None
         await cls.redis_pool.expire(f"{namespace}-{key}", ttl)
 
     @classmethod
@@ -104,6 +110,7 @@ class Redis:
         """Create a Redis pubsub connection"""
         if not cls.connected:
             await cls.connect()
+        assert cls.redis_pool is not None
         return cls.redis_pool.pubsub()
 
     @classmethod
@@ -111,6 +118,7 @@ class Redis:
         """Publish a message to a Redis channel"""
         if not cls.connected:
             await cls.connect()
+        assert cls.redis_pool is not None
         await cls.redis_pool.publish(cls.channel, message)
 
     @classmethod
@@ -122,6 +130,7 @@ class Redis:
         """
         if not cls.connected:
             await cls.connect()
+        assert cls.redis_pool is not None
 
         async for key in cls.redis_pool.scan_iter(match=f"{namespace}-*"):
             key_without_ns = key.decode("ascii").removeprefix(f"{namespace}-")

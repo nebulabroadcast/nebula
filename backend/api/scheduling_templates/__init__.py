@@ -1,3 +1,3 @@
-__all__ = ["ApplyTemplateRequest", "ListTemplatesRequest"]
+__all__ = ["ApplySchedulingTemplate", "ListSchedulingTemplates"]
 
-from .template_request import ApplyTemplateRequest, ListTemplatesRequest
+from .scheduling_templates import ApplySchedulingTemplate, ListSchedulingTemplates

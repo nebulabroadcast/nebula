@@ -29,7 +29,7 @@ async def get_session_key() -> str:
     if res["value"] == key_candidate:
         nebula.log.info("Created new session key")
 
-    return res["value"]
+    return typing.cast("str", res["value"])
 
 
 class SessionMiddleware:
@@ -42,7 +42,7 @@ class SessionMiddleware:
 
     _signer: itsdangerous.Signer | None = None
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         app: ASGIApp,
         session_cookie: str = "session",

@@ -11,10 +11,19 @@ from nebula.settings.models import (
     PlayoutChannelSettings,
     ServerSettings,
     StorageSettings,
+    SystemSettings,
     ViewSettings,
 )
 
-settings = ServerSettings()
+settings = ServerSettings(
+    system=SystemSettings(site_name=config.site_name, language="en", sso_providers=[]),
+    storages=[],
+    playout_channels=[],
+    folders=[],
+    views=[],
+    metatypes={},
+    cs={},
+)
 
 
 #
@@ -33,46 +42,42 @@ async def get_server_settings() -> ServerSettings:
 
     # Storages
 
-    _storages: list[StorageSettings] = []
     query = "SELECT id, settings FROM storages ORDER BY id ASC"
-    async for row in db.iterate(query):
-        _storages.append(StorageSettings(id=row["id"], **row["settings"]))
-    result["storages"] = _storages
+    result["storages"] = [
+        StorageSettings(id=row["id"], **row["settings"])
+        async for row in db.iterate(query)
+    ]
 
     # Playout channels
 
-    _playout_channels: list[PlayoutChannelSettings] = []
     query = "SELECT * FROM channels WHERE channel_type = 0 ORDER BY id ASC"
-    async for row in db.iterate(query):
-        _playout_channels.append(
-            PlayoutChannelSettings(id=row["id"], **row["settings"])
-        )
-    result["playout_channels"] = _playout_channels
+    result["playout_channels"] = [
+        PlayoutChannelSettings(id=row["id"], **row["settings"])
+        async for row in db.iterate(query)
+    ]
 
     # Folders
 
-    _folders: list[FolderSettings] = []
     query = "SELECT id, settings FROM folders ORDER BY id ASC"
-    async for row in db.iterate(query):
-        _folders.append(FolderSettings(id=row["id"], **row["settings"]))
-    result["folders"] = _folders
+    result["folders"] = [
+        FolderSettings(id=row["id"], **row["settings"])
+        async for row in db.iterate(query)
+    ]
 
     # Views
 
-    _views: list[ViewSettings] = []
     query = "SELECT id, settings FROM views ORDER BY id ASC"
-    async for row in db.iterate(query):
-        settings = row["settings"]
-        _views.append(ViewSettings(id=row["id"], **settings))
-    result["views"] = _views
+    result["views"] = [
+        ViewSettings(id=row["id"], **row["settings"]) async for row in db.iterate(query)
+    ]
 
     # Metatypes
 
-    _metatypes = {}
     query = "SELECT key, settings FROM meta_types"
-    async for row in db.iterate(query):
-        _metatypes[row["key"]] = MetaType.from_settings(row["settings"])
-    result["metatypes"] = _metatypes
+    result["metatypes"] = {
+        row["key"]: MetaType.from_settings(row["settings"])
+        async for row in db.iterate(query)
+    }
 
     # Classification schemes
 

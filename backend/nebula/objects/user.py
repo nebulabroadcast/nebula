@@ -1,8 +1,7 @@
 import hashlib
-from typing import Any
+from typing import Any, cast
 
 import asyncpg
-from pydantic import BaseModel, Field
 
 from nebula.config import config
 from nebula.db import db
@@ -21,25 +20,6 @@ def hash_password(password: str) -> str:
     if config.password_hashing == "legacy":  # noqa: S105
         return hashlib.sha256(password.encode("ascii")).hexdigest()
     raise NotImplementedException("Hashing method not available")
-
-
-class UserRights(BaseModel):
-    """User rights model"""
-
-    # TODO
-    asset_view: bool | list[int] = Field(True)
-    asset_edit: bool | list[int] = Field(True)
-    scheduler_view: bool | list[int] = Field(True)
-    scheduler_edit: bool | list[int] = Field(True)
-    rundown_view: bool | list[int] = Field(True)
-    rundown_edit: bool | list[int] = Field(
-        True,
-        description="Use list of channel IDs for channel-specific rights",
-    )
-    job_control: bool | list[int] = Field(
-        True,
-        description="Use list of action IDs to grant access to specific actions",
-    )
 
 
 class User(BaseObject):
@@ -62,7 +42,7 @@ class User(BaseObject):
 
     @property
     def name(self) -> str:
-        return self.meta["login"]
+        return cast("str", self.meta["login"])
 
     # setter for name
     @name.setter
@@ -165,7 +145,7 @@ class User(BaseObject):
 
     @property
     def is_admin(self) -> bool:
-        return self.meta.get("is_admin", False)
+        return bool(self.meta.get("is_admin"))
 
     @property
     def is_limited(self) -> bool:
@@ -176,4 +156,4 @@ class User(BaseObject):
 
         For channels, the user has to have 'channel' key set to the channel id
         """
-        return self.meta.get("is_limited", False)
+        return bool(self.meta.get("is_limited"))

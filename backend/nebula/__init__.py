@@ -1,33 +1,33 @@
 __all__ = [
-    "config",
-    "settings",
-    "db",
     "DB",
-    "redis",
     "Asset",
-    "Item",
-    "Bin",
-    "Event",
-    "User",
-    "msg",
-    "log",
-    "run",
-    "Storage",
-    "storages",
     # Exceptions
     "BadRequestException",
-    "ForbiddenException",
-    "NebulaException",
-    "NotFoundException",
-    "RequestSettingsReload",
-    "UnauthorizedException",
-    "LoginFailedException",
-    "NotImplementedException",
-    "ConflictException",
-    "ValidationException",
+    "Bin",
     # Plugins
     "CLIPlugin",
+    "ConflictException",
+    "Event",
+    "ForbiddenException",
+    "Item",
+    "LoginFailedException",
+    "NebulaException",
+    "NotFoundException",
+    "NotImplementedException",
+    "RequestSettingsReload",
+    "Storage",
+    "UnauthorizedException",
+    "User",
+    "ValidationException",
     "__version__",
+    "config",
+    "db",
+    "log",
+    "msg",
+    "redis",
+    "run",
+    "settings",
+    "storages",
 ]
 
 import sys
@@ -35,7 +35,7 @@ import sys
 from nebula.version import __version__
 
 if "--version" in sys.argv:
-    print(__version__)
+    sys.stdout.write(__version__)
     sys.exit(0)
 
 import asyncio
@@ -62,7 +62,7 @@ from .objects.event import Event
 from .objects.item import Item
 from .objects.user import User
 from .plugins import CLIPlugin
-from .redis import Redis as redis
+from .redis import Redis as redis  # noqa: N813
 from .settings import load_settings, settings
 from .storages import Storage, storages
 
@@ -70,7 +70,7 @@ log.user = "nebula"
 log.level = LogLevel[config.log_level.upper()]
 
 
-def run(entrypoint) -> None:  # type: ignore
+def run(entrypoint) -> None:  # type: ignore[no-untyped-def]
     """Run a coroutine in the event loop.
 
     This function is used to run the main entrypoint of CLI scripts.

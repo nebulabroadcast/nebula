@@ -16,7 +16,7 @@ async def bin_refresh(
     user: nebula.User | None = None,
 ) -> None:
     if not bins:
-        return None
+        return
 
     username = user.name if user else None
 
@@ -54,7 +54,7 @@ async def bin_refresh(
             objects=changed_events,
             initiator=initiator,
         )
-    return None
+    return
 
 
 async def get_item_runs(id_channel: int, start_time: int, end_time: int) -> ItemRuns:
@@ -74,11 +74,13 @@ async def get_pending_assets(send_action: int | None) -> list[int]:
     """Return a list of assets that are pending for the given send action"""
     if send_action is None:
         return []
-    pending_assets = []
-    query = "SELECT id_asset FROM jobs WHERE id_action=$1 AND status IN (0, 5)"
-    async for row in nebula.db.iterate(query, send_action):
-        pending_assets.append(row["id_asset"])
-    return pending_assets
+    return [
+        row["id_asset"]
+        async for row in nebula.db.iterate(
+            "SELECT id_asset FROM jobs WHERE id_action=$1 AND status IN (0, 5)",
+            send_action,
+        )
+    ]
 
 
 def parse_durations(
@@ -115,10 +117,9 @@ def parse_rundown_date(
 ) -> int:
     """Parse the date from the request and return a datetime object"""
     if not date:
-        date = datetime.datetime.now().strftime("%Y-%m-%d")
+        date = datetime.datetime.now().strftime("%Y-%m-%d")  # noqa: DTZ005
     hh, mm = channel_config.day_start
-    start_time = datestr2ts(date, hh=hh, mm=mm)
-    return start_time
+    return datestr2ts(date, hh=hh, mm=mm)
 
 
 def can_append(asset: nebula.Asset, conditions: "AcceptModel") -> bool:

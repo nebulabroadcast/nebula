@@ -1,35 +1,45 @@
+from typing import Annotated
+
 from pydantic import Field
 
-from server.models import RequestModel, ResponseModel
+from server.models import APIModel
 
 
-class LoginRequestModel(RequestModel):
-    username: str = Field(
-        ...,
-        title="Username",
-        examples=["admin"],
-        pattern=r"^[a-zA-Z0-9_\-\.]{2,}$",
-    )
-    password: str = Field(
-        ...,
-        title="Password",
-        description="Password in plain text",
-        examples=["Password.123"],
-    )
+class LoginRequest(APIModel):
+    username: Annotated[
+        str,
+        Field(
+            title="Username",
+            examples=["admin"],
+            pattern=r"^[a-zA-Z0-9_\-\.]{2,}$",
+        ),
+    ]
+    password: Annotated[
+        str,
+        Field(
+            title="Password",
+            description="Password in plain text",
+            examples=["Password.123"],
+        ),
+    ]
 
 
-class LoginResponseModel(ResponseModel):
-    access_token: str = Field(
-        ...,
-        title="Access token",
-        description="Access token to be used in Authorization header"
-        "for the subsequent requests",
-    )
+class LoginResponse(APIModel):
+    access_token: Annotated[
+        str,
+        Field(
+            title="Access token",
+            description="Access token to be used in Authorization header"
+            "for the subsequent requests",
+        ),
+    ]
 
 
-class TokenExchangeRequestModel(RequestModel):
-    access_token: str = Field(
-        ...,
-        title="Access token",
-        description="Access token to be exchanged for a new one",
-    )
+class TokenExchangeRequest(APIModel):
+    access_token: Annotated[
+        str,
+        Field(
+            title="Access token",
+            description="Access token to be exchanged for a new one",
+        ),
+    ]

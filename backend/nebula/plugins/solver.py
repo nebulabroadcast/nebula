@@ -1,3 +1,5 @@
+from collections.abc import AsyncGenerator
+
 import nebula
 from nebula.helpers.scheduling import bin_refresh
 from nx.utils import format_time
@@ -229,9 +231,9 @@ class SolverPlugin:
     # Solver implementation
     #
 
-    async def solve(self):  # type: ignore
+    async def solve(self) -> AsyncGenerator[nebula.Item]:
         """This method must return a list or yield items
         (no need to specify order or bin values) which
         replaces the original placeholder.
         """
-        return []
+        yield self.placeholder

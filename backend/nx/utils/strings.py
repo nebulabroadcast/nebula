@@ -1,14 +1,14 @@
 __all__ = [
     "camelize",
     "format_filesize",
+    "fract2float",
     "get_base_name",
     "indent",
     "obscure",
-    "slugify",
     "parse_access_token",
     "parse_api_key",
+    "slugify",
     "string2color",
-    "fract2float",
     "unaccent",
 ]
 
@@ -62,14 +62,13 @@ def format_filesize(size: int) -> str:
     """Format a file size in bytes to a human-readable string."""
     if size < 1024:
         return f"{size} B"
-    elif size < 1024**2:
+    if size < 1024**2:
         return f"{size / 1024:.2f} KB"
-    elif size < 1024**3:
+    if size < 1024**3:
         return f"{size / 1024**2:.2f} MB"
-    elif size < 1024**4:
+    if size < 1024**4:
         return f"{size / 1024**3:.2f} GB"
-    else:
-        return f"{size / 1024**4:.2f} TB"
+    return f"{size / 1024**4:.2f} TB"
 
 
 def indent(text: str, amount: int = 4) -> str:
@@ -142,7 +141,7 @@ def slugify(
 ) -> set[str]: ...
 
 
-def slugify(
+def slugify(  # noqa: PLR0913
     input_string: str,
     *,
     separator: str = "-",

@@ -100,7 +100,9 @@ export const TooltipProvider: React.FC<{ children: React.ReactNode }> = ({
     };
 
     const handleMouseOut = (e: MouseEvent) => {
-      const target = (e.target as HTMLElement).closest('[data-tooltip]') as HTMLElement | null;
+      const target = (e.target as HTMLElement).closest(
+        '[data-tooltip]'
+      ) as HTMLElement | null;
       if (!target) {
         return;
       }

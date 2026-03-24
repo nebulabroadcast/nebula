@@ -1,3 +1,4 @@
+from typing import cast
 from urllib.parse import urlparse
 
 from fastapi import Request
@@ -9,10 +10,14 @@ from server.session import Session
 from server.sso import NebulaSSO
 
 
-class SSOLoginRequest(APIRequest):
-    name = "sso_login"
+class SSOLogin(APIRequest):
+    """Redirect the user to the SSO provider's login page"""
+
+    name = "sso-login"
+    title = "SSO Login"
     path = "/api/sso/login/{provider}"
     methods = ["GET"]
+    category = "Authentication"
 
     async def handle(self, request: Request, provider: str) -> RedirectResponse:
         client = NebulaSSO.client(provider)
@@ -29,13 +34,17 @@ class SSOLoginRequest(APIRequest):
 
         redirect_uri = f"{base_url}/api/sso/callback/{provider}"
         nebula.log.debug(f"Redirect URI: {redirect_uri}")
-        return await client.authorize_redirect(request, redirect_uri)
+        return await client.authorize_redirect(request, redirect_uri)  # type: ignore[no-untyped-call, no-any-return]
 
 
 class SSOLoginCallback(APIRequest):
-    name = "sso_callback"
+    """Handle the callback from the SSO provider and log in the user"""
+
+    name = "sso-callback"
+    title = "SSO login callback"
     path = "/api/sso/callback/{provider}"
     methods = ["GET"]
+    category = "Authentication"
 
     async def handle(self, request: Request, provider: str) -> RedirectResponse:
         remote = NebulaSSO.client(provider)
@@ -49,7 +58,7 @@ class SSOLoginCallback(APIRequest):
         user_info = {}
 
         if code:
-            token = await remote.authorize_access_token(request)
+            token = await remote.authorize_access_token(request)  # type: ignore[no-untyped-call]
             user_info = token.get("userinfo", {})
 
         if id_token and not user_info:
@@ -57,7 +66,7 @@ class SSOLoginCallback(APIRequest):
             user_info = await remote.parse_id_token(request, token)
 
         if oauth_verifier and not user_info:
-            token = await remote.authorize_access_token(request)
+            token = await remote.authorize_access_token(request)  # type: ignore[no-untyped-call]
 
         if token and not user_info:
             user_info = await remote.userinfo(token=token)
@@ -65,7 +74,7 @@ class SSOLoginCallback(APIRequest):
         if not user_info:
             return RedirectResponse("/?error=Invalid response from provider")
 
-        email = user_info.get("email")
+        email = cast("str", user_info.get("email"))
 
         if not email:
             return RedirectResponse("/?error=User email not found")

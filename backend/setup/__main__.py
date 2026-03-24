@@ -68,13 +68,12 @@ async def main() -> None:
         await dump_settings()
         return
 
-    else:
-        await create_schema(db)
-        await create_default_user(db)
+    await create_schema(db)
+    await create_default_user(db)
 
-        pool = await db.pool()
-        async with pool.acquire() as conn, conn.transaction():
-            await setup_settings(conn)
+    pool = await db.pool()
+    async with pool.acquire() as conn, conn.transaction():
+        await setup_settings(conn)
 
 
 if __name__ == "__main__":

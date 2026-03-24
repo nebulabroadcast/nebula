@@ -4,24 +4,26 @@ import geoip2
 import geoip2.database
 import user_agents
 from fastapi import Request
-from pydantic import BaseModel, Field
+from pydantic import Field
 
+from nebula import config
+from server.models import APIModel
 from server.utils import is_internal_ip
 
 
-class LocationInfo(BaseModel):
+class LocationInfo(APIModel):
     country: str | None = Field(None, title="Country")
     subdivision: str | None = Field(None, title="Subdivision")
     city: str | None = Field(None, title="City")
 
 
-class AgentInfo(BaseModel):
+class AgentInfo(APIModel):
     platform: str | None = Field(None, title="Platform")
     client: str | None = Field(None, title="Client")
     device: str | None = Field(None, title="Device")
 
 
-class ClientInfo(BaseModel):
+class ClientInfo(APIModel):
     ip: str
     languages: list[str] = Field(default_factory=list)
     location: LocationInfo | None = Field(None)
@@ -35,7 +37,7 @@ def get_real_ip(request: Request) -> str:
 
 
 def geo_lookup(ip: str) -> LocationInfo | None:
-    geoip_db_path = None  # TODO
+    geoip_db_path = config.geoip_db_path
 
     if geoip_db_path is None:
         return None

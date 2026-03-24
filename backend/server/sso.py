@@ -4,7 +4,7 @@ from authlib.integrations.starlette_client import OAuth
 from authlib.integrations.starlette_client.apps import StarletteOAuth2App
 
 import nebula
-from server.models import ResponseModel
+from server import APIModel
 
 PROFILES = {
     "github": {
@@ -22,7 +22,7 @@ PROFILES = {
 }
 
 
-class SSOOption(ResponseModel):
+class SSOOption(APIModel):
     name: str
     title: str
 
@@ -74,17 +74,14 @@ class NebulaSSO:
 
     @classmethod
     def client(cls, provider: str) -> StarletteOAuth2App:
-        cli = cls.get_oauth().create_client(provider)
-        return cli
+        return cls.get_oauth().create_client(provider)  # type: ignore[no-untyped-call, no-any-return]
 
     @classmethod
     async def options(cls) -> list[SSOOption]:
-        result = []
-        for provider in nebula.settings.system.sso_providers:
-            result.append(
-                SSOOption(
-                    name=provider.name,
-                    title=provider.title or provider.name.capitalize(),
-                )
+        return [
+            SSOOption(
+                name=provider.name,
+                title=provider.title or provider.name.capitalize(),
             )
-        return result
+            for provider in nebula.settings.system.sso_providers
+        ]

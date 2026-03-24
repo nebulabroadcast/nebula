@@ -1,9 +1,10 @@
 __all__ = [
-    "UserModel",
-    "UserPermissionsModel",
+    "APIModel",
+    "ContextPluginResponseModel",
     "RequestModel",
     "ResponseModel",
-    "ContextPluginResponseModel",
+    "UserModel",
+    "UserPermissionsModel",
 ]
 
 from pydantic import BaseModel
@@ -12,9 +13,13 @@ from .plugin_models import ContextPluginResponseModel
 from .user_models import UserModel, UserPermissionsModel
 
 
-class RequestModel(BaseModel):
+class APIModel(BaseModel):
     pass
 
 
-class ResponseModel(BaseModel):
-    pass
+class RequestModel(APIModel):
+    """Deprecated: use APIModel instead"""
+
+
+class ResponseModel(APIModel):
+    """Deprecated: use APIModel instead"""

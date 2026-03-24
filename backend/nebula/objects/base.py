@@ -1,5 +1,5 @@
 import time
-from typing import Any, TypeVar
+from typing import Any, Self, TypeVar, cast
 
 import asyncpg
 
@@ -20,33 +20,32 @@ from nx.utils import slugify
 T = TypeVar("T", bound="BaseObject")
 
 
-def create_ft_index(meta: dict[str, Any]) -> dict[str, float]:
+def create_ft_index(meta: dict[str, Any]) -> dict[str, float]:  # noqa: C901, PLR0912
     ft: dict[str, float] = {}
     if "subclips" in meta:
         weight = 8
         for sc in [k.get("title", "") for k in meta["subclips"]]:
             try:
                 for word in slugify(sc, make_set=True, min_length=3):
-                    word = str(word)
                     if word not in ft:
                         ft[word] = weight
                     else:
                         ft[word] = max(ft[word], weight)
             except Exception:
                 log.error("Unable to slugify subclips data")
-    for key in meta:
+    for key, value in meta.items():
         if key not in settings.metatypes:
             continue
         if not (weight := settings.metatypes[key].fulltext):
             continue
         try:
-            for word in slugify(meta[key], make_set=True, min_length=3):
+            for word in slugify(value, make_set=True, min_length=3):
                 if word not in ft:
                     ft[word] = weight
                 else:
                     ft[word] = max(ft[word], weight)
         except Exception:
-            log.error(f"Unable to slugify key {key} with value {meta[key]}")
+            log.error(f"Unable to slugify key {key} with value {value}")
     return ft
 
 
@@ -83,19 +82,18 @@ class BaseObject:
         obid = f"id={self.id or 'UNSAVED'}"
         if self.object_type == "user":
             return f"{self.object_type} {obid} ({self.meta.get('login', 'Anonymous')})"
-        elif title := self.meta.get("title"):
+        if title := self.meta.get("title"):
             return f"{self.object_type} {obid} ({title})"
-        else:
-            return f"{self.object_type} {obid}"
+        return f"{self.object_type} {obid}"
 
     @property
     def id(self) -> int | None:
-        id = self.meta.get("id")
+        object_id = self.meta.get("id")
         # Handle false and other weird values
         # Yes. It happens.
-        if not id:
+        if not object_id:
             return None
-        return int(id)
+        return cast("int", object_id)
 
     def show(self, key: str, **kwargs: Any) -> str:
         """Return a formated value of a given key"""
@@ -110,8 +108,7 @@ class BaseObject:
         if key == "id" and not value:
             return None
         if value is None and key in settings.metatypes:
-            default = settings.metatypes[key].default
-            return default
+            return settings.metatypes[key].default
         return value
 
     def __setitem__(self, key: str, value: Any) -> None:
@@ -154,25 +151,29 @@ class BaseObject:
 
     @classmethod
     async def load(
-        cls: type[T],
-        id: int,
+        cls,
+        object_id: int,
         connection: DatabaseConnection | None = None,
         username: str | None = None,
-    ) -> T:
+    ) -> Self:
         """Load an object from the database"""
         conn = connection or db
-        res = await conn.fetch(f"SELECT meta FROM {cls.object_type}s WHERE id = $1", id)
+        res = await conn.fetch(
+            f"SELECT meta FROM {cls.object_type}s WHERE id = $1", object_id
+        )
         if not res:
-            raise NotFoundException(f"{cls.object_type.capitalize()} ID {id} not found")
+            raise NotFoundException(
+                f"{cls.object_type.capitalize()} ID {object_id} not found"
+            )
         return cls(meta=res[0]["meta"], connection=connection, username=username)
 
     @classmethod
     def from_row(
-        cls: type[T],
+        cls,
         row: asyncpg.Record,
         connection: DatabaseConnection | None = None,
         username: str | None = None,
-    ) -> T:
+    ) -> Self:
         """Return an object from a database row.
 
         meta is expected to be one of the column of the row.
@@ -183,11 +184,11 @@ class BaseObject:
 
     @classmethod
     def from_meta(
-        cls: type[T],
+        cls,
         meta: dict[str, Any],
         connection: DatabaseConnection | None = None,
         username: str | None = None,
-    ) -> T:
+    ) -> Self:
         """Return an object from a metadata dict.
 
         Note that no validation is performed.
@@ -197,11 +198,11 @@ class BaseObject:
 
     @classmethod
     def from_untrusted(
-        cls: type[T],
+        cls,
         meta: dict[str, Any],
         connection: DatabaseConnection | None = None,
         username: str | None = None,
-    ) -> T:
+    ) -> Self:
         """Return an object from a metadata dict.
 
         Values are normalized and validated.

@@ -28,7 +28,7 @@ class EventData(BaseModel):
         examples=[123],
     )
 
-    items: list[dict[str, Serializable]] | None = Field(default_factory=lambda: [])
+    items: list[dict[str, Serializable]] | None = Field(default_factory=list)
 
     meta: dict[str, Serializable] | None = Field(
         default=None,
@@ -114,7 +114,7 @@ async def _create_new_event(
         await new_event.save()
         await new_bin.save()
     except Exception as e:
-        raise nebula.ConflictException() from e
+        raise nebula.ConflictException from e
 
 
 async def create_new_event(
@@ -129,5 +129,5 @@ async def create_new_event(
         return await _create_new_event(channel, event_data, user, conn)
 
     pool = await nebula.db.pool()
-    async with pool.acquire() as conn, conn.transaction():
-        return await _create_new_event(channel, event_data, user, conn)
+    async with pool.acquire() as _conn, _conn.transaction():
+        return await _create_new_event(channel, event_data, user, _conn)

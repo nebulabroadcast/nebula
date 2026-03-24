@@ -1,3 +1,3 @@
-__all__ = ["SchedulerRequest"]
+__all__ = ["Scheduler"]
 
-from .scheduler_request import SchedulerRequest
+from .scheduler import Scheduler
