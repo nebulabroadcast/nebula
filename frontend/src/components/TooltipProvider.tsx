@@ -100,8 +100,16 @@ export const TooltipProvider: React.FC<{ children: React.ReactNode }> = ({
     };
 
     const handleMouseOut = (e: MouseEvent) => {
-      const target = (e.target as HTMLElement).closest('[data-tooltip]') as HTMLElement;
-      if (target) {
+      const target = (e.target as HTMLElement).closest('[data-tooltip]') as HTMLElement | null;
+      if (!target) {
+        return;
+      }
+
+      const related = e.relatedTarget as HTMLElement | null;
+
+      // Hide the tooltip only if the mouse actually left the tooltip target,
+      // not when moving between its descendants.
+      if (!related || !target.contains(related)) {
         hideTooltip();
       }
     };
