@@ -55,6 +55,22 @@ const Preview = ({ assetData, setAssetData }) => {
   const [proxyInfo, setProxyInfo] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const setMarkIn = (mark_in) => {
+    setSelection((s) => {
+      if (isNaN(mark_in)) return s;
+      if (mark_in === s.mark_in) return s;
+      return { ...s, mark_in };
+    });
+  };
+
+  const setMarkOut = (mark_out) => {
+    setSelection((s) => {
+      if (isNaN(mark_out)) return s;
+      if (mark_out === s.mark_out) return s;
+      return { ...s, mark_out };
+    });
+  };
+
   useEffect(() => {
     setLoading(true);
     if (!assetData.id) {
@@ -108,6 +124,7 @@ const Preview = ({ assetData, setAssetData }) => {
   }, [assetData]);
 
   const patchAsset = (data) => {
+    console.log('Patching asset with data', data);
     // helper function to update asset data
     if (!data) return;
     setAssetData((o) => {
@@ -189,8 +206,6 @@ const Preview = ({ assetData, setAssetData }) => {
 
   useKeyDown('v', onNewSubclip);
 
-  // Render
-
   return (
     <div className="grow row">
       <div className="column" style={{ minWidth: 300, flexGrow: 1 }}>
@@ -201,8 +216,8 @@ const Preview = ({ assetData, setAssetData }) => {
           setPosition={setPosition}
           markIn={selection.mark_in}
           markOut={selection.mark_out}
-          setMarkIn={(mark_in) => setSelection((s) => ({ ...s, mark_in }))}
-          setMarkOut={(mark_out) => setSelection((s) => ({ ...s, mark_out }))}
+          setMarkIn={setMarkIn}
+          setMarkOut={setMarkOut}
           marks={{
             poster_frame: assetData.poster_frame,
           }}

@@ -23,7 +23,7 @@ const DraggableIcon = ({ name, icon, tooltip, data }) => {
   });
 
   return (
-    <StyledDraggableIcon title={tooltip} {...attributes} {...listeners}>
+    <StyledDraggableIcon data-tooltip={tooltip} {...attributes} {...listeners}>
       <span className="icon material-symbols-outlined" translate="no">
         {icon}
       </span>

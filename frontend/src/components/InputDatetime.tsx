@@ -33,7 +33,7 @@ const CalendarDialog = ({ value, onChange, onClose }: CalendarDialogProps) => {
 
   return (
     <DatePickerDialog
-      title="Select Date"
+      data-tooltip="Select Date"
       value={date.toFormat('yyyy-MM-dd')}
       handleCancel={onClose}
       handleConfirm={(newDateString: string) => {
@@ -154,7 +154,7 @@ const InputDatetime = ({
         style={{ flexGrow: 1 }}
         className={clsx(className, { error: !isValidTime(time) })}
         placeholder={isFocused ? timestampFormat : placeholder}
-        title={`Please enter a valid time in the format ${timestampFormat}`}
+        data-tooltip={`Please enter a valid time in the format ${timestampFormat}`}
         onBlur={onSubmit}
         onFocus={(e) => {
           e.target.select();

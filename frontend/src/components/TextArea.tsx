@@ -20,7 +20,7 @@ const TextArea: React.FC<TextAreaProps> = ({ value, onChange, tooltip, ...props 
   return (
     <StyledTextArea
       className="textarea"
-      title={tooltip}
+      data-tooltip={tooltip}
       value={value || ''}
       onChange={(e) => onChange(e.target.value)}
       {...props}

@@ -23,6 +23,7 @@ export { default as SelectDialog } from './SelectDialog';
 export { default as Table } from './table';
 export { default as TextArea } from './TextArea';
 export { default as Timestamp } from './Timestamp';
+export { TooltipProvider } from './TooltipProvider';
 export { getTheme } from './theme';
 
 export { Form, FormRow } from './Form';

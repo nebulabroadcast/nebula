@@ -26,10 +26,23 @@
   --color-red-muted: #cc1414;
   --color-green-muted: #2e8b57;
 
+  --dropdown-background: var(--color-surface-03);
+
+  --hover-item-background: var(--color-surface-05);
+  --hover-item-color: var(--color-text-hl);
+
+  --active-item-background: var(--color-surface-06);
+  --active-item-color: var(--color-cyan);
+
+  --input-border-radius: 4px;
+  --input-background: var(--color-surface-04);
   --input-height: 32px;
+  --input-padding: 4px;
+  --input-color: var(--color-text);
   --font-size: 0.8rem;
   --gap-size: 6px;
   --section-gap: 6px;
+
   color-scheme: dark;
 }
 

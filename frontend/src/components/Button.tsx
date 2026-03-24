@@ -41,7 +41,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>((props: ButtonProps, r
     <BaseButton
       className={clsx(className, active && 'active', !label && 'icon-only')}
       style={_buttonStyle}
-      title={tooltip}
+      data-tooltip={tooltip}
       ref={ref}
       {...buttonProps}
     >

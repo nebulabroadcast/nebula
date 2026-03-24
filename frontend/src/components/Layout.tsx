@@ -8,11 +8,11 @@ const Navbar = styled.nav`
   gap: var(--gap-size);
   border-radius: ${getTheme().navBorderRadius};
   background-color: ${getTheme().colors.surface02};
-  padding: 4px 10px;
+  padding: 4px 4px;
   align-items: center;
 
   a {
-    margin-right: 15px;
+    padding: 0 8px;
     text-transform: uppercase;
     text-decoration: none;
     transition: text-shadow 0.2s;
