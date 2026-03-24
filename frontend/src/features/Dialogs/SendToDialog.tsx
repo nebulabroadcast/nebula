@@ -1,9 +1,10 @@
+import { Button, Dialog, ErrorBanner } from '@components';
 import { useState, useEffect, useMemo } from 'react';
 import { toast } from 'react-toastify';
 
 import type { ActionItemModel } from '../../client';
+
 import nebula from '@/nebula';
-import { Button, Dialog, ErrorBanner } from '@components';
 
 interface SendToDialogProps {
   assets: number[];

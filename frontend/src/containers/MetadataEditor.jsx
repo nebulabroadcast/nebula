@@ -1,7 +1,3 @@
-import { RadioButton } from '@components';
-import { useMemo } from 'react';
-
-import nebula from '/src/nebula';
 import {
   Form,
   FormRow,
@@ -11,9 +7,13 @@ import {
   InputSwitch,
   InputText,
   InputTimecode,
+  RadioButton,
   Select,
   TextArea,
-} from '/src/components';
+} from '@components';
+import { useMemo } from 'react';
+
+import nebula from '/src/nebula';
 
 const eqSet = (xs, ys) => xs.size === ys.size && [...xs].every((x) => ys.has(x));
 
