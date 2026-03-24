@@ -1,3 +1,7 @@
+#
+# Build frontend
+#
+
 FROM node:latest AS build
 
 WORKDIR /frontend
@@ -16,6 +20,10 @@ RUN yarn build
 
 FROM python:3.13-slim-trixie
 ENV PYTHONUNBUFFERED=1
+
+#
+# Final image for running the server
+#
 
 EXPOSE 80
 LABEL maintainer="github.com/nebulabroadcast"
