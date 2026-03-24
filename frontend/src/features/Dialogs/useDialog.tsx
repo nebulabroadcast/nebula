@@ -1,20 +1,35 @@
-import { createContext, useState, useRef, useContext, useMemo } from 'react';
+import DatePickerDialog from '@components/DatePickerDialog';
+import {
+  createContext,
+  useState,
+  useRef,
+  useContext,
+  useMemo,
+  ReactNode,
+  ComponentType,
+} from 'react';
 
-import DatePickerDialog from '/src/components/DatePickerDialog';
 import ConfirmDialog from './ConfirmDialog';
 import MetadataDialog from './MetadataDialog';
 import SendToDialog from './SendToDialog';
 import SubclipsDialog from './SubclipsDialog';
 
-const DialogContext = createContext();
+interface DialogContextType {
+  execute: (dialogType: string, title: string, props: any) => Promise<any>;
+}
 
-export const DialogProvider = ({ children }) => {
-  const promiseRef = useRef(null);
-  const dialogProps = useRef({});
-  const [dialogType, setDialogType] = useState(null);
+const DialogContext = createContext<DialogContextType | undefined>(undefined);
+
+export const DialogProvider = ({ children }: { children: ReactNode }) => {
+  const promiseRef = useRef<{
+    resolve: (data: any) => void;
+    reject: (reason: any) => void;
+  } | null>(null);
+  const dialogProps = useRef<any>({});
+  const [dialogType, setDialogType] = useState<string | null>(null);
   const [visible, setVisible] = useState(false);
 
-  const handleConfirm = (data) => {
+  const handleConfirm = (data: any) => {
     console.log('Dialog confirmed with data', data);
     promiseRef.current?.resolve(data);
     cleanup();
@@ -32,7 +47,7 @@ export const DialogProvider = ({ children }) => {
     promiseRef.current = null;
   };
 
-  const execute = (dialogType, title, props) =>
+  const execute = (dialogType: string, title: string, props: any) =>
     new Promise((resolve, reject) => {
       dialogProps.current = {
         title,
@@ -49,15 +64,15 @@ export const DialogProvider = ({ children }) => {
   const DialogComponent = useMemo(() => {
     switch (dialogType) {
       case 'confirm':
-        return ConfirmDialog;
+        return ConfirmDialog as ComponentType<any>;
       case 'metadata':
-        return MetadataDialog;
+        return MetadataDialog as ComponentType<any>;
       case 'sendto':
-        return SendToDialog;
+        return SendToDialog as ComponentType<any>;
       case 'date':
-        return DatePickerDialog;
+        return DatePickerDialog as ComponentType<any>;
       case 'subclips':
-        return SubclipsDialog;
+        return SubclipsDialog as ComponentType<any>;
       default:
         return null;
     }

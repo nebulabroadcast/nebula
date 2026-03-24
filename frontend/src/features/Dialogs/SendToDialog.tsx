@@ -1,24 +1,39 @@
 import { useState, useEffect, useMemo } from 'react';
 import { toast } from 'react-toastify';
 
-import nebula from '/src/nebula';
-import { Button, Dialog, ErrorBanner } from '/src/components';
+import type { ActionItemModel } from '../../client';
+import nebula from '@/nebula';
+import { Button, Dialog, ErrorBanner } from '@components';
 
-const SendToDialog = (props) => {
-  const [sendToOptions, setSendToOptions] = useState(null);
+interface SendToDialogProps {
+  assets: number[];
+  handleCancel: () => void;
+  handleConfirm: (data?: any) => void;
+  title: React.ReactNode;
+  cancelLabel?: string;
+}
 
-  const onCancel = () => props.handleCancel();
-  const onConfirm = (action) => {
+const SendToDialog = ({
+  assets,
+  handleCancel,
+  handleConfirm,
+  title,
+  cancelLabel,
+}: SendToDialogProps) => {
+  const [sendToOptions, setSendToOptions] = useState<ActionItemModel[] | null>(null);
+
+  const onCancel = () => handleCancel();
+  const onConfirm = (action: number) => {
     nebula
-      .request('send', { ids: props.assets, id_action: action })
+      .request('send', { ids: assets, id_action: action })
       .then(() => {
         toast.success('Job request accepted');
       })
       .catch((error) => {
-        toast.error(error.response.detail);
+        toast.error(error.response?.data?.detail || 'An error occurred');
       })
       .finally(() => {
-        props.handleConfirm();
+        handleConfirm();
       });
   };
 
@@ -44,23 +59,24 @@ const SendToDialog = (props) => {
 
   const loadOptions = () => {
     nebula
-      .request('actions', { ids: props.assets })
+      .request('actions', { ids: assets })
       .then((response) => {
         setSendToOptions(response.data.actions);
       })
       .catch(() => {
-        sendToOptions([]);
+        setSendToOptions([]);
       });
   };
+
   useEffect(() => {
     loadOptions();
-  }, [props.assets]);
+  }, [assets]);
 
   const footer = (
     <>
       <Button
         onClick={onCancel}
-        label={props.cancelLabel || 'Cancel'}
+        label={cancelLabel || 'Cancel'}
         icon="close"
         hlColor="var(--color-red)"
       />
@@ -68,7 +84,7 @@ const SendToDialog = (props) => {
   );
 
   return (
-    <Dialog onHide={onCancel} header={props.title} footer={footer}>
+    <Dialog onHide={onCancel} header={title} footer={footer}>
       {body}
     </Dialog>
   );

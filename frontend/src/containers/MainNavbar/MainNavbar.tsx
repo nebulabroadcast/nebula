@@ -1,40 +1,44 @@
-import nebula from '/src/nebula';
-
+import { Navbar, Dropdown } from '@components';
 import { useNebula } from '@features/Nebula';
 import { useMemo } from 'react';
 import { NavLink, useNavigate, useSearchParams } from 'react-router';
-
-import { Navbar, Dropdown } from '/src/components';
 
 import ChannelSwitcher from './ChannelSwitcher';
 import Logo from './Logo';
 import PageTitle from './PageTitle';
 
+import nebula from '@/nebula';
+
 const MainNavbar = () => {
   const navigate = useNavigate();
   const { focusedAsset } = useNebula();
-  const [searchParams, _setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
 
   const mamSuffix = useMemo(() => {
     const params = new URLSearchParams();
     for (const key of ['date', 'asset']) {
-      if (searchParams.has(key)) {
-        params.append(key, searchParams.get(key));
+      const value = searchParams.get(key);
+      if (value) {
+        params.append(key, value);
       }
     }
     if (focusedAsset && !searchParams.has('asset')) {
-      params.append('asset', focusedAsset);
+      params.append('asset', focusedAsset.toString());
     }
-    return params ? `?${params.toString()}` : '';
+    const queryString = params.toString();
+    return queryString ? `?${queryString}` : '';
   }, [searchParams, focusedAsset]);
 
   const mainMenuOptions = useMemo(() => {
     const result = [];
 
-    for (const plugin of nebula.plugins.filter((plugin) => plugin.scope === 'tool')) {
+    for (const plugin of (nebula.plugins || []).filter(
+      (plugin) => plugin.scope === 'tool'
+    )) {
       result.push({
         icon: plugin.icon || 'extension',
         label: plugin.title,
+        value: plugin.name,
         onClick: () => navigate(`/tool/${plugin.name}`),
       });
     }
@@ -42,27 +46,28 @@ const MainNavbar = () => {
     result.push({
       label: 'Profile',
       icon: 'person',
+      value: 'profile',
       onClick: () => navigate('/profile'),
     });
 
     result.push({
       label: 'Logout',
       icon: 'logout',
+      value: 'logout',
       onClick: () => nebula.logout(),
     });
     return result;
-  }, []);
+  }, [navigate]);
 
   const show = useMemo(() => {
     return {
       scheduler:
-        nebula.can('scheduler_view', null, true) ||
-        nebula.can('scheduler_edit', null, true),
+        nebula.can('scheduler_view', '', true) ||
+        nebula.can('scheduler_edit', '', true),
       rundown:
-        nebula.can('rundown_view', null, true) ||
-        nebula.can('rundown_edit', null, true),
-      system: nebula.can('service_control', null, true),
-      jobs: nebula.can('job_control', null, true),
+        nebula.can('rundown_view', '', true) || nebula.can('rundown_edit', '', true),
+      system: nebula.can('service_control', '', true),
+      jobs: nebula.can('job_control', '', true),
     };
   }, []);
 

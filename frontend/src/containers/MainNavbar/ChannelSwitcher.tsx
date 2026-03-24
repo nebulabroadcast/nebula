@@ -1,15 +1,15 @@
+import { Dropdown } from '@components';
+import { useNebula } from '@features/Nebula';
 import { useEffect } from 'react';
 
-import nebula from '/src/nebula';
-import { useNebula } from '/src/features/Nebula';
-import { Dropdown } from '/src/components';
+import nebula from '@/nebula';
 
 const ChannelSwitcher = () => {
   const { setCurrentChannel, currentChannelId } = useNebula();
 
   useEffect(() => {
-    if (!currentChannelId && nebula.settings?.playout_channels?.length) {
-      setCurrentChannel(nebula.settings.playout_channels[0].id);
+    if (!currentChannelId && (nebula.settings?.playout_channels?.length ?? 0) > 0) {
+      setCurrentChannel(nebula.settings!.playout_channels![0].id);
     }
   }, [currentChannelId, setCurrentChannel]);
 
@@ -17,19 +17,20 @@ const ChannelSwitcher = () => {
     return null;
   }
 
-  const channelOptions = nebula.settings?.playout_channels.map((channel) => ({
+  const channelOptions = nebula.settings?.playout_channels?.map((channel) => ({
     label: channel.name,
+    value: channel.id,
     onClick: () => setCurrentChannel(channel.id),
   }));
 
-  const currentChannelName = nebula.settings?.playout_channels.find(
+  const currentChannelName = nebula.settings?.playout_channels?.find(
     (channel) => channel.id === currentChannelId
   )?.name;
 
   return (
     <Dropdown
       align="right"
-      options={channelOptions}
+      options={channelOptions || []}
       buttonStyle={{ background: 'none' }}
       label={currentChannelName}
     />

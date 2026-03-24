@@ -1,0 +1,60 @@
+import { Button, Dialog } from '@components';
+import { useState } from 'react';
+
+// @ts-expect-error - MetadataEditor is not yet converted to tsx
+import MetadataEditor from '/src/containers/MetadataEditor';
+import type { ClientMetaTypeModel } from '../../client';
+
+interface MetadataDialogProps {
+  initialData: Record<string, any>;
+  handleCancel: () => void;
+  handleConfirm: (data: Record<string, any>) => void;
+  title: React.ReactNode;
+  fields: (ClientMetaTypeModel & { name: string })[];
+}
+
+const MetadataDialog = ({
+  initialData,
+  handleCancel,
+  handleConfirm,
+  title,
+  fields,
+}: MetadataDialogProps) => {
+  const [data, setData] = useState(initialData);
+
+  const onReset = () => setData(initialData);
+  const onCancel = () => handleCancel();
+  const onConfirm = () => handleConfirm(data);
+
+  const footer = (
+    <>
+      <Button onClick={onReset} label="Reset" icon="backspace" />
+      <Button
+        onClick={onCancel}
+        label="Cancel"
+        icon="close"
+        hlColor="var(--color-red)"
+      />
+      <Button
+        onClick={onConfirm}
+        label="Save"
+        icon="check"
+        hlColor="var(--color-green)"
+      />
+    </>
+  );
+
+  return (
+    <Dialog onHide={onCancel} header={title} footer={footer}>
+      <MetadataEditor
+        originalData={initialData}
+        objectData={data}
+        setObjectData={setData}
+        fields={fields}
+        onSave={onConfirm}
+      />
+    </Dialog>
+  );
+};
+
+export default MetadataDialog;

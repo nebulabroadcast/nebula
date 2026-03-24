@@ -4,7 +4,7 @@ import Button from './Button';
 import { DropdownContainer } from './Dropdown.styled.tsx';
 
 interface DropdownOptionProps {
-  currentValue: any;
+  currentValue?: any;
   separator?: boolean;
   disabled?: boolean;
   hlColor?: string;
