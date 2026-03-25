@@ -8,8 +8,20 @@ from server.utils import parse_access_token
 
 
 async def access_token(
-    authorization: str | None = Header(None),
-    token: str | None = Query(None),
+    authorization: Annotated[
+        str | None,
+        Header(
+            title="Authorization header",
+            include_in_schema=False,
+        ),
+    ] = None,
+    token: Annotated[
+        str | None,
+        Query(
+            title="Auth token in query parameters",
+            include_in_schema=False,
+        ),
+    ] = None,
 ) -> str | None:
     """Parse and return an access token.
 
@@ -26,8 +38,20 @@ AccessToken = Annotated[str | None, Depends(access_token)]
 
 
 async def api_key(
-    x_api_key: str | None = Header(None),
-    api_key: str | None = Query(None),
+    x_api_key: Annotated[
+        str | None,
+        Header(
+            title="API key in request headers",
+            include_in_schema=False,
+        ),
+    ] = None,
+    api_key: Annotated[
+        str | None,
+        Query(
+            title="API key in query parameters",
+            include_in_schema=False,
+        ),
+    ] = None,
 ) -> str | None:
     """Return the API key provided in the request headers or query parameters."""
     return api_key or x_api_key
@@ -36,7 +60,14 @@ async def api_key(
 ApiKey = Annotated[str | None, Depends(api_key)]
 
 
-async def request_initiator(x_client_id: str | None = Header(None)) -> str | None:
+async def request_initiator(
+    x_client_id: Annotated[
+        str | None,
+        Header(
+            include_in_schema=False,
+        ),
+    ],
+) -> str | None:
     """Return the client ID of the request initiator."""
     return x_client_id
 
@@ -68,15 +99,15 @@ CurrentUser = Annotated[nebula.User, Depends(current_user)]
 
 
 async def current_user_optional(
-    access_token: str | None = Depends(access_token),
+    request: Request,
+    access_token: AccessToken,
+    api_key: ApiKey,
 ) -> nebula.User | None:
     """Return the currently logged-in user or none."""
-    if access_token is None:
+    try:
+        return await current_user(request, access_token, api_key)
+    except nebula.UnauthorizedException:
         return None
-    session = await Session.check(access_token, None)
-    if session is None:
-        return None
-    return nebula.User(meta=session.user)
 
 
 CurrentUserOptional = Annotated[nebula.User | None, Depends(current_user_optional)]
