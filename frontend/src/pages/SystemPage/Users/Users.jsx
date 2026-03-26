@@ -5,7 +5,7 @@ import { toast } from 'react-toastify';
 
 import nebula from '/src/nebula';
 import { Navbar, NavbarTitle, Button, Spacer } from '/src/components';
-import Sessions from '/src/containers/Sessions';
+import Sessions from '@containers/Sessions';
 
 import UserForm from './UserForm';
 import UserList from './UserList';

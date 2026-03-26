@@ -6,7 +6,7 @@ import ApplySchedulingTemplate from './ApplySchedulingTemplate';
 import { createTitle } from './utils';
 
 import { Navbar, Button, Spacer } from '/src/components';
-import DateNav from '/src/containers/DateNav';
+import DateNav from '@containers/DateNav';
 import DraggableIcon from '/src/containers/DraggableIcon';
 import { useNebula } from '/src/features/Nebula';
 

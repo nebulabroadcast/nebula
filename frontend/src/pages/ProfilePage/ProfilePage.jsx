@@ -14,7 +14,7 @@ import {
   PanelHeader,
   Section,
 } from '/src/components';
-import Sessions from '/src/containers/Sessions.jsx';
+import Sessions from '@containers/Sessions';
 
 const ProfileForm = () => {
   const displayName = nebula.user.full_name || nebula.user.login;

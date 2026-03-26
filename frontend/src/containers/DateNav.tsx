@@ -1,12 +1,17 @@
 import { Button } from '@components';
 import { useDialog } from '@features/Dialogs';
 import { dateToDateString } from '@lib/utils';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router';
 
-const DateNav = ({ onChange, skipBy = 1 }) => {
+interface DateNavProps {
+  onChange: (date: string) => void;
+  skipBy?: number;
+}
+
+const DateNav: React.FC<DateNavProps> = ({ onChange, skipBy = 1 }) => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [date, setDate] = useState();
+  const [date, setDate] = useState<string>();
   const showDialog = useDialog();
 
   useEffect(() => {
@@ -18,11 +23,11 @@ const DateNav = ({ onChange, skipBy = 1 }) => {
 
     setDate(dateParam);
     onChange(dateParam);
-  }, [searchParams]);
+  }, [searchParams, date, onChange]);
 
   // Actions
 
-  const dateStep = (days) => {
+  const dateStep = (days: number) => {
     let dateParam = searchParams.get('date');
     if (!dateParam) dateParam = dateToDateString(new Date());
     const currentDate = new Date(dateParam);
@@ -45,7 +50,9 @@ const DateNav = ({ onChange, skipBy = 1 }) => {
 
   const pickDate = async () => {
     try {
-      const newDate = await showDialog('date', 'Pick date', { value: date });
+      const newDate = (await showDialog('date', 'Pick date', {
+        value: date,
+      })) as string;
       setSearchParams((o) => {
         o.set('date', newDate);
         return o;

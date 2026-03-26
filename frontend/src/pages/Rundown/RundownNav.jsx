@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 
 import nebula from '/src/nebula';
 import { Navbar, Spacer, RadioButton } from '/src/components';
-import DateNav from '/src/containers/DateNav';
+import DateNav from '@containers/DateNav';
 import { useNebula } from '/src/features/Nebula';
 
 const RundownNav = ({ setStartTime, rundownMode, setRundownMode }) => {

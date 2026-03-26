@@ -1,10 +1,13 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 
-import nebula from '/src/nebula';
-import { Table, Timestamp, Section, Button } from '/src/components';
+import nebula from '@/nebula';
+import { Table, Timestamp, Section, Button } from '@components';
+import type { SessionModel } from '@/client';
+import type { TableRowData } from '@components/table/types';
 
-const FormattedTimestamp = (rowData) => {
-  const timestamp = parseInt(rowData['accessed']);
+const FormattedTimestamp = (rowData: TableRowData) => {
+  const session = rowData as SessionModel;
+  const timestamp = session.accessed;
   return (
     <td>
       <Timestamp timestamp={timestamp} />
@@ -12,8 +15,9 @@ const FormattedTimestamp = (rowData) => {
   );
 };
 
-const FormattedClientInfo = (rowData) => {
-  const clientInfo = rowData['client_info'];
+const FormattedClientInfo = (rowData: TableRowData) => {
+  const session = rowData as SessionModel;
+  const clientInfo = session.client_info;
 
   return (
     <td>
@@ -23,8 +27,12 @@ const FormattedClientInfo = (rowData) => {
   );
 };
 
-const Sessions = ({ userId }) => {
-  const [sessions, setSessions] = useState([]);
+interface SessionsProps {
+  userId?: number | null;
+}
+
+const Sessions: React.FC<SessionsProps> = ({ userId }) => {
+  const [sessions, setSessions] = useState<SessionModel[]>([]);
   const [loading, setLoading] = useState(false);
 
   const loadSessions = () => {
@@ -42,7 +50,7 @@ const Sessions = ({ userId }) => {
     loadSessions();
   }, [userId]);
 
-  const invalidateSession = (token) => {
+  const invalidateSession = (token: string) => {
     nebula
       .request('invalidate-session', { token })
       .then(() => {
@@ -51,8 +59,9 @@ const Sessions = ({ userId }) => {
       .catch((err) => console.error(err));
   };
 
-  const invalidateFormatter = (rowData) => {
-    const token = rowData['token'];
+  const invalidateFormatter = (rowData: TableRowData) => {
+    const session = rowData as SessionModel;
+    const token = session.token;
     return (
       <td style={{ textAlign: 'right' }} className="action">
         <Button onClick={() => invalidateSession(token)} label="Invalidate" />
