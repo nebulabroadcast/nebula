@@ -11,32 +11,55 @@ import {
   Select,
   TextArea,
 } from '@components';
-import { useMemo } from 'react';
+import type { SelectOption } from '@components/SelectDialog';
+import React, { useMemo } from 'react';
 
-import nebula from '/src/nebula';
+import nebula from '@/nebula';
+import type { FolderField, ClientMetaTypeModel } from '@/client';
 
-const eqSet = (xs, ys) => xs.size === ys.size && [...xs].every((x) => ys.has(x));
+const eqSet = (xs: Set<any>, ys: Set<any>): boolean =>
+  xs.size === ys.size && [...xs].every((x) => ys.has(x));
 
-const EditorField = ({ field, value, originalValue, onFieldChanged, disabled }) => {
-  const metaType = { ...nebula.metaType(field.name), ...field };
+interface EditorFieldProps {
+  field: FolderField;
+  value: any;
+  originalValue: any;
+  onFieldChanged: (name: string, value: any) => void;
+  disabled?: boolean;
+}
+
+const EditorField: React.FC<EditorFieldProps> = ({
+  field,
+  value,
+  originalValue,
+  onFieldChanged,
+  disabled,
+}) => {
+  const metaType = useMemo(
+    () => ({ ...nebula.metaType(field.name), ...field }),
+    [field]
+  ) as ClientMetaTypeModel & FolderField;
 
   // Memoize options for select and list fields
 
   const options = useMemo(() => {
     if (!metaType.cs) return [];
+    const csOptions = nebula.csOptions(metaType.cs) as unknown as SelectOption[];
     if (metaType.filter) {
-      return nebula
-        .csOptions(metaType.cs)
-        .filter((opt) => opt.value.match(metaType.filter) || opt.value === value);
+      const filterRegex = new RegExp(metaType.filter);
+      return csOptions.filter(
+        (opt) => opt.value.match(filterRegex) || opt.value === value
+      );
     }
-    return nebula.csOptions(metaType.cs);
-  }, [metaType]);
+    return csOptions;
+  }, [metaType, value]);
 
   // Memoize original value (for changed indicator)
 
   const originalValueParsed = useMemo(() => {
-    if (originalValue) return originalValue;
-    if (metaType.default) return metaType.default;
+    if (originalValue !== undefined && originalValue !== null) return originalValue;
+    if (metaType.default !== undefined && metaType.default !== null)
+      return metaType.default;
 
     switch (metaType.type) {
       case 'string':
@@ -77,13 +100,13 @@ const EditorField = ({ field, value, originalValue, onFieldChanged, disabled }) 
 
   // When a field is changed, update the asset data
 
-  const onChange = (value) => {
+  const onChange = (value: any) => {
     onFieldChanged(field.name, value);
   };
 
   // Decide which editor to use for this field
 
-  let editor;
+  let editor: React.ReactNode;
   switch (metaType.type) {
     case 'string':
       editor = <InputText value={value} onChange={onChange} disabled={disabled} />;
@@ -106,6 +129,7 @@ const EditorField = ({ field, value, originalValue, onFieldChanged, disabled }) 
             value={value}
             selectionMode="single"
             onChange={onChange}
+            disabled={disabled}
           />
         );
       break;
@@ -116,16 +140,18 @@ const EditorField = ({ field, value, originalValue, onFieldChanged, disabled }) 
           value={value}
           selectionMode="multiple"
           onChange={onChange}
+          disabled={disabled}
         />
       );
       break;
     case 'datetime':
       editor = (
         <InputDatetime
-          value={value || ''}
+          value={value || 0}
           onChange={onChange}
-          disabled={disabled}
-          mode={metaType.mode}
+          mode={metaType.mode as 'date' | 'datetime'}
+          placeholder={metaType.title}
+          className=""
         />
       );
       break;
@@ -154,8 +180,8 @@ const EditorField = ({ field, value, originalValue, onFieldChanged, disabled }) 
   return (
     <FormRow
       title={metaType.title}
-      tooltip={metaType.description}
-      section={metaType.section}
+      tooltip={metaType.description || undefined}
+      section={metaType.section || undefined}
       changed={changed}
     >
       {editor}
@@ -163,7 +189,16 @@ const EditorField = ({ field, value, originalValue, onFieldChanged, disabled }) 
   );
 };
 
-const MetadataEditor = ({
+interface MetadataEditorProps {
+  originalData: Record<string, any>;
+  objectData: Record<string, any>;
+  setObjectData: React.Dispatch<React.SetStateAction<Record<string, any>>>;
+  fields: FolderField[];
+  onSave?: () => void;
+  disabled?: boolean;
+}
+
+const MetadataEditor: React.FC<MetadataEditorProps> = ({
   originalData,
   objectData,
   setObjectData,
@@ -171,12 +206,12 @@ const MetadataEditor = ({
   onSave,
   disabled,
 }) => {
-  const onFieldChanged = (key, value) =>
+  const onFieldChanged = (key: string, value: any) =>
     setObjectData((o) => {
       return { ...o, [key]: value };
     });
 
-  function handleKeyDown(event) {
+  function handleKeyDown(event: React.KeyboardEvent) {
     if (!onSave) return;
     if (event.ctrlKey && event.key === 's') {
       event.preventDefault(); // prevent default browser behavior (saving the page)

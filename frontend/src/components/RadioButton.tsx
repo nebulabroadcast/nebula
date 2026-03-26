@@ -38,9 +38,10 @@ interface RadioButtonProps {
   }[];
   value: string;
   onChange: (value: string) => void;
+  disabled?: boolean;
 }
 
-const RadioButton = ({ options, value, onChange }: RadioButtonProps) => {
+const RadioButton = ({ options, value, onChange, disabled }: RadioButtonProps) => {
   return (
     <RadioContainer>
       {options.map((option) => (
@@ -52,6 +53,7 @@ const RadioButton = ({ options, value, onChange }: RadioButtonProps) => {
           label={option.title}
           tooltip={option.description}
           style={option.buttonStyle}
+          disabled={disabled}
         />
       ))}
     </RadioContainer>

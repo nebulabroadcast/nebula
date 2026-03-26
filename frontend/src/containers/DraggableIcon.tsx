@@ -16,7 +16,14 @@ const StyledDraggableIcon = styled.div`
   user-select: none;
 `;
 
-const DraggableIcon = ({ name, icon, tooltip, data }) => {
+interface DraggableIconProps {
+  name: string;
+  icon: string;
+  tooltip: string;
+  data: Record<string, any>;
+}
+
+const DraggableIcon = ({ name, icon, tooltip, data }: DraggableIconProps) => {
   const { attributes, listeners } = useDraggable({
     id: name,
     data: [data],

@@ -1,8 +1,7 @@
 import { Button, Dialog } from '@components';
 import { useState } from 'react';
 
-// @ts-expect-error - MetadataEditor is not yet converted to tsx
-import MetadataEditor from '/src/containers/MetadataEditor';
+import MetadataEditor from '@containers/MetadataEditor';
 import type { ClientMetaTypeModel } from '../../client';
 
 interface MetadataDialogProps {
