@@ -1,8 +1,9 @@
+import React from 'react';
 import { Timecode } from '@wfoxall/timeframe';
 import { toast } from 'react-toastify';
 import styled from 'styled-components';
 
-import { InputText, Button } from '/src/components';
+import { InputText, Button } from '@/components';
 
 const SubclipRow = styled.div`
   display: flex;
@@ -29,7 +30,27 @@ const SubclipContainer = styled.div`
   }
 `;
 
-const Subclip = ({
+interface SubclipData {
+  title: string;
+  mark_in: number;
+  mark_out: number;
+}
+
+interface SubclipProps {
+  index: number;
+  title: string;
+  mark_in: number;
+  mark_out: number;
+  setSubclips: React.Dispatch<React.SetStateAction<SubclipData[]>>;
+  selection: { mark_in: number | null; mark_out: number | null };
+  setSelection: (selection: {
+    mark_in: number | null;
+    mark_out: number | null;
+  }) => void;
+  fps: number;
+}
+
+const Subclip: React.FC<SubclipProps> = ({
   index,
   title,
   mark_in,
@@ -39,15 +60,19 @@ const Subclip = ({
   setSelection,
   fps,
 }) => {
-  const onSetMarks = (marks) => {
+  const onSetMarks = (marks: { mark_in: number | null; mark_out: number | null }) => {
     setSubclips((subclips) => {
       const newSubclips = [...subclips];
-      newSubclips[index] = { ...newSubclips[index], ...marks };
+      newSubclips[index] = {
+        ...newSubclips[index],
+        mark_in: marks.mark_in || 0,
+        mark_out: marks.mark_out || 0,
+      };
       return newSubclips;
     });
   };
 
-  const onTitleChange = (e) => {
+  const onTitleChange = (e: string) => {
     setSubclips((subclips) => {
       const newSubclips = [...subclips];
       newSubclips[index] = { ...newSubclips[index], title: e };
@@ -67,7 +92,7 @@ const Subclip = ({
   const endTC = new Timecode(Math.floor(mark_out * fps), fps);
 
   const updateSubclip = () => {
-    if (!(selection.mark_in && selection.mark_out)) {
+    if (selection.mark_in === null || selection.mark_out === null) {
       toast.error('Please select a region first');
       return;
     }

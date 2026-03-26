@@ -1,4 +1,5 @@
 import { Table, Section } from '@components';
+import type { TableColumn, TableSortDirection } from '@components/table/types';
 import Pagination from '@containers/Pagination';
 import { useDialog } from '@features/Dialogs';
 import { useNebula } from '@features/Nebula';
@@ -14,15 +15,27 @@ import { debounce } from 'lodash';
 import { useEffect, useState, useRef, useMemo } from 'react';
 import { toast } from 'react-toastify';
 
-import nebula from '/src/nebula';
-
 import BrowserNav from './BrowserNav';
 
 import { useWebSocket } from '@/features/Websocket';
+import nebula from '@/nebula';
 
 const ROWS_PER_PAGE = 200;
 
-const BrowserTable = ({ isDragging }) => {
+interface RequestParams {
+  view: number;
+  query: string;
+  limit: number;
+  offset: number;
+  order_by: string;
+  order_dir: string;
+}
+
+interface BrowserTableProps {
+  isDragging: boolean;
+}
+
+const BrowserTable = ({ isDragging }: BrowserTableProps) => {
   const {
     currentViewId,
     searchQuery,
@@ -35,17 +48,17 @@ const BrowserTable = ({ isDragging }) => {
   } = useNebula();
 
   const currentView = useMemo(
-    () => nebula.settings.views.find((v) => v.id === currentViewId),
+    () => (nebula?.settings?.views || []).find((v) => v.id === currentViewId),
     [currentViewId]
   );
 
   const ws = useWebSocket();
 
-  const [columns, setColumns] = useState([]);
+  const [columns, setColumns] = useState<TableColumn[]>([]);
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [sortBy, setSortBy] = useLocalStorage('mam.browser.sortBy', 'ctime');
-  const [sortDirection, setSortDirection] = useLocalStorage(
+  const [sortDirection, setSortDirection] = useLocalStorage<TableSortDirection>(
     'mam.browser.sortDirection',
     'desc'
   );
@@ -54,7 +67,7 @@ const BrowserTable = ({ isDragging }) => {
   const showDialog = useDialog();
 
   const dataRef = useRef(data);
-  const requestParamsRef = useRef(null);
+  const requestParamsRef = useRef<RequestParams | null>(null);
 
   //
   // References
@@ -70,7 +83,7 @@ const BrowserTable = ({ isDragging }) => {
     // User changed view or search query
     if (!currentViewId) {
       // No view selected, load the first available view
-      if (nebula.settings.views.length) {
+      if (nebula?.settings?.views?.length) {
         setCurrentView(nebula.settings.views[0].id);
       }
       return;
@@ -105,6 +118,7 @@ const BrowserTable = ({ isDragging }) => {
   const loadData = () => {
     // Use current value of requestParamsRef to avoid stale data
     const params = requestParamsRef.current;
+    if (!params) return;
     nebula
       .request('browse', params)
       .then((response) => {
@@ -115,7 +129,7 @@ const BrowserTable = ({ isDragging }) => {
         if (response.data.order_dir !== sortDirection)
           setSortDirection(response.data.order_dir);
 
-        let cols = [];
+        const cols = [];
         for (const colName of response.data.columns) {
           if (colName == 'subtitle') continue; // added automatically
           cols.push({
@@ -140,12 +154,13 @@ const BrowserTable = ({ isDragging }) => {
   //
 
   useEffect(() => {
-    const handlePubSub = (topic, message) => {
+    const handlePubSub = (topic: string, message: Record<string, any>) => {
       if (topic !== 'objects_changed') return;
       if (message.object_type !== 'asset') return;
       let changed = false;
       for (const obj of message.objects) {
-        if (dataRef.current.find((row) => row.id === obj)) {
+        const _data = dataRef.current || [];
+        if (_data.find((row: Record<string, any>) => row.id === obj)) {
           changed = true;
           break;
         }
@@ -165,7 +180,7 @@ const BrowserTable = ({ isDragging }) => {
   // User interaction
   //
 
-  const onRowClick = (rowData, event) => {
+  const onRowClick = (rowData: Record<string, any>, event: React.MouseEvent) => {
     let newSelectedAssets = [];
     if (event.ctrlKey) {
       if (selectedAssets.includes(rowData.id)) {
@@ -174,10 +189,12 @@ const BrowserTable = ({ isDragging }) => {
         newSelectedAssets = [...selectedAssets, rowData.id];
       }
     } else if (event.shiftKey) {
-      const clickedIndex = data.findIndex((row) => row.id === rowData.id);
+      const clickedIndex = data.findIndex(
+        (row: Record<string, any>) => row.id === rowData.id
+      );
       const focusedIndex =
-        data.findIndex((row) => row.id === focusedAsset) ||
-        data.findIndex((row) => selectedAssets.includes(row.id)) ||
+        data.findIndex((row: Record<string, any>) => row.id === focusedAsset) ||
+        data.findIndex((row: Record<string, any>) => selectedAssets.includes(row.id)) ||
         clickedIndex ||
         0;
 
@@ -185,7 +202,9 @@ const BrowserTable = ({ isDragging }) => {
       const max = Math.max(clickedIndex, focusedIndex);
 
       // Get the ids of the rows in the range
-      const rangeIds = data.slice(min, max + 1).map((row) => row.id);
+      const rangeIds = data
+        .slice(min, max + 1)
+        .map((row: Record<string, any>) => row.id);
 
       newSelectedAssets = [...new Set([...selectedAssets, ...rangeIds])];
     } else {
@@ -196,17 +215,19 @@ const BrowserTable = ({ isDragging }) => {
     setFocusedAsset(rowData.id);
   };
 
-  const focusNext = (offset) => {
+  const focusNext = (offset: number) => {
     if (!focusedAsset) return;
-    const nextIndex = data.findIndex((row) => row.id === focusedAsset) + offset;
+    const nextIndex =
+      data.findIndex((row: Record<string, any>) => row.id === focusedAsset) + offset;
     if (nextIndex < data.length) {
-      const nextRow = data[nextIndex];
+      const nextRow: Record<string, any> = data[nextIndex];
+      if (!nextRow) return;
       setSelectedAssets([nextRow.id]);
       setFocusedAsset(nextRow.id);
     }
   };
 
-  const onKeyDown = (e) => {
+  const onKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowDown') {
       focusNext(1);
       e.preventDefault();
@@ -217,7 +238,7 @@ const BrowserTable = ({ isDragging }) => {
     }
   };
 
-  const saveSelectionStatus = (status) => {
+  const saveSelectionStatus = (status: number) => {
     const operations = selectedAssets.map((id) => ({
       id,
       data: { status },
@@ -233,7 +254,7 @@ const BrowserTable = ({ isDragging }) => {
       });
   };
 
-  const setSelectionStatus = (status, question) => {
+  const setSelectionStatus = (status: number, question: string) => {
     // Change asset status of the selected assets
     if (question) {
       showDialog('confirm', 'Are you sure?', { message: question })
@@ -308,7 +329,7 @@ const BrowserTable = ({ isDragging }) => {
   );
 };
 
-const Browser = ({ isDragging }) => {
+const Browser = ({ isDragging }: BrowserTableProps) => {
   return (
     <>
       <BrowserNav />

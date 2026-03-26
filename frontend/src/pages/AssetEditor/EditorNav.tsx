@@ -1,4 +1,23 @@
-import { Navbar, Button, Spacer, RadioButton, ToolbarSeparator } from '/src/components';
+import React from 'react';
+import { Navbar, Button, Spacer, RadioButton, ToolbarSeparator } from '@/components';
+
+interface AssetEditorNavProps {
+  assetData: Record<string, any>;
+  onNewAsset: () => void;
+  onCloneAsset: () => void;
+  onRevert: () => void;
+  onSave: (payload?: Record<string, any>) => void;
+  setMeta: (key: string, value: any, instant?: boolean) => void;
+  editorMode: string;
+  setEditorMode: (mode: string) => void;
+  enabledActions: {
+    create: boolean;
+    clone: boolean;
+    revert: boolean;
+    save: boolean;
+    flag: boolean;
+  };
+}
 
 const QC_STATE_OPTIONS = [
   {
@@ -6,22 +25,25 @@ const QC_STATE_OPTIONS = [
     icon: 'flag',
     buttonStyle: { color: 'var(--color-text)' },
     description: 'Revert QC state',
+    title: '',
   },
   {
     value: 3,
     icon: 'flag',
     buttonStyle: { color: 'var(--color-red)' },
     description: 'Reject asset',
+    title: '',
   },
   {
     value: 4,
     icon: 'flag',
     buttonStyle: { color: 'var(--color-green)' },
     description: 'Approve asset',
+    title: '',
   },
 ];
 
-const AssetEditorNav = ({
+const AssetEditorNav: React.FC<AssetEditorNavProps> = ({
   assetData,
   onNewAsset,
   onCloneAsset,
@@ -61,9 +83,9 @@ const AssetEditorNav = ({
       <Spacer />
 
       <RadioButton
-        value={assetData['qc/state'] || 0}
-        options={QC_STATE_OPTIONS}
-        onChange={(value) => setMeta('qc/state', value)}
+        value={String(assetData['qc/state'] || 0)}
+        options={QC_STATE_OPTIONS.map((opt) => ({ ...opt, value: String(opt.value) }))}
+        onChange={(value) => setMeta('qc/state', parseInt(value, 10))}
         disabled={!enabledActions.flag}
       />
 
