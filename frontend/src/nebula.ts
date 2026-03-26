@@ -48,7 +48,7 @@ const nebula = {
     );
   },
 
-  csOptions(key: string): ClientCsItemModel[] {
+  csOptions(key: string): (ClientCsItemModel & { value: string })[] {
     const cs = this.settings?.cs?.[key] || {};
     const result = [];
     for (const value in cs) {
