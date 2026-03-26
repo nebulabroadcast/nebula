@@ -3,7 +3,7 @@ import clsx from 'clsx';
 import Button from './Button';
 import { DropdownContainer } from './Dropdown.styled.tsx';
 
-interface DropdownOptionProps {
+export interface DropdownOptionProps {
   currentValue?: any;
   separator?: boolean;
   disabled?: boolean;
@@ -12,7 +12,7 @@ interface DropdownOptionProps {
   label: string;
   icon?: string;
   onClick: (value: any) => void;
-  value: any;
+  value?: any;
 }
 
 const DropdownOption = ({

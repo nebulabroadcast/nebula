@@ -1,3 +1,4 @@
+import React from 'react';
 import { Table, Section } from '@components';
 import Pagination from '@containers/Pagination';
 import { useDialog } from '@features/Dialogs';
@@ -11,18 +12,28 @@ import {
 import { useLocalStorage } from '@lib/useLocalStorage';
 import clsx from 'clsx';
 import { debounce } from 'lodash';
-import { useEffect, useState, useRef, useMemo } from 'react';
+import { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { toast } from 'react-toastify';
 
-import nebula from '/src/nebula';
+import nebula from '@/nebula';
 
 import BrowserNav from './BrowserNav';
 
 import { useWebSocket } from '@/features/Websocket';
+import type {
+  TableRowData,
+  TableColumn,
+  TableSortDirection,
+} from '@components/table/types';
+import type { ContextMenuOption } from '@components/ContextMenu';
 
 const ROWS_PER_PAGE = 200;
 
-const BrowserTable = ({ isDragging }) => {
+interface BrowserTableProps {
+  isDragging?: boolean;
+}
+
+const BrowserTable: React.FC<BrowserTableProps> = ({ isDragging }) => {
   const {
     currentViewId,
     searchQuery,
@@ -35,17 +46,17 @@ const BrowserTable = ({ isDragging }) => {
   } = useNebula();
 
   const currentView = useMemo(
-    () => nebula.settings.views.find((v) => v.id === currentViewId),
+    () => nebula.settings?.views?.find((v) => v.id === currentViewId),
     [currentViewId]
   );
 
   const ws = useWebSocket();
 
-  const [columns, setColumns] = useState([]);
-  const [data, setData] = useState([]);
+  const [columns, setColumns] = useState<TableColumn[]>([]);
+  const [data, setData] = useState<TableRowData[]>([]);
   const [loading, setLoading] = useState(false);
-  const [sortBy, setSortBy] = useLocalStorage('mam.browser.sortBy', 'ctime');
-  const [sortDirection, setSortDirection] = useLocalStorage(
+  const [sortBy, setSortBy] = useLocalStorage<string>('mam.browser.sortBy', 'ctime');
+  const [sortDirection, setSortDirection] = useLocalStorage<TableSortDirection>(
     'mam.browser.sortDirection',
     'desc'
   );
@@ -53,8 +64,8 @@ const BrowserTable = ({ isDragging }) => {
   const [hasMore, setHasMore] = useState(false);
   const showDialog = useDialog();
 
-  const dataRef = useRef(data);
-  const requestParamsRef = useRef(null);
+  const dataRef = useRef<TableRowData[]>(data);
+  const requestParamsRef = useRef<any>(null);
 
   //
   // References
@@ -66,11 +77,53 @@ const BrowserTable = ({ isDragging }) => {
     dataRef.current = data;
   }, [data]);
 
+  //
+  // Data loading
+  //
+
+  const loadData = useCallback(() => {
+    // Use current value of requestParamsRef to avoid stale data
+    const params = requestParamsRef.current;
+    if (!params) return;
+
+    nebula
+      .request('browse', params)
+      .then((response) => {
+        const hasMore = response.data.data.length > ROWS_PER_PAGE;
+        const rows = response.data.data.slice(0, ROWS_PER_PAGE);
+        setData(rows);
+        setSortBy((current) =>
+          response.data.order_by !== current ? response.data.order_by : current
+        );
+        setSortDirection((current) =>
+          response.data.order_dir !== current ? response.data.order_dir : current
+        );
+
+        const cols: TableColumn[] = [];
+        for (const colName of response.data.columns) {
+          if (colName === 'subtitle') continue; // added automatically
+          const meta = nebula.metaType(colName);
+          const title =
+            meta.header !== undefined && meta.header !== null ? meta.header : colName;
+
+          cols.push({
+            name: colName,
+            title,
+            formatter: getFormatter(colName),
+            width: getColumnWidth(colName),
+          });
+        }
+        setColumns(cols);
+        setHasMore(hasMore);
+      })
+      .finally(() => setLoading(false));
+  }, [setSortBy, setSortDirection]);
+
   useEffect(() => {
     // User changed view or search query
     if (!currentViewId) {
       // No view selected, load the first available view
-      if (nebula.settings.views.length) {
+      if (nebula.settings?.views?.length) {
         setCurrentView(nebula.settings.views[0].id);
       }
       return;
@@ -91,56 +144,33 @@ const BrowserTable = ({ isDragging }) => {
     // show loading indicator only if the user initiated the refresh
     setLoading(true);
     loadData();
-  }, [currentView, searchQuery, sortBy, sortDirection, page, browserRefreshId]);
+  }, [
+    currentView,
+    searchQuery,
+    sortBy,
+    sortDirection,
+    page,
+    browserRefreshId,
+    currentViewId,
+    setCurrentView,
+    loadData,
+  ]);
 
   useEffect(() => {
     // Reset page when view or search query changes
     setPage(1);
   }, [currentView, searchQuery, sortBy, sortDirection]);
 
-  //
-  // Data loading
-  //
-
-  const loadData = () => {
-    // Use current value of requestParamsRef to avoid stale data
-    const params = requestParamsRef.current;
-    nebula
-      .request('browse', params)
-      .then((response) => {
-        const hasMore = response.data.data.length > ROWS_PER_PAGE;
-        const rows = response.data.data.slice(0, ROWS_PER_PAGE);
-        setData(rows);
-        if (response.data.order_by !== sortBy) setSortBy(response.data.order_by);
-        if (response.data.order_dir !== sortDirection)
-          setSortDirection(response.data.order_dir);
-
-        let cols = [];
-        for (const colName of response.data.columns) {
-          if (colName == 'subtitle') continue; // added automatically
-          cols.push({
-            name: colName,
-            title: nebula.metaType(colName).header,
-            formatter: getFormatter(colName),
-            width: getColumnWidth(colName),
-          });
-        }
-        setColumns(cols);
-        setHasMore(hasMore);
-      })
-      .finally(() => setLoading(false));
-  };
-
   // Debounce the loadData function to avoid multiple requests
   // when multiple objects are changed at the same time
-  const debouncingLoadData = debounce(loadData, 100);
+  const debouncingLoadData = useMemo(() => debounce(loadData, 100), [loadData]);
 
   //
   // Subscribe to objects_changed pubsub event
   //
 
   useEffect(() => {
-    const handlePubSub = (topic, message) => {
+    const handlePubSub = (topic: string, message: any) => {
       if (topic !== 'objects_changed') return;
       if (message.object_type !== 'asset') return;
       let changed = false;
@@ -159,54 +189,59 @@ const BrowserTable = ({ isDragging }) => {
     return () => {
       unsubscribe();
     };
-  }, [ws]);
+  }, [ws, debouncingLoadData]);
 
   //
   // User interaction
   //
 
-  const onRowClick = (rowData, event) => {
-    let newSelectedAssets = [];
+  const onRowClick = (rowData: TableRowData, event: React.MouseEvent) => {
+    let newSelectedAssets: number[] = [];
     if (event.ctrlKey) {
-      if (selectedAssets.includes(rowData.id)) {
+      if (selectedAssets.includes(rowData.id as number)) {
         newSelectedAssets = selectedAssets.filter((obj) => obj !== rowData.id);
       } else {
-        newSelectedAssets = [...selectedAssets, rowData.id];
+        newSelectedAssets = [...selectedAssets, rowData.id as number];
       }
     } else if (event.shiftKey) {
       const clickedIndex = data.findIndex((row) => row.id === rowData.id);
+      const focusedIndexFound = data.findIndex((row) => row.id === focusedAsset);
       const focusedIndex =
-        data.findIndex((row) => row.id === focusedAsset) ||
-        data.findIndex((row) => selectedAssets.includes(row.id)) ||
-        clickedIndex ||
-        0;
+        focusedIndexFound !== -1
+          ? focusedIndexFound
+          : data.findIndex((row) => selectedAssets.includes(row.id as number));
 
-      const min = Math.min(clickedIndex, focusedIndex);
-      const max = Math.max(clickedIndex, focusedIndex);
+      const actualFocusedIndex =
+        focusedIndex !== -1 ? focusedIndex : clickedIndex !== -1 ? clickedIndex : 0;
+
+      const min = Math.min(clickedIndex, actualFocusedIndex);
+      const max = Math.max(clickedIndex, actualFocusedIndex);
 
       // Get the ids of the rows in the range
-      const rangeIds = data.slice(min, max + 1).map((row) => row.id);
+      const rangeIds = data.slice(min, max + 1).map((row) => row.id as number);
 
       newSelectedAssets = [...new Set([...selectedAssets, ...rangeIds])];
     } else {
-      newSelectedAssets = [rowData.id];
+      newSelectedAssets = [rowData.id as number];
     }
 
     setSelectedAssets(newSelectedAssets);
-    setFocusedAsset(rowData.id);
+    setFocusedAsset(rowData.id as number);
   };
 
-  const focusNext = (offset) => {
+  const focusNext = (offset: number) => {
     if (!focusedAsset) return;
-    const nextIndex = data.findIndex((row) => row.id === focusedAsset) + offset;
-    if (nextIndex < data.length) {
+    const currentIndex = data.findIndex((row) => row.id === focusedAsset);
+    if (currentIndex === -1) return;
+    const nextIndex = currentIndex + offset;
+    if (nextIndex >= 0 && nextIndex < data.length) {
       const nextRow = data[nextIndex];
-      setSelectedAssets([nextRow.id]);
-      setFocusedAsset(nextRow.id);
+      setSelectedAssets([nextRow.id as number]);
+      setFocusedAsset(nextRow.id as number);
     }
   };
 
-  const onKeyDown = (e) => {
+  const onKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowDown') {
       focusNext(1);
       e.preventDefault();
@@ -217,7 +252,7 @@ const BrowserTable = ({ isDragging }) => {
     }
   };
 
-  const saveSelectionStatus = (status) => {
+  const saveSelectionStatus = (status: number) => {
     const operations = selectedAssets.map((id) => ({
       id,
       data: { status },
@@ -229,11 +264,11 @@ const BrowserTable = ({ isDragging }) => {
       })
       .catch((error) => {
         console.error(error);
-        toast.error(error.response?.detail);
+        toast.error(error.response?.data?.detail || 'Unknown error');
       });
   };
 
-  const setSelectionStatus = (status, question) => {
+  const setSelectionStatus = (status: number, question?: string) => {
     // Change asset status of the selected assets
     if (question) {
       showDialog('confirm', 'Are you sure?', { message: question })
@@ -250,7 +285,7 @@ const BrowserTable = ({ isDragging }) => {
       .catch(() => {});
   };
 
-  const contextMenu = () => [
+  const contextMenu = (): ContextMenuOption[] => [
     {
       label: 'Send to...',
       icon: 'send',
@@ -308,7 +343,11 @@ const BrowserTable = ({ isDragging }) => {
   );
 };
 
-const Browser = ({ isDragging }) => {
+interface BrowserProps {
+  isDragging?: boolean;
+}
+
+const Browser: React.FC<BrowserProps> = ({ isDragging }) => {
   return (
     <>
       <BrowserNav />

@@ -1,16 +1,18 @@
-import nebula from '/src/nebula';
+import React from 'react';
+import nebula from '@/nebula';
 
 import { debounce } from 'lodash';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 
-import { useNebula } from '/src/features/Nebula';
-import { Navbar, Button, Spacer, Dropdown, InputText } from '/src/components';
+import { useNebula } from '@/features/Nebula';
+import { Navbar, Button, Spacer, Dropdown, InputText } from '@/components';
+import type { DropdownOptionProps } from '@/components/Dropdown';
 
-const BrowserNav = () => {
+const BrowserNav: React.FC = () => {
   const { currentViewId, searchQuery, setCurrentView, setSearchQuery } = useNebula();
 
   const currentView = useMemo(() => {
-    return nebula.settings.views.find((v) => v.id === currentViewId);
+    return nebula.settings?.views?.find((v) => v.id === currentViewId);
   }, [currentViewId]);
 
   const [searchText, setSearchText] = useState(searchQuery);
@@ -19,9 +21,9 @@ const BrowserNav = () => {
     setSearchText(searchQuery);
   }, [searchQuery]);
 
-  const viewOptions = useMemo(() => {
-    let result = [];
-    for (const view of nebula.settings.views || []) {
+  const viewOptions = useMemo((): DropdownOptionProps[] => {
+    const result: DropdownOptionProps[] = [];
+    for (const view of nebula.settings?.views || []) {
       result.push({
         label: view.name,
         separator: view.separator,
@@ -29,20 +31,20 @@ const BrowserNav = () => {
       });
     }
     return result;
-  }, []);
+  }, [setCurrentView]);
 
   const debounceSetQuery = useCallback(
-    debounce((q) => {
+    debounce((q: string) => {
       setSearchQuery(q);
     }, 200),
-    []
+    [setSearchQuery]
   );
 
   useEffect(() => {
     debounceSetQuery(searchText);
-  }, [searchText]);
+  }, [searchText, debounceSetQuery]);
 
-  const dropdownButtonStyle = {
+  const dropdownButtonStyle: React.CSSProperties = {
     justifyContent: 'flex-start',
   };
 
@@ -51,7 +53,7 @@ const BrowserNav = () => {
       <Navbar>
         <Dropdown
           options={viewOptions}
-          label={currentView?.name}
+          label={currentView?.name || ''}
           buttonStyle={dropdownButtonStyle}
           iconOnRight={true}
         />
