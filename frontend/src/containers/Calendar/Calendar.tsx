@@ -101,9 +101,8 @@ const Calendar: React.FC<CalendarProps> = ({
   };
 
   const eventAtPos = useCallback(
-    (x: number, y: number): CalendarEvent | null => {
-      const { pos2time } = drawParams.current;
-      const cTime = pos2time(x, y);
+    (timeOverride?: Date | null): CalendarEvent | null => {
+      const cTime = timeOverride || cursorTime.current;
       if (!cTime) return null;
       const currentTs = cTime.getTime() / 1000;
 
@@ -288,7 +287,9 @@ const Calendar: React.FC<CalendarProps> = ({
     const x = evt.clientX - rect.left;
     const y = evt.clientY - rect.top;
     initialMousePos.current = { x, y };
-    const event = eventAtPos(x, y);
+
+    const { pos2time } = drawParams.current;
+    const event = eventAtPos(pos2time(x, y));
 
     // on double click, navigate to event details
     if (evt.detail === 2 && event) {
@@ -335,7 +336,9 @@ const Calendar: React.FC<CalendarProps> = ({
     const x = evt.clientX - rect.left;
     const y = evt.clientY - rect.top;
     initialMousePos.current = { x, y };
-    const event = eventAtPos(x, y);
+
+    const { pos2time } = drawParams.current;
+    const event = eventAtPos(pos2time(x, y));
     if (event) lastClickedEvent.current = event;
   };
 
@@ -393,8 +396,8 @@ const Calendar: React.FC<CalendarProps> = ({
         label: item.label,
         icon: item.icon,
         hlColor: item.hlColor,
-        onClick: (e: any) => {
-          const event = eventAtPos(e.posX, e.posY);
+        onClick: (_e: any) => {
+          const event = eventAtPos();
           if (!event) return;
           item.onClick(event);
         },
