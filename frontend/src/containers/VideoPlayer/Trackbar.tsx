@@ -1,10 +1,23 @@
-import { useRef, useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 
-import { Canvas, Navbar } from '/src/components';
+import { Canvas, Navbar } from '@components';
 
 const MARK_SIZE = 6;
 
-const Trackbar = ({
+interface TrackbarProps {
+  duration: number;
+  currentTime: number;
+  isPlaying: boolean;
+  onScrub: (time: number) => void;
+  onScrubFinished?: (time: number) => void;
+  markIn?: number;
+  markOut?: number;
+  bufferedRanges: { start: number; end: number }[];
+  frameRate: number;
+  marks?: Record<string, number>;
+}
+
+const Trackbar: React.FC<TrackbarProps> = ({
   duration,
   currentTime,
   isPlaying,
@@ -16,10 +29,10 @@ const Trackbar = ({
   frameRate,
   marks,
 }) => {
-  const canvasRef = useRef(null);
-  const resizeObserverRef = useRef(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const resizeObserverRef = useRef<ResizeObserver | null>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const targetTimeRef = useRef(null);
+  const targetTimeRef = useRef<number>(0);
 
   const auxMarks = marks || {};
 
@@ -33,9 +46,10 @@ const Trackbar = ({
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
-    const width = ctx.canvas.width;
-    const height = ctx.canvas.height;
+    const width = canvas.width;
+    const height = canvas.height;
 
     //
     // Draw the background of the slider
@@ -100,7 +114,7 @@ const Trackbar = ({
     //
 
     let markInX = 0;
-    if (markIn) {
+    if (markIn !== undefined) {
       markInX = (markIn / duration) * width;
       ctx.strokeStyle = 'green';
       ctx.fillStyle = 'green';
@@ -114,7 +128,7 @@ const Trackbar = ({
     }
 
     let markOutX = width;
-    if (markOut) {
+    if (markOut !== undefined) {
       markOutX = (markOut / duration) * width + frameWidth;
       ctx.strokeStyle = 'red';
       ctx.fillStyle = 'red';
@@ -148,7 +162,18 @@ const Trackbar = ({
       ctx.closePath();
       ctx.fill();
     }
-  }, [currentTime, duration, markIn, markOut, marks]);
+  }, [
+    currentTime,
+    duration,
+    markIn,
+    markOut,
+    marks,
+    numFrames,
+    isPlaying,
+    frameRate,
+    bufferedRanges,
+    auxMarks.poster_frame,
+  ]);
 
   //
   // Event handling
@@ -156,25 +181,30 @@ const Trackbar = ({
 
   useEffect(() => {
     drawSlider();
-  }, [currentTime, duration, markIn, markOut, marks]);
+  }, [drawSlider]);
 
   // Dragging
 
-  const handleMouseMove = (e) => {
-    const rect = canvasRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const newTime = (x / rect.width) * duration;
-    targetTimeRef.current = newTime;
-    if (!isDragging) return;
-    onScrub(newTime);
-  };
+  const handleMouseMove = useCallback(
+    (e: MouseEvent) => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const newTime = (x / rect.width) * duration;
+      targetTimeRef.current = newTime;
+      if (!isDragging) return;
+      onScrub(newTime);
+    },
+    [duration, isDragging, onScrub]
+  );
 
-  const handleMouseUp = () => {
+  const handleMouseUp = useCallback(() => {
     setIsDragging(false);
     if (onScrubFinished) {
       onScrubFinished(targetTimeRef.current);
     }
-  };
+  }, [onScrubFinished]);
 
   useEffect(() => {
     if (isDragging) {
@@ -189,15 +219,24 @@ const Trackbar = ({
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isDragging]);
+  }, [isDragging, handleMouseMove, handleMouseUp]);
 
-  const handleMouseDown = (e) => {
+  const handleMouseDown = (e: React.MouseEvent) => {
     setIsDragging(true);
-    handleMouseMove(e);
+    // Trigger initial scrub
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const newTime = (x / rect.width) * duration;
+    targetTimeRef.current = newTime;
+    onScrub(newTime);
   };
 
-  const handleClick = (e) => {
-    const rect = canvasRef.current.getBoundingClientRect();
+  const handleClick = (e: React.MouseEvent) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const newTime = (x / rect.width) * duration;
     targetTimeRef.current = newTime;

@@ -1,11 +1,23 @@
 import React, { useEffect, useRef } from 'react';
 
-const VideoOverlay = ({ videoWidth, videoHeight, showOverlay }) => {
-  const canvasRef = useRef(null);
+interface VideoOverlayProps {
+  videoWidth: number;
+  videoHeight: number;
+  showOverlay: boolean;
+}
+
+const VideoOverlay: React.FC<VideoOverlayProps> = ({
+  videoWidth,
+  videoHeight,
+  showOverlay,
+}) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
+    if (!canvas) return;
     const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
     const drawOverlay = () => {
       const width = canvas.width;

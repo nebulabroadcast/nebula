@@ -1,15 +1,20 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 
-import { Canvas } from '/src/components';
+import { Canvas } from '@components';
 
 const COLOR_YELLOW = '#fcde00';
 const COLOR_RED = '#ff2404';
 const COLOR_GREEN = '#5fff5f';
 const COLOR_BKG = '#19161f';
 
-const VUMeter = ({ gainNodes, audioContext }) => {
-  const canvasRef = useRef(null);
-  const gainNodesRef = useRef(null);
+interface VUMeterProps {
+  gainNodes: GainNode[];
+  audioContext: AudioContext | null;
+}
+
+const VUMeter: React.FC<VUMeterProps> = ({ gainNodes, audioContext }) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const gainNodesRef = useRef<GainNode[] | null>(null);
   const [redrawTrigger, setRedrawTrigger] = useState(0);
 
   const barWidth = 6;
@@ -21,20 +26,19 @@ const VUMeter = ({ gainNodes, audioContext }) => {
   }, [gainNodes]);
 
   useEffect(() => {
-    console.log('VUMeter: init');
     const canvas = canvasRef.current;
-    const gainNodes = gainNodesRef.current;
+    const currentGainNodes = gainNodesRef.current;
 
-    if (!(canvas && gainNodes?.length && audioContext)) {
-      console.log('VUMeter: canvas or gainNodes not found');
+    if (!(canvas && currentGainNodes?.length && audioContext)) {
       return;
     }
 
-    const numChannels = gainNodes.length;
+    const numChannels = currentGainNodes.length;
     const ctx = canvas.getContext('2d');
-    const analysers = gainNodes.map(() => audioContext.createAnalyser());
+    if (!ctx) return;
+    const analysers = currentGainNodes.map(() => audioContext.createAnalyser());
 
-    gainNodes.forEach((gainNode, index) => {
+    currentGainNodes.forEach((gainNode, index) => {
       gainNode.connect(analysers[index]);
       analysers[index].fftSize = 1024;
       analysers[index].smoothingTimeConstant = 0.8;
@@ -44,6 +48,7 @@ const VUMeter = ({ gainNodes, audioContext }) => {
     const dataArray = new Uint8Array(bufferLength);
 
     const draw = () => {
+      if (!canvas.parentElement) return;
       if (canvas.height !== canvas.parentElement.clientHeight) {
         canvas.height = canvas.parentElement.clientHeight;
       }
@@ -60,7 +65,7 @@ const VUMeter = ({ gainNodes, audioContext }) => {
         ctx.fillRect(x, 0, barWidth, canvas.height);
       }
 
-      gainNodes.forEach((_, index) => {
+      currentGainNodes.forEach((_, index) => {
         analysers[index].getByteTimeDomainData(dataArray);
 
         let sum = 0;
@@ -118,7 +123,7 @@ const VUMeter = ({ gainNodes, audioContext }) => {
     };
 
     draw();
-  }, [gainNodesRef.current?.length, audioContext, canvasRef, redrawTrigger]);
+  }, [gainNodesRef.current, audioContext, canvasRef, redrawTrigger]);
 
   const onCanvasDraw = useCallback(() => {
     setRedrawTrigger((old) => old + 1);

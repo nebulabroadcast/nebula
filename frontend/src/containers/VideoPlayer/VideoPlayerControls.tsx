@@ -1,9 +1,22 @@
-import { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 
-import { Button, InputTimecode, Navbar } from '/src/components';
+import { Button, InputTimecode, Navbar } from '@components';
 import { isEditableTarget } from '@lib/useKeyDown';
 
-const VideoPlayerControls = ({
+interface VideoPlayerControlsProps {
+  markIn: number;
+  markOut: number;
+  setMarkIn: (frame: number | null) => void;
+  setMarkOut: (frame: number | null) => void;
+  currentFrame: number;
+  duration: number;
+  seekToFrame: (frame: number) => void;
+  isPlaying: boolean;
+  onPlayPause: () => void;
+  frameRate: number;
+}
+
+const VideoPlayerControls: React.FC<VideoPlayerControlsProps> = ({
   markIn,
   markOut,
   setMarkIn,
@@ -71,7 +84,7 @@ const VideoPlayerControls = ({
   // Go to mark in/out
 
   const handleGoToMarkIn = () => {
-    if (!markInRef.current) {
+    if (markInRef.current === undefined || markInRef.current === null) {
       console.log('No mark in set');
       return;
     }
@@ -80,7 +93,7 @@ const VideoPlayerControls = ({
   };
 
   const handleGoToMarkOut = () => {
-    if (!markOutRef.current) {
+    if (markOutRef.current === undefined || markOutRef.current === null) {
       console.log('No mark out set');
       return;
     }
@@ -108,12 +121,12 @@ const VideoPlayerControls = ({
   //
 
   useEffect(() => {
-    const handleKeyDown = (e) => {
+    const handleKeyDown = (e: KeyboardEvent) => {
       // abort if modifier keys are pressed
       if (e.ctrlKey || e.altKey || e.metaKey) return;
 
       // abort if focused on editable element
-      if (isEditableTarget(e.target)) return;
+      if (isEditableTarget(e.target as HTMLElement)) return;
 
       // abort when shift key is pressed
       if (e.shiftKey) return;
@@ -218,7 +231,7 @@ const VideoPlayerControls = ({
         mode="frames"
         tooltip="Selection start"
         fps={frameRate}
-        onChange={setMarkIn}
+        onChange={(v) => setMarkIn(v as number)}
       />
 
       <Button
@@ -296,7 +309,7 @@ const VideoPlayerControls = ({
         mode="frames"
         tooltip="Selection end"
         fps={frameRate}
-        onChange={setMarkOut}
+        onChange={(v) => setMarkOut(v as number)}
       />
     </Navbar>
   );

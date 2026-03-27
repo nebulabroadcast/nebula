@@ -1,13 +1,16 @@
-import { useState, useEffect } from 'react';
-
-import { Button } from '/src/components';
-
+import React, { useState, useEffect } from 'react';
+import { Button } from '@components';
 import ToggleButtonContainer from './ToggleButtonContainer';
 
-const GainButton = ({ gainNode, index }) => {
+interface GainButtonProps {
+  gainNode: GainNode;
+  index: number;
+}
+
+const GainButton: React.FC<GainButtonProps> = ({ gainNode, index }) => {
   const [active, setActive] = useState(gainNode.gain.value === 1);
 
-  const handleKeyDown = (e) => {
+  const handleKeyDown = (e: KeyboardEvent) => {
     if (!e.shiftKey) return;
     if (e.keyCode === 49 + index) {
       gainNode.gain.value = gainNode.gain.value === 0 ? 1 : 0;
@@ -20,7 +23,7 @@ const GainButton = ({ gainNode, index }) => {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, []);
+  }, [index, gainNode]);
 
   useEffect(() => {
     gainNode.gain.value = active ? 1 : 0;
@@ -40,7 +43,11 @@ const GainButton = ({ gainNode, index }) => {
   );
 };
 
-const ChannelSelect = ({ gainNodes }) => {
+interface ChannelSelectProps {
+  gainNodes: GainNode[];
+}
+
+const ChannelSelect: React.FC<ChannelSelectProps> = ({ gainNodes }) => {
   return (
     <ToggleButtonContainer>
       {gainNodes.map((gainNode, index) => (
