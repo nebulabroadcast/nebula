@@ -1,4 +1,4 @@
-import nebula from '/src/nebula';
+import nebula from '@/nebula';
 
 import { Loader, Section } from '@components';
 import MetadataEditor from '@containers/MetadataEditor';
@@ -8,23 +8,44 @@ import { useWebSocket } from '@features/Websocket';
 import { useLocalStorage } from '@lib/useLocalStorage';
 import clsx from 'clsx';
 import { isEqual, isEmpty } from 'lodash';
-import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router';
 import { toast } from 'react-toastify';
 
 import AssetMainProps from './AssetMainProps';
 import AssetEditorNav from './EditorNav';
 import Preview from './Preview';
+import { TableDraggableItem } from '@components/table/types';
 
-const getEnabledActions = ({ assetData, isChanged }) => {
+interface EnabledActions {
+  save: boolean;
+  edit: boolean;
+  revert: boolean;
+  folderChange: boolean;
+  create: boolean;
+  clone: boolean;
+  actions: boolean;
+  flag: boolean;
+  upload: boolean;
+  advanced: boolean;
+}
+
+const getEnabledActions = ({
+  assetData,
+  isChanged,
+}: {
+  assetData: Record<string, any>;
+  isChanged: boolean;
+}): Partial<EnabledActions> => {
   // Return an object with all the actions that are enabled
   // for the current asset and the current user
   // This is used to enable/disable buttons in the UI
 
   if (!assetData) return {};
 
-  const limited = nebula.user.is_limited;
-  const writableFolderIds = nebula.getWritableFolders().map((f) => f.id);
+  const limited = nebula.user?.is_limited;
+  const writableFolders = nebula.getWritableFolders();
+  const writableFolderIds = writableFolders.map((f) => f.id);
 
   const edit = !(limited && assetData['qc/state'] === 4);
   const save = isChanged && edit;
@@ -32,17 +53,17 @@ const getEnabledActions = ({ assetData, isChanged }) => {
 
   // it does not make sense to click add, when the current asset is brand new
   // (id_folder is always present)
-  const create =
-    nebula.getWritableFolders().length > 0 && Object.keys(assetData).length > 1;
-  const clone =
+  const create = writableFolders.length > 0 && Object.keys(assetData).length > 1;
+  const clone = !!(
     assetData.id &&
     assetData.id_folder &&
-    writableFolderIds.includes(assetData.id_folder);
+    writableFolderIds.includes(assetData.id_folder)
+  );
 
   const folderChange = !assetData.id && edit;
-  const flag = assetData.id && !nebula.user.is_limited;
-  const upload = assetData.id && edit;
-  const actions = assetData?.id && !isChanged;
+  const flag = !!(assetData.id && !nebula.user?.is_limited);
+  const upload = !!(assetData.id && edit);
+  const actions = !!(assetData?.id && !isChanged);
   const advanced = !limited;
 
   return {
@@ -59,7 +80,11 @@ const getEnabledActions = ({ assetData, isChanged }) => {
   };
 };
 
-const AssetEditor = () => {
+interface AssetEditorProps {
+  draggedObjects?: TableDraggableItem[] | null;
+}
+
+const AssetEditor: React.FC<AssetEditorProps> = () => {
   const {
     focusedAsset,
     setPageTitle,
@@ -67,14 +92,17 @@ const AssetEditor = () => {
     setSelectedAssets,
     setFocusedAsset,
   } = useNebula();
-  const [assetData, setAssetData] = useState({});
-  const [originalData, setOriginalData] = useState({});
+  const [assetData, setAssetData] = useState<Record<string, any>>({});
+  const [originalData, setOriginalData] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(false);
-  const [editorMode, setEditorMode] = useLocalStorage('mam.editor.mode', 'metadata');
-  const [_searchParams, setSearchParams] = useSearchParams();
+  const [editorMode, setEditorMode] = useLocalStorage<'metadata' | 'preview'>(
+    'mam.editor.mode',
+    'metadata'
+  );
+  const [, setSearchParams] = useSearchParams();
 
-  const assetIdRef = useRef(focusedAsset);
-  const changedKeysRef = useRef(new Set());
+  const assetIdRef = useRef<number | string | null>(focusedAsset);
+  const changedKeysRef = useRef(new Set<string>());
 
   const showDialog = useDialog();
   const ws = useWebSocket();
@@ -82,7 +110,7 @@ const AssetEditor = () => {
   // Load asset data
 
   const loadAsset = useCallback(
-    (id_asset) => {
+    (id_asset: number | string) => {
       setLoading(true);
       nebula
         .request('get', { ids: [id_asset], type: 'asset' })
@@ -93,7 +121,7 @@ const AssetEditor = () => {
           assetIdRef.current = id_asset;
           changedKeysRef.current = new Set();
           setSearchParams((o) => {
-            o.set('asset', id_asset);
+            o.set('asset', id_asset.toString());
             return o;
           });
         })
@@ -101,7 +129,7 @@ const AssetEditor = () => {
           toast.error(
             <>
               <strong>Unable to load asset</strong>
-              <p>{error.response.data?.detail || 'Unknown error'}</p>
+              <p>{error.response?.data?.detail || 'Unknown error'}</p>
             </>
           );
         })
@@ -113,6 +141,7 @@ const AssetEditor = () => {
   );
 
   const refetchUnchangedFields = useCallback(() => {
+    if (!assetIdRef.current) return;
     console.log('Refetching unchanged fields for asset', assetIdRef.current);
     const changedKeys = changedKeysRef.current;
     setLoading(true);
@@ -142,7 +171,7 @@ const AssetEditor = () => {
         toast.error(
           <>
             <strong>Unable to refresh asset</strong>
-            <p>{error.response.data?.detail || 'Unknown error'}</p>
+            <p>{error.response?.data?.detail || 'Unknown error'}</p>
           </>
         );
       })
@@ -154,7 +183,7 @@ const AssetEditor = () => {
   // Update a single asset meta field
   // (called by EditorForm, flag buttons, etc.)
 
-  const setMeta = (key, value, instant) => {
+  const setMeta = (key: string, value: any, instant?: boolean) => {
     if (key === 'id_folder' && isEmpty(assetData)) {
       setOriginalData({ id_folder: value });
     }
@@ -175,7 +204,7 @@ const AssetEditor = () => {
     // don't update changed keys while loading
     if (loading) return;
     if (isEmpty(assetData) || isEmpty(originalData)) return;
-    let changedKeys = new Set();
+    let changedKeys = new Set<string>();
     for (const key in assetData) {
       if (!isEqual(originalData[key] || null, assetData[key] || null)) {
         changedKeys.add(key);
@@ -189,7 +218,10 @@ const AssetEditor = () => {
 
   useEffect(() => {
     if (assetData?.id_folder) return;
-    setMeta('id_folder', nebula.getWritableFolders()[0]?.id);
+    const folders = nebula.getWritableFolders();
+    if (folders.length > 0) {
+      setMeta('id_folder', folders[0].id);
+    }
   }, [assetData?.id_folder]);
 
   // Parse and show asset data
@@ -198,22 +230,28 @@ const AssetEditor = () => {
     if (assetData.id) {
       let title = assetData.title;
       if (assetData.subtitle) {
-        const separator = nebula.settings.system.subtitle_separator || ' - ';
+        const separator = nebula.settings?.system?.subtitle_separator || ' - ';
         title = `${title}${separator}${assetData.subtitle}`;
       }
       setPageTitle(title);
     } else {
       const folderName = assetData.id_folder
-        ? nebula.getFolderName(assetData.id_folder).toLowerCase()
+        ? nebula.getFolderName(assetData.id_folder)?.toLowerCase()
         : 'asset';
-      setPageTitle(folderName, 'fiber_new');
+      setPageTitle(folderName || 'asset', 'fiber_new');
     }
-  }, [assetData?.id, assetData?.id_folder]);
+  }, [
+    assetData?.id,
+    assetData?.id_folder,
+    setPageTitle,
+    assetData.title,
+    assetData.subtitle,
+  ]);
 
   // Which fields are visible in the editor
 
   const fields = useMemo(() => {
-    if (!assetData?.id_folder) return [];
+    if (!assetData?.id_folder || !nebula.settings?.folders) return [];
     return (
       nebula.settings.folders.find((f) => f.id === assetData.id_folder)?.fields || []
     );
@@ -262,7 +300,8 @@ const AssetEditor = () => {
   // When another asset is selected,
   // check if there are unsaved changes and ask to save them
 
-  const switchAsset = async () => {
+  const switchAsset = useCallback(async () => {
+    if (!focusedAsset) return;
     if (isChanged) {
       const message = 'There are unsaved changes. Do you want to save them?';
       const cancelLabel = 'Discard';
@@ -290,7 +329,7 @@ const AssetEditor = () => {
               toast.error(
                 <>
                   <strong>Unable to save asset</strong>
-                  <p>{error.response.data?.detail || 'Unknown error'}</p>
+                  <p>{error.response?.data?.detail || 'Unknown error'}</p>
                 </>
               );
             })
@@ -303,11 +342,20 @@ const AssetEditor = () => {
       // asset unchanged
       loadAsset(focusedAsset);
     }
-  };
+  }, [
+    isChanged,
+    assetData,
+    focusedAsset,
+    loadAsset,
+    reloadBrowser,
+    setFocusedAsset,
+    showDialog,
+  ]);
 
   useEffect(() => {
     if (!focusedAsset) return;
     switchAsset();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [focusedAsset]);
 
   // Actions
@@ -332,7 +380,7 @@ const AssetEditor = () => {
   };
 
   const onCloneAsset = () => {
-    let ndata = {};
+    let ndata: Record<string, any> = {};
     setEditorMode('metadata');
     for (const field in assetData) {
       if (
@@ -352,7 +400,7 @@ const AssetEditor = () => {
   };
 
   const onSave = useCallback(
-    (payload) => {
+    (payload?: Record<string, any>) => {
       if (!enabledActions.save && !payload) {
         return;
       }
@@ -381,13 +429,13 @@ const AssetEditor = () => {
       // we don't clear the loading state here,
       // we wait for the ws message that confirms the asset has been updated
     },
-    [assetData, enabledActions.save, loadAsset]
+    [assetData, enabledActions.save, loadAsset, reloadBrowser]
   );
 
   // Keyboard shortcuts
 
   useEffect(() => {
-    const handleKeyDown = (event) => {
+    const handleKeyDown = (event: KeyboardEvent) => {
       if (event.ctrlKey && event.key === 's') {
         event.preventDefault();
         onSave();
@@ -398,7 +446,7 @@ const AssetEditor = () => {
   }, [onSave]);
 
   useEffect(() => {
-    const handlePubSub = (topic, message) => {
+    const handlePubSub = (topic: string, message: any) => {
       if (topic !== 'objects_changed') return;
       if (message.object_type !== 'asset') return;
       if (!assetIdRef.current) return;
@@ -430,7 +478,7 @@ const AssetEditor = () => {
             <AssetMainProps
               assetData={assetData}
               setMeta={setMeta}
-              enabledActions={enabledActions}
+              enabledActions={enabledActions as EnabledActions}
             />
             <Section
               className={clsx('grow', 'column', {
@@ -468,12 +516,11 @@ const AssetEditor = () => {
         onRevert={onRevert}
         onSave={onSave}
         setMeta={setMeta}
-        isChanged={isChanged}
         editorMode={editorMode}
         setEditorMode={setEditorMode}
-        enabledActions={enabledActions}
+        enabledActions={enabledActions as EnabledActions}
       />
-      {Object.keys(assetData || {}).length && mainComponent()}
+      {Object.keys(assetData || {}).length > 0 && mainComponent()}
     </div>
   );
 };

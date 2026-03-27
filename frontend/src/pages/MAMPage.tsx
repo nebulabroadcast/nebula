@@ -1,16 +1,24 @@
 import Browser from '@containers/Browser';
 import Splitter, { SplitDirection } from '@devbookhq/splitter';
-import { DndContext, MouseSensor, useSensor, useSensors } from '@dnd-kit/core';
+import {
+  DndContext,
+  MouseSensor,
+  useSensor,
+  useSensors,
+  DragStartEvent,
+  DragEndEvent,
+} from '@dnd-kit/core';
 import { useNebula } from '@features/Nebula';
 import { useLocalStorage } from '@lib/useLocalStorage';
-import { useMemo, useEffect, useState, useRef } from 'react';
+import React, { useMemo, useEffect, useState, useRef } from 'react';
 import { useParams, useSearchParams } from 'react-router';
 import styled from 'styled-components';
 
-import AssetEditor from '/src/pages/AssetEditor';
-import Scheduler from '/src/pages/Scheduler';
+import AssetEditor from '@/pages/AssetEditor';
+import Scheduler from '@/pages/Scheduler';
 
 import Rundown from './Rundown';
+import { TableDraggableItem } from '@components/table/types';
 
 const MAMContainer = styled.div`
   flex-grow: 1;
@@ -44,7 +52,7 @@ const DraggedIndicator = styled.div`
   }
 `;
 
-const MAMPage = () => {
+const MAMPage: React.FC = () => {
   // This is a wrapper components for all the MAM pages
   // It will render the correct page based on the URL
   // along with the browser component
@@ -52,12 +60,17 @@ const MAMPage = () => {
   const { focusedAsset, setFocusedAsset, setSelectedAssets } = useNebula();
   const { module } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [splitterSizes, setSplitterSizes] = useLocalStorage('mam.splitterSizes', null);
+  const [splitterSizes, setSplitterSizes] = useLocalStorage<number[] | null>(
+    'mam.splitterSizes',
+    null
+  );
 
-  const draggedIndicatorRef = useRef(null);
+  const draggedIndicatorRef = useRef<HTMLDivElement>(null);
 
   // Drag and drop from the browser
-  const [draggedObjects, setDraggedObjects] = useState(null);
+  const [draggedObjects, setDraggedObjects] = useState<TableDraggableItem[] | null>(
+    null
+  );
   const [isDragging, setIsDragging] = useState(false);
 
   const mouseSensor = useSensor(MouseSensor, {
@@ -69,19 +82,19 @@ const MAMPage = () => {
 
   const sensors = useSensors(mouseSensor);
 
-  const setBodyCursor = (cursor) => {
+  const setBodyCursor = (cursor: string) => {
     document.body.style.setProperty('cursor', cursor, 'important');
   };
 
-  const onDragStart = (event) => {
+  const onDragStart = (event: DragStartEvent) => {
     setIsDragging(true);
-    const objects = event.active.data.current;
+    const objects = event.active.data.current as TableDraggableItem[];
     console.debug('Start drag', objects);
-    setDraggedObjects(event.active.data.current);
+    setDraggedObjects(objects);
     setBodyCursor('grabbing');
   };
 
-  const onDragEnd = (event) => {
+  const onDragEnd = (event: DragEndEvent) => {
     console.debug('End drag', event.active.data.current);
     setIsDragging(false);
     setDraggedObjects(null);
@@ -93,17 +106,20 @@ const MAMPage = () => {
   //
 
   useEffect(() => {
-    if (searchParams.get('asset')) {
-      const assetId = parseInt(searchParams.get('asset'));
+    const assetParam = searchParams.get('asset');
+    if (assetParam) {
+      const assetId = parseInt(assetParam);
       if (isNaN(assetId)) return;
       if (assetId === focusedAsset) return;
       setFocusedAsset(assetId);
       setSelectedAssets([assetId]);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams.get('asset')]);
 
   useEffect(() => {
-    if (focusedAsset === searchParams.get('asset')) return;
+    const assetParam = searchParams.get('asset');
+    if (focusedAsset?.toString() === assetParam) return;
     if (focusedAsset === null) {
       setSearchParams((o) => {
         o.delete('asset');
@@ -112,9 +128,10 @@ const MAMPage = () => {
       return;
     }
     setSearchParams((o) => {
-      o.set('asset', focusedAsset);
+      o.set('asset', focusedAsset.toString());
       return o;
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [focusedAsset]);
 
   //
@@ -133,11 +150,10 @@ const MAMPage = () => {
     return 'Not implemented';
   }, [module, draggedObjects]);
 
-  const onResizeStart = (gutter) => {
-    const _gutter = gutter;
+  const onResizeStart = () => {
     document.body.style.userSelect = 'none';
   };
-  const onResizeEnd = (gutter, size) => {
+  const onResizeEnd = (_gutter: number, size: number[]) => {
     setSplitterSizes(size);
     document.body.style.userSelect = '';
   };
@@ -158,7 +174,7 @@ const MAMPage = () => {
   }, [draggedObjects]);
 
   useEffect(() => {
-    const handleMouseMove = (e) => {
+    const handleMouseMove = (e: MouseEvent) => {
       if (!draggedIndicatorRef.current) return;
       draggedIndicatorRef.current.style.left = e.clientX + 20 + 'px';
       draggedIndicatorRef.current.style.top = e.clientY + 20 + 'px';
@@ -182,13 +198,13 @@ const MAMPage = () => {
           direction={SplitDirection.Horizontal}
           onResizeStarted={onResizeStart}
           onResizeFinished={onResizeEnd}
-          initialSizes={splitterSizes}
+          initialSizes={splitterSizes || undefined}
         >
           <Browser isDragging={isDragging} />
-          {moduleComponent}
+          {moduleComponent as React.ReactNode}
         </Splitter>
       </DndContext>
-      {draggedObjects?.length > 0 && (
+      {draggedObjects && draggedObjects.length > 0 && (
         <DraggedIndicator ref={draggedIndicatorRef}>{draggedwidget}</DraggedIndicator>
       )}
     </MAMContainer>

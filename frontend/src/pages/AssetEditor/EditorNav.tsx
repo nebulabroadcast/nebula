@@ -8,8 +8,8 @@ interface AssetEditorNavProps {
   onRevert: () => void;
   onSave: (payload?: Record<string, any>) => void;
   setMeta: (key: string, value: any, instant?: boolean) => void;
-  editorMode: string;
-  setEditorMode: (mode: string) => void;
+  editorMode: 'metadata' | 'preview';
+  setEditorMode: (mode: 'metadata' | 'preview') => void;
   enabledActions: {
     create: boolean;
     clone: boolean;
@@ -77,7 +77,7 @@ const AssetEditorNav: React.FC<AssetEditorNavProps> = ({
           { title: 'Preview', value: 'preview', icon: 'visibility' },
         ]}
         value={editorMode}
-        onChange={setEditorMode}
+        onChange={setEditorMode as (mode: string) => void}
       />
 
       <Spacer />
