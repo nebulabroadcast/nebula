@@ -1,7 +1,6 @@
-import React, { useEffect, useRef } from 'react';
-
 import { Button, InputTimecode, Navbar } from '@components';
 import { isEditableTarget } from '@lib/useKeyDown';
+import React, { useEffect, useRef } from 'react';
 
 interface VideoPlayerControlsProps {
   markIn: number;

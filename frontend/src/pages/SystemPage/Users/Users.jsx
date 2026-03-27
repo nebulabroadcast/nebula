@@ -1,3 +1,4 @@
+import Sessions from '@containers/Sessions';
 import { useNebula } from '@features/Nebula';
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
@@ -5,7 +6,6 @@ import { toast } from 'react-toastify';
 
 import nebula from '/src/nebula';
 import { Navbar, NavbarTitle, Button, Spacer } from '/src/components';
-import Sessions from '@containers/Sessions';
 
 import UserForm from './UserForm';
 import UserList from './UserList';

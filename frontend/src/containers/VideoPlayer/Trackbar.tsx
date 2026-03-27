@@ -1,6 +1,5 @@
-import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
-
 import { Canvas, Navbar } from '@components';
+import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 
 const MARK_SIZE = 6;
 

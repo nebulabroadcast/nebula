@@ -1,15 +1,14 @@
+import { Button, InputTimecode, Navbar, Section } from '@components';
 import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 
 import { useAudioContext } from './AudioContext';
 import ChannelSelect from './ChannelSelect';
 import Trackbar from './Trackbar';
+import { VideoPlayerProps } from './types';
 import VideoOverlay from './VideoOverlay';
 import VideoPlayerControls from './VideoPlayerControls';
 import VUMeter from './VUMeter';
-
-import { Button, InputTimecode, Navbar, Section } from '@components';
-import { VideoPlayerProps } from './types';
 
 const VideoPlayerContainer = styled.div`
   display: flex;

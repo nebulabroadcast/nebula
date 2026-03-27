@@ -1,9 +1,9 @@
+import { Table, Timestamp, Section, Button } from '@components';
+import type { TableRowData } from '@components/table/types';
 import React, { useState, useEffect } from 'react';
 
-import nebula from '@/nebula';
-import { Table, Timestamp, Section, Button } from '@components';
 import type { SessionModel } from '@/client';
-import type { TableRowData } from '@components/table/types';
+import nebula from '@/nebula';
 
 const FormattedTimestamp = (rowData: TableRowData) => {
   const session = rowData as SessionModel;

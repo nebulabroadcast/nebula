@@ -1,5 +1,3 @@
-import nebula from '@/nebula';
-
 import { ContextMenu } from '@components';
 import { useLocalStorage } from '@lib/useLocalStorage';
 import { dateToDateString } from '@lib/utils';
@@ -12,6 +10,8 @@ import drawEvents from './drawEvents';
 import drawMarks from './drawMarks';
 import { CalendarEvent, DrawParams, DraggedExternal, ContextMenuItem } from './types';
 import ZoomControl from './ZoomControl';
+
+import nebula from '@/nebula';
 
 const CalendarCanvas = styled.canvas`
   background-color: #24202e;
@@ -240,7 +240,7 @@ const Calendar: React.FC<CalendarProps> = ({
       ? hourHeight * (Math.max(draggedEvent.current?.duration || 1200, 1200) / 7200)
       : 0;
 
-    let newTime = pos2time(x, y - yoffset);
+    const newTime = pos2time(x, y - yoffset);
     setMousePos({ x, y });
 
     // Update current time

@@ -1,3 +1,4 @@
+import { TableDraggableItem } from '@components/table/types';
 import Browser from '@containers/Browser';
 import Splitter, { SplitDirection } from '@devbookhq/splitter';
 import {
@@ -14,11 +15,10 @@ import React, { useMemo, useEffect, useState, useRef } from 'react';
 import { useParams, useSearchParams } from 'react-router';
 import styled from 'styled-components';
 
+import Rundown from './Rundown';
+
 import AssetEditor from '@/pages/AssetEditor';
 import Scheduler from '@/pages/Scheduler';
-
-import Rundown from './Rundown';
-import { TableDraggableItem } from '@components/table/types';
 
 const MAMContainer = styled.div`
   flex-grow: 1;

@@ -14,8 +14,8 @@ import {
 import type { SelectOption } from '@components/SelectDialog';
 import React, { useMemo } from 'react';
 
-import nebula from '@/nebula';
 import type { FolderField, ClientMetaTypeModel } from '@/client';
+import nebula from '@/nebula';
 
 const eqSet = (xs: Set<any>, ys: Set<any>): boolean =>
   xs.size === ys.size && [...xs].every((x) => ys.has(x));

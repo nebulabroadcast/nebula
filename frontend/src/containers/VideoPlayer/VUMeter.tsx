@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-
 import { Canvas } from '@components';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 const COLOR_YELLOW = '#fcde00';
 const COLOR_RED = '#ff2404';
