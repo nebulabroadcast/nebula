@@ -1,6 +1,11 @@
 import styled from 'styled-components';
 
-const CalendarWrapper = styled.div`
+interface CalendarWrapperProps {
+  scrollbarwidth: number;
+  clockwidth: number;
+}
+
+const CalendarWrapper = styled.div<CalendarWrapperProps>`
   display: flex;
   flex-grow: 1;
   flex-direction: column;

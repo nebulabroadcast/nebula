@@ -1,7 +1,13 @@
-import { RangeSlider, Icon } from '/src/components';
+import { RangeSlider, Icon } from '@components';
+import React from 'react';
 
-const ZoomControl = ({ zoom, setZoom }) => {
-  const divStyle = {
+interface ZoomControlProps {
+  zoom: number;
+  setZoom: (zoom: number) => void;
+}
+
+const ZoomControl: React.FC<ZoomControlProps> = ({ zoom, setZoom }) => {
+  const divStyle: React.CSSProperties = {
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
@@ -10,7 +16,7 @@ const ZoomControl = ({ zoom, setZoom }) => {
     width: 200,
   };
 
-  const iconStyle = {
+  const iconStyle: React.CSSProperties = {
     fontSize: '1rem',
   };
 
@@ -21,7 +27,9 @@ const ZoomControl = ({ zoom, setZoom }) => {
         min="1"
         max="8"
         step=".1"
-        onChange={(e) => setZoom(e.target.value)}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+          setZoom(parseFloat(e.target.value))
+        }
         value={zoom}
       />
       <Icon icon="zoom_in_map" style={iconStyle} />

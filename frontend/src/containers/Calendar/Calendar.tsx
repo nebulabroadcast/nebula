@@ -1,15 +1,16 @@
-import nebula from '/src/nebula';
+import nebula from '@/nebula';
 
 import { ContextMenu } from '@components';
 import { useLocalStorage } from '@lib/useLocalStorage';
 import { dateToDateString } from '@lib/utils';
-import { useRef, useMemo, useEffect, useState, useCallback } from 'react';
+import React, { useRef, useMemo, useEffect, useState, useCallback } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router';
 import styled from 'styled-components';
 
 import CalendarWrapper from './CalendarWrapper';
 import drawEvents from './drawEvents';
 import drawMarks from './drawMarks';
+import { CalendarEvent, DrawParams, DraggedExternal, ContextMenuItem } from './types';
 import ZoomControl from './ZoomControl';
 
 const CalendarCanvas = styled.canvas`
@@ -19,7 +20,16 @@ const CalendarCanvas = styled.canvas`
 const CLOCK_WIDTH = 40;
 const DRAG_THRESHOLD = 10;
 
-const Calendar = ({
+interface CalendarProps {
+  startTime: Date;
+  draggedExternal: DraggedExternal | null;
+  events: CalendarEvent[];
+  saveEvent: (event: any) => void;
+  copyEvent: (id: string | number, newTs: number) => void;
+  contextMenu: ContextMenuItem[];
+}
+
+const Calendar: React.FC<CalendarProps> = ({
   startTime,
   draggedExternal,
   events,
@@ -30,17 +40,19 @@ const Calendar = ({
   const navigate = useNavigate();
   const location = useLocation();
 
-  const calendarRef = useRef(null);
-  const dayRef = useRef(null);
-  const wrapperRef = useRef(null);
-  const cursorTime = useRef(null);
+  const calendarRef = useRef<HTMLCanvasElement>(null);
+  const dayRef = useRef<HTMLDivElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const cursorTime = useRef<Date | null>(null);
 
   const [scrollbarWidth, setScrollbarWidth] = useState(0);
   const [zoom, setZoom] = useLocalStorage('mam.scheduler.calendarZoom', 1);
   const [scrollPos, setScrollPos] = useLocalStorage('mam.scheduler.calendarPos', 0);
-  const [mousePos, setMousePos] = useState(null);
+  const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(null);
 
   // Reference to events
+
+  const eventsRef = useRef<CalendarEvent[]>([]);
 
   useEffect(() => {
     eventsRef.current = events;
@@ -48,14 +60,13 @@ const Calendar = ({
 
   // Dragging support
 
-  const initialMousePos = useRef(null);
-  const lastClickedEvent = useRef(null);
-  const draggedEvent = useRef(null);
+  const initialMousePos = useRef<{ x: number; y: number } | null>(null);
+  const lastClickedEvent = useRef<CalendarEvent | null>(null);
+  const draggedEvent = useRef<CalendarEvent | null>(null);
 
   // Drawing parameters
 
-  const drawParams = useRef({});
-  const eventsRef = useRef([]);
+  const drawParams = useRef<DrawParams>({} as DrawParams);
 
   // Time functions
 
@@ -66,7 +77,7 @@ const Calendar = ({
     return offset;
   }, [startTime]);
 
-  const pos2time = (x, y) => {
+  const pos2time = (x: number, y: number): Date | null => {
     if (x < CLOCK_WIDTH) return null;
     //if (y < 0) return null
     const _y = Math.max(y, 1);
@@ -80,52 +91,57 @@ const Calendar = ({
     return resultDate;
   };
 
-  const time2pos = (time) => {
+  const time2pos = (time: Date): { x: number; y: number } => {
     const { dayWidth, hourHeight } = drawParams.current;
-    const offsetSeconds = (time - startTime) / 1000;
+    const offsetSeconds = (time.getTime() - startTime.getTime()) / 1000;
     const dayOffset = Math.floor(offsetSeconds / (24 * 60 * 60));
     const x = CLOCK_WIDTH + dayOffset * dayWidth;
     const y = ((offsetSeconds % (24 * 60 * 60)) / (60 * 60)) * hourHeight;
     return { x, y };
   };
 
-  const eventAtPos = useCallback(() => {
-    if (!cursorTime.current) return null;
-    const currentTs = cursorTime.current.getTime() / 1000;
+  const eventAtPos = useCallback(
+    (x: number, y: number): CalendarEvent | null => {
+      const { pos2time } = drawParams.current;
+      const cTime = pos2time(x, y);
+      if (!cTime) return null;
+      const currentTs = cTime.getTime() / 1000;
 
-    // Get the current day midnight (for comparing dates)
-    const currentMidnight = new Date((currentTs - dayStartOffsetSeconds) * 1000);
-    currentMidnight.setHours(0, 0, 0, 0);
+      // Get the current day midnight (for comparing dates)
+      const currentMidnight = new Date((currentTs - dayStartOffsetSeconds) * 1000);
+      currentMidnight.setHours(0, 0, 0, 0);
 
-    // When the next day starts (unix timestamp)
-    const nextDayStartTs = currentTs - dayStartOffsetSeconds + 24 * 60 * 60;
+      // When the next day starts (unix timestamp)
+      const nextDayStartTs = currentTs - dayStartOffsetSeconds + 24 * 60 * 60;
 
-    let i = 0;
-    for (const event of events) {
-      i += 1;
-      // start and nextStart are unix timestamps
-      const { start } = event;
+      let i = 0;
+      for (const event of events) {
+        const { start } = event;
 
-      // Get the next event start time
-      const nextEvent = events[i];
-      let nextStart = nextEvent?.start;
+        // Get the next event start time
+        const nextEvent = events[i + 1];
+        let nextStart = nextEvent?.start;
 
-      // if nextStart is not defined or is in the next day, use the end of the day
-      if (!nextStart || nextStart > nextDayStartTs) nextStart = nextDayStartTs;
+        i += 1;
 
-      if (currentTs >= start && currentTs < nextStart) {
-        // skip events that are not on the current day
-        // (empty space at the beginning of the day)
-        const edate = new Date((start - dayStartOffsetSeconds) * 1000).getDate();
-        if (edate !== currentMidnight.getDate()) continue;
+        // if nextStart is not defined or is in the next day, use the end of the day
+        if (!nextStart || nextStart > nextDayStartTs) nextStart = nextDayStartTs;
 
-        // event fits, returning
-        return event;
+        if (currentTs >= start && currentTs < nextStart) {
+          // skip events that are not on the current day
+          // (empty space at the beginning of the day)
+          const edate = new Date((start - dayStartOffsetSeconds) * 1000).getDate();
+          if (edate !== currentMidnight.getDate()) continue;
+
+          // event fits, returning
+          return event;
+        }
       }
-    }
-    // no valid event under the cursor
-    return null;
-  }, [events, dayStartOffsetSeconds]);
+      // no valid event under the cursor
+      return null;
+    },
+    [events, dayStartOffsetSeconds]
+  );
 
   // Update drawParams reference
 
@@ -148,6 +164,7 @@ const Calendar = ({
     if (!dayRef.current || !calendarRef.current) return;
     const canvas = calendarRef.current;
     const ctx = canvas.getContext('2d');
+    if (!ctx) return;
     const { dayWidth, hourHeight } = drawParams.current;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -208,7 +225,7 @@ const Calendar = ({
 
   // Event handlers
 
-  const onMouseMove = (e) => {
+  const onMouseMove = (e: MouseEvent) => {
     if (!calendarRef?.current) return;
 
     // get pos2time from drawParams to avoid stale closure
@@ -221,7 +238,7 @@ const Calendar = ({
 
     // TODO align yoffset based on y position (subtract on top, add on bottom)
     const yoffset = draggedEvent.current
-      ? hourHeight * (Math.max(draggedEvent.current?.duration || 1200) / 7200)
+      ? hourHeight * (Math.max(draggedEvent.current?.duration || 1200, 1200) / 7200)
       : 0;
 
     let newTime = pos2time(x, y - yoffset);
@@ -252,7 +269,7 @@ const Calendar = ({
   // Clicking
   //
 
-  const openEventInRundown = (event) => {
+  const openEventInRundown = (event: CalendarEvent) => {
     const basePath = '/mam/rundown';
     const searchParams = new URLSearchParams(location.search);
     const startTs = event.start - dayStartOffsetSeconds;
@@ -264,14 +281,14 @@ const Calendar = ({
     navigate(fullPath);
   };
 
-  const onClick = (evt) => {
+  const onClick = (evt: React.MouseEvent<HTMLCanvasElement>) => {
     //handle double click on event
-    const pos = { x: evt.clientX, y: evt.clientY };
-    const rect = calendarRef.current.getBoundingClientRect();
+    const rect = calendarRef.current?.getBoundingClientRect();
+    if (!rect) return;
     const x = evt.clientX - rect.left;
     const y = evt.clientY - rect.top;
     initialMousePos.current = { x, y };
-    const event = eventAtPos(pos.x, pos.y);
+    const event = eventAtPos(x, y);
 
     // on double click, navigate to event details
     if (evt.detail === 2 && event) {
@@ -279,7 +296,7 @@ const Calendar = ({
     }
   };
 
-  const onMouseUp = (e) => {
+  const onMouseUpHandler = (e: MouseEvent | React.MouseEvent) => {
     if (!calendarRef?.current) return;
     if (draggedExternal && cursorTime.current) {
       console.debug('Dropped external', draggedExternal, cursorTime.current);
@@ -312,24 +329,24 @@ const Calendar = ({
   // Keep track where the mouse is
   // and what event was clicked last
 
-  const onMouseDown = (evt) => {
-    const pos = { x: evt.clientX, y: evt.clientY };
-    const rect = calendarRef.current.getBoundingClientRect();
+  const onMouseDown = (evt: React.MouseEvent<HTMLCanvasElement>) => {
+    const rect = calendarRef.current?.getBoundingClientRect();
+    if (!rect) return;
     const x = evt.clientX - rect.left;
     const y = evt.clientY - rect.top;
     initialMousePos.current = { x, y };
-    const event = eventAtPos(pos.x, pos.y);
+    const event = eventAtPos(x, y);
     if (event) lastClickedEvent.current = event;
   };
 
   useEffect(() => {
-    if (!calendarRef.current) return;
-    calendarRef.current.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp);
+    const canvas = calendarRef.current;
+    if (!canvas) return;
+    canvas.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUpHandler);
     return () => {
-      if (!calendarRef.current) return;
-      calendarRef.current.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);
+      canvas.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUpHandler);
     };
     //eslint-disable-next-line react-hooks/exhaustive-deps
   }, [calendarRef.current, startTime]);
@@ -340,16 +357,16 @@ const Calendar = ({
 
   const resizeCanvas = () => {
     const canvas = calendarRef.current;
-    if (!canvas?.parentElement) return;
+    if (!canvas?.parentElement || !dayRef.current) return;
     canvas.width = canvas.parentElement.clientWidth;
     canvas.height = canvas.parentElement.clientHeight * zoom;
 
-    const bodyWrapper = calendarRef.current.parentElement;
-    const scrollbarWidth = bodyWrapper.offsetWidth - bodyWrapper.clientWidth;
-    setScrollbarWidth(scrollbarWidth);
+    const bodyWrapper = canvas.parentElement;
+    const scrollbarWidthVal = bodyWrapper.offsetWidth - bodyWrapper.clientWidth;
+    setScrollbarWidth(scrollbarWidthVal);
 
     drawParams.current.dayWidth = dayRef.current.clientWidth;
-    drawParams.current.hourHeight = calendarRef.current.clientHeight / 24;
+    drawParams.current.hourHeight = canvas.clientHeight / 24;
 
     drawCalendar();
   };
@@ -376,7 +393,7 @@ const Calendar = ({
         label: item.label,
         icon: item.icon,
         hlColor: item.hlColor,
-        onClick: (e) => {
+        onClick: (e: any) => {
           const event = eventAtPos(e.posX, e.posY);
           if (!event) return;
           item.onClick(event);
@@ -386,8 +403,8 @@ const Calendar = ({
     return result;
   }, [contextMenu, eventAtPos]);
 
-  const onScroll = (e) => {
-    setScrollPos(e.target.scrollTop);
+  const onScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    setScrollPos((e.target as HTMLDivElement).scrollTop);
   };
 
   useEffect(() => {
@@ -417,7 +434,7 @@ const Calendar = ({
         weekday: 'long',
       });
 
-      const style = {};
+      const style: React.CSSProperties = {};
 
       if (todayStartTs === dayStartTs) {
         style.borderBottom = '1px solid var(--color-text)';
@@ -445,10 +462,8 @@ const Calendar = ({
         {dstyles.map((d, i) => {
           const r = i === 0 ? dayRef : null;
           return (
-            <div className="calendar-day" style={dstyles[i].style} ref={r} key={i}>
-              <NavLink to={`/mam/rundown?date=${dstyles[i].date}`}>
-                {dstyles[i].dayName}
-              </NavLink>
+            <div className="calendar-day" style={d.style} ref={r} key={i}>
+              <NavLink to={`/mam/rundown?date=${d.date}`}>{d.dayName}</NavLink>
             </div>
           );
         })}
@@ -459,7 +474,7 @@ const Calendar = ({
             id="calendar"
             ref={calendarRef}
             onMouseDown={onMouseDown}
-            onMouseUp={onMouseUp}
+            onMouseUp={onMouseUpHandler as React.MouseEventHandler<HTMLCanvasElement>}
             onClick={onClick}
           />
         </div>
@@ -468,7 +483,10 @@ const Calendar = ({
         <ZoomControl zoom={zoom} setZoom={setZoom} />
       </div>
       {contextMenuItems && (
-        <ContextMenu target={calendarRef} options={contextMenuItems} />
+        <ContextMenu
+          target={calendarRef as React.RefObject<HTMLElement>}
+          options={contextMenuItems}
+        />
       )}
     </CalendarWrapper>
   );

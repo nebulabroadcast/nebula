@@ -1,8 +1,15 @@
 import { getTextColor } from '@components/lib/colors';
+import { MutableRefObject } from 'react';
 
 import { drawTruncatedText } from './drawUtils';
+import { CalendarEvent, DrawParams } from './types';
 
-const drawEvents = (ctx, drawParams, events, draggedEvent) => {
+const drawEvents = (
+  ctx: CanvasRenderingContext2D,
+  drawParams: MutableRefObject<DrawParams>,
+  events: CalendarEvent[],
+  draggedEvent: CalendarEvent | null
+) => {
   const { dayWidth, hourHeight, time2pos } = drawParams.current;
   const maxY = ctx.canvas.height;
 
@@ -15,8 +22,8 @@ const drawEvents = (ctx, drawParams, events, draggedEvent) => {
     i += 1;
     if (draggedEvent?.id === event?.id) continue;
 
-    const startPos = time2pos(start * 1000);
-    const endPos = nextStart ? time2pos(nextStart * 1000) : null;
+    const startPos = time2pos(new Date(start * 1000));
+    const endPos = nextStart ? time2pos(new Date(nextStart * 1000)) : null;
     const eventDuration = nextStart ? (nextStart - start) * 1000 : null;
 
     // Compute the event rectangle height
@@ -24,7 +31,9 @@ const drawEvents = (ctx, drawParams, events, draggedEvent) => {
     let eventHeight;
     if (!endPos) eventHeight = maxY - startPos.y;
     else if (endPos.x > startPos.x) eventHeight = maxY - startPos.y;
-    else eventHeight = (eventDuration / (3600 * 1000)) * hourHeight;
+    else if (eventDuration !== null)
+      eventHeight = (eventDuration / (3600 * 1000)) * hourHeight;
+    else eventHeight = maxY - startPos.y;
 
     // Set the fill style to the gradient
 
@@ -43,7 +52,8 @@ const drawEvents = (ctx, drawParams, events, draggedEvent) => {
     // draw actual duration
 
     const usedHeight = hourHeight * (duration / 3600);
-    ctx.fillStyle = duration - 30 > nextStart - start ? '#ff2404' : '#5fff5f';
+    ctx.fillStyle =
+      nextStart && duration - 30 > nextStart - start ? '#ff2404' : '#5fff5f';
     ctx.fillRect(startPos.x + 10, startPos.y, 3, usedHeight);
 
     // event title
@@ -51,8 +61,6 @@ const drawEvents = (ctx, drawParams, events, draggedEvent) => {
     ctx.font = '12px Noto Sans';
     ctx.fillStyle = getTextColor(eventColor, 180);
     drawTruncatedText(ctx, startPos.x + 15, startPos.y + 15, dayWidth - 20, title);
-
-    //ctx.fillText(title, startPos.x + 15, startPos.y + 15)
   }
 };
 

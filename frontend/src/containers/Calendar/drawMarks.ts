@@ -1,4 +1,10 @@
-const drawMarks = (ctx, drawParams) => {
+import { MutableRefObject } from 'react';
+import { DrawParams } from './types';
+
+const drawMarks = (
+  ctx: CanvasRenderingContext2D,
+  drawParams: MutableRefObject<DrawParams>
+) => {
   const { dayWidth, hourHeight, startTime, time2pos } = drawParams.current;
 
   const startHour = startTime?.getHours() || 0;

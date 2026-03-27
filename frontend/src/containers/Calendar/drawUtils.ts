@@ -1,8 +1,8 @@
-const removeLastVowel = (str) => {
+const removeLastVowel = (str: string): string => {
   return str.replace(/([aeiouAEIOU])(?!.*[aeiouAEIOU\s])/g, '');
 };
 
-const deterministicRm = (str) => {
+const deterministicRm = (str: string): string => {
   const words = str.split(' ');
   const totalLength = str.length;
   const wordIndex = totalLength % words.length;
@@ -12,7 +12,13 @@ const deterministicRm = (str) => {
   return words.map((word, index) => (index === wordIndex ? newWord : word)).join(' ');
 };
 
-function drawTruncatedText(ctx, x, y, width, text) {
+function drawTruncatedText(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  text: string
+) {
   let truncatedText = text;
   let i = 0;
   while (ctx.measureText(truncatedText).width > width) {
