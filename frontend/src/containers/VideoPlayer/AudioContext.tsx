@@ -34,9 +34,20 @@ export const AudioContextProvider: React.FC<AudioContextProviderProps> = ({
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
-    if (audioContext) return;
-    setAudioContext(new window.AudioContext());
-  }, [audioContext]);
+    const ctx = new window.AudioContext();
+    setAudioContext(ctx);
+    return () => {
+      if (mediaElementSourceRef.current) {
+        mediaElementSourceRef.current.disconnect();
+        mediaElementSourceRef.current = null;
+      }
+      if (splitterRef.current) {
+        splitterRef.current.disconnect();
+        splitterRef.current = null;
+      }
+      ctx.close().catch(() => {});
+    };
+  }, []);
 
   useEffect(() => {
     const video = videoRef.current;
