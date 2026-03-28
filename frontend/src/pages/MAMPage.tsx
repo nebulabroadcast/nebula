@@ -138,11 +138,11 @@ const MAMPage: React.FC = () => {
   // MAM Module
   //
 
-  const componentProps = {
-    draggedObjects,
-  };
-
   const moduleComponent = useMemo(() => {
+    const componentProps = {
+      draggedObjects,
+    };
+
     if (module == 'editor') return <AssetEditor {...componentProps} />;
     if (module == 'scheduler') return <Scheduler {...componentProps} />;
     if (module == 'rundown') return <Rundown {...componentProps} />;
