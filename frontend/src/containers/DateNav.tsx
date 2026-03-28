@@ -50,7 +50,7 @@ const DateNav: React.FC<DateNavProps> = ({ onChange, skipBy = 1 }) => {
 
   const pickDate = async () => {
     try {
-      const newDate = (await showDialog('date', 'Pick date', {
+      const newDate = (await showDialog('date', 'Pick a date', {
         value: date,
       })) as string;
       setSearchParams((o) => {
@@ -66,7 +66,7 @@ const DateNav: React.FC<DateNavProps> = ({ onChange, skipBy = 1 }) => {
   return (
     <>
       <Button icon="chevron_left" onClick={prevDay} tooltip="Previous day" />
-      <Button icon="calendar_month" onClick={pickDate} tooltip="Pick date" />
+      <Button icon="calendar_month" onClick={pickDate} tooltip="Pick a date" />
       <Button icon="today" onClick={today} tooltip="Today" />
       <Button icon="chevron_right" onClick={nextDay} tooltip="Next day" />
     </>

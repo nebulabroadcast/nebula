@@ -20,6 +20,10 @@ $datepicker__item-size: 1.7rem !default;
 $datepicker__margin: 0.4rem !default;
 $datepicker__navigation-button-size: 32px !default;
 
+.react-datepicker__sr-only {
+  display: none;
+}
+
 %navigation-chevron {
   border-color: $datepicker__muted-color;
   border-style: solid;
