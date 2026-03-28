@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "lint": "eslint src/**/*.{jsx,tsx,ts}",
+    "lint": "eslint src/**/*.{tsx,ts}",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
     "generate": "openapi-ts"
