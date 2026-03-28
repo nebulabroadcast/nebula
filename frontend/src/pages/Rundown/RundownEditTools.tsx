@@ -1,5 +1,6 @@
-import { Navbar } from '/src/components';
-import DraggableIcon from '/src/containers/DraggableIcon';
+import React from 'react';
+import { Navbar } from '@components';
+import DraggableIcon from '@containers/DraggableIcon';
 
 const dragIcons = [
   {
@@ -7,8 +8,8 @@ const dragIcons = [
     tooltip: 'Placeholder',
     icon: 'expand',
     data: {
-      type: 'item',
-      item_role: 'placeholder',
+      type: 'item' as const,
+      item_role: 'placeholder' as const,
       title: 'Placeholder',
       duration: 3600,
     },
@@ -18,8 +19,8 @@ const dragIcons = [
     tooltip: 'Live',
     icon: 'live_tv',
     data: {
-      type: 'item',
-      item_role: 'live',
+      type: 'item' as const,
+      item_role: 'live' as const,
       title: 'Live',
       duration: 3600,
     },
@@ -29,8 +30,8 @@ const dragIcons = [
     tooltip: 'Lead In',
     icon: 'vertical_align_bottom',
     data: {
-      type: 'item',
-      item_role: 'lead_in',
+      type: 'item' as const,
+      item_role: 'lead_in' as const,
       title: 'Lead In',
     },
   },
@@ -39,14 +40,14 @@ const dragIcons = [
     tooltip: 'Lead Out',
     icon: 'vertical_align_top',
     data: {
-      type: 'item',
-      item_role: 'lead_out',
+      type: 'item' as const,
+      item_role: 'lead_out' as const,
       title: 'Lead Out',
     },
   },
 ];
 
-const RundownEditTools = () => {
+const RundownEditTools: React.FC = () => {
   return (
     <Navbar>
       {dragIcons.map((icon, index) => (

@@ -1,8 +1,14 @@
+import React from 'react';
 import { NavLink } from 'react-router';
 
-import { Navbar, InputText, Button, Spacer } from '/src/components';
+import { Navbar, InputText, Button, Spacer } from '@components';
 
-const JobsNav = ({ searchQuery, setSearchQuery }) => {
+interface JobsNavProps {
+  searchQuery: string;
+  setSearchQuery: (value: string) => void;
+}
+
+const JobsNav: React.FC<JobsNavProps> = ({ searchQuery, setSearchQuery }) => {
   return (
     <Navbar>
       <NavLink to="/jobs/active">Active</NavLink>

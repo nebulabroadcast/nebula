@@ -1,7 +1,7 @@
 import styled from 'styled-components';
-import { Section } from '/src/components';
+import { Section } from '@components';
 
-const RundownTableWrapper = styled(Section)`
+const RundownTableWrapper = styled(Section)<{ $drophl?: number | null }>`
   tbody {
     tr {
       border-left: 0 !important;

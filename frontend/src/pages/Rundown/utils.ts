@@ -1,7 +1,17 @@
-import nebula from '/src/nebula';
+import nebula from '@/nebula';
 import { getColumnWidth, getFormatter } from '@lib/tableFormat';
+import type { TableColumn } from '@components/table/types';
+import type { ContextMenuOption } from '@components/ContextMenu';
 
-const getRunModeOptions = (object_type, selection, func) => {
+const getRunModeOptions = (
+  object_type: 'event' | 'item',
+  selection: number | string,
+  func: (
+    object_type: 'event' | 'item',
+    selection: number | string,
+    run_mode: number
+  ) => void
+): ContextMenuOption[] => {
   if (object_type === 'event') {
     return [
       {
@@ -47,6 +57,7 @@ const getRunModeOptions = (object_type, selection, func) => {
       },
     ];
   }
+  return [];
 };
 
 const RUNDOWN_COLUMNS = [
@@ -63,7 +74,7 @@ const RUNDOWN_COLUMNS = [
   'mark_out',
 ];
 
-const getRundownColumns = () => {
+const getRundownColumns = (): TableColumn[] => {
   return RUNDOWN_COLUMNS.map((key) => {
     return {
       title: nebula.metaType(key).header,

@@ -1,18 +1,29 @@
 import DateNav from '@containers/DateNav';
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 
-import nebula from '/src/nebula';
-import { Navbar, Spacer, RadioButton } from '/src/components';
-import { useNebula } from '/src/features/Nebula';
+import nebula from '@/nebula';
+import { Navbar, Spacer, RadioButton } from '@components';
+import { useNebula } from '@features/Nebula';
 
-const RundownNav = ({ setStartTime, rundownMode, setRundownMode }) => {
+interface RundownNavProps {
+  startTime: Date | null;
+  setStartTime: (date: Date) => void;
+  rundownMode: string;
+  setRundownMode: (mode: string) => void;
+}
+
+const RundownNav: React.FC<RundownNavProps> = ({
+  setStartTime,
+  rundownMode,
+  setRundownMode,
+}) => {
   const { setPageTitle, currentChannelId } = useNebula();
 
   const channelConfig = useMemo(() => {
-    return nebula.getPlayoutChannel(currentChannelId);
+    return currentChannelId ? nebula.getPlayoutChannel(currentChannelId) : undefined;
   }, [currentChannelId]);
 
-  const onDateChange = (date) => {
+  const onDateChange = (date: string) => {
     const [dsHH, dsMM] = channelConfig?.day_start || [7, 0];
 
     const newDate = new Date(date);

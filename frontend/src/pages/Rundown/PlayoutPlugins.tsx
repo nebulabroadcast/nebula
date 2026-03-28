@@ -1,9 +1,9 @@
-import { useMemo, useEffect, useState } from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import styled from 'styled-components';
-import { useNebula } from '/src/features/Nebula';
+import { useNebula } from '@features/Nebula';
 
-import nebula from '/src/nebula';
+import nebula from '@/nebula';
 import {
   Spacer,
   Select,
@@ -13,8 +13,9 @@ import {
   Form,
   FormRow,
   Section,
-} from '/src/components';
-import { Navbar } from '/src/components';
+} from '@components';
+import { Navbar } from '@components';
+import type { PlayoutPluginManifest, PlayoutPluginSlot } from '../../client';
 
 const PluginFormWrapper = styled.div`
   display: flex;
@@ -28,28 +29,43 @@ const PluginFormWrapper = styled.div`
   }
 `;
 
-const PluginSlot = ({ slot, value, onChange }) => {
+interface PluginSlotProps {
+  slot: PlayoutPluginSlot;
+  value: any;
+  onChange: (value: any) => void;
+}
+
+const PluginSlot: React.FC<PluginSlotProps> = ({ slot, value, onChange }) => {
   if (slot.type === 'text') {
-    return (
-      <InputText
-        label={slot.name}
-        value={value}
-        onChange={onChange}
-        style={{ flexGrow: 1 }}
-      />
-    );
+    return <InputText value={value} onChange={onChange} style={{ flexGrow: 1 }} />;
   }
 
   if (slot.type === 'select') {
-    return <Select value={value} onChange={onChange} options={slot.options} />;
+    return (
+      <Select
+        value={value}
+        onChange={onChange}
+        options={
+          slot.options?.map((opt) => ({
+            title: opt.title || opt.value,
+            value: opt.value,
+          })) || []
+        }
+      />
+    );
   }
 
   return <span>Unsupported slot type: {slot.type}</span>;
 };
 
-const PluginPanel = ({ plugin, onError }) => {
+interface PluginPanelProps {
+  plugin?: PlayoutPluginManifest | null;
+  onError: (error: any) => void;
+}
+
+const PluginPanel: React.FC<PluginPanelProps> = ({ plugin, onError }) => {
   const { currentChannelId } = useNebula();
-  const [formData, setFormData] = useState({});
+  const [formData, setFormData] = useState<Record<string, any>>({});
 
   if (!plugin) {
     return <div>No plugin selected</div>;
@@ -58,7 +74,7 @@ const PluginPanel = ({ plugin, onError }) => {
   const buttons = (
     <>
       {plugin.slots
-        .filter((slot) => slot.type === 'action')
+        ?.filter((slot) => slot.type === 'action')
         .map((slot) => (
           <Button
             key={slot.name}
@@ -84,13 +100,9 @@ const PluginPanel = ({ plugin, onError }) => {
     </>
   );
 
-  if (!plugin.slots.length) {
+  if (!plugin.slots?.length) {
     return <div>No interactivity available</div>;
   }
-
-  // const inputWidgetCount = plugin.slots.filter((slot) => slot.type !== 'action').length;
-  // const buttonCount = plugin.slots.filter((slot) => slot.type === 'action').length;
-  //
 
   if (!plugin.slots.filter((slot) => slot.type !== 'action').length) {
     return (
@@ -122,10 +134,14 @@ const PluginPanel = ({ plugin, onError }) => {
   );
 };
 
-const PlayoutPlugins = ({ onError }) => {
+interface PlayoutPluginsProps {
+  onError: (error: any) => void;
+}
+
+const PlayoutPlugins: React.FC<PlayoutPluginsProps> = ({ onError }) => {
   const { currentChannelId } = useNebula();
-  const [pluginList, setPluginList] = useState([]);
-  const [currentPlugin, setCurrentPlugin] = useState(null);
+  const [pluginList, setPluginList] = useState<PlayoutPluginManifest[]>([]);
+  const [currentPlugin, setCurrentPlugin] = useState<string | null>(null);
 
   useEffect(() => {
     nebula
@@ -134,9 +150,10 @@ const PlayoutPlugins = ({ onError }) => {
         action: 'plugin_list',
       })
       .then((res) => {
-        setPluginList(res.data.plugins || []);
-        if (res.data.plugins.length > 0) {
-          setCurrentPlugin(res.data.plugins[0].name);
+        const plugins = res.data.plugins || [];
+        setPluginList(plugins);
+        if (plugins.length > 0) {
+          setCurrentPlugin(plugins[0].name);
         }
       })
       .catch(onError);
@@ -145,7 +162,7 @@ const PlayoutPlugins = ({ onError }) => {
 
   const pluginOptions = useMemo(() => {
     return pluginList
-      .filter((plugin) => plugin?.slots.length)
+      .filter((plugin) => plugin?.slots?.length)
       .map((plugin) => ({
         title: plugin.title || plugin.name,
         value: plugin.name,
@@ -157,7 +174,7 @@ const PlayoutPlugins = ({ onError }) => {
       <Navbar>
         <RadioButton
           options={pluginOptions}
-          value={currentPlugin}
+          value={currentPlugin || ''}
           onChange={setCurrentPlugin}
         />
         <Spacer />
@@ -166,10 +183,10 @@ const PlayoutPlugins = ({ onError }) => {
         <PluginPanel
           onError={onError}
           plugin={
-            pluginList?.length &&
-            currentPlugin &&
-            pluginList.find((p) => p.name === currentPlugin)
-          } // Find the plugin object based on the currentPlugin name
+            pluginList?.length && currentPlugin
+              ? pluginList.find((p) => p.name === currentPlugin)
+              : null
+          }
         />
       </Section>
     </PluginFormWrapper>

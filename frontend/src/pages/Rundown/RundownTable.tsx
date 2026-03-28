@@ -1,16 +1,36 @@
-import nebula from '/src/nebula';
+import nebula from '@/nebula';
 import { Table } from '@components';
 import { useDialog } from '@features/Dialogs';
 import { formatRowHighlightColor, formatRowHighlightStyle } from '@lib/tableFormat';
-import { useMemo, useRef, useEffect } from 'react';
+import React, { useMemo, useRef, useEffect } from 'react';
 import { useSearchParams, useLocation } from 'react-router';
 
 import RundownTableWrapper from './RundownTableWrapper';
 import { getRunModeOptions, getRundownColumns } from './utils';
 
-import { useNebula } from '@/features/Nebula';
+import { useNebula } from '@features/Nebula';
+import type { RundownRow } from '../../client';
+import type { TableDraggableItem, TableRowData } from '@components/table/types';
 
-const RundownTable = ({
+interface RundownTableProps {
+  data: RundownRow[];
+  draggedObjects: TableDraggableItem[] | null;
+  onDrop: (items: any[], index: number) => void;
+  currentItem?: number | string | null;
+  cuedItem?: number | string | null;
+  loading: boolean;
+  selectedItems: (number | string)[];
+  setSelectedItems: (items: (number | string)[]) => void;
+  selectedEvents: (number | string)[];
+  setSelectedEvents: (events: (number | string)[]) => void;
+  focusedObject: RundownRow | null;
+  setFocusedObject: (object: RundownRow | null) => void;
+  rundownMode: string;
+  loadRundown: () => void;
+  onError: (error: any) => void;
+}
+
+const RundownTable: React.FC<RundownTableProps> = ({
   data,
   draggedObjects,
   onDrop,
@@ -27,16 +47,16 @@ const RundownTable = ({
   loadRundown,
   onError,
 }) => {
-  const [_searchParams, setSearchParams] = useSearchParams();
+  const [, setSearchParams] = useSearchParams();
   const location = useLocation();
   const lastHash = useRef('');
-  const lastRqTs = useRef(0);
+  const lastRqTs = useRef<number | string>(0);
   const { currentChannelId } = useNebula();
-  const tableRef = useRef();
+  const tableRef = useRef<HTMLDivElement>(null);
   const showDialog = useDialog();
 
   const channelConfig = useMemo(() => {
-    return nebula.getPlayoutChannel(currentChannelId);
+    return currentChannelId ? nebula.getPlayoutChannel(currentChannelId) : undefined;
   }, [currentChannelId]);
 
   //
@@ -47,31 +67,37 @@ const RundownTable = ({
     if (!location.hash) return;
     if (!data?.length) return;
     if (!tableRef.current) return;
+
+    const queryParams = new URLSearchParams(location.search);
+    const rqts = queryParams.get('rqts') || 0;
+
     // already scrolled to this hash
-    if (
-      lastHash.current === location.hash.slice(1) &&
-      lastRqTs.current === location?.query?.rqts
-    )
+    if (lastHash.current === location.hash.slice(1) && lastRqTs.current === rqts)
       return;
 
     // find the index of the event to scroll to
-    let scrollToIndex = null;
+    let scrollToIndex: number | null = null;
     for (let i = 0; i < data.length; i++) {
       const row = data[i];
-      if (row.type === 'event' && row.id == location.hash.slice(1)) {
+      if (row.type === 'event' && row.id.toString() === location.hash.slice(1)) {
         scrollToIndex = i;
         break;
       }
     }
+
+    if (scrollToIndex === null) return;
+
     // get the row element and scroll to it
     const query = `[data-index="${scrollToIndex}"]`;
-    const row = tableRef.current.querySelector(query);
+    const row = tableRef.current.querySelector(query) as HTMLElement;
     if (row) {
-      const pos = row.offsetTop - row.parentNode.offsetTop;
-      const parent = row.parentNode.parentNode.parentNode; // he he he
-      parent.scrollTop = pos;
+      const pos = row.offsetTop - (row.parentNode as HTMLElement).offsetTop;
+      const parent = row.parentNode?.parentNode?.parentNode as HTMLElement; // he he he
+      if (parent) {
+        parent.scrollTop = pos;
+      }
       lastHash.current = location.hash.slice(1);
-      lastRqTs.current = location?.query?.rqts || 0;
+      lastRqTs.current = rqts;
     }
   }, [location, data]);
 
@@ -81,10 +107,12 @@ const RundownTable = ({
 
   const columns = useMemo(() => getRundownColumns(), []);
 
-  const getRundownRowClass = (rowData) => {
-    if (rowData.type === 'event') return 'event-row';
-    if (rowData.id === currentItem) return 'current-item';
-    if (rowData.id === cuedItem) return 'cued-item';
+  const getRundownRowClass = (rowData: TableRowData) => {
+    const row = rowData as RundownRow;
+    if (row.type === 'event') return 'event-row';
+    if (row.id === currentItem) return 'current-item';
+    if (row.id === cuedItem) return 'cued-item';
+    return '';
   };
 
   //
@@ -101,7 +129,7 @@ const RundownTable = ({
   const onSendTo = () => {
     const ids = data
       .filter((row) => row.id_asset && selectedItems.includes(row.id))
-      .map((row) => row.id_asset);
+      .map((row) => row.id_asset!);
     if (!ids.length) return;
 
     showDialog('sendto', 'Send to...', { assets: ids })
@@ -110,6 +138,7 @@ const RundownTable = ({
   };
 
   const onSetPrimary = async () => {
+    if (!focusedObject || !focusedObject.id_asset) return;
     const id_asset = focusedObject.id_asset;
     const id_event = focusedObject.id_event;
     try {
@@ -123,8 +152,8 @@ const RundownTable = ({
         return;
       }
       const meta = res.data.data[0];
-      const emeta = {};
-      for (const field of channelConfig.fields) {
+      const emeta: Record<string, any> = {};
+      for (const field of channelConfig?.fields || []) {
         const key = field.name;
         emeta[key] = meta[key] || null;
       }
@@ -142,27 +171,30 @@ const RundownTable = ({
     }
   };
 
-  const onSolve = (solver) => {
+  const onSolve = (solver: string) => {
     const items = data
       .filter(
         (row) => row.item_role === 'placeholder' && selectedItems.includes(row.id)
       )
       .map((row) => row.id);
-    // TODO: dialog to select solver
     nebula.request('solve', { solver, items }).then(loadRundown).catch(onError);
   };
 
-  const updateObject = (object_type, id, data) => {
+  const updateObject = (object_type: string, id: number | string, data: any) => {
     const operations = [{ object_type, id, data }];
     nebula.request('ops', { operations }).then(loadRundown).catch(onError);
   };
 
-  const setRunMode = (object_type, id, run_mode) => {
+  const setRunMode = (
+    object_type: 'event' | 'item',
+    id: number | string,
+    run_mode: number
+  ) => {
     updateObject(object_type, id, { run_mode });
   };
 
-  const editObject = async (object_type, id) => {
-    let objectData = {};
+  const editObject = async (object_type: string, id: number | string) => {
+    let objectData: any = {};
     try {
       const res = await nebula.request('get', {
         object_type,
@@ -176,9 +208,9 @@ const RundownTable = ({
 
     // Create a field list based on the object type
 
-    let fields;
+    let fields: any[];
     if (object_type === 'event') {
-      fields = [...channelConfig.fields];
+      fields = [...(channelConfig?.fields || [])];
     } else if (objectData.item_role === 'placeholder') {
       fields = [{ name: 'title' }, { name: 'duration' }];
     } else if (['lead_in', 'lead_out'].includes(objectData.item_role)) {
@@ -206,7 +238,7 @@ const RundownTable = ({
         const assetData = res.data.data[0];
         for (const field of fields) {
           const key = field.name;
-          if (!objectData.key) objectData[key] = assetData[key];
+          if (!objectData[key]) objectData[key] = assetData[key];
         }
       } catch (err) {
         onError(err);
@@ -217,7 +249,7 @@ const RundownTable = ({
     // construct the form title and initial data
 
     const title = `Edit ${object_type}: ${objectData.title}`;
-    const initialData = {};
+    const initialData: Record<string, any> = {};
     for (const field of fields) {
       initialData[field.name] = objectData[field.name];
     }
@@ -237,17 +269,21 @@ const RundownTable = ({
   // User interaction && Selection handling
   //
 
-  const onRowClick = (rowData, event) => {
-    if (rowData.type === 'event') {
+  const onRowClick = (
+    rowData: TableRowData,
+    event: React.MouseEvent<HTMLTableRowElement>
+  ) => {
+    const row = rowData as RundownRow;
+    if (row.type === 'event') {
       setSelectedItems([]);
-      setSelectedEvents([rowData.id]);
+      setSelectedEvents([row.id]);
       return;
     }
 
-    if (rowData.id_asset) {
-      const id_asset = rowData.id_asset;
+    if (row.id_asset) {
+      const id_asset = row.id_asset;
       setSearchParams((o) => {
-        o.set('asset', id_asset);
+        o.set('asset', id_asset.toString());
         return o;
       });
     }
@@ -255,12 +291,12 @@ const RundownTable = ({
     setSelectedEvents([]);
     if (event.detail === 2) {
       // doubleClick
-      if (rundownMode === 'control' && rowData.type === 'item') {
+      if (rundownMode === 'control' && row.type === 'item') {
         nebula
           .request('playout', {
             id_channel: currentChannelId,
             action: 'cue',
-            payload: { id_item: rowData.id },
+            payload: { id_item: row.id },
           })
           .then(loadRundown)
           .catch(onError);
@@ -268,18 +304,18 @@ const RundownTable = ({
       }
     }
 
-    let newSelectedItems = [];
+    let newSelectedItems: (number | string)[] = [];
     if (event.ctrlKey) {
-      if (selectedItems.includes(rowData.id)) {
-        newSelectedItems = selectedItems.filter((obj) => obj !== rowData.id);
+      if (selectedItems.includes(row.id)) {
+        newSelectedItems = selectedItems.filter((obj) => obj !== row.id);
       } else {
-        newSelectedItems = [...selectedItems, rowData.id];
+        newSelectedItems = [...selectedItems, row.id];
       }
     } else if (event.shiftKey) {
-      const clickedIndex = data.findIndex((row) => row.id === rowData.id);
+      const clickedIndex = data.findIndex((r) => r.id === row.id);
       const focusedIndex =
-        data.findIndex((row) => row.id === focusedObject.id) ||
-        data.findIndex((row) => selectedItems.includes(row.id)) ||
+        (focusedObject && data.findIndex((r) => r.id === focusedObject.id)) ||
+        data.findIndex((r) => selectedItems.includes(r.id)) ||
         clickedIndex ||
         0;
 
@@ -289,32 +325,38 @@ const RundownTable = ({
       // Get the ids of the rows in the range
       const rangeIds = data
         .slice(min, max + 1)
-        .filter((row) => row.type === 'item')
-        .map((row) => row.id);
+        .filter((r) => r.type === 'item')
+        .map((r) => r.id);
 
       newSelectedItems = [...new Set([...selectedItems, ...rangeIds])];
     } else {
-      newSelectedItems = [rowData.id];
+      newSelectedItems = [row.id];
     }
 
     setSelectedItems(newSelectedItems);
-    setFocusedObject(rowData);
+    setFocusedObject(row);
   }; // onRowClick
 
-  const focusNext = (offset) => {
+  const focusNext = (offset: number) => {
     if (!focusedObject) return;
-    const nextIndex =
-      data.findIndex(
-        (row) => row.type === focusedObject.type && row.id === focusedObject.id
-      ) + offset;
-    if (nextIndex < data.length) {
+    const focusedIndex = data.findIndex(
+      (row) => row.type === focusedObject.type && row.id === focusedObject.id
+    );
+    if (focusedIndex === -1) return;
+    const nextIndex = focusedIndex + offset;
+    if (nextIndex >= 0 && nextIndex < data.length) {
       const nextRow = data[nextIndex];
-      setSelectedItems([nextRow.id]);
+      if (nextRow.type === 'item') {
+        setSelectedItems([nextRow.id]);
+      } else {
+        setSelectedEvents([nextRow.id]);
+        setSelectedItems([]);
+      }
       setFocusedObject(nextRow);
     }
   };
 
-  const onKeyDown = (e) => {
+  const onKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowDown') {
       focusNext(1);
       e.preventDefault();
@@ -328,9 +370,9 @@ const RundownTable = ({
   };
 
   const contextMenu = () => {
-    const res = [];
+    const res: any[] = [];
     if (selectedItems.length) {
-      if (selectedItems.length === 1) {
+      if (selectedItems.length === 1 && focusedObject) {
         res.push({
           label: 'Edit item',
           icon: 'edit',
@@ -351,8 +393,8 @@ const RundownTable = ({
         });
       }
 
-      if (focusedObject.item_role === 'placeholder') {
-        for (const solver of channelConfig.solvers) {
+      if (focusedObject?.item_role === 'placeholder') {
+        for (const solver of channelConfig?.solvers || []) {
           res.push({
             label: `Solve using ${solver}`,
             icon: 'change_circle',
@@ -386,17 +428,17 @@ const RundownTable = ({
   // Render
   //
 
-  const selectedIndices = useMemo(() => {
-    const selectedIndices = [];
+  const selectionIndices = useMemo(() => {
+    const indices: number[] = [];
     for (let i = 0; i < data?.length || 0; i++) {
       if (selectedItems.includes(data[i].id) && data[i].type === 'item') {
-        selectedIndices.push(i);
+        indices.push(i);
       }
       if (selectedEvents.includes(data[i].id) && data[i].type === 'event') {
-        selectedIndices.push(i);
+        indices.push(i);
       }
     }
-    return selectedIndices;
+    return indices;
   }, [selectedItems, selectedEvents, data]);
 
   return (
@@ -411,10 +453,12 @@ const RundownTable = ({
         rowHighlightColor={formatRowHighlightColor}
         rowHighlightStyle={formatRowHighlightStyle}
         contextMenu={contextMenu}
-        selection={selectedIndices}
+        selection={selectionIndices}
         onKeyDown={onKeyDown}
-        droppable={draggedObjects}
-        onDrop={onDrop}
+        droppable={
+          draggedObjects ? { type: 'mixed', items: draggedObjects } : undefined
+        }
+        onDrop={(droppable, dropIndex) => onDrop(droppable.items, dropIndex ?? 0)}
       />
     </RundownTableWrapper>
   );

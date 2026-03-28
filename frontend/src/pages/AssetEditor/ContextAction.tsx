@@ -1,9 +1,12 @@
 import { Dialog, Table, Button, Icon } from '@components';
 import formatMetaDatetime from '@lib/tableFormat/formatMetaDatetime';
 import { formatTimeString } from '@lib/utils';
+import React, { AnchorHTMLAttributes } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { toast } from 'react-toastify';
 import styled from 'styled-components';
+
+import type { TableColumn, TableRowData } from '@components/table/types';
 
 const MarkdownWrapper = styled.div`
   padding: 12px;
@@ -38,14 +41,20 @@ const UriWrapper = styled.div`
   }
 `;
 
-const UriComponent = ({ children, ...props }) => {
+interface UriComponentProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
+  children: React.ReactNode;
+}
+
+const UriComponent: React.FC<UriComponentProps> = ({ children, ...props }) => {
   return (
     <UriWrapper>
       <a {...props}>{children}</a>
       <button
         onClick={() => {
-          navigator.clipboard.writeText(props.href);
-          toast.success('Copied to clipboard');
+          if (props.href) {
+            navigator.clipboard.writeText(props.href);
+            toast.success('Copied to clipboard');
+          }
         }}
       >
         <Icon icon="content_copy" />
@@ -54,8 +63,30 @@ const UriComponent = ({ children, ...props }) => {
   );
 };
 
-const TableDialog = ({ onHide, dialogStyle, header, payload }) => {
-  const columns = payload.columns.map((column) => {
+interface ExtendedTableColumn extends TableColumn {
+  type?: string;
+  title: string;
+}
+
+interface TablePayload {
+  columns: ExtendedTableColumn[];
+  data: TableRowData[];
+}
+
+interface TableDialogProps {
+  onHide: () => void;
+  dialogStyle?: React.CSSProperties;
+  header?: string;
+  payload: TablePayload;
+}
+
+const TableDialog: React.FC<TableDialogProps> = ({
+  onHide,
+  dialogStyle,
+  header,
+  payload,
+}) => {
+  const columns: TableColumn[] = payload.columns.map((column) => {
     if (column.type === 'datetime') {
       column.formatter = formatMetaDatetime;
     }
@@ -64,8 +95,8 @@ const TableDialog = ({ onHide, dialogStyle, header, payload }) => {
 
   const onCopy = () => {
     const data = payload.data.map((row) => {
-      const newRow = {};
-      columns.forEach((column) => {
+      const newRow: TableRowData = {};
+      payload.columns.forEach((column) => {
         if (column.type === 'datetime') {
           newRow[column.name] = formatTimeString(row[column.name]);
         } else {
@@ -75,11 +106,11 @@ const TableDialog = ({ onHide, dialogStyle, header, payload }) => {
       return newRow;
     });
 
-    const columnHeaders = columns.map((column) => column.title);
+    const columnHeaders = payload.columns.map((column) => column.title);
     const columnHeadersString = columnHeaders.join('\t');
     const dataString = data
       .map((row) => {
-        return columns
+        return payload.columns
           .map((column) => {
             return row[column.name];
           })
@@ -87,9 +118,8 @@ const TableDialog = ({ onHide, dialogStyle, header, payload }) => {
       })
       .join('\n');
 
-    const clipboardData = new DataTransfer();
-    clipboardData.setData('text/plain', columnHeadersString + '\n' + dataString);
-    navigator.clipboard.writeText(clipboardData.getData('text/plain'));
+    const clipboardText = columnHeadersString + '\n' + dataString;
+    navigator.clipboard.writeText(clipboardText);
     toast.success('Copied to clipboard');
   };
 
@@ -112,10 +142,20 @@ const TableDialog = ({ onHide, dialogStyle, header, payload }) => {
   );
 };
 
-const ContextActionResult = ({ mime, payload, onHide }) => {
+interface ContextActionResultProps {
+  mime: string;
+  payload: any;
+  onHide: () => void;
+}
+
+const ContextActionResult: React.FC<ContextActionResultProps> = ({
+  mime,
+  payload,
+  onHide,
+}) => {
   if (mime === 'text/markdown') {
     const components = {
-      a: UriComponent,
+      a: UriComponent as any,
     };
     return (
       <Dialog onHide={onHide}>
@@ -138,6 +178,8 @@ const ContextActionResult = ({ mime, payload, onHide }) => {
       );
     } // End of table mode
   } // End of application/json
+
+  return null;
 };
 
 export default ContextActionResult;

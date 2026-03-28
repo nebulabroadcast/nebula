@@ -1,23 +1,38 @@
-import nebula from '/src/nebula';
+import nebula from '@/nebula';
 import { useKeyDown } from '@lib/useKeyDown';
 import { arrayEquals } from '@lib/utils';
 import axios from 'axios';
-import { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { toast } from 'react-toastify';
 
-import {
-  Dropdown,
-  Spacer,
-  InputTimecode,
-  Navbar,
-  Button,
-  Section,
-} from '/src/components';
-import VideoPlayer from '/src/containers/VideoPlayer';
+import { Dropdown, Spacer, InputTimecode, Navbar, Button, Section } from '@components';
+import VideoPlayer from '@containers/VideoPlayer';
 
 import Subclip from './Subclip';
 
-const SubclipsPanel = ({ subclips, setSubclips, selection, setSelection, fps }) => {
+interface SubclipData {
+  title: string;
+  mark_in: number;
+  mark_out: number;
+}
+
+interface SubclipsPanelProps {
+  subclips: SubclipData[];
+  setSubclips: React.Dispatch<React.SetStateAction<SubclipData[]>>;
+  selection: { mark_in: number | null; mark_out: number | null };
+  setSelection: React.Dispatch<
+    React.SetStateAction<{ mark_in: number | null; mark_out: number | null }>
+  >;
+  fps: number;
+}
+
+const SubclipsPanel: React.FC<SubclipsPanelProps> = ({
+  subclips,
+  setSubclips,
+  selection,
+  setSelection,
+  fps,
+}) => {
   return (
     <Section className="grow">
       <div
@@ -47,25 +62,51 @@ const SubclipsPanel = ({ subclips, setSubclips, selection, setSelection, fps }) 
   );
 };
 
-const Preview = ({ assetData, setAssetData }) => {
+interface AssetData extends Record<string, any> {
+  id?: number;
+  'file/mtime'?: number;
+  'video/fps_f'?: number;
+  mark_in?: number;
+  mark_out?: number;
+  subclips?: SubclipData[];
+  poster_frame?: number;
+  title?: string;
+  subtitle?: string;
+}
+
+interface ProxyInfo {
+  id: number;
+  available: boolean;
+  timestamp: number;
+}
+
+interface PreviewProps {
+  assetData: AssetData;
+  setAssetData: React.Dispatch<React.SetStateAction<AssetData>>;
+}
+
+const Preview: React.FC<PreviewProps> = ({ assetData, setAssetData }) => {
   const accessToken = nebula.getAccessToken();
-  const [selection, setSelection] = useState({});
-  const [subclips, setSubclips] = useState([]);
+  const [selection, setSelection] = useState<{
+    mark_in: number | null;
+    mark_out: number | null;
+  }>({ mark_in: null, mark_out: null });
+  const [subclips, setSubclips] = useState<SubclipData[]>([]);
   const [position, setPosition] = useState(0);
-  const [proxyInfo, setProxyInfo] = useState(null);
+  const [proxyInfo, setProxyInfo] = useState<ProxyInfo | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const setMarkIn = (mark_in) => {
+  const setMarkIn = (mark_in: number | null) => {
     setSelection((s) => {
-      if (isNaN(mark_in)) return s;
+      if (mark_in === null || isNaN(mark_in)) return s;
       if (mark_in === s.mark_in) return s;
       return { ...s, mark_in };
     });
   };
 
-  const setMarkOut = (mark_out) => {
+  const setMarkOut = (mark_out: number | null) => {
     setSelection((s) => {
-      if (isNaN(mark_out)) return s;
+      if (mark_out === null || isNaN(mark_out)) return s;
       if (mark_out === s.mark_out) return s;
       return { ...s, mark_out };
     });
@@ -75,10 +116,11 @@ const Preview = ({ assetData, setAssetData }) => {
     setLoading(true);
     if (!assetData.id) {
       setProxyInfo(null);
+      setLoading(false);
       return;
     }
     axios
-      .get(`/proxy/${assetData.id}/info`)
+      .get<ProxyInfo>(`/proxy/${assetData.id}/info`)
       .then((response) => {
         setProxyInfo(response.data);
       })
@@ -88,10 +130,10 @@ const Preview = ({ assetData, setAssetData }) => {
       .finally(() => {
         setLoading(false);
       });
-  }, [assetData]);
+  }, [assetData.id]);
 
   const warning = useMemo(() => {
-    if (loading) return null;
+    if (loading) return undefined;
 
     if (!assetData.id) return 'No asset selected';
 
@@ -99,9 +141,10 @@ const Preview = ({ assetData, setAssetData }) => {
 
     if (!proxyInfo.available) return 'No proxy available';
 
-    if (proxyInfo.timestamp < assetData['file/mtime']) return 'Proxy is outdated';
+    if (assetData['file/mtime'] && proxyInfo.timestamp < assetData['file/mtime'])
+      return 'Proxy is outdated';
 
-    return null;
+    return undefined;
   }, [proxyInfo, assetData, loading]);
 
   // Video source
@@ -114,8 +157,8 @@ const Preview = ({ assetData, setAssetData }) => {
         proxyInfo.id === assetData.id &&
         proxyInfo?.timestamp &&
         `/proxy/${assetData.id}?token=${accessToken}&ts=${proxyInfo.timestamp}`) ||
-      null,
-    [assetData, accessToken, proxyInfo]
+      undefined,
+    [assetData.id, accessToken, proxyInfo]
   );
 
   const frameRate = useMemo(() => {
@@ -123,7 +166,7 @@ const Preview = ({ assetData, setAssetData }) => {
     return fps;
   }, [assetData]);
 
-  const patchAsset = (data) => {
+  const patchAsset = (data: Partial<AssetData>) => {
     console.log('Patching asset with data', data);
     // helper function to update asset data
     if (!data) return;
@@ -134,8 +177,8 @@ const Preview = ({ assetData, setAssetData }) => {
 
   useEffect(() => {
     setSelection({
-      mark_in: assetData.mark_in,
-      mark_out: assetData.mark_out,
+      mark_in: assetData.mark_in ?? null,
+      mark_out: assetData.mark_out ?? null,
     });
     setSubclips(assetData.subclips || []);
   }, [assetData?.id]); //eslint-disable-line
@@ -145,7 +188,7 @@ const Preview = ({ assetData, setAssetData }) => {
     if (!assetData) return;
     const existingSubclips = assetData.subclips || [];
     if (!arrayEquals(existingSubclips, subclips)) {
-      patchAsset({ subclips: subclips.length ? subclips : null });
+      patchAsset({ subclips: subclips.length ? subclips : undefined });
     }
   }, [subclips]);
 
@@ -156,11 +199,11 @@ const Preview = ({ assetData, setAssetData }) => {
   };
 
   const goToPosterFrame = () => {
-    setSelection({ mark_in: assetData.poster_frame, mark_out: null });
+    setSelection({ mark_in: assetData.poster_frame ?? null, mark_out: null });
   };
 
   const clearPosterFrame = () => {
-    patchAsset({ poster_frame: null });
+    patchAsset({ poster_frame: undefined });
   };
 
   const posterOptions = [
@@ -175,8 +218,8 @@ const Preview = ({ assetData, setAssetData }) => {
     // Set asset mark_in and mark_out values
     // (content primary selection)
     patchAsset({
-      mark_in: selection.mark_in || null,
-      mark_out: selection.mark_out || null,
+      mark_in: selection.mark_in || undefined,
+      mark_out: selection.mark_out || undefined,
     });
   };
 
@@ -198,7 +241,11 @@ const Preview = ({ assetData, setAssetData }) => {
 
     setSubclips((subclips) => [
       ...subclips,
-      { title: `SubClip ${subclips.length + 1}`, ...selection },
+      {
+        title: `SubClip ${subclips.length + 1}`,
+        mark_in: selection.mark_in!,
+        mark_out: selection.mark_out!,
+      },
     ]);
   };
 
@@ -212,15 +259,16 @@ const Preview = ({ assetData, setAssetData }) => {
         <VideoPlayer
           src={videoSrc}
           frameRate={frameRate}
-          position={position}
           setPosition={setPosition}
-          markIn={selection.mark_in}
-          markOut={selection.mark_out}
+          markIn={selection.mark_in ?? undefined}
+          markOut={selection.mark_out ?? undefined}
           setMarkIn={setMarkIn}
           setMarkOut={setMarkOut}
-          marks={{
-            poster_frame: assetData.poster_frame,
-          }}
+          marks={
+            assetData.poster_frame !== undefined
+              ? { poster_frame: assetData.poster_frame }
+              : undefined
+          }
           warning={warning}
         />
       </div>
@@ -249,8 +297,8 @@ const Preview = ({ assetData, setAssetData }) => {
             tooltip="Marks to selection"
             onClick={() =>
               setSelection({
-                mark_in: assetData.mark_in || null,
-                mark_out: assetData.mark_out || null,
+                mark_in: assetData.mark_in ?? null,
+                mark_out: assetData.mark_out ?? null,
               })
             }
           />

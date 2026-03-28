@@ -1,18 +1,20 @@
-import nebula from '/src/nebula';
+import nebula from '@/nebula';
 
 import { Table, Button, Section } from '@components';
 import { useNebula } from '@features/Nebula';
 import formatMetaDatetime from '@lib/tableFormat/formatMetaDatetime';
 import { useState, useEffect, useCallback } from 'react';
 import { NavLink, useParams } from 'react-router';
+import type { AxiosResponse } from 'axios';
 
+import type { JobsItemModel } from '../../client';
 import JobsNav from './JobsNav';
 
 import { useWebSocket } from '@/features/Websocket';
 
 const NOT_RESTARTABLE = ['import'];
 
-const formatTitle = (rowData, key) => {
+const formatTitle = (rowData: any, key: string) => {
   return (
     <td>
       <NavLink to={`/mam/editor?asset=${rowData['id_asset']}`}>{rowData[key]}</NavLink>
@@ -21,8 +23,8 @@ const formatTitle = (rowData, key) => {
 };
 
 const JobsPage = () => {
-  const { view } = useParams();
-  const [jobs, setJobs] = useState([]);
+  const { view } = useParams<{ view?: string }>();
+  const [jobs, setJobs] = useState<JobsItemModel[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const { setPageTitle } = useNebula();
@@ -34,27 +36,26 @@ const JobsPage = () => {
     setPageTitle(cleanTitle);
     nebula
       .request('jobs', { view, search_query: searchQuery })
-      .then((response) => {
+      .then((response: AxiosResponse) => {
         setJobs(response.data.jobs);
       })
-      .catch((err) => console.error(err))
+      .catch((err: any) => console.error(err))
       .finally(() => setLoading(false));
-  }, [searchQuery, view]);
+  }, [searchQuery, view, setPageTitle]);
 
   useEffect(() => {
     loadJobs();
-  }, [jobs.map((job) => job.status).join(','), view, searchQuery]);
+  }, [jobs.map((job) => job.status).join(','), view, searchQuery, loadJobs]);
 
-  const restartJob = (id) => {
+  const restartJob = (id: number) => {
     nebula.request('jobs', { restart: id }).then(() => loadJobs());
   };
 
-  const abortJob = (id) => {
+  const abortJob = (id: number) => {
     nebula.request('jobs', { abort: id }).then(() => loadJobs());
   };
 
-  // eslint-disable-next-line
-  const formatAction = (rowData, key) => {
+  const formatAction = (rowData: any) => {
     if ([0, 1, 5].includes(rowData['status']))
       return (
         <td className="action">
@@ -74,10 +75,10 @@ const JobsPage = () => {
     else return <td className="action">-</td>;
   };
 
-  const formatPriority = (rowData, key) => {
+  const formatPriority = (rowData: any, key: string) => {
     const enabled = [0, 5].includes(rowData['status']);
 
-    const setPriority = (priority) => {
+    const setPriority = (priority: number) => {
       nebula.request('jobs', { priority: [rowData.id, priority] }).then(() => {
         loadJobs();
       });
@@ -94,16 +95,18 @@ const JobsPage = () => {
 
     if (!enabled) return <td>&nbsp;</td>;
 
+    const currentPriority = rowData[key] as number;
+
     return (
-      <td onClick={() => setPriority((rowData.priority + 1) % 6)}>
+      <td onClick={() => setPriority((currentPriority + 1) % 6)}>
         <span
           style={{
-            color: PRIORITIES[rowData[key]].color,
+            color: PRIORITIES[currentPriority].color,
             fontSize: '0.8rem',
             userSelect: 'none',
           }}
         >
-          {PRIORITIES[rowData[key]].label}
+          {PRIORITIES[currentPriority].label}
         </span>
       </td>
     );
@@ -153,7 +156,7 @@ const JobsPage = () => {
   ];
 
   useEffect(() => {
-    const handlePubSub = (topic, message) => {
+    const handlePubSub = (topic: string, message: any) => {
       if (topic !== 'job_progress') return;
       setJobs((prevData) => {
         const index = prevData.findIndex((job) => job.id === message.id);

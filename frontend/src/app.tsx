@@ -1,4 +1,4 @@
-import nebula from '/src/nebula';
+import nebula from '@/nebula';
 import MainNavbar from '@containers/MainNavbar';
 import { DialogProvider } from '@features/Dialogs';
 import { MediaUploadProvider, MediaUploadMonitor } from '@features/MediaUpload';
@@ -8,14 +8,18 @@ import axios from 'axios';
 import { useState, useEffect, useMemo, Suspense } from 'react';
 import { Outlet, useLocation } from 'react-router';
 
+import type { InitResponseModel } from './client';
 import LoadingPage from './pages/LoadingPage';
 import LoginPage from './pages/LoginPage/LoginPage';
 
 const App = () => {
-  const [accessToken, setAccessToken] = useLocalStorage('accessToken', null);
-  const [errorCode, setErrorCode] = useState(null);
+  const [accessToken, setAccessToken] = useLocalStorage<string | null>(
+    'accessToken',
+    null
+  );
+  const [errorCode, setErrorCode] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
-  const [initData, setInitData] = useState(null);
+  const [initData, setInitData] = useState<InitResponseModel | null>(null);
 
   const wsAddress = useMemo(() => {
     const proto = window.location.protocol.replace('http', 'ws');
@@ -30,15 +34,15 @@ const App = () => {
     axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
     axios.defaults.headers.common['X-Client-Id'] = nebula.senderId;
     axios
-      .post('/api/init', {})
+      .post<InitResponseModel>('/api/init', {})
       .then((response) => {
         setInitData(response.data);
-        nebula.settings = response.data.settings;
+        nebula.settings = response.data.settings || undefined;
         nebula.experimental = response.data.experimental || false;
         nebula.plugins = response.data.frontend_plugins || [];
         nebula.scopedEndpoints = response.data.scoped_endpoints || [];
         nebula.loginBackground = response.data.background || false;
-        nebula.user = response.data.user || {};
+        nebula.user = response.data.user || undefined;
         axios.interceptors.response.use(
           (response) => {
             return response;
@@ -65,17 +69,18 @@ const App = () => {
   // Render
 
   if (loading) return <LoadingPage />;
-  if (errorCode > 401) return <main className="center">server unavailable</main>;
+  if (errorCode && errorCode > 401)
+    return <main className="center">server unavailable</main>;
 
-  if (!initData.installed)
+  if (!initData || !initData.installed)
     return <main className="center">nebula is not installed</main>;
 
   if (!initData.user)
     return (
       <LoginPage
-        motd={initData.motd}
+        motd={initData.motd || undefined}
         onLogin={setAccessToken}
-        ssoOptions={initData.sso_options}
+        ssoOptions={initData.sso_options || undefined}
       />
     );
 

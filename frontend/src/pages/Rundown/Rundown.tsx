@@ -4,18 +4,24 @@ import { useWebSocket } from '@features/Websocket';
 import { useKeyDown } from '@lib/useKeyDown';
 import { useLocalStorage } from '@lib/useLocalStorage';
 import { dateToDateString } from '@lib/utils';
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router';
 import { toast } from 'react-toastify';
 
-import nebula from '/src/nebula';
+import nebula from '@/nebula';
+import type { RundownRow } from '../../client';
+import type { TableDraggableItem } from '@components/table/types';
 
 import PlayoutControls from './PlayoutControls';
 import RundownEditTools from './RundownEditTools';
 import RundownNav from './RundownNav';
 import RundownTable from './RundownTable';
 
-const Rundown = ({ draggedObjects }) => {
+interface RundownProps {
+  draggedObjects?: TableDraggableItem[] | null;
+}
+
+const Rundown: React.FC<RundownProps> = ({ draggedObjects }) => {
   const showDialog = useDialog();
   const ws = useWebSocket();
 
@@ -25,31 +31,34 @@ const Rundown = ({ draggedObjects }) => {
 
   const { currentChannelId } = useNebula();
 
-  const [startTime, setStartTime] = useState(null);
-  const [rundownMode, setRundownMode] = useLocalStorage('mam.rundown.mode', 'edit');
+  const [startTime, setStartTime] = useState<Date | null>(null);
+  const [rundownMode, setRundownMode] = useLocalStorage<string>(
+    'mam.rundown.mode',
+    'edit'
+  );
 
-  const [rundown, setRundown] = useState(null);
+  const [rundown, setRundown] = useState<RundownRow[] | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const [playoutStatus, setPlayoutStatus] = useState(null);
-  const [selectedItems, setSelectedItems] = useState([]);
-  const [selectedEvents, setSelectedEvents] = useState([]);
-  const [focusedObject, setFocusedObject] = useState(null);
+  const [playoutStatus, setPlayoutStatus] = useState<any>(null);
+  const [selectedItems, setSelectedItems] = useState<(number | string)[]>([]);
+  const [selectedEvents, setSelectedEvents] = useState<(number | string)[]>([]);
+  const [focusedObject, setFocusedObject] = useState<RundownRow | null>(null);
 
   //
   // Sync state with refs (to avoid stale closures)
   //
 
-  const rundownDataRef = useRef(rundown);
-  const currentDateRef = useRef(startTime);
-  const currentChannelRef = useRef(currentChannelId);
-  const rundownModeRef = useRef(rundownMode);
-  const eventIdsRef = useRef(new Set());
-  const playoutStatusRef = useRef(playoutStatus);
+  const rundownDataRef = useRef<RundownRow[] | null>(rundown);
+  const currentDateRef = useRef<Date | null>(startTime);
+  const currentChannelRef = useRef<number | null>(currentChannelId);
+  const rundownModeRef = useRef<string>(rundownMode);
+  const eventIdsRef = useRef<Set<number>>(new Set());
+  const playoutStatusRef = useRef<any>(playoutStatus);
   const navigate = useNavigate();
 
   useEffect(() => {
-    rundownDataRef.current = rundown || [];
+    rundownDataRef.current = rundown;
   }, [rundown]);
 
   useEffect(() => {
@@ -81,7 +90,7 @@ const Rundown = ({ draggedObjects }) => {
     const currentPath = window.location.pathname;
     const query = new URLSearchParams(window.location.search);
     query.set('item', currentItem);
-    query.set('rqts', Math.floor(Date.now() / 1000));
+    query.set('rqts', Math.floor(Date.now() / 1000).toString());
 
     if (currentEvent) {
       let newPath = `${currentPath}?${query.toString()}`;
@@ -94,11 +103,11 @@ const Rundown = ({ draggedObjects }) => {
   // Load rundown
   //
 
-  const onResponse = (response) => {
-    const rows = response.data.rows.map(({ meta, ...rest }) => ({
+  const onResponse = (response: any) => {
+    const rows = response.data.rows.map(({ meta, ...rest }: any) => ({
       ...rest,
       ...meta,
-    }));
+    })) as RundownRow[];
     eventIdsRef.current = new Set(
       rows.filter((r) => r.type === 'event').map((r) => r.id)
     );
@@ -106,17 +115,17 @@ const Rundown = ({ draggedObjects }) => {
     setLoading(false);
   };
 
-  const onError = (error) => {
+  const onError = (error: any) => {
     setLoading(false);
     const msg = error.response?.data?.detail || error.message;
     toast.error(msg);
   };
 
   const loadRundown = () => {
-    if (!startTime) return;
+    if (!startTime || currentChannelRef.current === null) return;
     setLoading(true);
     const requestParams = {
-      date: dateToDateString(currentDateRef.current),
+      date: dateToDateString(currentDateRef.current!),
       id_channel: currentChannelRef.current,
     };
     nebula.request('rundown', requestParams).then(onResponse).catch(onError);
@@ -135,86 +144,79 @@ const Rundown = ({ draggedObjects }) => {
   // Rundown re-ordering
   //
 
-  const onDrop = async (items, index) => {
+  const onDrop = async (items: any[], index: number) => {
     if (rundownModeRef.current !== 'edit') {
       toast.error('Rundown is not in edit mode');
       return;
     }
     const rundown = rundownDataRef.current;
-    const dropAfterItem = rundown[index];
+    if (!rundown) return;
+    const dropAfterRow = rundown[index];
     let i = -1;
-    const newOrder = [];
+    const newOrder: any[] = [];
+
+    const id_bin = dropAfterRow.id_bin;
+
+    const processItems = async (items: any[], targetOrder: any[]) => {
+      for (const item of items) {
+        if (item.type === 'asset' && item.subclips?.length) {
+          try {
+            const res = await showDialog('subclips', '', { asset: item });
+            for (const region of res) {
+              const smeta: any = {};
+              if (region.title) smeta.note = region.title;
+              if (region.mark_in) smeta.mark_in = region.mark_in;
+              if (region.mark_out) smeta.mark_out = region.mark_out;
+              targetOrder.push({ id: item.id, type: 'asset', meta: smeta });
+            }
+            continue;
+          } catch (err) {
+            console.error(err);
+            continue;
+          }
+        }
+
+        const meta: any = {};
+        let keys: string[] = [];
+        if (item.type === 'item') {
+          if (item.item_role) keys = Object.keys(item);
+          else keys = ['mark_in', 'mark_out', 'title', 'subtitle'];
+        } else {
+          keys = ['mark_in', 'mark_out'];
+        }
+
+        for (const key of keys) {
+          if (item[key] !== undefined && item[key] !== null) meta[key] = item[key];
+        }
+        targetOrder.push({ id: item.id, type: item.type, meta });
+      }
+    };
+
     for (const row of rundown) {
       i++;
-      if (dropAfterItem.id_bin != row.id_bin) continue;
+      if (row.id_bin !== id_bin) continue;
 
-      // skip events and the items that are being dragged
       const skip =
         row.type === 'event' ||
         items.some((item) => item.id === row.id && item.type === row.type);
 
-      // include items that were already in the bin
+      if (i === index && row.type === 'event') {
+        await processItems(items, newOrder);
+      }
+
       if (!skip) newOrder.push({ id: row.id, type: row.type });
 
-      // append the dragged item after the current item
-      // TODO: update marks
-      if (i == index) {
-        console.log('Dropped after', dropAfterItem);
-        for (const item of items) {
-          const meta = {};
-          let keys = [];
-
-          // what keys to copy from the source object?
-          if (item.type === 'item') {
-            // from the virutal items, take everything
-            if (item.item_role) keys = Object.keys(item);
-            // existing items. should we even care?
-            else keys = ['mark_in', 'mark_out', 'title', 'subtitle'];
-          } else {
-            if (item.type === 'asset' && item.subclips?.length) {
-              // Asset has subclips
-              // Display subclips dialog
-              try {
-                const res = await showDialog('subclips', null, { asset: item });
-                console.log('RES', res);
-                for (const region of res) {
-                  const smeta = {};
-                  if (region.title) smeta.note = region.title;
-                  if (region.mark_in) smeta.mark_in = region.mark_in;
-                  if (region.mark_out) smeta.mark_out = region.mark_out;
-                  newOrder.push({ id: item.id, type: 'asset', meta: smeta });
-                }
-                // Continue with the next item instead of
-                // default action after appending all regions
-                // selected in the dialog
-                continue;
-              } catch (err) {
-                // dialog aborted
-                console.error(err);
-                continue;
-              }
-            } else {
-              // from assets without subclips, take only the marks
-              keys = ['mark_in', 'mark_out'];
-            }
-          }
-
-          for (const key of keys) {
-            if (item[key]) meta[key] = item[key];
-          }
-
-          console.log('Dropped item', item, meta);
-          newOrder.push({ id: item.id, type: item.type, meta });
-        }
+      if (i === index && row.type !== 'event') {
+        await processItems(items, newOrder);
       }
-    } // create a new order array
+    }
 
     setLoading(true);
 
     try {
       await nebula.request('order', {
         id_channel: currentChannelRef.current,
-        id_bin: dropAfterItem.id_bin,
+        id_bin: id_bin,
         order: newOrder,
       });
       loadRundown();
@@ -225,14 +227,14 @@ const Rundown = ({ draggedObjects }) => {
 
     setSelectedItems([]);
     setFocusedObject(null);
-  }; // onDrop
+  };
 
   //
   // Realtime updates
   //
 
   useEffect(() => {
-    const handlePubSub = (topic, message) => {
+    const handlePubSub = (topic: string, message: any) => {
       if (topic === 'playout_status') {
         if (message.id_channel === currentChannelRef.current) {
           setPlayoutStatus(message);
@@ -247,12 +249,12 @@ const Rundown = ({ draggedObjects }) => {
   }, [ws]);
 
   useEffect(() => {
-    const handlePubSub = (topic, message) => {
+    const handlePubSub = (topic: string, message: any) => {
       if (message.initiator === nebula.senderId) return;
       if (topic !== 'objects_changed') return;
       const { object_type, objects } = message;
       if (object_type !== 'event') return;
-      const shouldReload = objects.some((id) => eventIdsRef.current.has(id));
+      const shouldReload = objects.some((id: number) => eventIdsRef.current.has(id));
       if (shouldReload) loadRundown();
     };
 
@@ -284,9 +286,9 @@ const Rundown = ({ draggedObjects }) => {
         />
       )}
       <RundownTable
-        data={rundown}
+        data={rundown || []}
         loading={loading}
-        draggedObjects={draggedObjects}
+        draggedObjects={draggedObjects || null}
         onDrop={onDrop}
         currentItem={playoutStatus?.current_item}
         cuedItem={playoutStatus?.cued_item}
