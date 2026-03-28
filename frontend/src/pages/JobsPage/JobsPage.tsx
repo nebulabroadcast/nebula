@@ -14,10 +14,13 @@ import { useWebSocket } from '@/features/Websocket';
 
 const NOT_RESTARTABLE = ['import'];
 
-const formatTitle = (rowData: any, key: string) => {
+const formatTitle = (rowData: Record<string, any>, key: string) => {
+  const row = rowData as JobsItemModel;
   return (
     <td>
-      <NavLink to={`/mam/editor?asset=${rowData['id_asset']}`}>{rowData[key]}</NavLink>
+      <NavLink to={`/mam/editor?asset=${row.id_asset}`}>
+        {row[key as keyof JobsItemModel] as React.ReactNode}
+      </NavLink>
     </td>
   );
 };
