@@ -3,13 +3,12 @@ import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import reactPlugin from 'eslint-plugin-react';
 import reactHooksPlugin from 'eslint-plugin-react-hooks';
-import prettier from 'eslint-plugin-prettier';
 import importPlugin from 'eslint-plugin-import';
 import globals from 'globals';
 
 export default tseslint.config(
   {
-    ignores: ['node_modules', 'build', 'dist', 'eslint.config.js', 'src/pubsub.js'],
+    ignores: ['node_modules', 'build', 'dist', 'eslint.config.js'],
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
@@ -42,7 +41,7 @@ export default tseslint.config(
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'warn',
 
-      '@typescript-eslint/explici/t-function-return-type': 'off',
+      '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/no-unused-vars': [
@@ -71,33 +70,13 @@ export default tseslint.config(
     },
   },
   {
-    // Apply to all JavaScript and TypeScript files
-    files: ['**/*.{js,jsx,ts,tsx}'],
-    languageOptions: {
-      ecmaVersion: 2022,
-      sourceType: 'module',
-      parserOptions: {
-        ecmaFeatures: {
-          jsx: true,
-        },
-      },
-    },
-  },
-  {
-    // TypeScript-specific rules
+    // Apply to all TypeScript files
     files: ['**/*.{ts,tsx}'],
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {
         project: './tsconfig.json',
       },
-    },
-  },
-  {
-    // JavaScript-specific rules (for JSX files)
-    files: ['**/*.{js,jsx}'],
-    rules: {
-      '@typescript-eslint/no-var-requires': 'off',
     },
   }
 );
