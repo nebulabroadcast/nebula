@@ -1,0 +1,309 @@
+import { useDialog } from '@features/Dialogs';
+import { useNebula } from '@features/Nebula';
+import { useWebSocket } from '@features/Websocket';
+import { useKeyDown } from '@lib/useKeyDown';
+import { useLocalStorage } from '@lib/useLocalStorage';
+import { dateToDateString } from '@lib/utils';
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router';
+import { toast } from 'react-toastify';
+
+import nebula from '@/nebula';
+import type { RundownRow } from '../../client';
+import type { TableDraggableItem } from '@components/table/types';
+
+import PlayoutControls from './PlayoutControls';
+import RundownEditTools from './RundownEditTools';
+import RundownNav from './RundownNav';
+import RundownTable from './RundownTable';
+
+interface RundownProps {
+  draggedObjects?: TableDraggableItem[] | null;
+}
+
+const Rundown: React.FC<RundownProps> = ({ draggedObjects }) => {
+  const showDialog = useDialog();
+  const ws = useWebSocket();
+
+  //
+  // States
+  //
+
+  const { currentChannelId } = useNebula();
+
+  const [startTime, setStartTime] = useState<Date | null>(null);
+  const [rundownMode, setRundownMode] = useLocalStorage<string>(
+    'mam.rundown.mode',
+    'edit'
+  );
+
+  const [rundown, setRundown] = useState<RundownRow[] | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const [playoutStatus, setPlayoutStatus] = useState<any>(null);
+  const [selectedItems, setSelectedItems] = useState<(number | string)[]>([]);
+  const [selectedEvents, setSelectedEvents] = useState<(number | string)[]>([]);
+  const [focusedObject, setFocusedObject] = useState<RundownRow | null>(null);
+
+  //
+  // Sync state with refs (to avoid stale closures)
+  //
+
+  const rundownDataRef = useRef<RundownRow[] | null>(rundown);
+  const currentDateRef = useRef<Date | null>(startTime);
+  const currentChannelRef = useRef<number | null>(currentChannelId);
+  const rundownModeRef = useRef<string>(rundownMode);
+  const eventIdsRef = useRef<Set<number>>(new Set());
+  const playoutStatusRef = useRef<any>(playoutStatus);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    rundownDataRef.current = rundown;
+  }, [rundown]);
+
+  useEffect(() => {
+    currentDateRef.current = startTime;
+  }, [startTime]);
+
+  useEffect(() => {
+    currentChannelRef.current = currentChannelId;
+    setPlayoutStatus(null);
+  }, [currentChannelId]);
+
+  useEffect(() => {
+    rundownModeRef.current = rundownMode;
+  }, [rundownMode]);
+
+  useEffect(() => {
+    playoutStatusRef.current = playoutStatus;
+  }, [playoutStatus]);
+
+  //
+  // Go to now
+  //
+
+  useKeyDown('n', () => {
+    const currentEvent = playoutStatusRef.current?.id_event;
+    const currentItem = playoutStatusRef.current?.current_item;
+    if (!currentEvent) return;
+
+    const currentPath = window.location.pathname;
+    const query = new URLSearchParams(window.location.search);
+    query.set('item', currentItem);
+    query.set('rqts', Math.floor(Date.now() / 1000).toString());
+
+    if (currentEvent) {
+      let newPath = `${currentPath}?${query.toString()}`;
+      newPath += `#${currentEvent}`;
+      navigate(newPath, { replace: true });
+    }
+  });
+
+  //
+  // Load rundown
+  //
+
+  const onResponse = (response: any) => {
+    const rows = response.data.rows.map(({ meta, ...rest }: any) => ({
+      ...rest,
+      ...meta,
+    })) as RundownRow[];
+    eventIdsRef.current = new Set(
+      rows.filter((r) => r.type === 'event').map((r) => r.id)
+    );
+    setRundown(rows);
+    setLoading(false);
+  };
+
+  const onError = (error: any) => {
+    setLoading(false);
+    const msg = error.response?.data?.detail || error.message;
+    toast.error(msg);
+  };
+
+  const loadRundown = () => {
+    if (!startTime || currentChannelRef.current === null) return;
+    setLoading(true);
+    const requestParams = {
+      date: dateToDateString(currentDateRef.current!),
+      id_channel: currentChannelRef.current,
+    };
+    nebula.request('rundown', requestParams).then(onResponse).catch(onError);
+  };
+
+  useEffect(() => {
+    loadRundown();
+  }, [
+    startTime,
+    currentChannelId,
+    playoutStatus?.current_item,
+    playoutStatus?.cued_item,
+  ]);
+
+  //
+  // Rundown re-ordering
+  //
+
+  const onDrop = async (items: any[], index: number) => {
+    if (rundownModeRef.current !== 'edit') {
+      toast.error('Rundown is not in edit mode');
+      return;
+    }
+    const rundown = rundownDataRef.current;
+    if (!rundown) return;
+    const dropAfterRow = rundown[index];
+    let i = -1;
+    const newOrder: any[] = [];
+
+    const id_bin = dropAfterRow.id_bin;
+
+    const processItems = async (items: any[], targetOrder: any[]) => {
+      for (const item of items) {
+        if (item.type === 'asset' && item.subclips?.length) {
+          try {
+            const res = await showDialog('subclips', '', { asset: item });
+            for (const region of res) {
+              const smeta: any = {};
+              if (region.title) smeta.note = region.title;
+              if (region.mark_in) smeta.mark_in = region.mark_in;
+              if (region.mark_out) smeta.mark_out = region.mark_out;
+              targetOrder.push({ id: item.id, type: 'asset', meta: smeta });
+            }
+            continue;
+          } catch (err) {
+            console.error(err);
+            continue;
+          }
+        }
+
+        const meta: any = {};
+        let keys: string[] = [];
+        if (item.type === 'item') {
+          if (item.item_role) keys = Object.keys(item);
+          else keys = ['mark_in', 'mark_out', 'title', 'subtitle'];
+        } else {
+          keys = ['mark_in', 'mark_out'];
+        }
+
+        for (const key of keys) {
+          if (item[key] !== undefined && item[key] !== null) meta[key] = item[key];
+        }
+        targetOrder.push({ id: item.id, type: item.type, meta });
+      }
+    };
+
+    for (const row of rundown) {
+      i++;
+      if (row.id_bin !== id_bin) continue;
+
+      const skip =
+        row.type === 'event' ||
+        items.some((item) => item.id === row.id && item.type === row.type);
+
+      if (i === index && row.type === 'event') {
+        await processItems(items, newOrder);
+      }
+
+      if (!skip) newOrder.push({ id: row.id, type: row.type });
+
+      if (i === index && row.type !== 'event') {
+        await processItems(items, newOrder);
+      }
+    }
+
+    setLoading(true);
+
+    try {
+      await nebula.request('order', {
+        id_channel: currentChannelRef.current,
+        id_bin: id_bin,
+        order: newOrder,
+      });
+      loadRundown();
+    } catch (error) {
+      onError(error);
+      setLoading(false);
+    }
+
+    setSelectedItems([]);
+    setFocusedObject(null);
+  };
+
+  //
+  // Realtime updates
+  //
+
+  useEffect(() => {
+    const handlePubSub = (topic: string, message: any) => {
+      if (topic === 'playout_status') {
+        if (message.id_channel === currentChannelRef.current) {
+          setPlayoutStatus(message);
+        }
+      }
+    };
+
+    const unsubscribe = ws.subscribe('playout_status', handlePubSub);
+    return () => {
+      unsubscribe();
+    };
+  }, [ws]);
+
+  useEffect(() => {
+    const handlePubSub = (topic: string, message: any) => {
+      if (message.initiator === nebula.senderId) return;
+      if (topic !== 'objects_changed') return;
+      const { object_type, objects } = message;
+      if (object_type !== 'event') return;
+      const shouldReload = objects.some((id: number) => eventIdsRef.current.has(id));
+      if (shouldReload) loadRundown();
+    };
+
+    const unsubscribe = ws.subscribe('objects_changed', handlePubSub);
+    return () => {
+      unsubscribe();
+    };
+  }, [ws]);
+
+  //
+  // Render
+  //
+
+  return (
+    <main className="column">
+      <RundownNav
+        startTime={startTime}
+        setStartTime={setStartTime}
+        rundownMode={rundownMode}
+        setRundownMode={setRundownMode}
+      />
+      {rundownMode === 'edit' && <RundownEditTools />}
+      {rundownMode !== 'edit' && (
+        <PlayoutControls
+          playoutStatus={playoutStatus}
+          rundownMode={rundownMode}
+          loadRundown={loadRundown}
+          onError={onError}
+        />
+      )}
+      <RundownTable
+        data={rundown || []}
+        loading={loading}
+        draggedObjects={draggedObjects || null}
+        onDrop={onDrop}
+        currentItem={playoutStatus?.current_item}
+        cuedItem={playoutStatus?.cued_item}
+        selectedItems={selectedItems}
+        setSelectedItems={setSelectedItems}
+        selectedEvents={selectedEvents}
+        setSelectedEvents={setSelectedEvents}
+        focusedObject={focusedObject}
+        setFocusedObject={setFocusedObject}
+        rundownMode={rundownMode}
+        loadRundown={loadRundown}
+        onError={onError}
+      />
+    </main>
+  );
+};
+
+export default Rundown;

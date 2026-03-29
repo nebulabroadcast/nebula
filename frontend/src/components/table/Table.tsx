@@ -29,7 +29,7 @@ interface TableProps {
   rowHighlightColor?: (rowData: TableRowData) => string | undefined;
   rowHighlightStyle?: (
     rowData: TableRowData
-  ) => 'none' | 'solid' | 'dotted' | undefined;
+  ) => 'none' | 'solid' | 'dotted' | 'dashed' | undefined;
   rowClass?: (rowData: TableRowData) => string;
   sortBy?: string;
   sortDirection?: TableSortDirection;

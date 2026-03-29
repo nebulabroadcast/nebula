@@ -19,10 +19,10 @@ const TimestampWrapper = styled.div`
 
 interface TimestampProps extends React.HTMLAttributes<HTMLDivElement> {
   timestamp: number; // Unix timestamp in seconds
-  mode?: 'date' | 'time'; // Show only date or only time
+  mode?: 'date' | 'time' | 'datetime'; // Show only date or only time
 }
 
-const Timestamp = ({ timestamp, mode, ...props }: TimestampProps) => {
+const Timestamp = ({ timestamp, mode = 'datetime', ...props }: TimestampProps) => {
   // Timestamp component to display a unix timestamp in a human-readable format.
   if (!timestamp) return <></>;
   // const localDateTime = typeof date === 'string' ? new Date(date) : date;

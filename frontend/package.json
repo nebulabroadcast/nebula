@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "lint": "eslint src/**/*.{jsx,tsx,js,ts}",
+    "lint": "eslint src/**/*.{tsx,ts}",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
     "generate": "openapi-ts"
@@ -23,7 +23,7 @@
     "luxon": "^3.5.0",
     "material-symbols": "^0.35.0",
     "react": "^19.0.0",
-    "react-datepicker": "^8.1.0",
+    "react-datepicker": "^9.1.0",
     "react-dom": "^19.0.0",
     "react-markdown": "^10.1.0",
     "react-router": "^7.9.3",
@@ -35,6 +35,7 @@
   "devDependencies": {
     "@eslint/js": "^9.36.0",
     "@hey-api/openapi-ts": "^0.88",
+    "@types/content-type": "^1.1.9",
     "@types/lodash": "^4.17.23",
     "@types/luxon": "^3.7.1",
     "@types/node": "^24.3.1",

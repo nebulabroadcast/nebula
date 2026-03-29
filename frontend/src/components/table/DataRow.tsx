@@ -15,7 +15,7 @@ interface DataRowProps {
   rowHighlightColor?: (rowData: TableRowData) => string | undefined;
   rowHighlightStyle?: (
     rowData: TableRowData
-  ) => 'none' | 'solid' | 'dotted' | undefined;
+  ) => 'none' | 'solid' | 'dotted' | 'dashed' | undefined;
   rowClass?: (rowData: TableRowData) => string;
   ident: string | number;
   index: number;

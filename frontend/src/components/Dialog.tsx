@@ -29,8 +29,9 @@ const Dialog = ({
   const dialogRef = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
-    if (!dialogRef.current) return;
-    dialogRef.current.showModal();
+    const dialogElement = dialogRef.current;
+    if (!dialogElement) return;
+    dialogElement.showModal();
     // Focus management is handled by the <dialog> element itself
 
     const handleCancel = (event: Event) => {
@@ -39,11 +40,10 @@ const Dialog = ({
     };
 
     // Add event listener for the cancel event (when user attempts to close the dialog)
-    dialogRef.current.addEventListener('cancel', handleCancel);
+    dialogElement.addEventListener('cancel', handleCancel);
 
     return () => {
-      if (dialogRef.current)
-        dialogRef.current.removeEventListener('cancel', handleCancel);
+      if (dialogElement) dialogElement.removeEventListener('cancel', handleCancel);
     };
   }, [onHide]);
 
