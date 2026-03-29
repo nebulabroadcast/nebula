@@ -188,7 +188,7 @@ const Preview: React.FC<PreviewProps> = ({ assetData, setAssetData }) => {
     if (!assetData) return;
     const existingSubclips = assetData.subclips || [];
     if (!arrayEquals(existingSubclips, subclips)) {
-      patchAsset({ subclips: subclips.length ? subclips : undefined });
+      patchAsset({ subclips });
     }
   }, [subclips]);
 
