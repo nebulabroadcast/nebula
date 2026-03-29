@@ -53,11 +53,9 @@ export const AudioContextProvider: React.FC<AudioContextProviderProps> = ({
     const video = videoRef.current;
     if (!video || !audioContext) return;
 
-    if (mediaElementSourceRef.current) {
-      mediaElementSourceRef.current.disconnect();
+    if (!mediaElementSourceRef.current) {
+      mediaElementSourceRef.current = audioContext.createMediaElementSource(video);
     }
-
-    mediaElementSourceRef.current = audioContext.createMediaElementSource(video);
 
     video.onplay = () => {
       audioContext.resume();
@@ -66,32 +64,37 @@ export const AudioContextProvider: React.FC<AudioContextProviderProps> = ({
     return () => {
       if (video) video.onplay = null;
     };
-  }, [audioContext]);
+  }, [audioContext, videoRef.current]);
 
   useEffect(() => {
     if (!audioContext || !mediaElementSourceRef.current) return;
 
-    if (gainNodes.length) {
-      gainNodes.forEach((gainNode) => {
-        gainNode.disconnect();
-      });
-    }
+    if (numChannels) {
+      // Cleanup old nodes to prevent leaks and overlaps
+      if (gainNodes.length) {
+        gainNodes.forEach((node) => node.disconnect());
+      }
+      if (splitterRef.current) {
+        splitterRef.current.disconnect();
+      }
 
-    if (!splitterRef.current && numChannels) {
-      splitterRef.current = audioContext.createChannelSplitter(numChannels);
-      mediaElementSourceRef.current.connect(splitterRef.current);
-    }
+      // Create new splitter and connect media source
+      const splitter = audioContext.createChannelSplitter(numChannels);
+      splitterRef.current = splitter;
 
-    const newGainNodes: GainNode[] = [];
-    if (splitterRef.current) {
+      mediaElementSourceRef.current.disconnect();
+      mediaElementSourceRef.current.connect(splitter);
+
+      // Create new gain nodes for each channel
+      const newGainNodes: GainNode[] = [];
       for (let i = 0; i < numChannels; i++) {
         const gainNode = audioContext.createGain();
         newGainNodes.push(gainNode);
-        splitterRef.current.connect(gainNode, i);
+        splitter.connect(gainNode, i);
         gainNode.connect(audioContext.destination);
       }
+      setGainNodes(newGainNodes);
     }
-    setGainNodes(newGainNodes);
   }, [audioContext, numChannels]);
 
   const ctx: AudioContextContextType = {

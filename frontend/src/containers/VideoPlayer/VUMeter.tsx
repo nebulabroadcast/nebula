@@ -1,10 +1,25 @@
-import { Canvas } from '@components';
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef } from 'react';
+import styled from 'styled-components';
 
 const COLOR_YELLOW = '#fcde00';
 const COLOR_RED = '#ff2404';
 const COLOR_GREEN = '#5fff5f';
 const COLOR_BKG = '#19161f';
+
+const MeterContainer = styled.div`
+  height: 100%;
+  position: relative;
+  background-color: ${COLOR_BKG};
+  flex: none;
+`;
+
+const MeterCanvas = styled.canvas`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+`;
 
 interface VUMeterProps {
   gainNodes: GainNode[];
@@ -12,59 +27,64 @@ interface VUMeterProps {
 }
 
 const VUMeter: React.FC<VUMeterProps> = ({ gainNodes, audioContext }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const gainNodesRef = useRef<GainNode[] | null>(null);
-  const [redrawTrigger, setRedrawTrigger] = useState(0);
 
   const barWidth = 6;
   const spacing = 3;
 
   useEffect(() => {
-    if (!gainNodes) return;
-    gainNodesRef.current = gainNodes;
-  }, [gainNodes]);
-
-  useEffect(() => {
     const canvas = canvasRef.current;
-    const currentGainNodes = gainNodesRef.current;
-
-    if (!(canvas && currentGainNodes?.length && audioContext)) {
+    const container = containerRef.current;
+    if (!(canvas && container && gainNodes?.length && audioContext)) {
       return;
     }
 
-    const numChannels = currentGainNodes.length;
+    const numChannels = gainNodes.length;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-    const analysers = currentGainNodes.map(() => audioContext.createAnalyser());
 
-    currentGainNodes.forEach((gainNode, index) => {
-      gainNode.connect(analysers[index]);
-      analysers[index].fftSize = 1024;
-      analysers[index].smoothingTimeConstant = 0.8;
+    const analysers = gainNodes.map(() => {
+      const analyser = audioContext.createAnalyser();
+      analyser.fftSize = 1024;
+      return analyser;
     });
 
-    const bufferLength = analysers[0].frequencyBinCount;
+    gainNodes.forEach((gainNode, index) => {
+      gainNode.connect(analysers[index]);
+    });
+
+    const bufferLength = analysers[0].fftSize;
     const dataArray = new Uint8Array(bufferLength);
 
+    // Keep track of displayed levels for smoothing
+    const currentLevels = new Array(numChannels).fill(0);
+
+    let animationFrameId: number;
+
     const draw = () => {
-      if (!canvas.parentElement) return;
-      if (canvas.height !== canvas.parentElement.clientHeight) {
-        canvas.height = canvas.parentElement.clientHeight;
+      const rect = container.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) {
+        animationFrameId = requestAnimationFrame(draw);
+        return;
       }
 
-      canvas.width = numChannels * (barWidth + spacing) + spacing;
-      canvas.style.width = `${canvas.width}px`;
+      // Update canvas resolution if needed
+      if (canvas.width !== rect.width || canvas.height !== rect.height) {
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+      }
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // draw background regardless of audio data
+      // Draw background bars
       ctx.fillStyle = COLOR_BKG;
       for (let i = 0; i < numChannels; i++) {
-        const x = i * (barWidth + spacing);
+        const x = i * (barWidth + spacing) + spacing;
         ctx.fillRect(x, 0, barWidth, canvas.height);
       }
 
-      currentGainNodes.forEach((_, index) => {
+      gainNodes.forEach((_, index) => {
         analysers[index].getByteTimeDomainData(dataArray);
 
         let sum = 0;
@@ -74,69 +94,69 @@ const VUMeter: React.FC<VUMeterProps> = ({ gainNodes, audioContext }) => {
         }
 
         const rms = Math.sqrt(sum / bufferLength);
-        let volume = 20 * Math.log10(rms);
+        const volumeDb = rms > 0.0001 ? 20 * Math.log10(rms) : -100;
 
-        const MIN_DB = -40;
-        volume = ((volume - MIN_DB) / -MIN_DB) * 100;
+        const MIN_DB = -60;
+        const MAX_DB = 0;
+        let targetLevel = ((volumeDb - MIN_DB) / (MAX_DB - MIN_DB)) * 100;
+        targetLevel = Math.max(0, Math.min(100, targetLevel));
 
-        // Clamp green section to 60%
-        const greenHeight = (Math.min(volume, 60) / 100) * canvas.height;
-
-        // 20% over 60% is yellow
-        const yellowHeight =
-          ((volume > 80 ? 20 : volume > 60 ? volume - 60 : 0) / 100) * canvas.height;
-
-        // everything over 80% is red
-        const redHeight = ((volume > 80 ? volume - 80 : 0) / 100) * canvas.height;
-
-        const x = index * (barWidth + spacing);
-
-        // Draw green section
-        ctx.fillStyle = COLOR_GREEN;
-        ctx.fillRect(x, canvas.height - greenHeight, barWidth, greenHeight);
-
-        // Draw yellow section
-        if (yellowHeight > 0) {
-          ctx.fillStyle = COLOR_YELLOW;
-          ctx.fillRect(
-            x,
-            canvas.height - greenHeight - yellowHeight,
-            barWidth,
-            yellowHeight
-          );
+        // Smooth: fast rise, slow decay
+        if (targetLevel > currentLevels[index]) {
+          currentLevels[index] = targetLevel;
+        } else {
+          currentLevels[index] *= 0.95; // slower decay for smoother visualization
         }
 
-        // Draw red section
-        if (redHeight > 0) {
+        const level = currentLevels[index];
+        const x = index * (barWidth + spacing) + spacing;
+
+        // Draw the bar with sections
+        const greenEnd = 0.6;
+        const yellowEnd = 0.8;
+
+        const greenH = Math.min(level / 100, greenEnd) * canvas.height;
+        const yellowH =
+          Math.max(0, Math.min(level / 100, yellowEnd) - greenEnd) * canvas.height;
+        const redH = Math.max(0, level / 100 - yellowEnd) * canvas.height;
+
+        ctx.fillStyle = COLOR_GREEN;
+        ctx.fillRect(x, canvas.height - greenH, barWidth, greenH);
+
+        if (yellowH > 0) {
+          ctx.fillStyle = COLOR_YELLOW;
+          ctx.fillRect(x, canvas.height - greenH - yellowH, barWidth, yellowH);
+        }
+
+        if (redH > 0) {
           ctx.fillStyle = COLOR_RED;
-          ctx.fillRect(
-            x,
-            canvas.height - greenHeight - yellowHeight - redHeight,
-            barWidth,
-            redHeight
-          );
+          ctx.fillRect(x, canvas.height - greenH - yellowH - redH, barWidth, redH);
         }
       });
 
-      setTimeout(() => requestAnimationFrame(draw), 1000 / 30);
+      animationFrameId = requestAnimationFrame(draw);
     };
 
     draw();
-  }, [gainNodesRef.current, audioContext, canvasRef, redrawTrigger]);
 
-  const onCanvasDraw = useCallback(() => {
-    setRedrawTrigger((old) => old + 1);
-  }, []);
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+      gainNodes.forEach((gainNode, index) => {
+        try {
+          gainNode.disconnect(analysers[index]);
+        } catch (e) {
+          // ignore
+        }
+      });
+    };
+  }, [gainNodes, audioContext]);
+
+  const width = gainNodes.length * (barWidth + spacing) + spacing;
 
   return (
-    <Canvas
-      ref={canvasRef}
-      style={{
-        width: gainNodes.length * (barWidth + spacing),
-        backgroundColor: COLOR_BKG,
-      }}
-      onDraw={onCanvasDraw}
-    />
+    <MeterContainer ref={containerRef} style={{ width }}>
+      <MeterCanvas ref={canvasRef} />
+    </MeterContainer>
   );
 };
 

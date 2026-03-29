@@ -165,18 +165,28 @@ const VideoPlayerBody: React.FC<VideoPlayerProps> = (props) => {
     }
   };
 
-  const updatePosMon = () => {
-    if (!videoRef.current) return;
-    if (isPlayingRef.current) {
-      updatePos();
-      setTimeout(() => requestAnimationFrame(updatePosMon), 40);
-    } else {
-      updatePos();
-    }
-  };
-
   useEffect(() => {
+    let animationFrameId: number;
+    let timeoutId: any;
+
+    const updatePosMon = () => {
+      if (!videoRef.current) return;
+      if (isPlayingRef.current) {
+        updatePos();
+        timeoutId = setTimeout(() => {
+          animationFrameId = requestAnimationFrame(updatePosMon);
+        }, 40);
+      } else {
+        updatePos();
+      }
+    };
+
     updatePosMon();
+
+    return () => {
+      clearTimeout(timeoutId);
+      cancelAnimationFrame(animationFrameId);
+    };
   }, [isPlaying]);
 
   const seekToFrame = (frame: number) => {
