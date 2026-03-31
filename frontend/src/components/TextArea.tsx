@@ -22,7 +22,9 @@ const TextArea: React.FC<TextAreaProps> = ({ value, onChange, tooltip, ...props 
       className="textarea"
       data-tooltip={tooltip}
       value={value || ''}
-      onChange={(e) => onChange(e.target.value)}
+      onChange={(e) => {
+        onChange(e.target.value);
+      }}
       {...props}
     />
   );

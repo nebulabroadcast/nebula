@@ -87,7 +87,7 @@ const Select: React.FC<SelectProps> = (props) => {
         const { onChange } = props as SingleSelectProps;
         onChange(newValue);
       } else if (props.selectionMode === 'multiple' && Array.isArray(newValue)) {
-        const { onChange } = props as MultiSelectProps;
+        const { onChange } = props;
         onChange(newValue);
       }
       setDialogVisible(false);
@@ -145,14 +145,15 @@ const Select: React.FC<SelectProps> = (props) => {
           if (props.disabled) return;
           setDialogVisible(true);
         }}
-        onChange={() => {}}
         onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
           if (e.key === 'Enter') setDialogVisible(true);
         }}
       />
       <Button
         label="..."
-        onClick={() => setDialogVisible(true)}
+        onClick={() => {
+          setDialogVisible(true);
+        }}
         disabled={props.disabled}
       />
     </DialogBasedSelect>

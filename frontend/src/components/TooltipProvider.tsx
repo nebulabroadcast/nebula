@@ -76,33 +76,30 @@ export const TooltipProvider: React.FC<{ children: React.ReactNode }> = ({
 
   useEffect(() => {
     const handleMouseOver = (e: MouseEvent) => {
-      const target = (e.target as HTMLElement).closest(
-        '[data-tooltip], [title]'
-      ) as HTMLElement;
+      const target = (e.target as HTMLElement).closest('[data-tooltip], [title]');
 
-      if (target) {
-        const tooltipContent =
-          target.getAttribute('data-tooltip') || target.getAttribute('title');
-
-        if (tooltipContent) {
-          // If it was a 'title', move it to 'data-tooltip' to prevent native browser tooltip
-          if (target.hasAttribute('title')) {
-            target.setAttribute('data-tooltip', tooltipContent);
-            target.removeAttribute('title');
-          }
-
-          const rect = target.getBoundingClientRect();
-          showTooltip(tooltipContent, rect.left + rect.width / 2, rect.top);
-        }
-      } else {
+      if (!target) {
         hideTooltip();
+        return;
+      }
+
+      const tooltipContent =
+        target.getAttribute('data-tooltip') || target.getAttribute('title');
+
+      if (tooltipContent) {
+        // If it was a 'title', move it to 'data-tooltip' to prevent native browser tooltip
+        if (target.hasAttribute('title')) {
+          target.setAttribute('data-tooltip', tooltipContent);
+          target.removeAttribute('title');
+        }
+
+        const rect = target.getBoundingClientRect();
+        showTooltip(tooltipContent, rect.left + rect.width / 2, rect.top);
       }
     };
 
     const handleMouseOut = (e: MouseEvent) => {
-      const target = (e.target as HTMLElement).closest(
-        '[data-tooltip]'
-      ) as HTMLElement | null;
+      const target = (e.target as HTMLElement).closest('[data-tooltip]');
       if (!target) {
         return;
       }

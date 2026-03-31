@@ -31,7 +31,9 @@ const DatePickerDialog = (props: DatePickerDialogProps) => {
    * one and the only sane date format.
    */
   const [value, setValue] = useState<DateTime>();
-  const onCancel = () => props.handleCancel();
+  const onCancel = () => {
+    props.handleCancel();
+  };
   const onConfirm = () => {
     if (!value) return;
     const t = value.toFormat('yyyy-MM-dd');

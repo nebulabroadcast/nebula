@@ -1,4 +1,4 @@
-const colors: { [key: string]: string } = {
+const colors: Record<string, string> = {
   surface01: '#19161f',
   surface02: '#1f1e26',
   surface03: '#24202e',
@@ -21,7 +21,7 @@ const colors: { [key: string]: string } = {
 };
 
 const defaultTheme: {
-  colors: { [key: string]: string };
+  colors: Record<string, string>;
   inputHeight: string;
   inputBorder: number;
   inputBorderRadius: string;

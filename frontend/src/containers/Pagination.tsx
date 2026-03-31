@@ -13,13 +13,17 @@ const Pagination = ({ page, hasMore, setPage }: PaginationProps) => {
         <Button
           icon="keyboard_arrow_left"
           disabled={page === 1}
-          onClick={() => setPage(page - 1)}
+          onClick={() => {
+            setPage(page - 1);
+          }}
         />
         <Spacer>{page}</Spacer>
         <Button
           icon="keyboard_arrow_right"
           disabled={!hasMore}
-          onClick={() => setPage(page + 1)}
+          onClick={() => {
+            setPage(page + 1);
+          }}
         />
       </Navbar>
     );

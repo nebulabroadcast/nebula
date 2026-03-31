@@ -65,7 +65,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ target, options }) => {
   useEffect(() => {
     const contextMenuEventHandler = (event: MouseEvent) => {
       const targetElement = target.current;
-      if (targetElement && targetElement.contains(event.target as Node)) {
+      if (targetElement?.contains(event.target as Node)) {
         event.preventDefault();
         setTimeout(() => {
           setContextData({
@@ -121,7 +121,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ target, options }) => {
     <ContextMenuWrapper
       ref={contextRef}
       style={{
-        display: `${contextData.visible ? 'block' : 'none'}`,
+        display: contextData.visible ? 'block' : 'none',
         left: contextData.posX,
         top: contextData.posY,
       }}

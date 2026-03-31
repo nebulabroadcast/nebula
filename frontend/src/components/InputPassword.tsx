@@ -19,7 +19,9 @@ const InputPassword = forwardRef<HTMLInputElement, InputPasswordProps>(
         type="password"
         data-tooltip={tooltip}
         value={value || ''}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) => {
+          onChange(e.target.value);
+        }}
         {...props}
       />
     );

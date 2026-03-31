@@ -4,7 +4,7 @@ import Input from './Input.styled';
 
 interface InputTextProps {
   value?: string;
-  onChange: (value: string) => void;
+  onChange?: (value: string) => void;
   disabled?: boolean;
   placeholder?: string;
   tooltip?: string;
@@ -17,6 +17,12 @@ interface InputTextProps {
 
 const InputText = forwardRef<HTMLInputElement, InputTextProps>(
   (props: InputTextProps, ref) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (props.onChange) {
+        props.onChange(e.target.value);
+      }
+    };
+
     return (
       <Input
         ref={ref}
@@ -26,7 +32,7 @@ const InputText = forwardRef<HTMLInputElement, InputTextProps>(
         placeholder={props.placeholder}
         disabled={props.disabled}
         readOnly={props.readOnly}
-        onChange={(e) => props.onChange(e.target.value)}
+        onChange={handleChange}
         onDoubleClick={props.onDoubleClick}
         onKeyDown={props.onKeyDown}
         style={props.style}

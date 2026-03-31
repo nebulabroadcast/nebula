@@ -29,13 +29,13 @@ const RadioContainer = styled.div`
 `;
 
 interface RadioButtonProps {
-  options: {
+  options: Array<{
     value: string;
     title: string;
     icon?: string;
     description?: string;
     buttonStyle?: React.CSSProperties;
-  }[];
+  }>;
   value: string;
   onChange: (value: string) => void;
   disabled?: boolean;
@@ -47,7 +47,9 @@ const RadioButton = ({ options, value, onChange, disabled }: RadioButtonProps) =
       {options.map((option) => (
         <Button
           key={option.value}
-          onClick={() => onChange(option.value)}
+          onClick={() => {
+            onChange(option.value);
+          }}
           className={clsx({ active: option.value === value })}
           icon={option.icon}
           label={option.title}

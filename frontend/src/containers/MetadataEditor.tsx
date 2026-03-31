@@ -206,10 +206,11 @@ const MetadataEditor: React.FC<MetadataEditorProps> = ({
   onSave,
   disabled,
 }) => {
-  const onFieldChanged = (key: string, value: any) =>
+  const onFieldChanged = (key: string, value: any) => {
     setObjectData((o) => {
       return { ...o, [key]: value };
     });
+  };
 
   function handleKeyDown(event: React.KeyboardEvent) {
     if (!onSave) return;

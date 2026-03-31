@@ -83,7 +83,7 @@ function filterHierarchy(
 
       let currentVal: string | undefined = newItem.value;
       while (currentVal) {
-        const parts: string[] = currentVal!.split('.');
+        const parts: string[] = currentVal.split('.');
         if (parts.length <= 1) {
           break;
         }
@@ -168,8 +168,7 @@ const SelectDialog: React.FC<SelectDialogProps> = ({
     let value: string | string[] | null = Object.keys(selection).filter(
       (key) => selection[key]
     );
-    if (selectionMode === 'single')
-      value = (value as string[]).length ? (value as string[])[0] : null;
+    if (selectionMode === 'single') value = value.length ? value[0] : null;
     onHide(value);
   };
 
@@ -203,7 +202,9 @@ const SelectDialog: React.FC<SelectDialogProps> = ({
           style={{ flexGrow: 1 }}
         />
         <Button
-          onClick={() => setFilter('')}
+          onClick={() => {
+            setFilter('');
+          }}
           icon="filter_alt_off"
           data-tooltip="Clear filter"
         />
@@ -213,15 +214,35 @@ const SelectDialog: React.FC<SelectDialogProps> = ({
 
   const footer = (
     <>
-      <Button onClick={() => onUnset()} label="Unset" icon="backspace" />
-      <Button onClick={() => onClose()} label="Cancel" icon="close" />
-      <Button onClick={() => onApply()} label="Apply" icon="check" />
+      <Button
+        onClick={() => {
+          onUnset();
+        }}
+        label="Unset"
+        icon="backspace"
+      />
+      <Button
+        onClick={() => {
+          onClose();
+        }}
+        label="Cancel"
+        icon="close"
+      />
+      <Button
+        onClick={() => {
+          onApply();
+        }}
+        label="Apply"
+        icon="check"
+      />
     </>
   );
 
   return (
     <Dialog
-      onHide={() => onClose()}
+      onHide={() => {
+        onClose();
+      }}
       style={{ minWidth: 400 }}
       header={header}
       footer={footer}
@@ -233,7 +254,9 @@ const SelectDialog: React.FC<SelectDialogProps> = ({
               key={option.value}
               option={option}
               selected={selection[option.value]}
-              onClick={() => onToggle(option.value)}
+              onClick={() => {
+                onToggle(option.value);
+              }}
             />
           ))}
         </div>

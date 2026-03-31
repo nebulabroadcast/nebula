@@ -23,7 +23,9 @@ const InputSwitch = ({
         type="checkbox"
         checked={value}
         disabled={disabled}
-        onChange={() => onChange(!value)}
+        onChange={() => {
+          onChange(!value);
+        }}
       />
       <span className="slider"></span>
     </label>

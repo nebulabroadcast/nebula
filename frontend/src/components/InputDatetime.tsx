@@ -94,10 +94,7 @@ const InputDatetime = ({
 
     if (time && time.length - 1 === newValue.length && time.endsWith('-')) {
       newValue = newValue.slice(0, -1);
-    } else if (
-      [4, 7].includes(newValue.length) &&
-      newValue.charAt(newValue.length - 1) !== '-'
-    )
+    } else if ([4, 7].includes(newValue.length) && !newValue.endsWith('-'))
       newValue = newValue + '-';
     setTime(newValue);
   };
@@ -143,7 +140,9 @@ const InputDatetime = ({
         <CalendarDialog
           value={value}
           onChange={onChange}
-          onClose={() => setShowCalendar(false)}
+          onClose={() => {
+            setShowCalendar(false);
+          }}
         />
       )}
       <Input
@@ -162,7 +161,12 @@ const InputDatetime = ({
         }}
         onKeyDown={onKeyDown}
       />
-      <Button icon="calendar_today" onClick={() => setShowCalendar(true)} />
+      <Button
+        icon="calendar_today"
+        onClick={() => {
+          setShowCalendar(true);
+        }}
+      />
     </DateTimeWrapper>
   );
 };

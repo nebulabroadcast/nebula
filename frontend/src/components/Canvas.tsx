@@ -42,7 +42,9 @@ const Canvas = forwardRef<HTMLCanvasElement, CanvasProps>(
       const resizeObserver = new ResizeObserver(handleResize);
       resizeObserver.observe(parentElement);
 
-      return () => resizeObserver.unobserve(parentElement);
+      return () => {
+        resizeObserver.unobserve(parentElement);
+      };
     }, [ref, onDraw]);
 
     return (

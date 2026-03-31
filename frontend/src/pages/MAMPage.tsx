@@ -176,8 +176,8 @@ const MAMPage: React.FC = () => {
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (!draggedIndicatorRef.current) return;
-      draggedIndicatorRef.current.style.left = e.clientX + 20 + 'px';
-      draggedIndicatorRef.current.style.top = e.clientY + 20 + 'px';
+      draggedIndicatorRef.current.style.left = `${e.clientX + 20}px`;
+      draggedIndicatorRef.current.style.top = `${e.clientY + 20}px`;
     };
 
     window.addEventListener('mousemove', handleMouseMove);

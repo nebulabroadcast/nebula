@@ -38,28 +38,35 @@ const Sessions: React.FC<SessionsProps> = ({ userId }) => {
   const loadSessions = useCallback(() => {
     if (!userId) return;
     setLoading(true);
-    nebula
+    return nebula
       .request('list-sessions', { id_user: userId })
       .then((res) => {
         setSessions(res.data);
       })
-      .finally(() => setLoading(false));
+      .catch((err: unknown) => {
+        console.error(err);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, [userId]);
 
   const invalidateSession = useCallback(
     (token: string) => {
-      nebula
+      void nebula
         .request('invalidate-session', { token })
         .then(() => {
-          loadSessions();
+          void loadSessions();
         })
-        .catch((err) => console.error(err));
+        .catch((err: unknown) => {
+          console.error(err);
+        });
     },
     [loadSessions]
   );
 
   useEffect(() => {
-    loadSessions();
+    void loadSessions();
   }, [userId, loadSessions]);
 
   const invalidateFormatter = (rowData: TableRowData) => {
@@ -67,7 +74,12 @@ const Sessions: React.FC<SessionsProps> = ({ userId }) => {
     const token = session.token;
     return (
       <td style={{ textAlign: 'right' }} className="action">
-        <Button onClick={() => invalidateSession(token)} label="Invalidate" />
+        <Button
+          onClick={() => {
+            invalidateSession(token);
+          }}
+          label="Invalidate"
+        />
       </td>
     );
   };

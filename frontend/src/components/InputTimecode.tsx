@@ -8,8 +8,8 @@ interface InputTimecodeProps extends Omit<
   React.InputHTMLAttributes<HTMLInputElement>,
   'value' | 'onChange' | 'className' | 'title'
 > {
-  value?: number | null; // in seconds
-  mode?: 'time' | 'frames'; // time or frames
+  value?: number | null; // in seconds or frames based on mode
+  mode?: 'time' | 'frames';
   fps?: number | string;
   onChange?: (value: number | null | undefined) => void;
   tooltip?: string;
@@ -17,12 +17,12 @@ interface InputTimecodeProps extends Omit<
 }
 
 const InputTimecode: React.FC<InputTimecodeProps> = ({
-  value = null, // in seconds
+  value = null, // in seconds or frames based on mode
   mode = 'time', // time or frames
   fps = 25,
-  onChange = () => {},
-  tooltip = undefined,
-  className = undefined,
+  onChange,
+  tooltip,
+  className,
   ...props
 }) => {
   const [text, setText] = useState<string>('');
@@ -71,7 +71,9 @@ const InputTimecode: React.FC<InputTimecodeProps> = ({
     // add zero padding to the timecode
     if (!text) {
       setInvalid(false);
-      onChange(undefined);
+      if (onChange) {
+        onChange(undefined);
+      }
       return;
     }
 
@@ -85,8 +87,9 @@ const InputTimecode: React.FC<InputTimecodeProps> = ({
       const tcobj = new Timecode(str, fps);
       setInvalid(false);
       setText(str);
-      if (mode === 'time') onChange((tcobj.Frames as number) / (fps as number));
-      else if (mode === 'frames') onChange(tcobj.Frames as number);
+      if (onChange === undefined) return;
+      if (mode === 'time') onChange(tcobj.Frames / (fps as number));
+      else if (mode === 'frames') onChange(tcobj.Frames);
       else throw new Error('Invalid mode');
     } catch {
       setInvalid(true);
@@ -110,7 +113,9 @@ const InputTimecode: React.FC<InputTimecodeProps> = ({
       onChange={onChangeHandler}
       onKeyDown={onKeyDown}
       onBlur={onSubmit}
-      onFocus={(e) => e.target.select()}
+      onFocus={(e) => {
+        e.target.select();
+      }}
       placeholder="--:--:--:--"
       data-tooltip={tooltip}
       {...props}

@@ -26,6 +26,9 @@ const DropdownOption = ({
   onClick,
   value,
 }: DropdownOptionProps) => {
+  // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+  const isDisabled = disabled || currentValue === value;
+
   return (
     <span>
       {separator && <hr />}
@@ -34,8 +37,10 @@ const DropdownOption = ({
         icon={icon}
         style={style}
         iconStyle={hlColor ? { color: hlColor } : {}}
-        disabled={disabled || currentValue === value}
-        onClick={() => onClick(value)}
+        disabled={isDisabled}
+        onClick={() => {
+          onClick(value);
+        }}
         active={currentValue === value}
       />
     </span>
@@ -65,7 +70,7 @@ const Dropdown = ({
   disabled = false,
   iconOnRight = true,
 }: DropdownProps) => {
-  if (align === 'right') contentStyle['right'] = 0;
+  if (align === 'right') contentStyle.right = 0;
 
   return (
     <DropdownContainer className={clsx({ disabled })}>
@@ -78,21 +83,20 @@ const Dropdown = ({
         disabled={disabled}
       />
       <div className="dropdown-content" style={contentStyle}>
-        {options &&
-          options.map((option, idx) => (
-            <DropdownOption
-              key={idx}
-              currentValue={value}
-              value={option.value}
-              label={option.label}
-              icon={option.icon}
-              separator={option.separator}
-              disabled={option.disabled}
-              hlColor={option.hlColor}
-              style={option.style}
-              onClick={option.onClick}
-            />
-          ))}
+        {(options ?? []).map((option, idx) => (
+          <DropdownOption
+            key={idx}
+            currentValue={value}
+            value={option.value}
+            label={option.label}
+            icon={option.icon}
+            separator={option.separator}
+            disabled={option.disabled}
+            hlColor={option.hlColor}
+            style={option.style}
+            onClick={option.onClick}
+          />
+        ))}
       </div>
     </DropdownContainer>
   );
