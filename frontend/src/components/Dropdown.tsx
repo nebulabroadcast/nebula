@@ -26,7 +26,6 @@ const DropdownOption = ({
   onClick,
   value,
 }: DropdownOptionProps) => {
-  // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
   const isDisabled = disabled || currentValue === value;
 
   return (
