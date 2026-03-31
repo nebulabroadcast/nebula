@@ -115,7 +115,7 @@ const SelectDialog: React.FC<SelectDialogProps> = ({
   initialValue = null,
   title,
 }) => {
-  const [filter, setFilter] = useState<string>('');
+  const [filter, setFilter] = useState('');
   const [selection, setSelection] = useState<Record<string, boolean>>({});
 
   const filterRef = useRef<HTMLInputElement>(null);

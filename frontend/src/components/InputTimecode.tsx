@@ -25,8 +25,8 @@ const InputTimecode: React.FC<InputTimecodeProps> = ({
   className,
   ...props
 }) => {
-  const [text, setText] = useState<string>('');
-  const [invalid, setInvalid] = useState<boolean>(false);
+  const [text, setText] = useState('');
+  const [invalid, setInvalid] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {

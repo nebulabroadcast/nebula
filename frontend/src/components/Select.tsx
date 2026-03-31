@@ -58,7 +58,7 @@ interface MultiSelectProps extends BaseSelectProps {
 type SelectProps = DefaultSingleSelectProps | SingleSelectProps | MultiSelectProps;
 
 const Select: React.FC<SelectProps> = (props) => {
-  const [dialogVisible, setDialogVisible] = useState<boolean>(false);
+  const [dialogVisible, setDialogVisible] = useState(false);
 
   const displayValue = useMemo(() => {
     if (!props.value) return '';
