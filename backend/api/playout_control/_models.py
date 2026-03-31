@@ -6,7 +6,7 @@ from pydantic import Field
 from server.models import APIModel
 
 
-class PlayoutAction(str, Enum):
+class PlayoutAction(Enum):
     cue = "cue"
     take = "take"
     abort = "abort"

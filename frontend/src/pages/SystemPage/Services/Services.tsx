@@ -6,7 +6,7 @@ import { useWebSocket } from '@features/Websocket';
 import { Duration } from 'luxon';
 import React, { useEffect, useState, useMemo } from 'react';
 import styled, { keyframes } from 'styled-components';
-import type { ServiceItemModel } from '../../../client';
+import type { ServiceListItem } from '../../../client';
 
 const blink = keyframes`
   0% { opacity: 1; transform: scale(1.2); }
@@ -78,7 +78,7 @@ const formatLastSeen = (rowData: any, key: string) => {
   );
 };
 
-interface ExtendedServiceItem extends ServiceItemModel {
+interface ExtendedServiceItem extends ServiceListItem {
   last_updated?: number;
 }
 

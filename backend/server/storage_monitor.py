@@ -1,5 +1,4 @@
 import asyncio
-import contextlib
 import os
 import subprocess
 import time
@@ -26,19 +25,16 @@ def exec_mount(cmd: list[str]) -> None:
 
 
 async def ensure_local_path(storage: Storage) -> bool:
-    if not os.path.exists(storage.local_path):
-        try:
-            os.mkdir(storage.local_path)
-        except FileExistsError:
-            pass
-        except Exception:
-            nebula.log.traceback(f"Unable to create mountpoint for {storage}")
-            await nebula.db.execute(
-                "UPDATE storages SET enabled = FALSE WHERE id = $1",
-                storage.id,
-            )
-            nebula.log.error(f"Disabling storage {storage}")
-            return False
+    try:
+        os.makedirs(storage.local_path, exist_ok=True)
+    except Exception:
+        nebula.log.traceback(f"Unable to create mountpoint for {storage}")
+        await nebula.db.execute(
+            "UPDATE storages SET enabled = FALSE WHERE id = $1",
+            storage.id,
+        )
+        nebula.log.error(f"Disabling storage {storage}")
+        return False
     return True
 
 
@@ -120,9 +116,17 @@ class StorageMonitor(BackgroundTask):
                 continue
 
             if storage.protocol == "local":
-                if not os.path.isdir(storage.path):
-                    with contextlib.suppress(FileExistsError):
-                        os.makedirs(storage.path)
+                try:
+                    os.makedirs(storage.path, exist_ok=True)
+                except Exception:
+                    nebula.log.traceback(
+                        f"Unable to create local storage path for {storage}"
+                    )
+                    await nebula.db.execute(
+                        "UPDATE storages SET enabled = FALSE WHERE id = $1",
+                        storage.id,
+                    )
+                    nebula.log.error(f"Disabling storage {storage}")
                 continue
 
             if storage.protocol == "samba":

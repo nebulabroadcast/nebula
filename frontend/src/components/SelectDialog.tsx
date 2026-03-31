@@ -123,6 +123,7 @@ const SelectDialog: React.FC<SelectDialogProps> = ({
     if (filterRef.current) {
       filterRef.current.focus();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filterRef.current]);
 
   useEffect(() => {

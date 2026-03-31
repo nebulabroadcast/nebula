@@ -5,6 +5,7 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 import aiofiles
+import anyio
 from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -78,8 +79,8 @@ async def custom_404_handler(
             },
         )
 
-    index_path = os.path.join(nebula.config.frontend_dir, "index.html")
-    if os.path.exists(index_path):
+    index_path = anyio.Path(nebula.config.frontend_dir, "index.html")
+    if await index_path.exists():
         return FileResponse(
             index_path,
             status_code=200,

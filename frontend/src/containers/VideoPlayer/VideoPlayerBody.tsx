@@ -80,6 +80,7 @@ const VideoPlayerBody: React.FC<VideoPlayerProps> = (props) => {
   useEffect(() => {
     if (!props.setPosition) return;
     props.setPosition(frames2time(posFrames, props.frameRate));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [posFrames, props.frameRate, props.setPosition]);
 
   useEffect(() => {
@@ -109,6 +110,7 @@ const VideoPlayerBody: React.FC<VideoPlayerProps> = (props) => {
       props.setMarkOut(markOut ?? null);
       markOutRef.current = markOut;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [markIn, markOut, props.setMarkIn, props.setMarkOut]);
 
   useEffect(() => {
@@ -167,7 +169,7 @@ const VideoPlayerBody: React.FC<VideoPlayerProps> = (props) => {
 
   useEffect(() => {
     let animationFrameId: number;
-    let timeoutId: any;
+    let timeoutId: number;
 
     const updatePosMon = () => {
       if (!videoRef.current) return;
@@ -187,6 +189,7 @@ const VideoPlayerBody: React.FC<VideoPlayerProps> = (props) => {
       clearTimeout(timeoutId);
       cancelAnimationFrame(animationFrameId);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPlaying]);
 
   const seekToFrame = (frame: number) => {

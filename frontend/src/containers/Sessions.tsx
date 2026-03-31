@@ -1,6 +1,6 @@
 import { Table, Timestamp, Section, Button } from '@components';
 import type { TableRowData } from '@components/table/types';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 import type { SessionModel } from '@/client';
 import nebula from '@/nebula';
@@ -35,7 +35,7 @@ const Sessions: React.FC<SessionsProps> = ({ userId }) => {
   const [sessions, setSessions] = useState<SessionModel[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const loadSessions = () => {
+  const loadSessions = useCallback(() => {
     if (!userId) return;
     setLoading(true);
     nebula
@@ -44,20 +44,23 @@ const Sessions: React.FC<SessionsProps> = ({ userId }) => {
         setSessions(res.data);
       })
       .finally(() => setLoading(false));
-  };
+  }, [userId]);
+
+  const invalidateSession = useCallback(
+    (token: string) => {
+      nebula
+        .request('invalidate-session', { token })
+        .then(() => {
+          loadSessions();
+        })
+        .catch((err) => console.error(err));
+    },
+    [loadSessions]
+  );
 
   useEffect(() => {
     loadSessions();
-  }, [userId]);
-
-  const invalidateSession = (token: string) => {
-    nebula
-      .request('invalidate-session', { token })
-      .then(() => {
-        loadSessions();
-      })
-      .catch((err) => console.error(err));
-  };
+  }, [userId, loadSessions]);
 
   const invalidateFormatter = (rowData: TableRowData) => {
     const session = rowData as SessionModel;

@@ -21,7 +21,7 @@ class Redis:
     async def connect(cls) -> None:
         """Create a Redis connection pool"""
         if cls.redis_pool is None:
-            cls.redis_pool = aioredis.from_url(config.redis)  # type: ignore[no-untyped-call]
+            cls.redis_pool = aioredis.from_url(config.redis)
         try:
             await cls.redis_pool.set("CONN", "alive")
         except ConnectionError:
