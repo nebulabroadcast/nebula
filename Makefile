@@ -11,10 +11,13 @@ check-backend:
 check-frontend:
 	cd frontend && \
 		yarn lint && \
-		yarn format
+		yarn format:check
 
 check: check-backend check-frontend
 
+fix-frontend:
+	cd frontend && \
+		yarn format
 build:
 	docker build -t $(IMAGE_NAME) .
 
