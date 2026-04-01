@@ -1,0 +1,43 @@
+.nb-form {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  row-gap: var(--gap-size);
+  column-gap: 16px;
+
+  > label {
+    color: #555;
+  }
+
+  .nb-form-section {
+    grid-column: 1 / -1;
+    h3 {
+      width: 100%;
+      text-align: center;
+      font-size: 1rem;
+      font-weight: 500;
+    }
+  }
+
+  .nb-form-title {
+    user-select: none;
+    padding-top: 5px;
+
+    .nb-form-title-content {
+      span {
+        white-space: nowrap;
+      }
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+  }
+
+  .nb-form-control {
+    display: flex;
+    flex-grow: 1;
+    gap: 4px;
+    > * {
+      width: 100%;
+    }
+  }
+}

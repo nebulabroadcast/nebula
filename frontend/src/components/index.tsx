@@ -4,7 +4,7 @@ export { default as Canvas } from './Canvas';
 export { default as ContextMenu } from './ContextMenu';
 export { default as Dialog } from './Dialog';
 export { default as Dropdown } from './Dropdown';
-export { default as ErrorBanner } from './ErrorBanner';
+export { ErrorBanner } from './ErrorBanner';
 export { default as Icon } from './Icon';
 export { default as InputColor } from './InputColor';
 export { default as InputDatetime } from './InputDatetime';

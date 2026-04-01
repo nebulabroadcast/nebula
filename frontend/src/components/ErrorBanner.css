@@ -1,0 +1,13 @@
+.nb-error-banner {
+  padding: 10px 20px;
+  white-space: nowrap;
+  background-color: var(--color-surface-04);
+  color: var(--color-red);
+  margin: 10px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 400;
+}

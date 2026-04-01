@@ -1,51 +1,15 @@
-import styled from 'styled-components';
+import React, { useMemo } from 'react';
 
 import Icon from './Icon';
+import './Form.css';
 
-const Form = styled.div`
-  display: grid;
-  grid-template-columns: auto 1fr;
-  row-gap: var(--gap-size);
-  column-gap: 16px;
-
-  > label {
-    color: #555;
-  }
-
-  .form-section {
-    grid-column: 1 / -1;
-    h3 {
-      width: 100%;
-      text-align: center;
-      font-size: 1rem;
-      font-weight: 500;
-    }
-  }
-
-  .form-title {
-    user-select: none;
-    user-drag: none;
-    padding-top: 5px;
-
-    .form-title-content {
-      span {
-        white-space: nowrap;
-      }
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-  }
-
-  .form-control {
-    display: flex;
-    flex-grow: 1;
-    gap: 4px;
-    > * {
-      width: 100%;
-    }
-  }
-`;
+const Form = (props: React.HTMLAttributes<HTMLDivElement>) => {
+  return (
+    <div className="nb-form" {...props}>
+      {props.children}
+    </div>
+  );
+};
 
 interface FormRowProps extends React.HTMLAttributes<HTMLDivElement> {
   title: string;
@@ -53,6 +17,14 @@ interface FormRowProps extends React.HTMLAttributes<HTMLDivElement> {
   section?: string;
   changed?: boolean;
 }
+
+const FormTooltipIcon = (
+  <Icon
+    icon="info"
+    aria-hidden="true"
+    style={{ fontSize: '0.9em', color: 'var(--color-text-dim)' }}
+  />
+);
 
 const FormRow = ({
   title,
@@ -62,35 +34,28 @@ const FormRow = ({
   changed,
   ...props
 }: FormRowProps) => {
+  const changedIndicator = useMemo(
+    () => (
+      <span style={{ color: 'var(--color-violet)', opacity: changed ? 1 : 0 }}>*</span>
+    ),
+    [changed]
+  );
+
   return (
     <>
       {section && (
-        <div className="form-section">
+        <div className="nb-form-section">
           <h3>{section}</h3>
         </div>
       )}
-      <div className="form-title">
-        <div className="form-title-content" data-tooltip={tooltip}>
+      <div className="nb-form-title">
+        <div className="nb-form-title-content" data-tooltip={tooltip}>
           <span>{title}</span>
-          {tooltip && (
-            <Icon
-              icon="info"
-              aria-hidden="true"
-              style={{ fontSize: '0.9em', color: 'var(--color-text-dim)' }}
-            />
-          )}
-          <span
-            style={{
-              color: 'var(--color-violet)',
-              opacity: changed ? 1 : 0,
-            }}
-          >
-            {' '}
-            *
-          </span>
+          {tooltip && FormTooltipIcon}
+          {changedIndicator}
         </div>
       </div>
-      <div className="form-control" {...props}>
+      <div className="nb-form-control" {...props}>
         {children}
       </div>
     </>
