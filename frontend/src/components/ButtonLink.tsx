@@ -35,11 +35,10 @@ const ButtonLink = (props: ButtonLinkProps) => {
     ...anchorProps
   } = props;
 
-  const _anchorStyle = style || {};
-  const _iconStyle = iconStyle || {};
+  const _anchorStyle = { ...style };
+  const _iconStyle = { ...iconStyle };
 
   if (hlColor && !anchorProps.disabled) {
-    //_anchorStyle.borderBottom = `1px solid ${props.hlColor}`;
     _iconStyle.color = props.hlColor;
   }
 

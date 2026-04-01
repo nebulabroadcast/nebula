@@ -29,8 +29,8 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>((props: ButtonProps, r
     ...buttonProps
   } = props;
 
-  const _buttonStyle = style ?? {};
-  const _iconStyle = iconStyle ?? {};
+  const _buttonStyle = { ...style };
+  const _iconStyle = { ...iconStyle };
 
   if (hlColor && !buttonProps.disabled) {
     //_buttonStyle.borderBottom = `1px solid ${props.hlColor}`;

@@ -41,7 +41,7 @@ const Sessions: React.FC<SessionsProps> = ({ userId }) => {
     return nebula
       .request('list-sessions', { id_user: userId })
       .then((res) => {
-        setSessions(res.data);
+        setSessions(res.data as SessionModel[]);
       })
       .catch((err: unknown) => {
         console.error(err);

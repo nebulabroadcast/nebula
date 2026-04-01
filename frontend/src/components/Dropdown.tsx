@@ -69,7 +69,8 @@ const Dropdown = ({
   disabled = false,
   iconOnRight = true,
 }: DropdownProps) => {
-  if (align === 'right') contentStyle.right = 0;
+  const _contentStyle = { ...contentStyle };
+  if (align === 'right') _contentStyle.right = 0;
 
   return (
     <DropdownContainer className={clsx({ disabled })}>
@@ -81,7 +82,7 @@ const Dropdown = ({
         iconOnRight={iconOnRight}
         disabled={disabled}
       />
-      <div className="dropdown-content" style={contentStyle}>
+      <div className="dropdown-content" style={_contentStyle}>
         {(options ?? []).map((option, idx) => (
           <DropdownOption
             key={idx}

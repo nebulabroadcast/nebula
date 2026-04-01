@@ -1,4 +1,3 @@
-import { getTheme } from '@components';
 import styled from 'styled-components';
 
 import { formatBytes, type StorageStats } from './common';
@@ -63,7 +62,7 @@ const StorageVisualization = ({
       {showUntracked && untrackedSize > 0 && (
         <VizSegment
           title={`Untracked: ${formatBytes(untrackedSize)}`}
-          $color={getTheme().colors.surface07}
+          $color="var(--color-surface-07)"
           $size={(untrackedSize / displaySize) * 100}
         />
       )}
@@ -71,7 +70,7 @@ const StorageVisualization = ({
       {showFree && freeSize > 0 && (
         <VizSegment
           title={`Free: ${formatBytes(freeSize)}`}
-          $color={getTheme().colors.surface03}
+          $color="var(--color-surface-03)"
           $size={(freeSize / displaySize) * 100}
         />
       )}
