@@ -1,19 +1,16 @@
 import { DateTime } from 'luxon';
 import { useState, useEffect } from 'react';
-import DatePicker from 'react-datepicker';
-import styled from 'styled-components';
+import { DatePicker } from 'react-datepicker';
 
-import Button from './Button';
-import Dialog from './Dialog';
+import { Button } from './Button';
+import { Dialog } from './Dialog';
 
-const DatePickerWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  min-width: 200px;
-  min-height: 250px;
-`;
+const WRAPPER_STYLE: React.CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'flex-start',
+};
 
 interface DatePickerDialogProps {
   title: string;
@@ -69,7 +66,7 @@ const DatePickerDialog = (props: DatePickerDialogProps) => {
 
   return (
     <Dialog onHide={onCancel} header={props.title} footer={footer}>
-      <DatePickerWrapper>
+      <div style={WRAPPER_STYLE}>
         {value && (
           <DatePicker
             calendarStartDay={1}
@@ -78,7 +75,7 @@ const DatePickerDialog = (props: DatePickerDialogProps) => {
             inline
           />
         )}
-      </DatePickerWrapper>
+      </div>
     </Dialog>
   );
 };

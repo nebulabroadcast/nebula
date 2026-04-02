@@ -2,8 +2,8 @@ import clsx from 'clsx';
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import styled from 'styled-components';
 
-import Button from './Button';
-import Dialog from './Dialog';
+import { Button } from './Button';
+import { Dialog } from './Dialog';
 import InputText from './InputText';
 import { sortByKey } from './lib/sortByKey';
 

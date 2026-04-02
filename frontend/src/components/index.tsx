@@ -1,8 +1,8 @@
-export { default as Button } from './Button';
-export { default as ButtonLink } from './ButtonLink';
+export { Button } from './Button';
+export { ButtonLink } from './ButtonLink';
 export { default as Canvas } from './Canvas';
-export { default as ContextMenu } from './ContextMenu';
-export { default as Dialog } from './Dialog';
+export { ContextMenu } from './ContextMenu';
+export { Dialog } from './Dialog';
 export { default as Dropdown } from './Dropdown';
 export { ErrorBanner } from './ErrorBanner';
 export { default as Icon } from './Icon';

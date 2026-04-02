@@ -3,7 +3,7 @@ import { DateTime } from 'luxon';
 import { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 
-import Button from './Button';
+import { Button } from './Button';
 import DatePickerDialog from './DatePickerDialog';
 import Input from './Input.styled';
 

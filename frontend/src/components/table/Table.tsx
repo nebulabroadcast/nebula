@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 
-import ContextMenu, { ContextMenuOption } from '../ContextMenu';
+import { ContextMenu, type ContextMenuOption } from '../ContextMenu';
 import { Loader, LoaderWrapper } from '../Loader';
 
 import DataRow from './DataRow';
@@ -22,10 +22,10 @@ interface TableProps {
   keyField?: string;
   onRowClick?: (
     rowData: TableRowData,
-    event: React.MouseEvent<HTMLTableRowElement, MouseEvent>
+    event: React.MouseEvent<HTMLTableRowElement>
   ) => void;
   onKeyDown?: (event: React.KeyboardEvent<HTMLTableElement>) => void;
-  selection?: (string | number)[];
+  selection?: Array<string | number>;
   rowHighlightColor?: (rowData: TableRowData) => string | undefined;
   rowHighlightStyle?: (
     rowData: TableRowData
@@ -125,9 +125,7 @@ const Table = ({
             rowHighlightColor={rowHighlightColor}
             rowHighlightStyle={rowHighlightStyle}
             rowClass={rowClass}
-            selected={
-              selection && selection.includes(keyField ? rowData[keyField] : idx)
-            }
+            selected={selection?.includes(keyField ? rowData[keyField] : idx)}
             key={keyField ? rowData[keyField] : idx}
             ident={keyField ? rowData[keyField] : idx}
             index={idx}
@@ -211,7 +209,9 @@ const Table = ({
       style={style}
       onScroll={handleScroll}
       onKeyDown={handleKeyDown}
-      onMouseLeave={() => setDropHl(null)}
+      onMouseLeave={() => {
+        setDropHl(null);
+      }}
       $drophl={dropHl || undefined}
     >
       {loading && (

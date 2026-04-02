@@ -1,7 +1,7 @@
 import clsx from 'clsx';
 
-import Button from './Button';
-import { DropdownContainer } from './Dropdown.styled.tsx';
+import { Button } from './Button';
+import './Dropdown.css';
 
 export interface DropdownOptionProps {
   currentValue?: any;
@@ -73,7 +73,7 @@ const Dropdown = ({
   if (align === 'right') _contentStyle.right = 0;
 
   return (
-    <DropdownContainer className={clsx({ disabled })}>
+    <div className={clsx('nb-dropdown', { disabled })}>
       <Button
         className="dropbtn"
         style={buttonStyle}
@@ -98,7 +98,7 @@ const Dropdown = ({
           />
         ))}
       </div>
-    </DropdownContainer>
+    </div>
   );
 };
 

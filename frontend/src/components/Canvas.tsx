@@ -1,19 +1,6 @@
 import React, { useEffect, forwardRef } from 'react';
-import styled from 'styled-components';
 
-const CanvasContainer = styled.div`
-  position: relative;
-  padding: 0;
-  margin: 0;
-
-  canvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
-  }
-`;
+import './Canvas.css';
 
 interface CanvasProps extends React.CanvasHTMLAttributes<HTMLCanvasElement> {
   style?: React.CSSProperties;
@@ -48,9 +35,9 @@ const Canvas = forwardRef<HTMLCanvasElement, CanvasProps>(
     }, [ref, onDraw]);
 
     return (
-      <CanvasContainer style={style}>
+      <div className="nb-canvas-container" style={style}>
         <canvas ref={ref} {...props} />
-      </CanvasContainer>
+      </div>
     );
   }
 );

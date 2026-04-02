@@ -1,45 +1,7 @@
 import { useState, useEffect, useRef, useLayoutEffect } from 'react';
-import styled from 'styled-components';
 
-import Button from './Button';
-
-const ContextMenuWrapper = styled.div`
-  position: fixed;
-  display: inline-block;
-
-  background-color: var(--color-surface-02);
-  min-width: 100px;
-  box-shadow: 4px 4px 10px 4px rgba(0, 0, 0, 0.7);
-  z-index: 1;
-
-  hr {
-    margin: 0;
-    border: none;
-    border-top: 2px solid var(--color-surface-05);
-  }
-
-  button {
-    background: none;
-    border: none;
-    width: 100%;
-    justify-content: flex-start;
-    border-radius: 0;
-    padding: 20px 10px;
-
-    &:hover {
-      background-color: var(--color-surface-04);
-    }
-
-    &:active,
-    &:focus {
-      outline: none !important;
-    }
-
-    &:disabled {
-      color: var(--color-text-dim);
-    }
-  }
-`;
+import { Button } from './Button';
+import './ContextMenu.css';
 
 export interface ContextMenuOption {
   label: string;
@@ -54,7 +16,7 @@ interface ContextMenuProps {
   options: () => ContextMenuOption[];
 }
 
-const ContextMenu: React.FC<ContextMenuProps> = ({ target, options }) => {
+export const ContextMenu: React.FC<ContextMenuProps> = ({ target, options }) => {
   const [contextData, setContextData] = useState({
     visible: false,
     posX: 0,
@@ -118,7 +80,8 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ target, options }) => {
   }, [contextData]);
 
   return (
-    <ContextMenuWrapper
+    <div
+      className="nb-context-menu"
       ref={contextRef}
       style={{
         display: contextData.visible ? 'block' : 'none',
@@ -140,8 +103,6 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ target, options }) => {
           />
         </span>
       ))}
-    </ContextMenuWrapper>
+    </div>
   );
 };
-
-export default ContextMenu;

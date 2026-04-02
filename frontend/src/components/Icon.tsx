@@ -1,9 +1,5 @@
-import styled from 'styled-components';
-
-const StyledIcon = styled.span`
-  user-select: none !important;
-  user-drag: none !important;
-`;
+import clsx from 'clsx';
+import './Icon.css';
 
 interface IconProps {
   icon: string;
@@ -13,13 +9,13 @@ interface IconProps {
 
 const Icon = ({ icon, style, className }: IconProps) => {
   return (
-    <StyledIcon
-      className={`icon material-symbols-outlined ${className || ''}`}
+    <span
+      className={clsx('nb-icon', 'icon', 'material-symbols-outlined', className)}
       style={style}
       translate="no"
     >
       {icon}
-    </StyledIcon>
+    </span>
   );
 };
 

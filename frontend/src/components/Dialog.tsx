@@ -15,7 +15,7 @@ interface DialogProps {
   footerStyle?: React.CSSProperties;
 }
 
-const Dialog = ({
+export const Dialog = ({
   onHide,
   header,
   footer,
@@ -77,5 +77,3 @@ const Dialog = ({
     </dialog>
   );
 };
-
-export default Dialog;

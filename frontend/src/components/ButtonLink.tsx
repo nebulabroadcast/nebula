@@ -1,7 +1,5 @@
 import clsx from 'clsx';
-import styled from 'styled-components';
-
-import { ButtonStyle } from './Button.styled';
+import './Button.css';
 
 interface ButtonLinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
   icon?: string;
@@ -16,12 +14,7 @@ interface ButtonLinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> 
   iconOnRight?: boolean;
 }
 
-const StyledAnchor = styled.a`
-  display: inline-block;
-  ${ButtonStyle}
-`;
-
-const ButtonLink = (props: ButtonLinkProps) => {
+export const ButtonLink = (props: ButtonLinkProps) => {
   const {
     hlColor,
     style,
@@ -35,7 +28,7 @@ const ButtonLink = (props: ButtonLinkProps) => {
     ...anchorProps
   } = props;
 
-  const _anchorStyle = { ...style };
+  const _anchorStyle = { ...style, display: 'inline-block' };
   const _iconStyle = { ...iconStyle };
 
   if (hlColor && !anchorProps.disabled) {
@@ -43,8 +36,13 @@ const ButtonLink = (props: ButtonLinkProps) => {
   }
 
   return (
-    <StyledAnchor
-      className={clsx(className, active && 'active', !label && 'icon-only')}
+    <a
+      className={clsx(
+        'nb-button',
+        className,
+        active && 'active',
+        !label && 'icon-only'
+      )}
       style={_anchorStyle}
       data-tooltip={tooltip}
       {...anchorProps}
@@ -60,8 +58,6 @@ const ButtonLink = (props: ButtonLinkProps) => {
         </span>
       )}
       {!iconOnRight && label && <span>{label}</span>}
-    </StyledAnchor>
+    </a>
   );
 };
-
-export default ButtonLink;
