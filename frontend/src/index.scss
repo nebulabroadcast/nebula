@@ -4,6 +4,8 @@
 :root {
   --font-family: 'Noto Sans', Roboto, Arial, sans-serif;
   --font-family-mono: 'Noto Sans Mono', monospace;
+  --font-size: 0.8rem;
+
   --color-surface-01: #19161f;
   --color-surface-02: #1f1e26;
   --color-surface-03: #24202e;
@@ -41,7 +43,6 @@
   --input-height: 30px;
   --input-padding: 4px;
   --input-color: var(--color-text);
-  --font-size: 0.8rem;
   --gap-size: 6px;
   --section-gap: 6px;
 

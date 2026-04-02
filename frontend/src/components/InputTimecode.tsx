@@ -2,7 +2,7 @@ import { Timecode } from '@wfoxall/timeframe';
 import clsx from 'clsx';
 import React, { useState, useEffect, useRef } from 'react';
 
-import Input from './Input.styled';
+import './Input.css';
 
 interface InputTimecodeProps extends Omit<
   React.InputHTMLAttributes<HTMLInputElement>,
@@ -16,7 +16,7 @@ interface InputTimecodeProps extends Omit<
   className?: string;
 }
 
-const InputTimecode: React.FC<InputTimecodeProps> = ({
+export const InputTimecode: React.FC<InputTimecodeProps> = ({
   value = null, // in seconds or frames based on mode
   mode = 'time', // time or frames
   fps = 25,
@@ -105,10 +105,10 @@ const InputTimecode: React.FC<InputTimecodeProps> = ({
   };
 
   return (
-    <Input
+    <input
       type="text"
       ref={inputRef}
-      className={clsx('timecode', className, { error: invalid })}
+      className={clsx('nb-input', 'timecode', className, { error: invalid })}
       value={text}
       onChange={onChangeHandler}
       onKeyDown={onKeyDown}
@@ -122,5 +122,4 @@ const InputTimecode: React.FC<InputTimecodeProps> = ({
     />
   );
 };
-
-export default InputTimecode;
+InputTimecode.displayName = 'InputTimecode';

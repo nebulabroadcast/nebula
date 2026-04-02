@@ -1,6 +1,5 @@
 import clsx from 'clsx';
-
-import { BaseSwitch } from './InputSwitch.styled';
+import './InputSwitch.css';
 
 interface InputSwitchProps {
   value: boolean;
@@ -10,14 +9,14 @@ interface InputSwitchProps {
   className?: string;
 }
 
-const InputSwitch = ({
+export const InputSwitch = ({
   style,
   className,
   value,
   onChange,
   disabled,
 }: InputSwitchProps) => (
-  <BaseSwitch style={style} className={clsx(className, { disabled })}>
+  <div style={style} className={clsx('nb-switch', className, { disabled })}>
     <label className="switch-body">
       <input
         type="checkbox"
@@ -29,7 +28,6 @@ const InputSwitch = ({
       />
       <span className="slider"></span>
     </label>
-  </BaseSwitch>
+  </div>
 );
-
-export default InputSwitch;
+InputSwitch.displayName = 'InputSwitch';

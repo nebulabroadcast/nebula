@@ -58,7 +58,7 @@ interface DropdownProps {
   iconOnRight?: boolean;
 }
 
-const Dropdown = ({
+export const Dropdown = ({
   options,
   label,
   icon = 'expand_more',
@@ -101,5 +101,4 @@ const Dropdown = ({
     </div>
   );
 };
-
-export default Dropdown;
+Dropdown.displayName = 'Dropdown';

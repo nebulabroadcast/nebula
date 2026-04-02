@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 
-import Icon from './Icon';
+import { Icon } from './Icon';
 import './Form.css';
 
 const Form = (props: React.HTMLAttributes<HTMLDivElement>) => {

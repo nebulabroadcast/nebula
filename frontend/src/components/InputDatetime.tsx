@@ -5,7 +5,8 @@ import styled from 'styled-components';
 
 import { Button } from './Button';
 import DatePickerDialog from './DatePickerDialog';
-import Input from './Input.styled';
+
+import './Input.css';
 
 const timeRegex = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/;
 const dateRegex = /^(\d{4})-(\d{2})-(\d{2})$/;
@@ -60,7 +61,7 @@ interface InputDatetimeProps {
   className: string;
 }
 
-const InputDatetime = ({
+export const InputDatetime = ({
   value,
   onChange,
   placeholder,
@@ -145,13 +146,13 @@ const InputDatetime = ({
           }}
         />
       )}
-      <Input
+      <input
         type="text"
         ref={inputRef}
         value={time || ''}
         onChange={handleChange}
         style={{ flexGrow: 1 }}
-        className={clsx(className, { error: !isValidTime(time) })}
+        className={clsx('nb-input', className, { error: !isValidTime(time) })}
         placeholder={isFocused ? timestampFormat : placeholder}
         data-tooltip={`Please enter a valid time in the format ${timestampFormat}`}
         onBlur={onSubmit}
@@ -170,5 +171,4 @@ const InputDatetime = ({
     </DateTimeWrapper>
   );
 };
-
-export default InputDatetime;
+InputDatetime.displayName = 'InputDatetime';

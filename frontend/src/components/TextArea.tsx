@@ -1,11 +1,7 @@
+import clsx from 'clsx';
 import React from 'react';
-import styled from 'styled-components';
 
-import { InputStyle } from './Input.styled';
-
-const StyledTextArea = styled.textarea`
-  ${InputStyle}
-`;
+import './Input.css';
 
 interface TextAreaProps extends Omit<
   React.TextareaHTMLAttributes<HTMLTextAreaElement>,
@@ -16,10 +12,15 @@ interface TextAreaProps extends Omit<
   tooltip?: string;
 }
 
-const TextArea: React.FC<TextAreaProps> = ({ value, onChange, tooltip, ...props }) => {
+export const TextArea: React.FC<TextAreaProps> = ({
+  value,
+  onChange,
+  tooltip,
+  ...props
+}) => {
   return (
-    <StyledTextArea
-      className="textarea"
+    <textarea
+      className={clsx('nb-input', 'textarea')}
       data-tooltip={tooltip}
       value={value || ''}
       onChange={(e) => {
@@ -29,5 +30,4 @@ const TextArea: React.FC<TextAreaProps> = ({ value, onChange, tooltip, ...props 
     />
   );
 };
-
-export default TextArea;
+TextArea.displayName = 'TextArea';

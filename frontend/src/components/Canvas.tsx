@@ -7,7 +7,7 @@ interface CanvasProps extends React.CanvasHTMLAttributes<HTMLCanvasElement> {
   onDraw?: (event: { target: HTMLCanvasElement }) => void;
 }
 
-const Canvas = forwardRef<HTMLCanvasElement, CanvasProps>(
+export const Canvas = forwardRef<HTMLCanvasElement, CanvasProps>(
   ({ style, onDraw, ...props }, ref) => {
     useEffect(() => {
       if (typeof ref === 'function' || !ref?.current) return;
@@ -42,5 +42,3 @@ const Canvas = forwardRef<HTMLCanvasElement, CanvasProps>(
   }
 );
 Canvas.displayName = 'Canvas';
-
-export default Canvas;

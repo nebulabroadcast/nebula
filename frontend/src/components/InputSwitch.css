@@ -1,19 +1,15 @@
-import styled from 'styled-components';
-
-import { getTheme } from './theme';
-
-export const BaseSwitch = styled.div`
-  max-height: ${getTheme().inputHeight};
-  min-height: ${getTheme().inputHeight};
+.nb-switch {
+  max-height: var(--input-height);
+  min-height: var(--input-height);
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: flex-start;
 
-  --bheight: calc(${getTheme().inputHeight} * 0.7);
+  --bheight: calc(var(--input-height) * 0.7);
 
   &.small {
-    --bheight: calc(${getTheme().inputHeight} * 0.5);
+    --bheight: calc(var(--input-height) * 0.5);
     min-height: 0;
   }
   --bwidth: calc(var(--bheight) * 1.75);
@@ -21,10 +17,10 @@ export const BaseSwitch = styled.div`
   &.disabled {
     .slider {
       cursor: not-allowed !important;
-      background: ${getTheme().colors.surface04} !important;
+      background: var(--color-surface-04) !important;
 
       &:before {
-        background: ${getTheme().colors.surface07} !important;
+        background: var(--color-surface-07) !important;
       }
     }
   }
@@ -42,7 +38,7 @@ export const BaseSwitch = styled.div`
     }
 
     input:checked + .slider {
-      background-color: ${getTheme().colors.cyan};
+      background-color: var(--color-cyan);
     }
 
     input:checked + .slider:before {
@@ -56,7 +52,7 @@ export const BaseSwitch = styled.div`
       left: 0;
       right: 0;
       bottom: 0;
-      background-color: ${getTheme().colors.surface04};
+      background-color: var(--color-surface-04);
       transition: 0.4s;
       border-radius: calc(var(--bheight) / 2);
 
@@ -67,11 +63,11 @@ export const BaseSwitch = styled.div`
         width: calc(var(--bheight) * 0.8);
         left: calc(var(--bheight) * 0.1);
         bottom: calc(var(--bheight) * 0.1);
-        background-color: ${getTheme().colors.textHl};
+        background-color: var(--color-text-hl);
         transition: 0.4s;
         border-radius: 50%;
         z-index: 1;
       }
     }
   }
-`;
+}

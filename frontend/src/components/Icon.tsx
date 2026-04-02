@@ -7,7 +7,7 @@ interface IconProps {
   className?: string;
 }
 
-const Icon = ({ icon, style, className }: IconProps) => {
+export const Icon = ({ icon, style, className }: IconProps) => {
   return (
     <span
       className={clsx('nb-icon', 'icon', 'material-symbols-outlined', className)}
@@ -18,5 +18,3 @@ const Icon = ({ icon, style, className }: IconProps) => {
     </span>
   );
 };
-
-export default Icon;

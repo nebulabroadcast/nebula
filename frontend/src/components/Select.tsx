@@ -2,8 +2,8 @@ import React, { useState, useMemo, useCallback } from 'react';
 import styled from 'styled-components';
 
 import { Button } from './Button';
-import InputText from './InputText';
-import SelectDialog, { SelectOption } from './SelectDialog';
+import { InputText } from './InputText';
+import { SelectDialog, type SelectOption } from './SelectDialog';
 
 import './Select.css';
 

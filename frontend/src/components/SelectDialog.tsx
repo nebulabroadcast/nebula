@@ -4,7 +4,7 @@ import styled from 'styled-components';
 
 import { Button } from './Button';
 import { Dialog } from './Dialog';
-import InputText from './InputText';
+import { InputText } from './InputText';
 import { sortByKey } from './lib/sortByKey';
 
 export interface SelectOption {
@@ -108,7 +108,7 @@ interface SelectDialogProps {
   title?: string;
 }
 
-const SelectDialog: React.FC<SelectDialogProps> = ({
+export const SelectDialog: React.FC<SelectDialogProps> = ({
   options,
   onHide,
   selectionMode = 'single',
@@ -264,5 +264,3 @@ const SelectDialog: React.FC<SelectDialogProps> = ({
     </Dialog>
   );
 };
-
-export default SelectDialog;

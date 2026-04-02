@@ -1,4 +1,4 @@
-import Input from './Input.styled';
+import './Input.css';
 
 interface InputIntegerProps {
   value: number | null;
@@ -7,10 +7,16 @@ interface InputIntegerProps {
   [key: string]: any;
 }
 
-const InputInteger = ({ value, onChange, tooltip, ...props }: InputIntegerProps) => {
+export const InputInteger = ({
+  value,
+  onChange,
+  tooltip,
+  ...props
+}: InputIntegerProps) => {
   return (
-    <Input
+    <input
       type="number"
+      className="nb-input"
       value={value || ''}
       data-tooltip={tooltip}
       onChange={(e) => {
@@ -21,5 +27,4 @@ const InputInteger = ({ value, onChange, tooltip, ...props }: InputIntegerProps)
     />
   );
 };
-
-export default InputInteger;
+InputInteger.displayName = 'InputInteger';
