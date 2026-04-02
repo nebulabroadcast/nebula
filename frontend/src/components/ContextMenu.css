@@ -1,0 +1,37 @@
+.nb-context-menu {
+  position: fixed;
+  display: inline-block;
+
+  background-color: var(--color-surface-02);
+  min-width: 100px;
+  box-shadow: 4px 4px 10px 4px rgba(0, 0, 0, 0.7);
+  z-index: 1;
+
+  hr {
+    margin: 0;
+    border: none;
+    border-top: 2px solid var(--color-surface-05);
+  }
+
+  button {
+    background: none;
+    border: none;
+    width: 100%;
+    justify-content: flex-start;
+    border-radius: 0;
+    padding: 20px 10px;
+
+    &:hover {
+      background-color: var(--color-surface-04);
+    }
+
+    &:active,
+    &:focus {
+      outline: none !important;
+    }
+
+    &:disabled {
+      color: var(--color-text-dim);
+    }
+  }
+}
