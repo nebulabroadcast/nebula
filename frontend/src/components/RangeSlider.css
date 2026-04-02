@@ -1,0 +1,29 @@
+.nb-range-slider {
+  border: 0;
+  border-radius: var(--input-border-radius);
+  background: var(--input-background);
+
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+
+  cursor: pointer;
+  width: 150px;
+  outline: none;
+
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--color-surface-08);
+  }
+
+  &::-webkit-slider-runnable-track {
+    width: 100%;
+    cursor: pointer;
+    background: var(--color-surface-04);
+    border-radius: 8px;
+  }
+}

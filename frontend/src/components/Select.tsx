@@ -7,7 +7,6 @@ import SelectDialog, { SelectOption } from './SelectDialog';
 
 import './Select.css';
 
-// ... (rest of the styled-components definitions)
 const DialogBasedSelect = styled.div`
   display: flex;
   flex-direction: row;

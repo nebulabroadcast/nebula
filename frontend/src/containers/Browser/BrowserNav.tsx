@@ -34,12 +34,7 @@ const BrowserNav: React.FC = () => {
     return result;
   }, [setCurrentView]);
 
-  const debounceSetQuery = useCallback(
-    debounce((q: string) => {
-      setSearchQuery(q);
-    }, 200),
-    [setSearchQuery]
-  );
+  const debounceSetQuery = useCallback(debounce(setSearchQuery, 200), [setSearchQuery]);
 
   useEffect(() => {
     debounceSetQuery(searchText);
