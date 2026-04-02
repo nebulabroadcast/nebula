@@ -66,7 +66,7 @@ const Calendar: React.FC<CalendarProps> = ({
 
   // Drawing parameters
 
-  const drawParams = useRef<DrawParams>({} as DrawParams);
+  const drawParams = useRef({} as DrawParams);
 
   // Time functions
 
@@ -177,11 +177,7 @@ const Calendar: React.FC<CalendarProps> = ({
 
       if (draggedExternal) {
         ctx.fillStyle = '#fff';
-        ctx.fillText(
-          `${cursorTime.current.toLocaleString(nebula.locale)}`,
-          x + 10,
-          y + 20
-        );
+        ctx.fillText(cursorTime.current.toLocaleString(nebula.locale), x + 10, y + 20);
 
         const timePos = time2pos(cursorTime.current);
         ctx.beginPath();
@@ -380,7 +376,9 @@ const Calendar: React.FC<CalendarProps> = ({
 
   useEffect(() => {
     if (!wrapperRef.current) return;
-    const resizeObserver = new ResizeObserver(() => resizeCanvas());
+    const resizeObserver = new ResizeObserver(() => {
+      resizeCanvas();
+    });
     resizeObserver.observe(wrapperRef.current);
     return () => {
       if (wrapperRef.current) {

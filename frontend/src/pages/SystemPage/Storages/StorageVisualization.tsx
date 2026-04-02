@@ -62,7 +62,7 @@ const StorageVisualization = ({
       {showUntracked && untrackedSize > 0 && (
         <VizSegment
           title={`Untracked: ${formatBytes(untrackedSize)}`}
-          $color="var(--color-surface-07)"
+          $color="var(--color-surface-06)"
           $size={(untrackedSize / displaySize) * 100}
         />
       )}

@@ -1,12 +1,20 @@
-import nebula from '@/nebula';
-
+import type { ServiceListItem, ServiceState } from '@client';
 import { Table, Button, InputSwitch, Spacer, Section, Icon } from '@components';
+import { TableColumn } from '@components/table/types';
 import { useNebula } from '@features/Nebula';
 import { useWebSocket } from '@features/Websocket';
 import { Duration } from 'luxon';
 import React, { useEffect, useState, useMemo } from 'react';
 import styled, { keyframes } from 'styled-components';
-import type { ServiceListItem } from '../../../client';
+
+import nebula from '@/nebula';
+
+interface ServiceStateMessage {
+  id: number;
+  state: ServiceState;
+  last_seen_before: number;
+  autostart: boolean;
+}
 
 const blink = keyframes`
   0% { opacity: 1; transform: scale(1.2); }
@@ -38,8 +46,8 @@ const BlinkIcon = styled(Icon)`
   }
 `;
 
-const formatStatus = (rowData: any, key: string) => {
-  const status = rowData[key];
+const formatStatus = (rowData: ExtendedServiceItem) => {
+  const status = rowData.status;
   switch (status) {
     case 0:
       return <td>Stopped</td>;
@@ -56,8 +64,8 @@ const formatStatus = (rowData: any, key: string) => {
   }
 };
 
-const formatLastSeen = (rowData: any, key: string) => {
-  const lastSeen = rowData[key] as number;
+const formatLastSeen = (rowData: ExtendedServiceItem) => {
+  const lastSeen = rowData.last_seen;
 
   const when =
     lastSeen < 2
@@ -96,9 +104,15 @@ const ServicesPage: React.FC = () => {
     setLoading(true);
     nebula
       .request('services', payload)
-      .then((response) => setServices(response.data.services))
-      .catch((err) => console.error(err))
-      .finally(() => setLoading(false));
+      .then((response) => {
+        setServices(response.data.services);
+      })
+      .catch((err) => {
+        console.error(err);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
   useEffect(() => {
@@ -106,8 +120,8 @@ const ServicesPage: React.FC = () => {
     makeRequest();
   }, [setPageTitle]);
 
-  const formatAutoStart = (rowData: any, key: string) => {
-    const autoStart = rowData[key] || false;
+  const formatAutoStart = (rowData: ExtendedServiceItem) => {
+    const autoStart = rowData.autostart;
 
     const onChange = () => {
       makeRequest('auto', rowData.id);
@@ -122,18 +136,39 @@ const ServicesPage: React.FC = () => {
     );
   };
 
-  const formatAction = (rowData: any) => {
+  const formatAction = (rowData: ServiceListItem) => {
     const status = rowData.status;
     let b = null;
     switch (status) {
       case 0:
-        b = <Button onClick={() => makeRequest('start', rowData.id)} label="Start" />;
+        b = (
+          <Button
+            onClick={() => {
+              makeRequest('start', rowData.id);
+            }}
+            label="Start"
+          />
+        );
         break;
       case 1:
-        b = <Button onClick={() => makeRequest('stop', rowData.id)} label="Stop" />;
+        b = (
+          <Button
+            onClick={() => {
+              makeRequest('stop', rowData.id);
+            }}
+            label="Stop"
+          />
+        );
         break;
       case 3:
-        b = <Button onClick={() => makeRequest('kill', rowData.id)} label="Kill" />;
+        b = (
+          <Button
+            onClick={() => {
+              makeRequest('kill', rowData.id);
+            }}
+            label="Kill"
+          />
+        );
         break;
       default:
         b = <Button disabled={true} label="Please wait..." />;
@@ -142,33 +177,33 @@ const ServicesPage: React.FC = () => {
   };
 
   const columns = useMemo(
-    () => [
-      { name: 'id', title: '#', width: 1 },
-      { name: 'name', title: 'Name' },
-      { name: 'type', title: 'Type', width: 200 },
-      { name: 'hostname', title: 'Hostname', width: 200 },
-      { name: 'status', title: 'Status', width: 200, formatter: formatStatus },
-      {
-        name: 'last_seen',
-        title: 'Last seen',
-        width: 300,
-        formatter: formatLastSeen,
-      },
-      {
-        name: 'autostart',
-        title: 'Auto start',
-        width: 70,
-        formatter: formatAutoStart,
-      },
-      { name: 'action', title: 'Action', width: 100, formatter: formatAction },
-    ],
+    () =>
+      [
+        { name: 'id', title: '#', width: 1 },
+        { name: 'name', title: 'Name' },
+        { name: 'type', title: 'Type', width: 200 },
+        { name: 'hostname', title: 'Hostname', width: 200 },
+        { name: 'status', title: 'Status', width: 200, formatter: formatStatus },
+        {
+          name: 'last_seen',
+          title: 'Last seen',
+          width: 300,
+          formatter: formatLastSeen,
+        },
+        {
+          name: 'autostart',
+          title: 'Auto start',
+          width: 70,
+          formatter: formatAutoStart,
+        },
+        { name: 'action', title: 'Action', width: 100, formatter: formatAction },
+      ] as TableColumn[],
     []
   );
 
   useEffect(() => {
-    const handlePubSub = (topic: string, message: any) => {
+    const handlePubSub = (topic: string, message: ServiceStateMessage) => {
       if (topic !== 'service_state') return;
-      console.log('WS Message:', topic, message.id, message.state);
       setServices((prevData) => {
         const index = prevData.findIndex((service) => service.id === message.id);
         if (index === -1) return prevData;

@@ -1,12 +1,12 @@
 import { getTextColor } from '@components/lib/colors';
-import { MutableRefObject } from 'react';
+import { RefObject } from 'react';
 
 import { drawTruncatedText } from './drawUtils';
 import { CalendarEvent, DrawParams } from './types';
 
 const drawEvents = (
   ctx: CanvasRenderingContext2D,
-  drawParams: MutableRefObject<DrawParams>,
+  drawParams: RefObject<DrawParams>,
   events: CalendarEvent[],
   draggedEvent: CalendarEvent | null
 ) => {

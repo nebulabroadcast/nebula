@@ -20,7 +20,7 @@ export default defineConfig([
   prettierConfig,
 
   {
-    files: ['**/*.{ts,tsx}'],
+    files: ['src/**/*.{ts,tsx}'],
     extends: [
       js.configs.recommended,
       tseslint.configs.recommended,

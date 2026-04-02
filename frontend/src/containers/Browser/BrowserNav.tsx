@@ -1,12 +1,11 @@
-import React from 'react';
-import nebula from '@/nebula';
-
 import { debounce } from 'lodash';
+import React from 'react';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 
-import { useNebula } from '@/features/Nebula';
 import { Navbar, Button, Spacer, Dropdown, InputText } from '@/components';
 import type { DropdownOptionProps } from '@/components/Dropdown';
+import { useNebula } from '@/features/Nebula';
+import nebula from '@/nebula';
 
 const BrowserNav: React.FC = () => {
   const { currentViewId, searchQuery, setCurrentView, setSearchQuery } = useNebula();
@@ -27,7 +26,9 @@ const BrowserNav: React.FC = () => {
       result.push({
         label: view.name,
         separator: view.separator,
-        onClick: () => setCurrentView(view.id),
+        onClick: () => {
+          setCurrentView(view.id);
+        },
       });
     }
     return result;
@@ -61,7 +62,9 @@ const BrowserNav: React.FC = () => {
         <InputText placeholder="Search" onChange={setSearchText} value={searchText} />
         <Button
           icon="close"
-          onClick={() => setSearchText('')}
+          onClick={() => {
+            setSearchText('');
+          }}
           className="tool"
           tooltip="Clear search query"
         />

@@ -142,7 +142,9 @@ const BrowserTable = ({ isDragging }: BrowserTableProps) => {
         setColumns(cols);
         setHasMore(hasMore);
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
   // Debounce the loadData function to avoid multiple requests
@@ -258,7 +260,9 @@ const BrowserTable = ({ isDragging }: BrowserTableProps) => {
     // Change asset status of the selected assets
     if (question) {
       showDialog('confirm', 'Are you sure?', { message: question })
-        .then(() => saveSelectionStatus(status))
+        .then(() => {
+          saveSelectionStatus(status);
+        })
         .catch(() => {});
     } else {
       saveSelectionStatus(status);
@@ -275,27 +279,32 @@ const BrowserTable = ({ isDragging }: BrowserTableProps) => {
     {
       label: 'Send to...',
       icon: 'send',
-      onClick: () => sendTo(),
+      onClick: () => {
+        sendTo();
+      },
     },
     {
       label: 'Reset',
       icon: 'undo',
-      onClick: () =>
-        setSelectionStatus(5, 'Do you want to reload selected assets metadata?'),
+      onClick: () => {
+        setSelectionStatus(5, 'Do you want to reload selected assets metadata?');
+      },
     },
     {
       label: 'Archive',
       separator: true,
       icon: 'archive',
-      onClick: () =>
-        setSelectionStatus(4, 'Do you want to move selected assets to archive?'),
+      onClick: () => {
+        setSelectionStatus(4, 'Do you want to move selected assets to archive?');
+      },
     },
     {
       label: 'Trash',
       icon: 'delete',
       hlColor: 'var(--color-red)',
-      onClick: () =>
-        setSelectionStatus(3, 'Do you want to move selected assets to trash?'),
+      onClick: () => {
+        setSelectionStatus(3, 'Do you want to move selected assets to trash?');
+      },
     },
   ];
 

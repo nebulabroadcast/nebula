@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
 import { Button } from '@components';
+import React, { useState, useEffect } from 'react';
+
 import ToggleButtonContainer from './ToggleButtonContainer';
 
 interface GainButtonProps {

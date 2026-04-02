@@ -27,9 +27,19 @@ const MonitorItem = ({ task }: MonitorItemProps) => {
 
       <div className="actions">
         {active ? (
-          <Button label="Cancel" onClick={() => cancelUpload(task.id)} />
+          <Button
+            label="Cancel"
+            onClick={() => {
+              cancelUpload(task.id);
+            }}
+          />
         ) : (
-          <Button label="Dismiss" onClick={() => dismissTask(task.id)} />
+          <Button
+            label="Dismiss"
+            onClick={() => {
+              dismissTask(task.id);
+            }}
+          />
         )}
       </div>
     </MonitorItemWrapper>

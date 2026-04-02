@@ -54,7 +54,9 @@ const MainNavbar = () => {
       label: 'Logout',
       icon: 'logout',
       value: 'logout',
-      onClick: () => nebula.logout(),
+      onClick: () => {
+        nebula.logout();
+      },
     });
     return result;
   }, [navigate]);

@@ -25,7 +25,7 @@ interface NebulaProviderProps {
 export const NebulaProvider: React.FC<NebulaProviderProps> = ({
   children,
 }: NebulaProviderProps) => {
-  const [nebulaState, setNebulaState] = useState<NebulaState>(DEFAULT_NEBULA_CONTEXT);
+  const [nebulaState, setNebulaState] = useState(DEFAULT_NEBULA_CONTEXT);
 
   const setCurrentView = useCallback((viewId: number) => {
     if (typeof viewId !== 'number') {

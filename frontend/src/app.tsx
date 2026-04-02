@@ -1,4 +1,3 @@
-import nebula from '@/nebula';
 import MainNavbar from '@containers/MainNavbar';
 import { DialogProvider } from '@features/Dialogs';
 import { MediaUploadProvider, MediaUploadMonitor } from '@features/MediaUpload';
@@ -11,6 +10,8 @@ import { Outlet, useLocation } from 'react-router';
 import type { InitResponse } from './client';
 import LoadingPage from './pages/LoadingPage';
 import LoginPage from './pages/LoginPage/LoginPage';
+
+import nebula from '@/nebula';
 
 const App = () => {
   const [accessToken, setAccessToken] = useLocalStorage<string | null>(
@@ -31,7 +32,7 @@ const App = () => {
   // Ensure server connection
 
   useEffect(() => {
-    axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+    axios.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
     axios.defaults.headers.common['X-Client-Id'] = nebula.senderId;
     axios
       .post<InitResponse>('/api/init', {})
@@ -55,8 +56,12 @@ const App = () => {
           }
         );
       })
-      .catch((err) => setErrorCode(err.response?.status))
-      .finally(() => setLoading(false));
+      .catch((err) => {
+        setErrorCode(err.response?.status);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, [accessToken]);
 
   useEffect(() => {
@@ -72,7 +77,7 @@ const App = () => {
   if (errorCode && errorCode > 401)
     return <main className="center">server unavailable</main>;
 
-  if (!initData || !initData.installed)
+  if (!initData?.installed)
     return <main className="center">nebula is not installed</main>;
 
   if (!initData.user)
