@@ -1,14 +1,14 @@
-import nebula from '@/nebula';
+import { Dropdown, Spacer, InputTimecode, Navbar, Button, Section } from '@components';
+import VideoPlayer from '@containers/VideoPlayer';
 import { useKeyDown } from '@lib/useKeyDown';
 import { arrayEquals } from '@lib/utils';
 import axios from 'axios';
 import React, { useState, useEffect, useMemo } from 'react';
 import { toast } from 'react-toastify';
 
-import { Dropdown, Spacer, InputTimecode, Navbar, Button, Section } from '@components';
-import VideoPlayer from '@containers/VideoPlayer';
-
 import Subclip from './Subclip';
+
+import nebula from '@/nebula';
 
 interface SubclipData {
   title: string;
@@ -137,7 +137,7 @@ const Preview: React.FC<PreviewProps> = ({ assetData, setAssetData }) => {
 
     if (!assetData.id) return 'No asset selected';
 
-    if (!(proxyInfo && assetData && proxyInfo.id === assetData.id)) return '';
+    if (!(proxyInfo?.id === assetData?.id)) return '';
 
     if (!proxyInfo.available) return 'No proxy available';
 
@@ -153,8 +153,7 @@ const Preview: React.FC<PreviewProps> = ({ assetData, setAssetData }) => {
     () =>
       (accessToken &&
         assetData.id &&
-        proxyInfo &&
-        proxyInfo.id === assetData.id &&
+        proxyInfo?.id === assetData.id &&
         proxyInfo?.timestamp &&
         `/proxy/${assetData.id}?token=${accessToken}&ts=${proxyInfo.timestamp}`) ||
       undefined,
@@ -295,12 +294,12 @@ const Preview: React.FC<PreviewProps> = ({ assetData, setAssetData }) => {
           <Button
             icon="frame_inspect"
             tooltip="Marks to selection"
-            onClick={() =>
+            onClick={() => {
               setSelection({
                 mark_in: assetData.mark_in ?? null,
                 mark_out: assetData.mark_out ?? null,
-              })
-            }
+              });
+            }}
           />
           <Spacer />
           <Button icon="add" tooltip="New subclip" onClick={onNewSubclip} />

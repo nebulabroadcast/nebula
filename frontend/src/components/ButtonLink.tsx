@@ -28,7 +28,7 @@ export const ButtonLink = (props: ButtonLinkProps) => {
     ...anchorProps
   } = props;
 
-  const _anchorStyle = { ...style, display: 'inline-block' };
+  const _anchorStyle = { ...style, display: 'inline-flex' };
   const _iconStyle = { ...iconStyle };
 
   if (hlColor && !anchorProps.disabled) {

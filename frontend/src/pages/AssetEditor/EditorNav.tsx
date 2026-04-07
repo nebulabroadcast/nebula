@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { Navbar, Button, Spacer, RadioButton, ToolbarSeparator } from '@/components';
 
 interface AssetEditorNavProps {
@@ -85,7 +86,9 @@ const AssetEditorNav: React.FC<AssetEditorNavProps> = ({
       <RadioButton
         value={String(assetData['qc/state'] || 0)}
         options={QC_STATE_OPTIONS.map((opt) => ({ ...opt, value: String(opt.value) }))}
-        onChange={(value) => setMeta('qc/state', parseInt(value, 10))}
+        onChange={(value) => {
+          setMeta('qc/state', parseInt(value, 10));
+        }}
         disabled={!enabledActions.flag}
       />
 
@@ -101,7 +104,9 @@ const AssetEditorNav: React.FC<AssetEditorNavProps> = ({
       <Button
         icon="check"
         label="Save asset"
-        onClick={() => onSave()}
+        onClick={() => {
+          onSave();
+        }}
         disabled={!enabledActions.save}
         hlColor="var(--color-green)"
       />

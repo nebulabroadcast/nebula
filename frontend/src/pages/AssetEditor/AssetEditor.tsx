@@ -1,6 +1,5 @@
-import nebula from '@/nebula';
-
 import { Loader, Section } from '@components';
+import { TableDraggableItem } from '@components/table/types';
 import MetadataEditor from '@containers/MetadataEditor';
 import { useDialog } from '@features/Dialogs';
 import { useNebula } from '@features/Nebula';
@@ -15,7 +14,8 @@ import { toast } from 'react-toastify';
 import AssetMainProps from './AssetMainProps';
 import AssetEditorNav from './EditorNav';
 import Preview from './Preview';
-import { TableDraggableItem } from '@components/table/types';
+
+import nebula from '@/nebula';
 
 interface EnabledActions {
   save: boolean;
@@ -57,7 +57,7 @@ const getEnabledActions = ({
   const clone = !!(
     assetData.id &&
     assetData.id_folder &&
-    writableFolderIds.includes(assetData.id_folder)
+    writableFolderIds.includes(assetData.id_folder as number)
   );
 
   const folderChange = !assetData.id && edit;
@@ -151,7 +151,7 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
         const freshData = response.data.data[0] || {};
 
         setAssetData((oldFormData) => {
-          let newFormData = { ...oldFormData };
+          const newFormData = { ...oldFormData };
           const allKeys = new Set([
             ...Object.keys(oldFormData),
             ...Object.keys(freshData),
@@ -204,7 +204,7 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
     // don't update changed keys while loading
     if (loading) return;
     if (isEmpty(assetData) || isEmpty(originalData)) return;
-    let changedKeys = new Set<string>();
+    const changedKeys = new Set<string>();
     for (const key in assetData) {
       if (!isEqual(originalData[key] || null, assetData[key] || null)) {
         changedKeys.add(key);
@@ -222,13 +222,14 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
     if (folders.length > 0) {
       setMeta('id_folder', folders[0].id);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assetData?.id_folder]);
 
   // Parse and show asset data
 
   useEffect(() => {
     if (assetData.id) {
-      let title = assetData.title;
+      let title = `${assetData.title || 'Untitled asset'}`;
       if (assetData.subtitle) {
         const separator = nebula.settings?.system?.subtitle_separator || ' - ';
         title = `${title}${separator}${assetData.subtitle}`;
@@ -236,7 +237,7 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
       setPageTitle(title);
     } else {
       const folderName = assetData.id_folder
-        ? nebula.getFolderName(assetData.id_folder)?.toLowerCase()
+        ? nebula.getFolderName(assetData.id_folder as number)?.toLowerCase()
         : 'asset';
       setPageTitle(folderName || 'asset', 'fiber_new');
     }
@@ -300,7 +301,7 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
   // When another asset is selected,
   // check if there are unsaved changes and ask to save them
 
-  const switchAsset = useCallback(async () => {
+  const switchAsset = useCallback(() => {
     if (!focusedAsset) return;
     if (isChanged) {
       const message = 'There are unsaved changes. Do you want to save them?';
@@ -337,7 +338,9 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
               loadAsset(focusedAsset);
             });
         })
-        .catch(() => loadAsset(focusedAsset));
+        .catch(() => {
+          loadAsset(focusedAsset);
+        });
     } else {
       // asset unchanged
       loadAsset(focusedAsset);
@@ -369,7 +372,7 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
       nebula
         .getWritableFolders()
         .map((f) => f.id)
-        .includes(currentFolder)
+        .includes(currentFolder as number)
     ) {
       setAssetData({ id_folder: currentFolder });
       setOriginalData({ id_folder: currentFolder });
@@ -380,7 +383,7 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
   };
 
   const onCloneAsset = () => {
-    let ndata: Record<string, any> = {};
+    const ndata: Record<string, any> = {};
     setEditorMode('metadata');
     for (const field in assetData) {
       if (
@@ -442,7 +445,9 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
       }
     };
     document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
   }, [onSave]);
 
   useEffect(() => {
@@ -456,7 +461,9 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
     };
 
     const unsubscribe = ws.subscribe('objects_changed', handlePubSub);
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+    };
   }, [ws, refetchUnchangedFields]);
 
   //

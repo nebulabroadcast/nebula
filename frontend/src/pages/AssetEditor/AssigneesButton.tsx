@@ -1,7 +1,8 @@
-import nebula from '@/nebula';
 import React, { useMemo, useState } from 'react';
+
 import { Button, SelectDialog } from '@/components';
 import type { SelectOption } from '@/components/SelectDialog';
+import nebula from '@/nebula';
 
 interface AssigneesButtonProps {
   assignees?: number[];
@@ -45,7 +46,9 @@ const AssigneesButton: React.FC<AssigneesButtonProps> = ({
       <Button
         icon="person"
         label="Assignees"
-        onClick={() => setDialogVisible(true)}
+        onClick={() => {
+          setDialogVisible(true);
+        }}
         active={(assignees?.length || 0) > 0}
       />
     </>

@@ -1,12 +1,11 @@
 import { Dialog, Table, Button, Icon } from '@components';
+import type { TableColumn, TableRowData } from '@components/table/types';
 import formatMetaDatetime from '@lib/tableFormat/formatMetaDatetime';
 import { formatTimeString } from '@lib/utils';
 import React, { AnchorHTMLAttributes } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { toast } from 'react-toastify';
 import styled from 'styled-components';
-
-import type { TableColumn, TableRowData } from '@components/table/types';
 
 const MarkdownWrapper = styled.div`
   padding: 12px;
@@ -131,7 +130,13 @@ const TableDialog: React.FC<TableDialogProps> = ({
       footer={
         <>
           <Button onClick={onCopy} icon="content_copy" label="Copy to clipboard" />
-          <Button onClick={() => onHide()} icon="close" label="Cancel" />
+          <Button
+            onClick={() => {
+              onHide();
+            }}
+            icon="close"
+            label="Cancel"
+          />
         </>
       }
     >
