@@ -158,7 +158,7 @@ const TableWrapper = styled.div<TableWrapperProps>`
           width: var(--progress);
           opacity: var(--progress-opacity);
           content: '';
-          height: 28px;
+          height: 26px;
           background-color: var(--color-violet);
           transition: width 1s linear;
         }
