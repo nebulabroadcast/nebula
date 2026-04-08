@@ -10,6 +10,7 @@ COPY ./frontend/index.html .
 COPY ./frontend/package.json .
 COPY ./frontend/vite.config.ts .
 COPY ./frontend/tsconfig.json .
+COPY ./frontend/tsconfig.app.json .
 COPY ./frontend/tsconfig.node.json .
 COPY ./frontend/yarn.lock .
 COPY ./frontend/public /frontend/public
