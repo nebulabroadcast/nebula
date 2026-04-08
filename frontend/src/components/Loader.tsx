@@ -9,9 +9,9 @@ export const Loader = React.forwardRef<
 >(({ className, ...props }, ref) => {
   const classes = clsx('nb-loader', className);
   return (
-    <nav ref={ref} className={classes} {...props}>
+    <div ref={ref} className={classes} {...props}>
       {props.children}
-    </nav>
+    </div>
   );
 });
 
@@ -21,8 +21,8 @@ export const LoaderWrapper = React.forwardRef<
 >(({ className, ...props }, ref) => {
   const classes = clsx('nb-loader-wrapper', className);
   return (
-    <nav ref={ref} className={classes} {...props}>
+    <div ref={ref} className={classes} {...props}>
       {props.children}
-    </nav>
+    </div>
   );
 });

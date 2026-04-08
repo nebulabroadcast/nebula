@@ -49,20 +49,21 @@
 }
 
 .nb-navbar-title {
-  font-size: 1.1rem;
+  font-size: 14px;
   font-weight: 500;
   color: #f0f0f0;
-  margin-right: 0.5rem;
+  margin-right: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  align-content: baseline;
+  gap: 8px;
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
 
   .icon {
-    font-size: 2.1rem;
+    font-size: 22px;
   }
 }
 

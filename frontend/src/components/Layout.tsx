@@ -21,9 +21,9 @@ export const NavbarTitle = React.forwardRef<
 >(({ className, ...props }, ref) => {
   const classes = clsx('nb-navbar-title', className);
   return (
-    <nav ref={ref} className={classes} {...props}>
+    <div ref={ref} className={classes} {...props}>
       {props.children}
-    </nav>
+    </div>
   );
 });
 
@@ -33,9 +33,9 @@ export const Spacer = React.forwardRef<
 >(({ className, ...props }, ref) => {
   const classes = clsx('nb-spacer', className);
   return (
-    <nav ref={ref} className={classes} {...props}>
+    <div ref={ref} className={classes} {...props}>
       {props.children}
-    </nav>
+    </div>
   );
 });
 

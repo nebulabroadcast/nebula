@@ -4,7 +4,7 @@
 :root {
   --font-family: 'Noto Sans', Roboto, Arial, sans-serif;
   --font-family-mono: 'Noto Sans Mono', monospace;
-  --font-size: 0.8rem;
+  --font-size: 12px;
 
   --color-surface-01: #19161f;
   --color-surface-02: #1f1e26;
@@ -43,6 +43,7 @@
   --input-height: 30px;
   --input-padding: 4px;
   --input-color: var(--color-text);
+  --input-font-size: 12px;
   --gap-size: 6px;
   --section-gap: 6px;
   --nav-border-radius: 8px;
@@ -96,8 +97,8 @@ html {
 button,
 input {
   color: var(--color-text);
-  font-size: var(--font-size);
   font-family: var(--font-family);
+  font-size: var(--input-font-size);
 }
 
 #root {

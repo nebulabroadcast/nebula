@@ -17,7 +17,7 @@ export const LoginContainer = styled.div`
   background-size: cover;
 
   small {
-    font-size: 0.8em;
+    font-size: 0.8rem;
     font-style: italic;
     color: var(--color-text-dim);
   }

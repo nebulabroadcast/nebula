@@ -6,7 +6,7 @@
   color: var(--color-text-hl);
   padding: 8px 12px;
   border-radius: 4px;
-  font-size: 0.85rem;
+  font-size: 11px;
   z-index: 10000;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
   pointer-events: none;

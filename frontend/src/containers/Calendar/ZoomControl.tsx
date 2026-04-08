@@ -17,7 +17,7 @@ const ZoomControl: React.FC<ZoomControlProps> = ({ zoom, setZoom }) => {
   };
 
   const iconStyle: React.CSSProperties = {
-    fontSize: '1rem',
+    fontSize: '12px',
   };
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
