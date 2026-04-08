@@ -18,7 +18,7 @@ interface RadioButtonProps {
   }>;
 }
 
-const RadioButton = ({
+export const RadioButton = ({
   options,
   value,
   onChange,
@@ -44,5 +44,3 @@ const RadioButton = ({
     </div>
   );
 };
-
-export default RadioButton;

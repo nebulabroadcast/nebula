@@ -1,33 +1,10 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import styled from 'styled-components';
 
 import { Button } from './Button';
 import { InputText } from './InputText';
 import { SelectDialog, type SelectOption } from './SelectDialog';
 
 import './Select.css';
-
-const DialogBasedSelect = styled.div`
-  display: flex;
-  flex-direction: row;
-  gap: 4px;
-  min-width: 200px;
-
-  .scroll-box {
-    flex-grow: 1;
-    position: relative;
-
-    .scroll-box-cont {
-      position: relative;
-      max-height: 400px;
-      overflow-y: scroll;
-      overflow-x: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-    }
-  }
-`;
 
 interface BaseSelectProps {
   options: SelectOption[];
@@ -56,7 +33,7 @@ interface MultiSelectProps extends BaseSelectProps {
 
 type SelectProps = DefaultSingleSelectProps | SingleSelectProps | MultiSelectProps;
 
-const Select: React.FC<SelectProps> = (props) => {
+export const Select: React.FC<SelectProps> = (props) => {
   const [dialogVisible, setDialogVisible] = useState(false);
 
   const displayValue = useMemo(() => {
@@ -132,7 +109,7 @@ const Select: React.FC<SelectProps> = (props) => {
   }
 
   return (
-    <DialogBasedSelect style={props.style}>
+    <div className="nb-dialog-based-select" style={props.style}>
       {dialog}
       <InputText
         value={displayValue}
@@ -155,8 +132,6 @@ const Select: React.FC<SelectProps> = (props) => {
         }}
         disabled={props.disabled}
       />
-    </DialogBasedSelect>
+    </div>
   );
 };
-
-export default Select;

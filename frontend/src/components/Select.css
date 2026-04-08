@@ -95,3 +95,25 @@ select::picker-icon {
 select:open::picker-icon {
   rotate: 180deg;
 }
+
+.nb-dialog-based-select {
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
+  min-width: 200px;
+
+  .scroll-box {
+    flex-grow: 1;
+    position: relative;
+
+    .scroll-box-cont {
+      position: relative;
+      max-height: 400px;
+      overflow-y: scroll;
+      overflow-x: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+  }
+}

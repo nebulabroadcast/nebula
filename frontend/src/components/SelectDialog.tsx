@@ -1,11 +1,12 @@
 import clsx from 'clsx';
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import styled from 'styled-components';
 
 import { Button } from './Button';
 import { Dialog } from './Dialog';
 import { InputText } from './InputText';
 import { sortByKey } from './lib/sortByKey';
+
+import './SelectDialog.css';
 
 export interface SelectOption {
   value: string; // Changed from string | number
@@ -21,40 +22,20 @@ interface OptionProps {
   onClick: () => void;
 }
 
-const BaseOption = styled.div`
-  padding: var(--input-padding);
-  cursor: pointer;
-  white-space: nowrap;
-  user-select: none;
-  user-drag: none;
-  background-color: var(--color-surface-03);
-
-  &.selected {
-    color: var(--color-cyan);
-    background-color: var(--color-surface-05);
-  }
-
-  &.label {
-    font-weight: bold;
-    background-color: transparent;
-  }
-
-  &.header {
-    font-weight: bold;
-    background-color: transparent;
-  }
-`;
-
 const Option: React.FC<OptionProps> = ({ option, selected, onClick }) => {
   return (
-    <BaseOption
-      className={clsx(selected && 'selected', option.role === 'label' && 'label')}
+    <div
+      className={clsx(
+        'nb-select-dialog-option',
+        selected && 'selected',
+        option.role === 'label' && 'label'
+      )}
       style={{ paddingLeft: (option.level || 0) * 15 }}
       onClick={option.role === 'label' ? undefined : onClick}
       data-tooltip={option.description}
     >
       {option.title}
-    </BaseOption>
+    </div>
   );
 };
 

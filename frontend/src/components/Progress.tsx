@@ -7,7 +7,7 @@ interface ProgressProps extends React.HTMLAttributes<HTMLDivElement> {
   value: number;
 }
 
-const Progress: React.FC<ProgressProps> = ({ value, className, ...props }) => {
+export const Progress: React.FC<ProgressProps> = ({ value, className, ...props }) => {
   const [prevValue, setPrevValue] = useState(value);
   const [disableTransition, setDisableTransition] = useState(false);
 
@@ -31,5 +31,3 @@ const Progress: React.FC<ProgressProps> = ({ value, className, ...props }) => {
     </div>
   );
 };
-
-export default Progress;
