@@ -17,21 +17,17 @@ const ZoomControl: React.FC<ZoomControlProps> = ({ zoom, setZoom }) => {
   };
 
   const iconStyle: React.CSSProperties = {
-    fontSize: '1rem',
+    fontSize: '12px',
+  };
+
+  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setZoom(parseFloat(e.target.value));
   };
 
   return (
     <div style={divStyle}>
       <Icon icon="zoom_out_map" style={iconStyle} />
-      <RangeSlider
-        min="1"
-        max="8"
-        step=".1"
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-          setZoom(parseFloat(e.target.value))
-        }
-        value={zoom}
-      />
+      <RangeSlider min="1" max="8" step=".1" onChange={onChange} value={zoom} />
       <Icon icon="zoom_in_map" style={iconStyle} />
     </div>
   );

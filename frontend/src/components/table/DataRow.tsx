@@ -10,7 +10,7 @@ interface DataRowProps {
   columns: TableColumn[];
   onRowClick?: (
     rowData: TableRowData,
-    event: React.MouseEvent<HTMLTableRowElement, MouseEvent>
+    event: React.MouseEvent<HTMLTableRowElement>
   ) => void;
   rowHighlightColor?: (rowData: TableRowData) => string | undefined;
   rowHighlightStyle?: (
@@ -65,7 +65,7 @@ const DataRow = ({
     if (onRowClick) onRowClick(rowData, event);
   };
 
-  const rowStyle: React.CSSProperties & { [key: string]: any } = {};
+  const rowStyle: React.CSSProperties & Record<string, any> = {};
   let rowClassName = '';
 
   //
@@ -79,8 +79,8 @@ const DataRow = ({
   if (rowHighlightStyle) highlightStyle = rowHighlightStyle(rowData);
   if (rowClass) rowClassName = rowClass(rowData);
 
-  if (highlightColor) rowStyle['borderLeftColor'] = highlightColor;
-  if (highlightStyle) rowStyle['borderLeftStyle'] = highlightStyle;
+  if (highlightColor) rowStyle.borderLeftColor = highlightColor;
+  if (highlightStyle) rowStyle.borderLeftStyle = highlightStyle;
 
   //
   // Row-Embedded progress bar

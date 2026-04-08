@@ -1,5 +1,5 @@
-import React from 'react';
 import { Timecode } from '@wfoxall/timeframe';
+import React from 'react';
 import { toast } from 'react-toastify';
 import styled from 'styled-components';
 
@@ -127,7 +127,13 @@ const Subclip: React.FC<SubclipProps> = ({
           tooltip="Update subclip from selection"
           onClick={updateSubclip}
         />
-        <Button icon="delete" tooltip="Delete subclip" onClick={() => onRemove()} />
+        <Button
+          icon="delete"
+          tooltip="Delete subclip"
+          onClick={() => {
+            onRemove();
+          }}
+        />
         <InputText value={title} onChange={onTitleChange} style={{ flex: 1 }} />
         <Button icon="frame_inspect" tooltip="Select region" onClick={showSubclip} />
       </SubclipRow>

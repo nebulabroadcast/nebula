@@ -1,33 +1,13 @@
+import clsx from 'clsx';
 import { useState, useEffect } from 'react';
 import React from 'react';
-import styled from 'styled-components';
-
-import { getTheme } from './theme';
-
-interface BaseProgressProps {
-  disableTransition: boolean;
-}
-
-const BaseProgress = styled.div<BaseProgressProps>`
-  width: 100%;
-  border: 0;
-  border-radius: ${getTheme().inputBorderRadius};
-  background: ${getTheme().inputBackground};
-  height: 10px;
-
-  .progress {
-    height: 100%;
-    background: ${getTheme().colors.cyan};
-    border-radius: ${getTheme().inputBorderRadius};
-    transition: ${(props) => (props.disableTransition ? 'none' : 'width 0.3s linear')};
-  }
-`;
+import './Progress.css';
 
 interface ProgressProps extends React.HTMLAttributes<HTMLDivElement> {
   value: number;
 }
 
-const Progress: React.FC<ProgressProps> = ({ value, ...props }) => {
+export const Progress: React.FC<ProgressProps> = ({ value, className, ...props }) => {
   const [prevValue, setPrevValue] = useState(value);
   const [disableTransition, setDisableTransition] = useState(false);
 
@@ -40,15 +20,14 @@ const Progress: React.FC<ProgressProps> = ({ value, ...props }) => {
     setPrevValue(value);
   }, [value, prevValue]);
 
+  const istyle = {
+    width: `${value}%`,
+    transition: disableTransition ? 'none' : 'width 0.3s linear',
+  };
+
   return (
-    <BaseProgress {...props} disableTransition={disableTransition}>
-      <div
-        className="progress"
-        style={{ width: `${value}%` }}
-        key={disableTransition ? 'no-transition' : 'transition'}
-      />
-    </BaseProgress>
+    <div className={clsx('nb-progress', className)} {...props}>
+      <div className={clsx('nb-progress-bar')} style={istyle} />
+    </div>
   );
 };
-
-export default Progress;

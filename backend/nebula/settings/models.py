@@ -843,7 +843,7 @@ class ServerSettings(SettingsModel):
         SystemSettings,
         Field(
             title="System settings",
-            default_factory=lambda: SystemSettings(),
+            default_factory=SystemSettings,
         ),
     ]
 

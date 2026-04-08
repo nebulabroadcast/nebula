@@ -1,34 +1,10 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import styled from 'styled-components';
 
-import Button from './Button';
-import InputText from './InputText';
-import SelectDialog, { SelectOption } from './SelectDialog';
+import { Button } from './Button';
+import { InputText } from './InputText';
+import { SelectDialog, type SelectOption } from './SelectDialog';
 
 import './Select.css';
-
-// ... (rest of the styled-components definitions)
-const DialogBasedSelect = styled.div`
-  display: flex;
-  flex-direction: row;
-  gap: 4px;
-  min-width: 200px;
-
-  .scroll-box {
-    flex-grow: 1;
-    position: relative;
-
-    .scroll-box-cont {
-      position: relative;
-      max-height: 400px;
-      overflow-y: scroll;
-      overflow-x: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-    }
-  }
-`;
 
 interface BaseSelectProps {
   options: SelectOption[];
@@ -57,8 +33,8 @@ interface MultiSelectProps extends BaseSelectProps {
 
 type SelectProps = DefaultSingleSelectProps | SingleSelectProps | MultiSelectProps;
 
-const Select: React.FC<SelectProps> = (props) => {
-  const [dialogVisible, setDialogVisible] = useState<boolean>(false);
+export const Select: React.FC<SelectProps> = (props) => {
+  const [dialogVisible, setDialogVisible] = useState(false);
 
   const displayValue = useMemo(() => {
     if (!props.value) return '';
@@ -87,7 +63,7 @@ const Select: React.FC<SelectProps> = (props) => {
         const { onChange } = props as SingleSelectProps;
         onChange(newValue);
       } else if (props.selectionMode === 'multiple' && Array.isArray(newValue)) {
-        const { onChange } = props as MultiSelectProps;
+        const { onChange } = props;
         onChange(newValue);
       }
       setDialogVisible(false);
@@ -133,7 +109,7 @@ const Select: React.FC<SelectProps> = (props) => {
   }
 
   return (
-    <DialogBasedSelect style={props.style}>
+    <div className="nb-dialog-based-select" style={props.style}>
       {dialog}
       <InputText
         value={displayValue}
@@ -145,18 +121,17 @@ const Select: React.FC<SelectProps> = (props) => {
           if (props.disabled) return;
           setDialogVisible(true);
         }}
-        onChange={() => {}}
         onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
           if (e.key === 'Enter') setDialogVisible(true);
         }}
       />
       <Button
         label="..."
-        onClick={() => setDialogVisible(true)}
+        onClick={() => {
+          setDialogVisible(true);
+        }}
         disabled={props.disabled}
       />
-    </DialogBasedSelect>
+    </div>
   );
 };
-
-export default Select;

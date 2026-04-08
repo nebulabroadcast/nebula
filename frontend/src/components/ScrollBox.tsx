@@ -1,35 +1,15 @@
 import React from 'react';
-import styled from 'styled-components';
-
-const ScrollContainer = styled.div`
-  flex-grow: 1;
-  position: relative;
-`;
-
-const ScrollContent = styled.div`
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-  overflow-x: auto;
-  gap: 6px;
-`;
+import './ScrollBox.css';
 
 interface ScrollBoxProps {
   children: React.ReactNode;
   style?: React.CSSProperties;
 }
 
-const ScrollBox: React.FC<ScrollBoxProps> = ({ children, style }) => {
+export const ScrollBox: React.FC<ScrollBoxProps> = ({ children, style }) => {
   return (
-    <ScrollContainer style={style}>
-      <ScrollContent>{children}</ScrollContent>
-    </ScrollContainer>
+    <div className="nb-scroll-box" style={style}>
+      <div className="nb-scroll-content">{children}</div>
+    </div>
   );
 };
-
-export default ScrollBox;

@@ -1,25 +1,25 @@
-import nebula from '@/nebula';
-
 import { Table, Button, Section } from '@components';
 import { useNebula } from '@features/Nebula';
 import formatMetaDatetime from '@lib/tableFormat/formatMetaDatetime';
+import type { AxiosResponse } from 'axios';
 import { useState, useEffect, useCallback } from 'react';
 import { NavLink, useParams } from 'react-router';
-import type { AxiosResponse } from 'axios';
 
-import type { JobsItemModel } from '../../client';
+import type { JobListItem } from '../../client';
+
 import JobsNav from './JobsNav';
 
 import { useWebSocket } from '@/features/Websocket';
+import nebula from '@/nebula';
 
 const NOT_RESTARTABLE = ['import'];
 
 const formatTitle = (rowData: Record<string, any>, key: string) => {
-  const row = rowData as JobsItemModel;
+  const row = rowData as JobListItem;
   return (
     <td>
       <NavLink to={`/mam/editor?asset=${row.id_asset}`}>
-        {row[key as keyof JobsItemModel] as React.ReactNode}
+        {row[key as keyof JobListItem] as React.ReactNode}
       </NavLink>
     </td>
   );
@@ -27,7 +27,7 @@ const formatTitle = (rowData: Record<string, any>, key: string) => {
 
 const JobsPage = () => {
   const { view } = useParams<{ view?: string }>();
-  const [jobs, setJobs] = useState<JobsItemModel[]>([]);
+  const [jobs, setJobs] = useState<JobListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const { setPageTitle } = useNebula();

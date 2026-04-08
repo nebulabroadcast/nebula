@@ -2,31 +2,31 @@ import { Timecode } from '@wfoxall/timeframe';
 import clsx from 'clsx';
 import React, { useState, useEffect, useRef } from 'react';
 
-import Input from './Input.styled';
+import './Input.css';
 
 interface InputTimecodeProps extends Omit<
   React.InputHTMLAttributes<HTMLInputElement>,
   'value' | 'onChange' | 'className' | 'title'
 > {
-  value?: number | null; // in seconds
-  mode?: 'time' | 'frames'; // time or frames
+  value?: number | null; // in seconds or frames based on mode
+  mode?: 'time' | 'frames';
   fps?: number | string;
   onChange?: (value: number | null | undefined) => void;
   tooltip?: string;
   className?: string;
 }
 
-const InputTimecode: React.FC<InputTimecodeProps> = ({
-  value = null, // in seconds
+export const InputTimecode: React.FC<InputTimecodeProps> = ({
+  value = null, // in seconds or frames based on mode
   mode = 'time', // time or frames
   fps = 25,
-  onChange = () => {},
-  tooltip = undefined,
-  className = undefined,
+  onChange,
+  tooltip,
+  className,
   ...props
 }) => {
-  const [text, setText] = useState<string>('');
-  const [invalid, setInvalid] = useState<boolean>(false);
+  const [text, setText] = useState('');
+  const [invalid, setInvalid] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -71,7 +71,9 @@ const InputTimecode: React.FC<InputTimecodeProps> = ({
     // add zero padding to the timecode
     if (!text) {
       setInvalid(false);
-      onChange(undefined);
+      if (onChange) {
+        onChange(undefined);
+      }
       return;
     }
 
@@ -85,8 +87,9 @@ const InputTimecode: React.FC<InputTimecodeProps> = ({
       const tcobj = new Timecode(str, fps);
       setInvalid(false);
       setText(str);
-      if (mode === 'time') onChange((tcobj.Frames as number) / (fps as number));
-      else if (mode === 'frames') onChange(tcobj.Frames as number);
+      if (onChange === undefined) return;
+      if (mode === 'time') onChange(tcobj.Frames / (fps as number));
+      else if (mode === 'frames') onChange(tcobj.Frames);
       else throw new Error('Invalid mode');
     } catch {
       setInvalid(true);
@@ -102,20 +105,21 @@ const InputTimecode: React.FC<InputTimecodeProps> = ({
   };
 
   return (
-    <Input
+    <input
       type="text"
       ref={inputRef}
-      className={clsx('timecode', className, { error: invalid })}
+      className={clsx('nb-input', 'timecode', className, { error: invalid })}
       value={text}
       onChange={onChangeHandler}
       onKeyDown={onKeyDown}
       onBlur={onSubmit}
-      onFocus={(e) => e.target.select()}
+      onFocus={(e) => {
+        e.target.select();
+      }}
       placeholder="--:--:--:--"
       data-tooltip={tooltip}
       {...props}
     />
   );
 };
-
-export default InputTimecode;
+InputTimecode.displayName = 'InputTimecode';

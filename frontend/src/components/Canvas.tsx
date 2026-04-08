@@ -1,26 +1,13 @@
 import React, { useEffect, forwardRef } from 'react';
-import styled from 'styled-components';
 
-const CanvasContainer = styled.div`
-  position: relative;
-  padding: 0;
-  margin: 0;
-
-  canvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
-  }
-`;
+import './Canvas.css';
 
 interface CanvasProps extends React.CanvasHTMLAttributes<HTMLCanvasElement> {
   style?: React.CSSProperties;
   onDraw?: (event: { target: HTMLCanvasElement }) => void;
 }
 
-const Canvas = forwardRef<HTMLCanvasElement, CanvasProps>(
+export const Canvas = forwardRef<HTMLCanvasElement, CanvasProps>(
   ({ style, onDraw, ...props }, ref) => {
     useEffect(() => {
       if (typeof ref === 'function' || !ref?.current) return;
@@ -42,16 +29,16 @@ const Canvas = forwardRef<HTMLCanvasElement, CanvasProps>(
       const resizeObserver = new ResizeObserver(handleResize);
       resizeObserver.observe(parentElement);
 
-      return () => resizeObserver.unobserve(parentElement);
+      return () => {
+        resizeObserver.unobserve(parentElement);
+      };
     }, [ref, onDraw]);
 
     return (
-      <CanvasContainer style={style}>
+      <div className="nb-canvas-container" style={style}>
         <canvas ref={ref} {...props} />
-      </CanvasContainer>
+      </div>
     );
   }
 );
 Canvas.displayName = 'Canvas';
-
-export default Canvas;

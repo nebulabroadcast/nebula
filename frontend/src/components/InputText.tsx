@@ -1,10 +1,10 @@
+import clsx from 'clsx';
 import { forwardRef } from 'react';
-
-import Input from './Input.styled';
+import './Input.css';
 
 interface InputTextProps {
   value?: string;
-  onChange: (value: string) => void;
+  onChange?: (value: string) => void;
   disabled?: boolean;
   placeholder?: string;
   tooltip?: string;
@@ -15,10 +15,16 @@ interface InputTextProps {
   onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 }
 
-const InputText = forwardRef<HTMLInputElement, InputTextProps>(
+export const InputText = forwardRef<HTMLInputElement, InputTextProps>(
   (props: InputTextProps, ref) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (props.onChange) {
+        props.onChange(e.target.value);
+      }
+    };
+
     return (
-      <Input
+      <input
         ref={ref}
         type="text"
         value={props.value || ''}
@@ -26,15 +32,13 @@ const InputText = forwardRef<HTMLInputElement, InputTextProps>(
         placeholder={props.placeholder}
         disabled={props.disabled}
         readOnly={props.readOnly}
-        onChange={(e) => props.onChange(e.target.value)}
+        onChange={handleChange}
         onDoubleClick={props.onDoubleClick}
         onKeyDown={props.onKeyDown}
         style={props.style}
-        className={props.className}
+        className={clsx('nb-input', props.className)}
       />
     );
   }
 );
 InputText.displayName = 'InputText';
-
-export default InputText;

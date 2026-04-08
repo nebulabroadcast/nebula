@@ -1,6 +1,4 @@
-import styled from 'styled-components';
-
-export const StyledDialog = styled.dialog`
+.nb-dialog {
   color: var(--color-text);
   padding: 6px;
   background-color: var(--color-surface-02);
@@ -14,7 +12,7 @@ export const StyledDialog = styled.dialog`
   max-height: 80%;
   border: none;
 
-  // Animated parameters
+  /* Animated parameters */
 
   transition: all 0.3s ease;
   opacity: 0;
@@ -23,7 +21,7 @@ export const StyledDialog = styled.dialog`
   &::backdrop {
     background-color: rgba(0, 0, 0, 0);
     backdrop-filter: none;
-    z-index: 999; // P5e04
+    z-index: 999;
   }
 
   &[open] {
@@ -35,7 +33,7 @@ export const StyledDialog = styled.dialog`
     }
   }
 
-  // Guts
+  /* Guts */
 
   header,
   footer {
@@ -58,9 +56,9 @@ export const StyledDialog = styled.dialog`
       min-width: 100px !important;
     }
   }
-`;
+}
 
-export const DialogBody = styled.div`
+.nb-dialog-body {
   padding: 12px 6px;
   display: flex;
   flex-direction: column;
@@ -68,4 +66,4 @@ export const DialogBody = styled.div`
   flex-grow: 1;
   overflow: auto;
   position: relative;
-`;
+}

@@ -1,41 +1,4 @@
 {
-  "compilerOptions": {
-    "target": "ESNext",
-    "lib": ["DOM", "DOM.Iterable", "ESNext"],
-    "module": "ESNext",
-    "skipLibCheck": true,
-
-    /* Bundler mode */
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
-    "jsx": "react-jsx",
-    "allowJs": false,
-
-    /* Linting */
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-    "types": ["vite/client"],
-    "baseUrl": "src",
-    "paths": {
-      "@components": ["./components"],
-      "@components/*": ["./components/*"],
-      "@containers": ["./containers"],
-      "@containers/*": ["./containers/*"],
-      "@features": ["./features"],
-      "@features/*": ["./features/*"],
-      "@lib": ["./lib"],
-      "@lib/*": ["./lib/*"],
-      "@types": ["./types"],
-      "@": ["./"],
-      "@/*": ["./*"]
-    }
-  },
-  "include": ["src"],
-  "exclude": ["node_modules", "dist"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "files": [],
+  "references": [{ "path": "./tsconfig.app.json" }, { "path": "./tsconfig.node.json" }]
 }

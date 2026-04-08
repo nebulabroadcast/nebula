@@ -1,21 +1,7 @@
-import styled from 'styled-components';
-
 import { dateToDateString } from './lib/datetime';
 import { dateToTimeString } from './lib/datetime';
-import { getTheme } from './theme';
 
-const TimestampWrapper = styled.div`
-  display: flex;
-  flex-direction: row;
-  gap: 8px;
-  align-items: center;
-  // dimmed date part
-  color: ${getTheme().colors.textDim};
-
-  > span:last-child {
-    color: ${getTheme().colors.text};
-  }
-`;
+import './Timestamp.css';
 
 interface TimestampProps extends React.HTMLAttributes<HTMLDivElement> {
   timestamp: number; // Unix timestamp in seconds
@@ -31,10 +17,10 @@ const Timestamp = ({ timestamp, mode = 'datetime', ...props }: TimestampProps) =
   const timeStr = dateToTimeString(localDateTime);
 
   return (
-    <TimestampWrapper {...props}>
+    <div className="nb-timestamp" {...props}>
       {!(mode === 'time') && <span>{dateStr}</span>}
       {!(mode === 'date') && <span>{timeStr}</span>}
-    </TimestampWrapper>
+    </div>
   );
 };
 

@@ -1,13 +1,13 @@
-import nebula from '@/nebula';
+import type { UserModel, UserPermissionsModel } from '@client';
+import { Select, InputSwitch, Form, FormRow } from '@components';
 import React, { useMemo } from 'react';
 
-import { Select, InputSwitch, Form, FormRow } from '@components';
-import type { UserModel, UserPermissionsModel } from '../../../client';
+import nebula from '@/nebula';
 
 interface AllOrListProps {
   value: boolean | number[];
   setValue: (value: boolean | number[]) => void;
-  options: { title: string; value: number }[];
+  options: Array<{ title: string; value: number }>;
   disabled?: boolean;
 }
 
@@ -18,7 +18,7 @@ const AllOrList: React.FC<AllOrListProps> = ({
   disabled,
 }) => {
   const all = value === true;
-  const values = Array.isArray(value) ? (value as number[]) : [];
+  const values = Array.isArray(value) ? value : [];
 
   const stringOptions = useMemo(
     () => options.map((o) => ({ title: o.title, value: o.value.toString() })),
@@ -84,20 +84,26 @@ const AccessControl: React.FC<AccessControlProps> = ({ userData, setValue }) => 
       <FormRow title="Administrator">
         <InputSwitch
           value={userData?.is_admin || false}
-          onChange={(value) => setValue('is_admin', value)}
+          onChange={(value) => {
+            setValue('is_admin', value);
+          }}
         />
       </FormRow>
       <FormRow title="Limited">
         <InputSwitch
           value={userData?.is_limited || false}
-          onChange={(value) => setValue('is_limited', value)}
+          onChange={(value) => {
+            setValue('is_limited', value);
+          }}
           disabled={isAdmin}
         />
       </FormRow>
       <FormRow title="Asset view">
         <AllOrList
           value={permissions.asset_view || false}
-          setValue={(value) => setPermission('asset_view', value)}
+          setValue={(value) => {
+            setPermission('asset_view', value);
+          }}
           options={folderOptions}
           disabled={isAdmin}
         />
@@ -105,7 +111,9 @@ const AccessControl: React.FC<AccessControlProps> = ({ userData, setValue }) => 
       <FormRow title="Asset edit">
         <AllOrList
           value={permissions.asset_edit || false}
-          setValue={(value) => setPermission('asset_edit', value)}
+          setValue={(value) => {
+            setPermission('asset_edit', value);
+          }}
           options={folderOptions}
           disabled={isAdmin}
         />
@@ -113,7 +121,9 @@ const AccessControl: React.FC<AccessControlProps> = ({ userData, setValue }) => 
       <FormRow title="Scheduler view">
         <AllOrList
           value={permissions.scheduler_view || false}
-          setValue={(value) => setPermission('scheduler_view', value)}
+          setValue={(value) => {
+            setPermission('scheduler_view', value);
+          }}
           options={channelOptions}
           disabled={isAdmin}
         />
@@ -121,7 +131,9 @@ const AccessControl: React.FC<AccessControlProps> = ({ userData, setValue }) => 
       <FormRow title="Scheduler edit">
         <AllOrList
           value={permissions.scheduler_edit || false}
-          setValue={(value) => setPermission('scheduler_edit', value)}
+          setValue={(value) => {
+            setPermission('scheduler_edit', value);
+          }}
           options={channelOptions}
           disabled={isAdmin}
         />
@@ -129,7 +141,9 @@ const AccessControl: React.FC<AccessControlProps> = ({ userData, setValue }) => 
       <FormRow title="Rundown view">
         <AllOrList
           value={permissions.rundown_view || false}
-          setValue={(value) => setPermission('rundown_view', value)}
+          setValue={(value) => {
+            setPermission('rundown_view', value);
+          }}
           options={channelOptions}
           disabled={isAdmin}
         />
@@ -137,7 +151,9 @@ const AccessControl: React.FC<AccessControlProps> = ({ userData, setValue }) => 
       <FormRow title="Rundown edit">
         <AllOrList
           value={permissions.rundown_edit || false}
-          setValue={(value) => setPermission('rundown_edit', value)}
+          setValue={(value) => {
+            setPermission('rundown_edit', value);
+          }}
           options={channelOptions}
           disabled={isAdmin}
         />
@@ -145,7 +161,9 @@ const AccessControl: React.FC<AccessControlProps> = ({ userData, setValue }) => 
       <FormRow title="Playout control">
         <AllOrList
           value={permissions.mcr || false}
-          setValue={(value) => setPermission('mcr', value)}
+          setValue={(value) => {
+            setPermission('mcr', value);
+          }}
           options={channelOptions}
           disabled={isAdmin}
         />
@@ -153,14 +171,18 @@ const AccessControl: React.FC<AccessControlProps> = ({ userData, setValue }) => 
       <FormRow title="Jobs control">
         <InputSwitch
           value={(permissions.job_control as boolean) || false}
-          onChange={(value) => setPermission('job_control', value)}
+          onChange={(value) => {
+            setPermission('job_control', value);
+          }}
           disabled={isAdmin}
         />
       </FormRow>
       <FormRow title="Services control">
         <InputSwitch
           value={(userData as any)?.can_service_control || false}
-          onChange={(value) => setValue('can_service_control', value)}
+          onChange={(value) => {
+            setValue('can_service_control', value);
+          }}
           disabled={isAdmin}
         />
       </FormRow>

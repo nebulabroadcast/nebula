@@ -1,0 +1,13 @@
+.nb-progress {
+  width: 100%;
+  border: 0;
+  border-radius: var(--input-border-radius);
+  background: var(--input-background);
+  height: 10px;
+
+  .nb-progress-bar {
+    height: 100%;
+    background: var(--color-cyan);
+    border-radius: var(--input-border-radius);
+  }
+}

@@ -5,9 +5,9 @@ export type WebSocketMessageData = Record<
 
 export interface WebSocketContextType {
   isConnected: boolean;
-  subscribe: (
+  subscribe: <T = WebSocketMessageData>(
     topic: string,
-    handler: (topic: string, message: WebSocketMessageData) => void
+    handler: (topic: string, message: T) => void
   ) => () => void;
   // Potentially: sendMessage: (message: any) => void;
 }

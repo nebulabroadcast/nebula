@@ -1,6 +1,6 @@
 import { Table, Timestamp, Section, Button } from '@components';
 import type { TableRowData } from '@components/table/types';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 import type { SessionModel } from '@/client';
 import nebula from '@/nebula';
@@ -35,36 +35,51 @@ const Sessions: React.FC<SessionsProps> = ({ userId }) => {
   const [sessions, setSessions] = useState<SessionModel[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const loadSessions = () => {
+  const loadSessions = useCallback(() => {
     if (!userId) return;
     setLoading(true);
-    nebula
+    return nebula
       .request('list-sessions', { id_user: userId })
       .then((res) => {
-        setSessions(res.data);
+        setSessions(res.data as SessionModel[]);
       })
-      .finally(() => setLoading(false));
-  };
-
-  useEffect(() => {
-    loadSessions();
+      .catch((err: unknown) => {
+        console.error(err);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, [userId]);
 
-  const invalidateSession = (token: string) => {
-    nebula
-      .request('invalidate-session', { token })
-      .then(() => {
-        loadSessions();
-      })
-      .catch((err) => console.error(err));
-  };
+  const invalidateSession = useCallback(
+    (token: string) => {
+      void nebula
+        .request('invalidate-session', { token })
+        .then(() => {
+          void loadSessions();
+        })
+        .catch((err: unknown) => {
+          console.error(err);
+        });
+    },
+    [loadSessions]
+  );
+
+  useEffect(() => {
+    void loadSessions();
+  }, [userId, loadSessions]);
 
   const invalidateFormatter = (rowData: TableRowData) => {
     const session = rowData as SessionModel;
     const token = session.token;
     return (
       <td style={{ textAlign: 'right' }} className="action">
-        <Button onClick={() => invalidateSession(token)} label="Invalidate" />
+        <Button
+          onClick={() => {
+            invalidateSession(token);
+          }}
+          label="Invalidate"
+        />
       </td>
     );
   };

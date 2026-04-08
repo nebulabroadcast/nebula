@@ -1,7 +1,6 @@
 import clsx from 'clsx';
-import { forwardRef } from 'react';
-
-import { BaseButton } from './Button.styled';
+import React, { forwardRef } from 'react';
+import './Button.css';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   icon?: string;
@@ -15,50 +14,53 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   iconOnRight?: boolean;
 }
 
-const Button = forwardRef<HTMLButtonElement, ButtonProps>((props: ButtonProps, ref) => {
-  const {
-    hlColor,
-    style,
-    icon,
-    iconStyle,
-    className,
-    label,
-    active,
-    tooltip,
-    iconOnRight,
-    ...buttonProps
-  } = props;
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+  (props: ButtonProps, ref) => {
+    const {
+      hlColor,
+      style,
+      icon,
+      iconStyle,
+      className,
+      label,
+      active,
+      tooltip,
+      iconOnRight,
+      ...buttonProps
+    } = props;
 
-  const _buttonStyle = style || {};
-  const _iconStyle = iconStyle || {};
+    const _buttonStyle = { ...style };
+    const _iconStyle = { ...iconStyle };
 
-  if (hlColor && !buttonProps.disabled) {
-    //_buttonStyle.borderBottom = `1px solid ${props.hlColor}`;
-    _iconStyle.color = props.hlColor;
+    if (hlColor && !buttonProps.disabled) {
+      _iconStyle.color = props.hlColor;
+    }
+
+    return (
+      <button
+        className={clsx(
+          'nb-button',
+          className,
+          active && 'active',
+          !label && 'icon-only'
+        )}
+        style={_buttonStyle}
+        data-tooltip={tooltip}
+        ref={ref}
+        {...buttonProps}
+      >
+        {label && iconOnRight && <span>{label}</span>}
+        {icon && (
+          <span
+            className="icon material-symbols-outlined"
+            style={_iconStyle}
+            translate="no"
+          >
+            {icon}
+          </span>
+        )}
+        {!iconOnRight && label && <span>{label}</span>}
+      </button>
+    );
   }
-
-  return (
-    <BaseButton
-      className={clsx(className, active && 'active', !label && 'icon-only')}
-      style={_buttonStyle}
-      data-tooltip={tooltip}
-      ref={ref}
-      {...buttonProps}
-    >
-      {label && iconOnRight && <span>{label}</span>}
-      {icon && (
-        <span
-          className="icon material-symbols-outlined"
-          style={_iconStyle}
-          translate="no"
-        >
-          {icon}
-        </span>
-      )}
-      {!iconOnRight && label && <span>{label}</span>}
-    </BaseButton>
-  );
-});
-
-Button.displayName = 'Button';
-export default Button;
+);

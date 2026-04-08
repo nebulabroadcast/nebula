@@ -1,11 +1,11 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import clsx from 'clsx';
+import React, { useMemo, useRef, useEffect } from 'react';
 
-import ContextMenu, { ContextMenuOption } from '../ContextMenu';
+import { ContextMenu, type ContextMenuOption } from '../ContextMenu';
 import { Loader, LoaderWrapper } from '../Loader';
 
 import DataRow from './DataRow';
 import HeaderCell from './HeaderCell';
-import TableWrapper from './TableWrapper';
 import type {
   TableRowData,
   TableColumn,
@@ -13,6 +13,8 @@ import type {
   TableDroppable,
   TableDraggableItem,
 } from './types';
+
+import './Table.css';
 
 interface TableProps {
   data: TableRowData[];
@@ -22,10 +24,10 @@ interface TableProps {
   keyField?: string;
   onRowClick?: (
     rowData: TableRowData,
-    event: React.MouseEvent<HTMLTableRowElement, MouseEvent>
+    event: React.MouseEvent<HTMLTableRowElement>
   ) => void;
   onKeyDown?: (event: React.KeyboardEvent<HTMLTableElement>) => void;
-  selection?: (string | number)[];
+  selection?: Array<string | number>;
   rowHighlightColor?: (rowData: TableRowData) => string | undefined;
   rowHighlightStyle?: (
     rowData: TableRowData
@@ -65,7 +67,6 @@ const Table = ({
   const tableRef = useRef<HTMLElement>(null);
   const droppableRef = useRef<TableDroppable | undefined>(undefined);
   const dropIndexRef = useRef<number | null>(null);
-  const [dropHl, setDropHl] = useState<number | null>(null);
 
   const head = useMemo(() => {
     return (
@@ -92,7 +93,6 @@ const Table = ({
 
   useEffect(() => {
     droppableRef.current = droppable;
-    if (!droppableRef.current) setDropHl(null);
   }, [droppable]);
 
   const body = useMemo(() => {
@@ -125,9 +125,7 @@ const Table = ({
             rowHighlightColor={rowHighlightColor}
             rowHighlightStyle={rowHighlightStyle}
             rowClass={rowClass}
-            selected={
-              selection && selection.includes(keyField ? rowData[keyField] : idx)
-            }
+            selected={selection?.includes(keyField ? rowData[keyField] : idx)}
             key={keyField ? rowData[keyField] : idx}
             ident={keyField ? rowData[keyField] : idx}
             index={idx}
@@ -157,24 +155,40 @@ const Table = ({
   };
 
   const onMouseMove = (event: MouseEvent) => {
-    if (!droppableRef.current) return;
     const target = event.target;
     if (!target) return;
     if (!(target instanceof HTMLElement)) return;
     // find the closest row
     const row = target.closest('tr');
+
     let index = null;
-    if (row instanceof HTMLElement) {
+    if (droppableRef.current && row instanceof HTMLElement) {
       index = row ? parseInt(row.getAttribute('data-index') || '', 10) : null;
     }
 
-    if (index === null) {
-      setDropHl(null);
+    // iterate over all rows and find the one that matches the mouse position
+    // clean up highlight for all rows except the one we're hovering over
+
+    const rows = tableRef.current?.querySelectorAll('tbody tr');
+    if (rows) {
+      rows.forEach((r) => {
+        const rIndex = parseInt(r.getAttribute('data-key') || '', 10);
+        if (rIndex === index) {
+          r.classList.add('drop-highlight');
+        } else {
+          r.classList.remove('drop-highlight');
+        }
+      });
+    }
+
+    if (!droppableRef.current) {
       return;
     }
 
+    if (index === null) {
+      return;
+    }
     dropIndexRef.current = index;
-    setDropHl(index);
   };
 
   const onMouseUp = (event: MouseEvent) => {
@@ -191,7 +205,6 @@ const Table = ({
       onDrop(droppableRef.current, dropIndexRef.current);
     }
     droppableRef.current = undefined;
-    setDropHl(null);
   };
 
   useEffect(() => {
@@ -206,13 +219,11 @@ const Table = ({
   }, [tableRef.current]);
 
   return (
-    <TableWrapper
-      className={className}
+    <div
+      className={clsx('nb-table', className)}
       style={style}
       onScroll={handleScroll}
       onKeyDown={handleKeyDown}
-      onMouseLeave={() => setDropHl(null)}
-      $drophl={dropHl || undefined}
     >
       {loading && (
         <LoaderWrapper>
@@ -233,7 +244,7 @@ const Table = ({
           options={contextMenu}
         />
       )}
-    </TableWrapper>
+    </div>
   );
 };
 

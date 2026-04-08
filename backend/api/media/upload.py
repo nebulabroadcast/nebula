@@ -41,13 +41,12 @@ class UploadMedia(APIRequest):
             upload_dir = nebula.settings.system.upload_dir
             base_name = nebula.settings.system.upload_base_name.format(**asset.meta)
             upload_full_dir = os.path.join(storage.local_path, upload_dir)
-            if not os.path.isdir(upload_full_dir):
-                try:
-                    os.makedirs(upload_full_dir)
-                except Exception as e:
-                    raise nebula.NebulaException(
-                        "Unable to create uplad directory"
-                    ) from e
+
+            try:
+                os.makedirs(upload_full_dir, exist_ok=True)
+            except Exception as e:
+                raise nebula.NebulaException("Unable to create upload directory") from e
+
             target_path = os.path.join(upload_full_dir, f"{base_name}.{extension}")
         else:
             direct = True
@@ -59,8 +58,13 @@ class UploadMedia(APIRequest):
         nebula.log.debug(f"Uploading media file for {asset}", user=user.name)
 
         temp_dir = os.path.join(storage.local_path, ".nx", "creating")
-        if not os.path.isdir(temp_dir):
-            os.makedirs(temp_dir)
+
+        try:
+            os.makedirs(temp_dir, exist_ok=True)
+        except Exception as e:
+            raise nebula.NebulaException(
+                "Unable to create temp upload directory"
+            ) from e
 
         temp_path = os.path.join(temp_dir, f"upload-{asset.id}-{time.time()}")
 

@@ -1,0 +1,33 @@
+.nb-tooltip-content {
+  position: fixed;
+  transform: translate(-50%, -100%);
+  margin-top: -10px;
+  background-color: var(--color-surface-04);
+  color: var(--color-text-hl);
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 11px;
+  z-index: 10000;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+  width: max-content;
+  max-width: 320px;
+  text-align: center;
+  line-height: 1.5;
+  transition: opacity 0.15s ease-out;
+
+  p {
+    margin: 0;
+  }
+
+  code {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-family: monospace;
+  }
+
+  strong {
+    color: var(--color-yellow);
+  }
+}

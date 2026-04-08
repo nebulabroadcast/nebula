@@ -1,49 +1,63 @@
-// eslint.config.js
-import eslint from '@eslint/js';
-import tseslint from 'typescript-eslint';
-import reactPlugin from 'eslint-plugin-react';
-import reactHooksPlugin from 'eslint-plugin-react-hooks';
-import importPlugin from 'eslint-plugin-import';
+import js from '@eslint/js';
 import globals from 'globals';
+import react from 'eslint-plugin-react';
+import reactHooks from 'eslint-plugin-react-hooks';
+import reactRefresh from 'eslint-plugin-react-refresh';
+import tseslint from 'typescript-eslint';
+import importPlugin from 'eslint-plugin-import';
+import prettierConfig from 'eslint-config-prettier';
+import { defineConfig, globalIgnores } from 'eslint/config';
 
-export default tseslint.config(
+export default defineConfig([
+  globalIgnores([
+    'dist',
+    'node_modules',
+    'eslint.config.js',
+    'dist/**',
+    'src/client/**',
+  ]),
+
+  prettierConfig,
+
   {
-    ignores: ['node_modules', 'build', 'dist', 'eslint.config.js'],
-  },
-  eslint.configs.recommended,
-  ...tseslint.configs.recommended,
-  {
+    files: ['src/**/*.{ts,tsx}'],
+    extends: [
+      js.configs.recommended,
+      tseslint.configs.recommended,
+      tseslint.configs.strictTypeChecked,
+      tseslint.configs.stylisticTypeChecked,
+      reactHooks.configs.flat.recommended,
+      reactRefresh.configs.recommended,
+    ],
     languageOptions: {
+      ecmaVersion: 2020,
+      globals: globals.browser,
       parser: tseslint.parser,
       parserOptions: {
-        project: './tsconfig.json',
-      },
-      sourceType: 'module',
-      globals: {
-        ...globals.browser,
-        ...globals.node,
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
       },
     },
-
-    // React plugin configuration
     plugins: {
-      react: reactPlugin,
-      'react-hooks': reactHooksPlugin,
+      react: react,
+      'react-hooks': reactHooks,
       import: importPlugin,
     },
     rules: {
-      // React rules
-      'react/jsx-uses-react': 'error',
-      'react/jsx-uses-vars': 'error',
-      'react/react-in-jsx-scope': 'off', // Not needed with React 17+
-      'react/prop-types': 'off', // TypeScript handles prop validation
-      'react/display-name': 'warn',
-      'react-hooks/rules-of-hooks': 'error',
-      'react-hooks/exhaustive-deps': 'warn',
+      // Naaah. We can have state updates in effects, it's not a problem if we do it right.
+      'react-hooks/set-state-in-effect': 'off',
 
-      '@typescript-eslint/explicit-function-return-type': 'off',
-      '@typescript-eslint/explicit-module-boundary-types': 'off',
-      '@typescript-eslint/no-explicit-any': 'warn',
+      // let's face it, we have 'any' in some places, and that's fine for now
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+
+      // and because of that, we can have some "unnecessary conditions"
+      // that actually can be necessary in runtime
+      '@typescript-eslint/no-unnecessary-condition': 'off',
+
+      // keep this off for now - too many false positives
+      '@typescript-eslint/prefer-nullish-coalescing': 'off',
+
       '@typescript-eslint/no-unused-vars': [
         'error',
         {
@@ -51,6 +65,28 @@ export default tseslint.config(
           varsIgnorePattern: '^_',
         },
       ],
+
+      // Strict type-checked rules customization
+      '@typescript-eslint/no-floating-promises': 'error',
+      '@typescript-eslint/no-misused-promises': [
+        'error',
+        {
+          checksVoidReturn: {
+            attributes: false, // Useful for React props like onClick
+          },
+        },
+      ],
+      '@typescript-eslint/restrict-template-expressions': [
+        'error',
+        {
+          allowNumber: true,
+          allowBoolean: true,
+        },
+      ],
+
+      // Stylistic rules customization
+      '@typescript-eslint/consistent-type-definitions': ['error', 'interface'],
+      '@typescript-eslint/array-type': ['error', { default: 'array-simple' }],
 
       // Import rules
       'import/order': [
@@ -62,21 +98,5 @@ export default tseslint.config(
         },
       ],
     },
-    // Different settings for different file types
-    settings: {
-      react: {
-        version: 'detect',
-      },
-    },
   },
-  {
-    // Apply to all TypeScript files
-    files: ['**/*.{ts,tsx}'],
-    languageOptions: {
-      parser: tseslint.parser,
-      parserOptions: {
-        project: './tsconfig.json',
-      },
-    },
-  }
-);
+]);

@@ -4,12 +4,16 @@
 :root {
   --font-family: 'Noto Sans', Roboto, Arial, sans-serif;
   --font-family-mono: 'Noto Sans Mono', monospace;
+  --font-size: 12px;
+
   --color-surface-01: #19161f;
   --color-surface-02: #1f1e26;
   --color-surface-03: #24202e;
   --color-surface-04: #2e2a38;
   --color-surface-05: #302c3a;
   --color-surface-06: #3a3544;
+  --color-surface-07: #413e4e;
+  --color-surface-08: #514a5e;
   --color-text: #d7d4d5;
   --color-text-hl: #fbfbfb;
   --color-text-dim: #9c9c9c;
@@ -36,12 +40,13 @@
 
   --input-border-radius: 4px;
   --input-background: var(--color-surface-04);
-  --input-height: 32px;
+  --input-height: 30px;
   --input-padding: 4px;
   --input-color: var(--color-text);
-  --font-size: 0.8rem;
+  --input-font-size: 12px;
   --gap-size: 6px;
   --section-gap: 6px;
+  --nav-border-radius: 8px;
 
   color-scheme: dark;
 }
@@ -92,8 +97,8 @@ html {
 button,
 input {
   color: var(--color-text);
-  font-size: var(--font-size);
   font-family: var(--font-family);
+  font-size: var(--input-font-size);
 }
 
 #root {

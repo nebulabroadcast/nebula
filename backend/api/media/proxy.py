@@ -1,5 +1,6 @@
 import os
 
+import anyio
 from starlette.responses import FileResponse
 
 import nebula
@@ -36,7 +37,7 @@ class ServeProxy(APIRequest):
     async def handle(self, id_asset: int, user: CurrentUser) -> FileResponse:
         _ = user  # Not used for now, but we might want to check permissions
         video_path = get_proxy_path(id_asset)
-        if not os.path.exists(video_path):
+        if not await anyio.Path(video_path).exists():
             raise nebula.NotFoundException("Proxy not found")
         return FileResponse(video_path, media_type="video/mp4")
 
@@ -64,8 +65,10 @@ class GetProxyInfo(APIRequest):
     async def handle(self, id_asset: int, user: CurrentUser) -> ProxyInfo:
         _ = user  # Not used for now, but we might want to check permissions
         video_path = get_proxy_path(id_asset)
-        exists = os.path.exists(video_path)
-        timestamp = os.path.getmtime(video_path) if exists else None
+        timestamp = None
+        if exists := await anyio.Path(video_path).exists():
+            stat = await anyio.Path(video_path).stat()
+            timestamp = stat.st_mtime
 
         return ProxyInfo(
             id=id_asset,

@@ -2,8 +2,7 @@ import { isEmpty, isEqual, xorWith } from 'lodash';
 
 import nebula from '@/nebula';
 
-export const arrayEquals = (x: Array<any>, y: Array<any>) =>
-  isEmpty(xorWith(x, y, isEqual));
+export const arrayEquals = (x: any[], y: any[]) => isEmpty(xorWith(x, y, isEqual));
 
 export const formatTimeString = (timestamp: number) => {
   if (!timestamp) return '';
@@ -27,8 +26,7 @@ export const formatTimeString = (timestamp: number) => {
   return `${localDate} ${localTime}`;
 };
 
-export const zpad = (n: string | number, len: number = 2) =>
-  String(n).padStart(len, '0');
+export const zpad = (n: string | number, len = 2) => String(n).padStart(len, '0');
 
 export const dateToDateString = (localDateTime: Date) => {
   if (!localDateTime) return '';

@@ -1,4 +1,3 @@
-import nebula from '@/nebula';
 import MainNavbar from '@containers/MainNavbar';
 import { DialogProvider } from '@features/Dialogs';
 import { MediaUploadProvider, MediaUploadMonitor } from '@features/MediaUpload';
@@ -8,9 +7,11 @@ import axios from 'axios';
 import { useState, useEffect, useMemo, Suspense } from 'react';
 import { Outlet, useLocation } from 'react-router';
 
-import type { InitResponseModel } from './client';
+import type { InitResponse } from './client';
 import LoadingPage from './pages/LoadingPage';
 import LoginPage from './pages/LoginPage/LoginPage';
+
+import nebula from '@/nebula';
 
 const App = () => {
   const [accessToken, setAccessToken] = useLocalStorage<string | null>(
@@ -19,7 +20,7 @@ const App = () => {
   );
   const [errorCode, setErrorCode] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
-  const [initData, setInitData] = useState<InitResponseModel | null>(null);
+  const [initData, setInitData] = useState<InitResponse | null>(null);
 
   const wsAddress = useMemo(() => {
     const proto = window.location.protocol.replace('http', 'ws');
@@ -31,10 +32,10 @@ const App = () => {
   // Ensure server connection
 
   useEffect(() => {
-    axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+    axios.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
     axios.defaults.headers.common['X-Client-Id'] = nebula.senderId;
     axios
-      .post<InitResponseModel>('/api/init', {})
+      .post<InitResponse>('/api/init', {})
       .then((response) => {
         setInitData(response.data);
         nebula.settings = response.data.settings || undefined;
@@ -55,8 +56,12 @@ const App = () => {
           }
         );
       })
-      .catch((err) => setErrorCode(err.response?.status))
-      .finally(() => setLoading(false));
+      .catch((err) => {
+        setErrorCode(err.response?.status);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, [accessToken]);
 
   useEffect(() => {
@@ -72,7 +77,7 @@ const App = () => {
   if (errorCode && errorCode > 401)
     return <main className="center">server unavailable</main>;
 
-  if (!initData || !initData.installed)
+  if (!initData?.installed)
     return <main className="center">nebula is not installed</main>;
 
   if (!initData.user)

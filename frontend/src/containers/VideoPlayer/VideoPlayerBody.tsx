@@ -1,4 +1,4 @@
-import { Button, InputTimecode, Navbar, Section } from '@components';
+import { Button, ErrorBanner, InputTimecode, Navbar, Section } from '@components';
 import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 
@@ -35,19 +35,6 @@ const Video = styled.video`
   object-fit: contain;
 `;
 
-const VideoPlayerWarning = styled.div`
-  position: absolute;
-  top: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: var(--color-red);
-  white-space: nowrap;
-  color: white;
-  padding: 8px 16px;
-  border-radius: 4px;
-  z-index: 10;
-`;
-
 const time2frames = (time: number, frameRate: number) => Math.round(time * frameRate);
 const frames2time = (frames: number, frameRate: number) => frames / frameRate;
 
@@ -74,12 +61,13 @@ const VideoPlayerBody: React.FC<VideoPlayerProps> = (props) => {
   const [videoDimensions, setVideoDimensions] = useState(DEFAULT_VIDEO_DIMENSIONS);
   const [showOverlay, setShowOverlay] = useState(false);
   const [bufferedRanges, setBufferedRanges] = useState<
-    { start: number; end: number }[]
+    Array<{ start: number; end: number }>
   >([]);
 
   useEffect(() => {
     if (!props.setPosition) return;
     props.setPosition(frames2time(posFrames, props.frameRate));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [posFrames, props.frameRate, props.setPosition]);
 
   useEffect(() => {
@@ -109,6 +97,7 @@ const VideoPlayerBody: React.FC<VideoPlayerProps> = (props) => {
       props.setMarkOut(markOut ?? null);
       markOutRef.current = markOut;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [markIn, markOut, props.setMarkIn, props.setMarkOut]);
 
   useEffect(() => {
@@ -143,7 +132,9 @@ const VideoPlayerBody: React.FC<VideoPlayerProps> = (props) => {
     const resizeObserver = new ResizeObserver(updateVideoDimensions);
     resizeObserver.observe(parentElement);
 
-    return () => resizeObserver.unobserve(parentElement);
+    return () => {
+      resizeObserver.unobserve(parentElement);
+    };
   }, [videoRef]);
 
   // Position
@@ -167,7 +158,7 @@ const VideoPlayerBody: React.FC<VideoPlayerProps> = (props) => {
 
   useEffect(() => {
     let animationFrameId: number;
-    let timeoutId: any;
+    let timeoutId: number;
 
     const updatePosMon = () => {
       if (!videoRef.current) return;
@@ -187,6 +178,7 @@ const VideoPlayerBody: React.FC<VideoPlayerProps> = (props) => {
       clearTimeout(timeoutId);
       cancelAnimationFrame(animationFrameId);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPlaying]);
 
   const seekToFrame = (frame: number) => {
@@ -239,11 +231,11 @@ const VideoPlayerBody: React.FC<VideoPlayerProps> = (props) => {
     // unused
   };
 
-  const handleProgress = (e: React.SyntheticEvent<HTMLVideoElement, Event>) => {
+  const handleProgress = (e: React.SyntheticEvent<HTMLVideoElement>) => {
     const video = e.target as HTMLVideoElement;
     const buffered = video.buffered;
     if (!buffered.length) return;
-    const ranges: { start: number; end: number }[] = [];
+    const ranges: Array<{ start: number; end: number }> = [];
     for (let i = 0; i < buffered.length; i++) {
       const r = { start: buffered.start(i), end: buffered.end(i) };
       ranges.push(r);
@@ -272,20 +264,26 @@ const VideoPlayerBody: React.FC<VideoPlayerProps> = (props) => {
           mode="frames"
           tooltip="Current position"
           fps={props.frameRate}
-          onChange={(v) => seekToFrame(v as number)}
+          onChange={(v) => {
+            seekToFrame(v!);
+          }}
         />
         <ChannelSelect gainNodes={gainNodes} />
         <div style={{ flex: 1 }} />
         <Button
           icon="loop"
           tooltip={loop ? 'Disable loop' : 'Enable loop'}
-          onClick={() => setLoop(!loop)}
+          onClick={() => {
+            setLoop(!loop);
+          }}
           active={loop}
         />
         <Button
           icon="crop_free"
           tooltip={showOverlay ? 'Hide guides' : 'Show guides'}
-          onClick={() => setShowOverlay(!showOverlay)}
+          onClick={() => {
+            setShowOverlay(!showOverlay);
+          }}
           active={showOverlay}
         />
         <InputTimecode
@@ -320,7 +318,16 @@ const VideoPlayerBody: React.FC<VideoPlayerProps> = (props) => {
               videoHeight={videoDimensions.height}
               showOverlay={showOverlay}
             />
-            {props.warning && <VideoPlayerWarning>{props.warning}</VideoPlayerWarning>}
+            <ErrorBanner
+              style={{
+                position: 'absolute',
+                bottom: 10,
+                left: '50%',
+                transform: 'translateX(-50%)',
+              }}
+            >
+              {props.warning}
+            </ErrorBanner>
           </VideoContainer>
         </VideoSpace>
         <VUMeter gainNodes={rightNodes} audioContext={audioContext} />
@@ -331,7 +338,9 @@ const VideoPlayerBody: React.FC<VideoPlayerProps> = (props) => {
         frameRate={props.frameRate}
         isPlaying={isPlaying}
         currentTime={frames2time(posFrames, props.frameRate)}
-        onScrub={(t) => seekToFrame(time2frames(t, props.frameRate))}
+        onScrub={(t) => {
+          seekToFrame(time2frames(t, props.frameRate));
+        }}
         onScrubFinished={onScrubFinished}
         markIn={markIn ?? undefined}
         markOut={markOut ?? undefined}
@@ -342,13 +351,13 @@ const VideoPlayerBody: React.FC<VideoPlayerProps> = (props) => {
       <VideoPlayerControls
         frameRate={props.frameRate}
         markIn={time2frames(markIn ?? 0, props.frameRate)}
-        setMarkIn={(v) =>
-          setMarkIn(v === null ? null : frames2time(v, props.frameRate))
-        }
+        setMarkIn={(v) => {
+          setMarkIn(v === null ? null : frames2time(v, props.frameRate));
+        }}
         markOut={time2frames(markOut ?? 0, props.frameRate)}
-        setMarkOut={(v) =>
-          setMarkOut(v === null ? null : frames2time(v, props.frameRate))
-        }
+        setMarkOut={(v) => {
+          setMarkOut(v === null ? null : frames2time(v, props.frameRate));
+        }}
         seekToFrame={seekToFrame}
         currentFrame={posFrames}
         duration={durFrames}

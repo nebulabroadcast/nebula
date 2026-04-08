@@ -57,6 +57,7 @@ const EditorField: React.FC<EditorFieldProps> = ({
   // Memoize original value (for changed indicator)
 
   const originalValueParsed = useMemo(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     if (originalValue !== undefined && originalValue !== null) return originalValue;
     if (metaType.default !== undefined && metaType.default !== null)
       return metaType.default;
@@ -206,10 +207,11 @@ const MetadataEditor: React.FC<MetadataEditorProps> = ({
   onSave,
   disabled,
 }) => {
-  const onFieldChanged = (key: string, value: any) =>
+  const onFieldChanged = (key: string, value: any) => {
     setObjectData((o) => {
       return { ...o, [key]: value };
     });
+  };
 
   function handleKeyDown(event: React.KeyboardEvent) {
     if (!onSave) return;

@@ -3,9 +3,10 @@ import { DateTime } from 'luxon';
 import { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 
-import Button from './Button';
+import { Button } from './Button';
 import DatePickerDialog from './DatePickerDialog';
-import Input from './Input.styled';
+
+import './Input.css';
 
 const timeRegex = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/;
 const dateRegex = /^(\d{4})-(\d{2})-(\d{2})$/;
@@ -60,7 +61,7 @@ interface InputDatetimeProps {
   className: string;
 }
 
-const InputDatetime = ({
+export const InputDatetime = ({
   value,
   onChange,
   placeholder,
@@ -94,10 +95,7 @@ const InputDatetime = ({
 
     if (time && time.length - 1 === newValue.length && time.endsWith('-')) {
       newValue = newValue.slice(0, -1);
-    } else if (
-      [4, 7].includes(newValue.length) &&
-      newValue.charAt(newValue.length - 1) !== '-'
-    )
+    } else if ([4, 7].includes(newValue.length) && !newValue.endsWith('-'))
       newValue = newValue + '-';
     setTime(newValue);
   };
@@ -143,16 +141,18 @@ const InputDatetime = ({
         <CalendarDialog
           value={value}
           onChange={onChange}
-          onClose={() => setShowCalendar(false)}
+          onClose={() => {
+            setShowCalendar(false);
+          }}
         />
       )}
-      <Input
+      <input
         type="text"
         ref={inputRef}
         value={time || ''}
         onChange={handleChange}
         style={{ flexGrow: 1 }}
-        className={clsx(className, { error: !isValidTime(time) })}
+        className={clsx('nb-input', className, { error: !isValidTime(time) })}
         placeholder={isFocused ? timestampFormat : placeholder}
         data-tooltip={`Please enter a valid time in the format ${timestampFormat}`}
         onBlur={onSubmit}
@@ -162,9 +162,13 @@ const InputDatetime = ({
         }}
         onKeyDown={onKeyDown}
       />
-      <Button icon="calendar_today" onClick={() => setShowCalendar(true)} />
+      <Button
+        icon="calendar_today"
+        onClick={() => {
+          setShowCalendar(true);
+        }}
+      />
     </DateTimeWrapper>
   );
 };
-
-export default InputDatetime;
+InputDatetime.displayName = 'InputDatetime';

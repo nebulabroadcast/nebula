@@ -3,6 +3,7 @@ import os
 import subprocess
 
 import aiocache
+import anyio
 
 import nebula
 from server import APIModel, APIRequest
@@ -154,10 +155,11 @@ class NebulaStoragesRequest(APIRequest):
         storage_map = await get_storage_map()
 
         for mountpoint_name in sorted(os.listdir("/mnt")):
-            if not os.path.isdir(os.path.join("/mnt", mountpoint_name)):
+            if not mountpoint_name.startswith(site_name + "_"):
                 continue
 
-            if not mountpoint_name.startswith(site_name + "_"):
+            mountpoint_path = anyio.Path("/mnt", mountpoint_name)
+            if not await mountpoint_path.is_dir():
                 continue
 
             try:
@@ -192,7 +194,7 @@ class NebulaStoragesRequest(APIRequest):
             if (
                 storage
                 and storage["protocol"] != "local"
-                and not os.path.ismount(f"/mnt/{mountpoint_name}")
+                and not await mountpoint_path.is_mount()
             ):
                 total_size = used_size = used_by_nebula
                 free_size = untracked_size = 0

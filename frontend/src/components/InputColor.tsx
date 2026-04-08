@@ -1,11 +1,6 @@
-import { useMemo } from 'react';
-import styled from 'styled-components';
+import { useId, useMemo } from 'react';
 
-import Input from './Input.styled';
-
-const BaseColorInput = styled(Input)`
-  width: 30px;
-`;
+import './Input.css';
 
 const COLOR_PRESETS = [
   '#dc8a78',
@@ -32,8 +27,10 @@ interface InputColorProps {
   disabled?: boolean;
 }
 
-const InputColor = ({ value, onChange, tooltip, disabled }: InputColorProps) => {
+export const InputColor = ({ value, onChange, tooltip, disabled }: InputColorProps) => {
   // Nebula stores color as integer so we need to convert it to hex
+
+  const presetId = useId();
 
   const hexValue = useMemo(() => {
     if (!value) return '#7287fd';
@@ -47,15 +44,16 @@ const InputColor = ({ value, onChange, tooltip, disabled }: InputColorProps) => 
 
   return (
     <>
-      <BaseColorInput
+      <input
+        className="nb-input"
         type="color"
         value={hexValue}
         data-tooltip={tooltip}
-        list="presetColors"
+        list={presetId}
         onChange={(e) => setColor(e.target.value)}
         disabled={disabled}
       />
-      <datalist id="presetColors">
+      <datalist id={presetId}>
         {COLOR_PRESETS.map((color) => (
           <option key={color} value={color} />
         ))}
@@ -63,5 +61,4 @@ const InputColor = ({ value, onChange, tooltip, disabled }: InputColorProps) => 
     </>
   );
 };
-
-export default InputColor;
+InputColor.displayName = 'InputColor';

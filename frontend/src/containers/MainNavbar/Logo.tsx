@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 
 const LogoSVG = styled.svg`
-  margin-right: 1rem;
+  margin-right: 12px;
   path {
     fill: var(--color-text);
     stroke: var(--color-text-dim);

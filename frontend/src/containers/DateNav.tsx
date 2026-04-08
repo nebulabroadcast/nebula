@@ -38,8 +38,12 @@ const DateNav: React.FC<DateNavProps> = ({ onChange, skipBy = 1 }) => {
     });
   };
 
-  const prevDay = () => dateStep(-skipBy);
-  const nextDay = () => dateStep(skipBy);
+  const prevDay = () => {
+    dateStep(-skipBy);
+  };
+  const nextDay = () => {
+    dateStep(skipBy);
+  };
 
   const today = () => {
     setSearchParams((o) => {

@@ -54,7 +54,9 @@ const AssetMainProps: React.FC<AssetMainPropsProps> = ({
     return (nebula.getWritableFolders() || []).map((f) => ({
       label: f.name,
       style: { borderLeft: `4px solid ${f.color}` },
-      onClick: () => setMeta('id_folder', f.id),
+      onClick: () => {
+        setMeta('id_folder', f.id);
+      },
       value: f.id,
     }));
   }, [setMeta]);
@@ -107,7 +109,9 @@ const AssetMainProps: React.FC<AssetMainPropsProps> = ({
     const result: DropdownOptionProps[] = [
       {
         label: 'Send to...',
-        onClick: () => sendTo(),
+        onClick: () => {
+          sendTo();
+        },
       },
       ...scopedEndpoints,
       ...linkOptions,
@@ -130,7 +134,9 @@ const AssetMainProps: React.FC<AssetMainPropsProps> = ({
       {detailsVisible && (
         <Dialog
           style={{ height: '80%', width: '80%' }}
-          onHide={() => setDetailsVisible(false)}
+          onHide={() => {
+            setDetailsVisible(false);
+          }}
         >
           <MetadataDetail assetData={assetData} />
         </Dialog>
@@ -140,7 +146,9 @@ const AssetMainProps: React.FC<AssetMainPropsProps> = ({
         <ContextActionResult
           mime={contextActionResult.contentType}
           payload={contextActionResult.payload}
-          onHide={() => setContextActionResult(null)}
+          onHide={() => {
+            setContextActionResult(null);
+          }}
         />
       )}
 
@@ -159,7 +167,9 @@ const AssetMainProps: React.FC<AssetMainPropsProps> = ({
       <InputTimecode
         value={(assetData?.duration as number) || 0}
         fps={fps}
-        onChange={(val) => setMeta('duration', val)}
+        onChange={(val) => {
+          setMeta('duration', val);
+        }}
         tooltip="Asset duration"
         readOnly={!!assetData.status || !enabledActions.edit}
       />
@@ -169,7 +179,9 @@ const AssetMainProps: React.FC<AssetMainPropsProps> = ({
       {enabledActions.advanced && (
         <AssigneesButton
           assignees={(assetData?.assignees as number[]) || []}
-          setAssignees={(val) => setMeta('assignees', val)}
+          setAssignees={(val) => {
+            setMeta('assignees', val);
+          }}
         />
       )}
 
@@ -185,7 +197,9 @@ const AssetMainProps: React.FC<AssetMainPropsProps> = ({
           <Button
             icon="manage_search"
             label="Details"
-            onClick={() => setDetailsVisible(true)}
+            onClick={() => {
+              setDetailsVisible(true);
+            }}
           />
         </>
       )}

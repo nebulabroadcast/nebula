@@ -1,0 +1,23 @@
+.nb-select-dialog-option {
+  padding: var(--input-padding);
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+  user-drag: none;
+  background-color: var(--color-surface-03);
+
+  &.selected {
+    color: var(--color-cyan);
+    background-color: var(--color-surface-05);
+  }
+
+  &.label {
+    font-weight: bold;
+    background-color: transparent;
+  }
+
+  &.header {
+    font-weight: bold;
+    background-color: transparent;
+  }
+}

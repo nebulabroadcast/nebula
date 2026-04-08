@@ -1,43 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
-import styled from 'styled-components';
 
-const TooltipContent = styled.div<{ $x: number; $y: number; $visible: boolean }>`
-  position: fixed;
-  top: ${(props) => props.$y}px;
-  left: ${(props) => props.$x}px;
-  transform: translate(-50%, -100%);
-  margin-top: -10px;
-  background-color: var(--color-surface-04);
-  color: var(--color-text-hl);
-  padding: 8px 12px;
-  border-radius: 4px;
-  font-size: 0.85rem;
-  z-index: 10000;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
-  pointer-events: none;
-  width: max-content;
-  max-width: 320px;
-  text-align: center;
-  line-height: 1.5;
-  opacity: ${(props) => (props.$visible ? 1 : 0)};
-  transition: opacity 0.15s ease-out;
-
-  p {
-    margin: 0;
-  }
-
-  code {
-    background: rgba(0, 0, 0, 0.3);
-    padding: 2px 4px;
-    border-radius: 3px;
-    font-family: monospace;
-  }
-
-  strong {
-    color: var(--color-yellow);
-  }
-`;
+import './TooltipProvider.css';
 
 interface TooltipState {
   content: string;
@@ -76,33 +40,30 @@ export const TooltipProvider: React.FC<{ children: React.ReactNode }> = ({
 
   useEffect(() => {
     const handleMouseOver = (e: MouseEvent) => {
-      const target = (e.target as HTMLElement).closest(
-        '[data-tooltip], [title]'
-      ) as HTMLElement;
+      const target = (e.target as HTMLElement).closest('[data-tooltip], [title]');
 
-      if (target) {
-        const tooltipContent =
-          target.getAttribute('data-tooltip') || target.getAttribute('title');
-
-        if (tooltipContent) {
-          // If it was a 'title', move it to 'data-tooltip' to prevent native browser tooltip
-          if (target.hasAttribute('title')) {
-            target.setAttribute('data-tooltip', tooltipContent);
-            target.removeAttribute('title');
-          }
-
-          const rect = target.getBoundingClientRect();
-          showTooltip(tooltipContent, rect.left + rect.width / 2, rect.top);
-        }
-      } else {
+      if (!target) {
         hideTooltip();
+        return;
+      }
+
+      const tooltipContent =
+        target.getAttribute('data-tooltip') || target.getAttribute('title');
+
+      if (tooltipContent) {
+        // If it was a 'title', move it to 'data-tooltip' to prevent native browser tooltip
+        if (target.hasAttribute('title')) {
+          target.setAttribute('data-tooltip', tooltipContent);
+          target.removeAttribute('title');
+        }
+
+        const rect = target.getBoundingClientRect();
+        showTooltip(tooltipContent, rect.left + rect.width / 2, rect.top);
       }
     };
 
     const handleMouseOut = (e: MouseEvent) => {
-      const target = (e.target as HTMLElement).closest(
-        '[data-tooltip]'
-      ) as HTMLElement | null;
+      const target = (e.target as HTMLElement).closest('[data-tooltip]');
       if (!target) {
         return;
       }
@@ -137,14 +98,17 @@ export const TooltipProvider: React.FC<{ children: React.ReactNode }> = ({
     <>
       {children}
       {state.content && (
-        <TooltipContent
-          $x={state.x}
-          $y={state.y}
-          $visible={state.visible}
+        <div
+          className="nb-tooltip-content"
+          style={{
+            top: state.y,
+            left: state.x,
+            opacity: state.visible ? 1 : 0,
+          }}
           role="tooltip"
         >
           <ReactMarkdown>{state.content}</ReactMarkdown>
-        </TooltipContent>
+        </div>
       )}
     </>
   );

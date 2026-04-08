@@ -1,7 +1,7 @@
 import clsx from 'clsx';
-import { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 
-import { StyledDialog, DialogBody } from './Dialog.styled';
+import './Dialog.css';
 
 interface DialogProps {
   onHide: () => void;
@@ -15,7 +15,7 @@ interface DialogProps {
   footerStyle?: React.CSSProperties;
 }
 
-const Dialog = ({
+export const Dialog = ({
   onHide,
   header,
   footer,
@@ -32,7 +32,6 @@ const Dialog = ({
     const dialogElement = dialogRef.current;
     if (!dialogElement) return;
     dialogElement.showModal();
-    // Focus management is handled by the <dialog> element itself
 
     const handleCancel = (event: Event) => {
       event.preventDefault();
@@ -55,21 +54,26 @@ const Dialog = ({
     onHide();
   };
 
+  const onKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      onHide();
+    }
+  };
+
   return (
-    <StyledDialog
-      className={clsx(className, 'enter-active')}
+    <dialog
+      className={clsx('nb-dialog', 'enter-active', className)}
       style={style}
       ref={dialogRef}
       onClick={onShadeClick}
-      onKeyDown={(event) => {
-        if (event.key === 'Escape') onHide();
-      }}
+      onKeyDown={onKeyDown}
     >
       {header && <header style={headerStyle}>{header}</header>}
-      <DialogBody style={bodyStyle}>{children}</DialogBody>
+      <div className="nb-dialog-body" style={bodyStyle}>
+        {children}
+      </div>
       {footer && <footer style={footerStyle}>{footer}</footer>}
-    </StyledDialog>
+    </dialog>
   );
 };
-
-export default Dialog;

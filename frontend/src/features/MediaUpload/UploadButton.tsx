@@ -37,13 +37,17 @@ export const UploadButton: React.FC<UploadButtonProps> = ({
           id={id}
           title={title}
           contentType={contentType}
-          onHide={() => setDialogVisible(false)}
+          onHide={() => {
+            setDialogVisible(false);
+          }}
         />
       )}
       <Button
         icon="upload"
         label={label}
-        onClick={() => setDialogVisible(true)}
+        onClick={() => {
+          setDialogVisible(true);
+        }}
         disabled={disabled || isAlreadyQueued}
       />
     </>

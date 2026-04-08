@@ -3,7 +3,7 @@ VERSION=$(shell cd backend && python -c 'import nebula' --version)
 
 check-backend:
 	cd backend && \
-		sed -i "s/^version = \".*\"/version = \"$(VERSION)\"/" pyproject.toml && \
+		uv version $(VERSION) && \
 		uv run ruff format . && \
 		uv run ruff check --fix . && \
 		uv run mypy .
@@ -15,6 +15,9 @@ check-frontend:
 
 check: check-backend check-frontend
 
+fix-frontend:
+	cd frontend && \
+		yarn format
 build:
 	docker build -t $(IMAGE_NAME) .
 

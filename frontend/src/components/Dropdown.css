@@ -1,6 +1,4 @@
-import styled from 'styled-components';
-
-export const DropdownContainer = styled.div`
+.nb-dropdown {
   position: relative;
   display: inline-block;
 
@@ -45,9 +43,6 @@ export const DropdownContainer = styled.div`
   }
 
   > button {
-    // background: none;
-    // border: none;
-    // border-radius: 0;
     padding: 0 8px;
     justify-content: space-between;
 
@@ -60,4 +55,4 @@ export const DropdownContainer = styled.div`
   &:not(.disabled):hover .dropdown-content {
     display: block;
   }
-`;
+}

@@ -45,7 +45,7 @@ export const AudioContextProvider: React.FC<AudioContextProviderProps> = ({
         splitterRef.current.disconnect();
         splitterRef.current = null;
       }
-      ctx.close().catch(() => {});
+      ctx.close().catch(console.error);
     };
   }, []);
 

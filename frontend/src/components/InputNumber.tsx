@@ -1,4 +1,4 @@
-import Input from './Input.styled';
+import './Input.css';
 
 interface InputNumberProps {
   value?: number;
@@ -6,7 +6,7 @@ interface InputNumberProps {
   tooltip?: string;
 }
 
-const InputNumber = ({ value, onChange, tooltip }: InputNumberProps) => {
+export const InputNumber = ({ value, onChange, tooltip }: InputNumberProps) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     if (val === '') {
@@ -17,7 +17,8 @@ const InputNumber = ({ value, onChange, tooltip }: InputNumberProps) => {
   };
 
   return (
-    <Input
+    <input
+      className="nb-input"
       type="number"
       value={value || ''}
       onChange={handleChange}
@@ -25,5 +26,4 @@ const InputNumber = ({ value, onChange, tooltip }: InputNumberProps) => {
     />
   );
 };
-
-export default InputNumber;
+InputNumber.displayName = 'InputNumber';

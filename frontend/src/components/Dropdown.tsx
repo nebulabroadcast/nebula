@@ -1,7 +1,7 @@
 import clsx from 'clsx';
 
-import Button from './Button';
-import { DropdownContainer } from './Dropdown.styled.tsx';
+import { Button } from './Button';
+import './Dropdown.css';
 
 export interface DropdownOptionProps {
   currentValue?: any;
@@ -26,6 +26,8 @@ const DropdownOption = ({
   onClick,
   value,
 }: DropdownOptionProps) => {
+  const isDisabled = disabled || currentValue === value;
+
   return (
     <span>
       {separator && <hr />}
@@ -34,8 +36,10 @@ const DropdownOption = ({
         icon={icon}
         style={style}
         iconStyle={hlColor ? { color: hlColor } : {}}
-        disabled={disabled || currentValue === value}
-        onClick={() => onClick(value)}
+        disabled={isDisabled}
+        onClick={() => {
+          onClick(value);
+        }}
         active={currentValue === value}
       />
     </span>
@@ -54,7 +58,7 @@ interface DropdownProps {
   iconOnRight?: boolean;
 }
 
-const Dropdown = ({
+export const Dropdown = ({
   options,
   label,
   icon = 'expand_more',
@@ -65,10 +69,11 @@ const Dropdown = ({
   disabled = false,
   iconOnRight = true,
 }: DropdownProps) => {
-  if (align === 'right') contentStyle['right'] = 0;
+  const _contentStyle = { ...contentStyle };
+  if (align === 'right') _contentStyle.right = 0;
 
   return (
-    <DropdownContainer className={clsx({ disabled })}>
+    <div className={clsx('nb-dropdown', { disabled })}>
       <Button
         className="dropbtn"
         style={buttonStyle}
@@ -77,25 +82,23 @@ const Dropdown = ({
         iconOnRight={iconOnRight}
         disabled={disabled}
       />
-      <div className="dropdown-content" style={contentStyle}>
-        {options &&
-          options.map((option, idx) => (
-            <DropdownOption
-              key={idx}
-              currentValue={value}
-              value={option.value}
-              label={option.label}
-              icon={option.icon}
-              separator={option.separator}
-              disabled={option.disabled}
-              hlColor={option.hlColor}
-              style={option.style}
-              onClick={option.onClick}
-            />
-          ))}
+      <div className="dropdown-content" style={_contentStyle}>
+        {(options ?? []).map((option, idx) => (
+          <DropdownOption
+            key={idx}
+            currentValue={value}
+            value={option.value}
+            label={option.label}
+            icon={option.icon}
+            separator={option.separator}
+            disabled={option.disabled}
+            hlColor={option.hlColor}
+            style={option.style}
+            onClick={option.onClick}
+          />
+        ))}
       </div>
-    </DropdownContainer>
+    </div>
   );
 };
-
-export default Dropdown;
+Dropdown.displayName = 'Dropdown';
