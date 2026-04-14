@@ -1,17 +1,17 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 
 import { AudioContextProvider } from './AudioContext';
-import { VideoPlayerProps } from './types';
+import { VideoPlayerProps, VideoPlayerRef } from './types';
 import { VideoPlayerBody } from './VideoPlayerBody';
 
-const VideoPlayer: React.FC<VideoPlayerProps> = (props) => {
+const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>((props, ref) => {
   const audioChannels = 2;
 
   return (
     <AudioContextProvider numChannels={audioChannels}>
-      <VideoPlayerBody {...props} />
+      <VideoPlayerBody {...props} ref={ref} />
     </AudioContextProvider>
   );
-};
+});
 
 export default VideoPlayer;

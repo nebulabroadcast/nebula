@@ -48,6 +48,7 @@ interface SubclipProps {
     mark_out: number | null;
   }) => void;
   fps: number;
+  onSeek: (time: number) => void;
 }
 
 const Subclip: React.FC<SubclipProps> = ({
@@ -59,6 +60,7 @@ const Subclip: React.FC<SubclipProps> = ({
   selection,
   setSelection,
   fps,
+  onSeek,
 }) => {
   const onSetMarks = (marks: { mark_in: number | null; mark_out: number | null }) => {
     setSubclips((subclips) => {
@@ -114,6 +116,7 @@ const Subclip: React.FC<SubclipProps> = ({
       mark_in: mark_in || null,
       mark_out: mark_out || null,
     });
+    onSeek(mark_in);
   };
 
   return (
