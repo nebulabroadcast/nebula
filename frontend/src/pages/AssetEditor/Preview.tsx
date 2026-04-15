@@ -103,7 +103,6 @@ const Preview: React.FC<PreviewProps> = ({ assetData, setAssetData }) => {
 
   const setMarkIn = (mark_in: number | null) => {
     setSelection((s) => {
-      if (mark_in === null || isNaN(mark_in)) return s;
       if (mark_in === s.mark_in) return s;
       return { ...s, mark_in };
     });
@@ -111,7 +110,6 @@ const Preview: React.FC<PreviewProps> = ({ assetData, setAssetData }) => {
 
   const setMarkOut = (mark_out: number | null) => {
     setSelection((s) => {
-      if (mark_out === null || isNaN(mark_out)) return s;
       if (mark_out === s.mark_out) return s;
       return { ...s, mark_out };
     });
