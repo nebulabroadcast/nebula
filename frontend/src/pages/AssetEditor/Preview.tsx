@@ -7,7 +7,7 @@ import axios from 'axios';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { toast } from 'react-toastify';
 
-import Subclip from './Subclip';
+import { SubclipWidget } from './SubclipWidget';
 
 import nebula from '@/nebula';
 
@@ -49,7 +49,7 @@ const SubclipsPanel: React.FC<SubclipsPanelProps> = ({
         }}
       >
         {subclips.map((subclip, index) => (
-          <Subclip
+          <SubclipWidget
             key={index}
             index={index}
             setSubclips={setSubclips}

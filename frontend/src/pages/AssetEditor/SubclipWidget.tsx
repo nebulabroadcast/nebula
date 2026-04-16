@@ -36,7 +36,7 @@ interface SubclipData {
   mark_out: number;
 }
 
-interface SubclipProps {
+interface SubclipWidgetProps {
   index: number;
   title: string;
   mark_in: number;
@@ -51,7 +51,7 @@ interface SubclipProps {
   onSeek: (time: number) => void;
 }
 
-const Subclip: React.FC<SubclipProps> = ({
+export const SubclipWidget: React.FC<SubclipWidgetProps> = ({
   index,
   title,
   mark_in,
@@ -143,5 +143,3 @@ const Subclip: React.FC<SubclipProps> = ({
     </SubclipContainer>
   );
 };
-
-export default Subclip;

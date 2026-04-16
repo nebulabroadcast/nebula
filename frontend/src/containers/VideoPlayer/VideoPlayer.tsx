@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import { forwardRef } from 'react';
 
 import { AudioContextProvider } from './AudioContext';
 import { VideoPlayerProps, VideoPlayerRef } from './types';
