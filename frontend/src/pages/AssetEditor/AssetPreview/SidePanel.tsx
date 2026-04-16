@@ -4,9 +4,10 @@ import { useState } from 'react';
 
 import { SidePanelMain } from './SidePanelMain';
 import { SidePanelSubclips } from './SidePanelSubclips';
+import { SidePanelTranscription } from './SidePanelTranscription.tsx';
 import type { AssetData } from './types.ts';
 
-type SidePanelMode = 'main' | 'subclips';
+type SidePanelMode = 'main' | 'subclips' | 'transcription';
 
 const SidePanelOptions = [
   {
@@ -14,7 +15,16 @@ const SidePanelOptions = [
     icon: 'settings',
     description: 'Content selection and poster frame',
   },
-  { value: 'subclips', icon: 'content_cut', description: 'Manage subclips' },
+  {
+    value: 'subclips',
+    icon: 'content_cut',
+    description: 'Manage subclips',
+  },
+  {
+    value: 'transcription',
+    icon: 'text_ad',
+    description: 'View and edit transcriptions',
+  },
 ];
 
 interface SidePanelProps {
@@ -80,6 +90,15 @@ export const SidePanel: React.FC<SidePanelProps> = ({
           setSelection={setSelection}
           patchAsset={patchAsset}
           videoPlayerRef={videoPlayerRef}
+        />
+      )}
+
+      {mode === 'transcription' && (
+        <SidePanelTranscription
+          assetData={assetData}
+          videoPlayerRef={videoPlayerRef}
+          setSelection={setSelection}
+          position={position}
         />
       )}
     </div>
