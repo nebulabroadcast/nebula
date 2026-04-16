@@ -1,9 +1,10 @@
 import { Dropdown, Spacer, InputTimecode, Navbar, Button, Section } from '@components';
 import VideoPlayer from '@containers/VideoPlayer';
+import { VideoPlayerRef } from '@containers/VideoPlayer/types';
 import { useKeyDown } from '@lib/useKeyDown';
 import { arrayEquals } from '@lib/utils';
 import axios from 'axios';
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { toast } from 'react-toastify';
 
 import Subclip from './Subclip';
@@ -24,6 +25,7 @@ interface SubclipsPanelProps {
     React.SetStateAction<{ mark_in: number | null; mark_out: number | null }>
   >;
   fps: number;
+  onSeek: (time: number) => void;
 }
 
 const SubclipsPanel: React.FC<SubclipsPanelProps> = ({
@@ -32,6 +34,7 @@ const SubclipsPanel: React.FC<SubclipsPanelProps> = ({
   selection,
   setSelection,
   fps,
+  onSeek,
 }) => {
   return (
     <Section className="grow">
@@ -53,6 +56,7 @@ const SubclipsPanel: React.FC<SubclipsPanelProps> = ({
             selection={selection}
             setSelection={setSelection}
             fps={fps}
+            onSeek={onSeek}
             {...subclip}
           />
         ))}
@@ -87,6 +91,7 @@ interface PreviewProps {
 
 const Preview: React.FC<PreviewProps> = ({ assetData, setAssetData }) => {
   const accessToken = nebula.getAccessToken();
+  const videoPlayerRef = useRef<VideoPlayerRef>(null);
   const [selection, setSelection] = useState<{
     mark_in: number | null;
     mark_out: number | null;
@@ -98,7 +103,6 @@ const Preview: React.FC<PreviewProps> = ({ assetData, setAssetData }) => {
 
   const setMarkIn = (mark_in: number | null) => {
     setSelection((s) => {
-      if (mark_in === null || isNaN(mark_in)) return s;
       if (mark_in === s.mark_in) return s;
       return { ...s, mark_in };
     });
@@ -106,7 +110,6 @@ const Preview: React.FC<PreviewProps> = ({ assetData, setAssetData }) => {
 
   const setMarkOut = (mark_out: number | null) => {
     setSelection((s) => {
-      if (mark_out === null || isNaN(mark_out)) return s;
       if (mark_out === s.mark_out) return s;
       return { ...s, mark_out };
     });
@@ -198,7 +201,9 @@ const Preview: React.FC<PreviewProps> = ({ assetData, setAssetData }) => {
   };
 
   const goToPosterFrame = () => {
-    setSelection({ mark_in: assetData.poster_frame ?? null, mark_out: null });
+    if (assetData.poster_frame !== undefined) {
+      videoPlayerRef.current?.seek(assetData.poster_frame);
+    }
   };
 
   const clearPosterFrame = () => {
@@ -256,6 +261,7 @@ const Preview: React.FC<PreviewProps> = ({ assetData, setAssetData }) => {
     <div className="grow row">
       <div className="column" style={{ minWidth: 300, flexGrow: 1 }}>
         <VideoPlayer
+          ref={videoPlayerRef}
           src={videoSrc}
           frameRate={frameRate}
           setPosition={setPosition}
@@ -312,6 +318,7 @@ const Preview: React.FC<PreviewProps> = ({ assetData, setAssetData }) => {
           selection={selection}
           setSelection={setSelection}
           fps={frameRate}
+          onSeek={(t) => videoPlayerRef.current?.seek(t)}
         />
       </div>
     </div>

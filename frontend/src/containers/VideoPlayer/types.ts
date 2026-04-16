@@ -1,3 +1,7 @@
+export interface VideoPlayerRef {
+  seek: (time: number) => void;
+}
+
 export interface VideoPlayerProps {
   src?: string;
   frameRate: number;

@@ -1,11 +1,17 @@
 import { Button, ErrorBanner, InputTimecode, Navbar, Section } from '@components';
-import React, { useState, useEffect, useRef } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useImperativeHandle,
+  forwardRef,
+} from 'react';
 import styled from 'styled-components';
 
 import { useAudioContext } from './AudioContext';
 import ChannelSelect from './ChannelSelect';
 import Trackbar from './Trackbar';
-import { VideoPlayerProps } from './types';
+import { VideoPlayerProps, VideoPlayerRef } from './types';
 import VideoOverlay from './VideoOverlay';
 import VideoPlayerControls from './VideoPlayerControls';
 import VUMeter from './VUMeter';
@@ -43,7 +49,7 @@ const DEFAULT_VIDEO_DIMENSIONS = {
   height: 400,
 };
 
-const VideoPlayerBody: React.FC<VideoPlayerProps> = (props) => {
+const VideoPlayerBody = forwardRef<VideoPlayerRef, VideoPlayerProps>((props, ref) => {
   const { audioContext, videoRef, gainNodes, numChannels } = useAudioContext();
 
   const [posFrames, setPosFrames] = useState(0);
@@ -63,6 +69,12 @@ const VideoPlayerBody: React.FC<VideoPlayerProps> = (props) => {
   const [bufferedRanges, setBufferedRanges] = useState<
     Array<{ start: number; end: number }>
   >([]);
+
+  useImperativeHandle(ref, () => ({
+    seek: (time: number) => {
+      seekToFrame(time2frames(time, props.frameRate));
+    },
+  }));
 
   useEffect(() => {
     if (!props.setPosition) return;
@@ -366,6 +378,6 @@ const VideoPlayerBody: React.FC<VideoPlayerProps> = (props) => {
       />
     </VideoPlayerContainer>
   );
-};
+});
 
 export { VideoPlayerBody };
