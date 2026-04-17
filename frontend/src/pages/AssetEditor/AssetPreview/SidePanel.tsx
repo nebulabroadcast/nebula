@@ -1,6 +1,7 @@
 import { Navbar, RadioButton } from '@components';
 import { VideoPlayerRef } from '@containers/VideoPlayer/types.ts';
 import { useState } from 'react';
+import { useLocalStorage } from '@lib/useLocalStorage';
 
 import { SidePanelMain } from './SidePanelMain';
 import { SidePanelSubclips } from './SidePanelSubclips';
@@ -47,7 +48,7 @@ export const SidePanel: React.FC<SidePanelProps> = ({
   position,
 }) => {
   const frameRate = assetData['video/fps_f'] || 25;
-  const [mode, setMode] = useState<SidePanelMode>('main');
+  const [mode, setMode] = useLocalStorage<SidePanelMode>('mam.preview.mode', 'main');
 
   const patchAsset = (data: Partial<AssetData>) => {
     // helper function to update asset data
@@ -96,7 +97,9 @@ export const SidePanel: React.FC<SidePanelProps> = ({
       {mode === 'transcription' && (
         <SidePanelTranscription
           assetData={assetData}
+          frameRate={frameRate}
           videoPlayerRef={videoPlayerRef}
+          selection={selection}
           setSelection={setSelection}
           position={position}
         />

@@ -32,6 +32,9 @@ const VideoPlayerControls: React.FC<VideoPlayerControlsProps> = ({
   const currentFrameRef = useRef(currentFrame);
   const durationRef = useRef(duration);
 
+  const markShiftModeRef = useRef<'in' | 'out' | null>(null);
+
+
   useEffect(() => {
     markInRef.current = markIn;
     markOutRef.current = markOut;
@@ -56,17 +59,44 @@ const VideoPlayerControls: React.FC<VideoPlayerControlsProps> = ({
     seekToFrame(durationRef.current);
   };
 
+
+  const shiftMark = (mark: 'in' | 'out', delta: number) => {
+    if (mark === 'in' && setMarkIn) {
+      setMarkIn(markInRef.current + delta);
+    } else if (mark === 'out' && setMarkOut) {
+      setMarkOut(markOutRef.current + delta);
+    }
+  };
+
   const handleGoBack1 = () => {
+    if (markShiftModeRef.current) {
+      shiftMark(markShiftModeRef.current, -1);
+      return;
+    }
     seekToFrame(currentFrameRef.current - 1);
   };
+
   const handleGoForward1 = () => {
+    if (markShiftModeRef.current) {
+      shiftMark(markShiftModeRef.current, 1);
+      return;
+    }
     seekToFrame(currentFrameRef.current + 1);
   };
 
   const handleGoBack5 = () => {
+    if (markShiftModeRef.current) {
+      shiftMark(markShiftModeRef.current, -5);
+      return;
+    }
     seekToFrame(currentFrameRef.current - 5);
   };
+
   const handleGoForward5 = () => {
+    if (markShiftModeRef.current) {
+      shiftMark(markShiftModeRef.current, 5);
+      return;
+    }
     seekToFrame(currentFrameRef.current + 5);
   };
 
@@ -211,17 +241,41 @@ const VideoPlayerControls: React.FC<VideoPlayerControlsProps> = ({
           handleClearMarks();
           break;
 
+
+        case 'n':
+          markShiftModeRef.current = 'in';
+          break;
+
+        case 'm':
+          markShiftModeRef.current = 'out';
+          break;
+
         default:
           break;
       }
     };
 
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.key === 'n' || e.key === 'm') {
+        markShiftModeRef.current = null;
+      }
+    };
+
     window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
     };
   }, []);
+
+
+
+
+
+
 
   return (
     <Navbar tabIndex={1}>
@@ -230,7 +284,7 @@ const VideoPlayerControls: React.FC<VideoPlayerControlsProps> = ({
         mode="frames"
         tooltip="Selection start"
         fps={frameRate}
-        onChange={(v) => setMarkIn(v as number)}
+        onChange={(v) => { setMarkIn(v!); }}
       />
 
       <Button
@@ -308,7 +362,7 @@ const VideoPlayerControls: React.FC<VideoPlayerControlsProps> = ({
         mode="frames"
         tooltip="Selection end"
         fps={frameRate}
-        onChange={(v) => setMarkOut(v as number)}
+        onChange={(v) => { setMarkOut(v!); }}
       />
     </Navbar>
   );
