@@ -1,10 +1,7 @@
 import VideoPlayer from '@containers/VideoPlayer';
 import { VideoPlayerRef } from '@containers/VideoPlayer/types';
-import { useKeyDown } from '@lib/useKeyDown';
-import { arrayEquals } from '@lib/utils';
 import axios from 'axios';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { toast } from 'react-toastify';
 
 import { SidePanel } from './SidePanel';
 import type { AssetData, ProxyInfo } from './types';

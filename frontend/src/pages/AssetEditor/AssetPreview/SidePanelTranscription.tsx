@@ -1,4 +1,11 @@
-import { ScrollBox, Section, TextArea, Button, InputTimecode, Spacer } from '@components';
+import {
+  ScrollBox,
+  Section,
+  TextArea,
+  Button,
+  InputTimecode,
+  Spacer,
+} from '@components';
 import { VideoPlayerRef } from '@containers/VideoPlayer/types.ts';
 import { useState } from 'react';
 import { useEffect } from 'react';
@@ -13,10 +20,15 @@ interface Segment {
   text: string;
 }
 
+interface TranscriptionData {
+  segments?: Segment[];
+}
+
 interface SidePanelTranscriptionProps {
   position: number;
   frameRate: number;
   assetData: AssetData;
+  patchAsset: (data: Partial<AssetData>) => void;
   videoPlayerRef: React.RefObject<VideoPlayerRef | null>;
   selection: { mark_in: number | null; mark_out: number | null };
   setSelection: React.Dispatch<
@@ -37,6 +49,31 @@ interface SegmentWidgetProps {
   onActivate?: () => void;
 }
 
+const getTranscription = async (assetId: number): Promise<Segment[]> => {
+  let response = await nebula.request('get-aux', {
+    object_id: assetId,
+    key: 'nebula:transcription',
+    can_fail: true,
+  });
+  let tdata = response.data as TranscriptionData | null;
+
+  if (tdata?.segments) {
+    return tdata.segments;
+  }
+
+  response = await nebula.request('get-aux', {
+    object_id: assetId,
+    key: 'openai:transcription',
+    can_fail: true,
+  });
+  tdata = response.data as TranscriptionData | null;
+
+  if (tdata?.segments) {
+    return tdata.segments;
+  }
+  return [];
+};
+
 const SegmentWidget: React.FC<SegmentWidgetProps> = ({
   segment,
   frameRate,
@@ -48,14 +85,11 @@ const SegmentWidget: React.FC<SegmentWidgetProps> = ({
   isCurrent,
   onActivate,
 }) => {
-
-
   const sep = nextSegment && nextSegment.start < segment.end && (
     <div style={{ color: 'var(--color-red)', fontSize: '12px' }}>
       Warning: This segment overlaps with the next one.
     </div>
-  )
-
+  );
 
   if (!isActive) {
     return (
@@ -63,13 +97,11 @@ const SegmentWidget: React.FC<SegmentWidgetProps> = ({
         <div
           onClick={(e) => {
             e.preventDefault();
-            e.stopPropagation();
             onClick(segment);
           }}
           onDoubleClick={(e) => {
             if (onActivate) {
               e.preventDefault();
-              e.stopPropagation();
               onActivate();
             }
           }}
@@ -88,12 +120,17 @@ const SegmentWidget: React.FC<SegmentWidgetProps> = ({
         </div>
         {sep}
       </>
-    )
+    );
   }
 
   return (
     <>
       <div
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onClick(segment);
+        }}
         style={{
           borderRadius: '4px',
           backgroundColor: 'var(--color-surface-03)',
@@ -106,9 +143,13 @@ const SegmentWidget: React.FC<SegmentWidgetProps> = ({
           gap: 8,
         }}
       >
-
         <div
-          style={{ display: 'flex', gap: 4, alignItems: 'center', flexDirection: 'row' }}
+          style={{
+            display: 'flex',
+            gap: 4,
+            alignItems: 'center',
+            flexDirection: 'row',
+          }}
         >
           <InputTimecode
             value={segment.start}
@@ -126,14 +167,15 @@ const SegmentWidget: React.FC<SegmentWidgetProps> = ({
           <Button
             icon="delete"
             tooltip="Clear marks"
-            onClick={() => { onDelete(index); }}
+            onClick={() => {
+              onDelete(index);
+            }}
           />
         </div>
 
-
         <TextArea
           value={segment.text}
-          onChange={() => { }}
+          onChange={() => {}}
           readOnly
           style={{ minHeight: '40px' }}
         />
@@ -148,18 +190,33 @@ export const SidePanelTranscription = ({
   frameRate,
   videoPlayerRef,
   selection,
+  patchAsset,
   setSelection,
   position,
 }: SidePanelTranscriptionProps) => {
   const [segments, setSegments] = useState<Segment[]>([]);
+  const [changed, setChanged] = useState(false);
   const [activeSegmentIndex, setActiveSegmentIndex] = useState<number | null>(null);
 
+  useEffect(() => {
+    if (!changed) {
+      console.log('No changes to save for transcription segments');
+      return;
+    }
+
+    console.log('Patching asset with new transcription segments', segments);
+    patchAsset({
+      '__aux/nebula:transcription': {
+        segments,
+      },
+    });
+  }, [segments, patchAsset, changed]);
 
   const getCurrentSegmentIndex = () => {
     return segments.findIndex(
       (segment) => position >= segment.start && position < segment.end
     );
-  }
+  };
 
   useEffect(() => {
     if (activeSegmentIndex === null) return;
@@ -173,37 +230,36 @@ export const SidePanelTranscription = ({
       }
       return newSegments;
     });
+    setChanged(true);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selection]);
+
+  const getSegments = async (assetId: number) => {
+    const segments = await getTranscription(assetId);
+    setSegments(segments);
+  };
 
   useEffect(() => {
     if (!assetData?.id) {
       setSegments([]);
       return;
     }
-
-    nebula
-      .request('get_transcription', { id_asset: assetData.id })
-      .then((response) => {
-        setSegments(response.data.segments);
-      })
-      .catch((error) => {
-        console.error('Error fetching transcription:', error);
-        setSegments([]);
-      });
+    getSegments(assetData?.id).catch((err: unknown) => {
+      console.error('Failed to fetch transcription:', err);
+      setSegments([]);
+    });
   }, [assetData?.id]);
-
 
   const onDelete = (index: number) => {
     setActiveSegmentIndex(null);
+    setChanged(true);
     setSegments((prev) => {
       const newSegments = [...prev];
       newSegments.splice(index, 1);
       return newSegments;
     });
   };
-
 
   const onClick = (segment: Segment) => {
     if (videoPlayerRef.current) {
@@ -215,7 +271,6 @@ export const SidePanelTranscription = ({
       // clicking the active segment again deactivates it
       setActiveSegmentIndex(null);
     }
-
   };
 
   return (
@@ -236,12 +291,12 @@ export const SidePanelTranscription = ({
               index={index}
               isActive={index === activeSegmentIndex}
               isCurrent={index === getCurrentSegmentIndex()}
-              onActivate={() => { setActiveSegmentIndex(index); }}
+              onActivate={() => {
+                setActiveSegmentIndex(index);
+              }}
             />
           ))
         )}
-
-
       </ScrollBox>
     </Section>
   );

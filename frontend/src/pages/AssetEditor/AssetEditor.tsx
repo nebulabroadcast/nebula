@@ -272,10 +272,12 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
       'subclips',
       'poster_frame',
       'assignees',
+      '__aux/nebula:transcription',
     ];
     for (const field of fields) {
       editableFieldNames.push(field.name);
     }
+
     return editableFieldNames;
   }, [fields]);
 

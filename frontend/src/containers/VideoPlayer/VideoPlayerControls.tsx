@@ -34,7 +34,6 @@ const VideoPlayerControls: React.FC<VideoPlayerControlsProps> = ({
 
   const markShiftModeRef = useRef<'in' | 'out' | null>(null);
 
-
   useEffect(() => {
     markInRef.current = markIn;
     markOutRef.current = markOut;
@@ -58,7 +57,6 @@ const VideoPlayerControls: React.FC<VideoPlayerControlsProps> = ({
   const handleGoToEnd = () => {
     seekToFrame(durationRef.current);
   };
-
 
   const shiftMark = (mark: 'in' | 'out', delta: number) => {
     if (mark === 'in' && setMarkIn) {
@@ -241,7 +239,6 @@ const VideoPlayerControls: React.FC<VideoPlayerControlsProps> = ({
           handleClearMarks();
           break;
 
-
         case 'n':
           markShiftModeRef.current = 'in';
           break;
@@ -254,7 +251,6 @@ const VideoPlayerControls: React.FC<VideoPlayerControlsProps> = ({
           break;
       }
     };
-
 
     const handleKeyUp = (e: KeyboardEvent) => {
       if (e.key === 'n' || e.key === 'm') {
@@ -271,12 +267,6 @@ const VideoPlayerControls: React.FC<VideoPlayerControlsProps> = ({
     };
   }, []);
 
-
-
-
-
-
-
   return (
     <Navbar tabIndex={1}>
       <InputTimecode
@@ -284,7 +274,9 @@ const VideoPlayerControls: React.FC<VideoPlayerControlsProps> = ({
         mode="frames"
         tooltip="Selection start"
         fps={frameRate}
-        onChange={(v) => { setMarkIn(v!); }}
+        onChange={(v) => {
+          setMarkIn(v!);
+        }}
       />
 
       <Button
@@ -362,7 +354,9 @@ const VideoPlayerControls: React.FC<VideoPlayerControlsProps> = ({
         mode="frames"
         tooltip="Selection end"
         fps={frameRate}
-        onChange={(v) => { setMarkOut(v!); }}
+        onChange={(v) => {
+          setMarkOut(v!);
+        }}
       />
     </Navbar>
   );

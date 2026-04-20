@@ -1,6 +1,5 @@
 import { Navbar, RadioButton } from '@components';
 import { VideoPlayerRef } from '@containers/VideoPlayer/types.ts';
-import { useState } from 'react';
 import { useLocalStorage } from '@lib/useLocalStorage';
 
 import { SidePanelMain } from './SidePanelMain';
@@ -101,6 +100,7 @@ export const SidePanel: React.FC<SidePanelProps> = ({
           videoPlayerRef={videoPlayerRef}
           selection={selection}
           setSelection={setSelection}
+          patchAsset={patchAsset}
           position={position}
         />
       )}
