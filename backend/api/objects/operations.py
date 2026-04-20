@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Annotated, Any
 from pydantic import Field
 
 import nebula
-from nebula.enum import ObjectType
+from nebula.enum import ObjectType, get_object_type_id
 from nebula.helpers.scheduling import bin_refresh
 from nebula.objects.utils import get_object_class_by_name
 from nebula.settings import load_settings
@@ -126,6 +126,15 @@ class Operations(APIRequest):
             success = True
             error = None
             op_id = operation.id
+
+            aux_data = {}
+            for key in list(operation.data.keys()):
+                if not key.startswith("__aux/"):
+                    continue
+                value = operation.data.pop(key)
+                _key = key[len("__aux/") :]
+                aux_data[_key] = value
+
             try:
                 async with pool.acquire() as conn, conn.transaction():
                     object_class = get_object_class_by_name(operation.object_type)
@@ -194,6 +203,22 @@ class Operations(APIRequest):
                     else:
                         obj.update(operation.data)
                     await obj.save()
+
+
+                    for key, value in aux_data.items():
+                        await nebula.db.execute(
+                            """
+                            INSERT INTO aux (key, object_type, id_object, data)
+                            VALUES ($1, $2, $3, $4)
+                            ON CONFLICT (key, object_type, id_object) DO UPDATE
+                            SET data = EXCLUDED.data
+                            """,
+                            key,
+                            get_object_type_id(operation.object_type),
+                            obj.id,
+                            value,
+                        )
+
                     if (
                         isinstance(obj, nebula.Item)
                         and obj["id_bin"]
