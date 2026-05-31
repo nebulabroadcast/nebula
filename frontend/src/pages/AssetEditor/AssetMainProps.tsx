@@ -73,7 +73,7 @@ const AssetMainProps: React.FC<AssetMainPropsProps> = ({
           nebula
             .request(endpoint.endpoint, { id_asset: assetData.id })
             .then((response) => {
-              const ct = response.headers['content-type'];
+              const ct = response.headers['content-type'] as string;
               setContextActionResult({
                 contentType: ct ? contentType.parse(ct).type : 'application/json',
                 payload: response.data,

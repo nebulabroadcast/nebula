@@ -11,7 +11,7 @@ interface RadioButtonProps {
   disabled?: boolean;
   options: Array<{
     value: string;
-    title: string;
+    title?: string;
     icon?: string;
     description?: string;
     buttonStyle?: React.CSSProperties;

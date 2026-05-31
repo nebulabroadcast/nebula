@@ -12,8 +12,8 @@ import { useSearchParams } from 'react-router';
 import { toast } from 'react-toastify';
 
 import AssetMainProps from './AssetMainProps';
+import { AssetPreview } from './AssetPreview';
 import AssetEditorNav from './EditorNav';
-import Preview from './Preview';
 
 import nebula from '@/nebula';
 
@@ -272,10 +272,12 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
       'subclips',
       'poster_frame',
       'assignees',
+      '__aux/nebula:transcription',
     ];
     for (const field of fields) {
       editableFieldNames.push(field.name);
     }
+
     return editableFieldNames;
   }, [fields]);
 
@@ -475,7 +477,7 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
       case 'preview':
         return (
           <div className="grow row">
-            <Preview assetData={assetData} setAssetData={setAssetData} />
+            <AssetPreview assetData={assetData} setAssetData={setAssetData} />
           </div>
         );
 

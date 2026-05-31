@@ -2,7 +2,7 @@
 # Build frontend
 #
 
-FROM node:latest AS build
+FROM node:25 AS build
 
 WORKDIR /frontend
 

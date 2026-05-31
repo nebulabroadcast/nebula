@@ -189,6 +189,7 @@ CREATE TABLE IF NOT EXISTS public.aux (
 CREATE INDEX IF NOT EXISTS aux_key ON aux(key);
 CREATE INDEX IF NOT EXISTS aux_object_type ON aux(object_type);
 CREATE INDEX IF NOT EXISTS aux_id_object ON aux(id_object);
+CREATE UNIQUE INDEX IF NOT EXISTS aux_object ON aux(object_type, key, id_object);
 
 CREATE TABLE IF NOT EXISTS public.asrun (
   id SERIAL NOT NULL,

@@ -124,3 +124,15 @@ class ServiceState(enum.IntEnum):
     STARTING = 2
     STOPPING = 3
     KILL = 4
+
+
+def get_object_type_id(object_type: ObjectType) -> int:
+    """Convert ObjectType to ObjectTypeId."""
+    mapping = {
+        ObjectType.ASSET: 0,
+        ObjectType.ITEM: 1,
+        ObjectType.BIN: 2,
+        ObjectType.EVENT: 3,
+        ObjectType.USER: 4,
+    }
+    return mapping[object_type]

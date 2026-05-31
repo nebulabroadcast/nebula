@@ -122,7 +122,9 @@ class Redis:
         await cls.redis_pool.publish(cls.channel, message)
 
     @classmethod
-    async def iterate(cls, namespace: str) -> AsyncGenerator[tuple[str, str]]:
+    async def iterate(
+        cls, namespace: str
+    ) -> AsyncGenerator[tuple[str, str | bytes | None]]:
         """Iterate over stored keys
 
         Yield (key, payload) tuples matching given namespace.
