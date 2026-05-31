@@ -66,7 +66,7 @@ async def get_primary_transcription(id_asset: int) -> GetTranscriptionResponse:
     query = """
         SELECT data FROM aux
         WHERE key = 'nebula:transcription'
-        WHERE id_object = $1
+        AND id_object = $1
     """
     res = await nebula.db.fetchrow(query, id_asset)
     if not res:
