@@ -8,8 +8,6 @@ from server.dependencies import CurrentUser
 from server.models import APIModel
 from server.request import APIRequest
 
-from ._utils import can_access_object
-
 
 class GetAuxDataRequest(APIModel):
     key: Annotated[

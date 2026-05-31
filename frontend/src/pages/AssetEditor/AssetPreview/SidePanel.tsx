@@ -51,7 +51,6 @@ export const SidePanel: React.FC<SidePanelProps> = ({
 
   const patchAsset = (data: Partial<AssetData>) => {
     // helper function to update asset data
-    console.log('Patching asset with data', data);
     if (!data) return;
     setAssetData((o) => {
       return { ...o, ...data };

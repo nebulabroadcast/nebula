@@ -1,15 +1,18 @@
 import {
   ScrollBox,
+  Navbar,
   Section,
   TextArea,
   Button,
   InputTimecode,
   Spacer,
+  InputText,
 } from '@components';
 import { VideoPlayerRef } from '@containers/VideoPlayer/types.ts';
 import { useState } from 'react';
 import { useEffect } from 'react';
 
+import { useKeyDown } from '@lib/useKeyDown';
 import type { AssetData } from './types';
 
 import nebula from '@/nebula';
@@ -39,6 +42,7 @@ interface SidePanelTranscriptionProps {
 interface SegmentWidgetProps {
   position: number;
   frameRate: number;
+  hidden?: boolean;
   segment: Segment;
   nextSegment?: Segment;
   index: number;
@@ -76,6 +80,7 @@ const getTranscription = async (assetId: number): Promise<Segment[]> => {
 
 const SegmentWidget: React.FC<SegmentWidgetProps> = ({
   segment,
+  hidden,
   frameRate,
   nextSegment,
   index,
@@ -88,8 +93,11 @@ const SegmentWidget: React.FC<SegmentWidgetProps> = ({
   const sep = nextSegment && nextSegment.start < segment.end && (
     <div style={{ color: 'var(--color-red)', fontSize: '12px' }}>
       Warning: This segment overlaps with the next one.
+      {segment.end} {'>'} {nextSegment.start}
     </div>
   );
+
+  if (hidden) return null;
 
   if (!isActive) {
     return (
@@ -197,14 +205,13 @@ export const SidePanelTranscription = ({
   const [segments, setSegments] = useState<Segment[]>([]);
   const [changed, setChanged] = useState(false);
   const [activeSegmentIndex, setActiveSegmentIndex] = useState<number | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     if (!changed) {
       console.log('No changes to save for transcription segments');
       return;
     }
-
-    console.log('Patching asset with new transcription segments', segments);
     patchAsset({
       '__aux/nebula:transcription': {
         segments,
@@ -273,31 +280,72 @@ export const SidePanelTranscription = ({
     }
   };
 
+  useKeyDown('M', () => {
+    if (activeSegmentIndex === null) return;
+    const nextIndex = activeSegmentIndex + 1;
+    if (nextIndex < segments.length) {
+      setActiveSegmentIndex(nextIndex);
+      const segment = segments[nextIndex];
+      if (videoPlayerRef.current) {
+        setSelection({ mark_in: segment.start, mark_out: segment.end });
+        videoPlayerRef.current.seek(segment.start + 0.02);
+      }
+    }
+  });
+
+  useKeyDown('N', () => {
+    if (activeSegmentIndex === null) return;
+    const prevIndex = activeSegmentIndex - 1;
+    if (prevIndex >= 0) {
+      setActiveSegmentIndex(prevIndex);
+      const segment = segments[prevIndex];
+      if (videoPlayerRef.current) {
+        setSelection({ mark_in: segment.start, mark_out: segment.end });
+        videoPlayerRef.current.seek(segment.start + 0.02);
+      }
+    }
+  });
+
+  const searchFilter = (segment: Segment) => {
+    if (!searchTerm) return true;
+    return segment.text.toLowerCase().includes(searchTerm.toLowerCase());
+  };
+
   return (
-    <Section className="grow">
-      <ScrollBox>
-        {!segments?.length ? (
-          <p>No transcription available for this asset.</p>
-        ) : (
-          segments.map((segment, index) => (
-            <SegmentWidget
-              key={index}
-              frameRate={frameRate}
-              segment={segment}
-              nextSegment={segments[index + 1]}
-              onClick={onClick}
-              onDelete={onDelete}
-              position={position}
-              index={index}
-              isActive={index === activeSegmentIndex}
-              isCurrent={index === getCurrentSegmentIndex()}
-              onActivate={() => {
-                setActiveSegmentIndex(index);
-              }}
-            />
-          ))
-        )}
-      </ScrollBox>
-    </Section>
+    <>
+      <Navbar>
+        <InputText
+          placeholder="Search transcription..."
+          value={searchTerm}
+          onChange={setSearchTerm}
+        />
+      </Navbar>
+      <Section className="grow column">
+        <ScrollBox>
+          {!segments?.length ? (
+            <p>No transcription available for this asset.</p>
+          ) : (
+            segments.map((segment, index) => (
+              <SegmentWidget
+                key={index}
+                frameRate={frameRate}
+                segment={segment}
+                nextSegment={segments[index + 1]}
+                onClick={onClick}
+                onDelete={onDelete}
+                position={position}
+                index={index}
+                isActive={index === activeSegmentIndex}
+                isCurrent={index === getCurrentSegmentIndex()}
+                hidden={!searchFilter(segment)}
+                onActivate={() => {
+                  setActiveSegmentIndex(index);
+                }}
+              />
+            ))
+          )}
+        </ScrollBox>
+      </Section>
+    </>
   );
 };
