@@ -1,3 +1,3 @@
-__all__ = ["GetTranscription"]
+__all__ = ["GetTranscription", "SaveTranscription"]
 
-from .transcription import GetTranscription
+from .transcription import GetTranscription, SaveTranscription
