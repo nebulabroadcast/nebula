@@ -101,8 +101,8 @@ const AssetMainProps: React.FC<AssetMainPropsProps> = ({
 
   const sendTo = () => {
     showDialog('sendto', 'Send to...', { assets: [assetData.id] })
-      .then(() => { })
-      .catch(() => { });
+      .then(() => {})
+      .catch(() => {});
   };
 
   const assetActions = useMemo((): DropdownOptionProps[] => {

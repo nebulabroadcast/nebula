@@ -9,10 +9,9 @@ import {
   InputText,
 } from '@components';
 import { VideoPlayerRef } from '@containers/VideoPlayer/types.ts';
-import { useState } from 'react';
-import { useEffect } from 'react';
-
 import { useKeyDown } from '@lib/useKeyDown';
+import { useState, useEffect } from 'react';
+
 import type { AssetData } from './types';
 
 import nebula from '@/nebula';
@@ -47,6 +46,7 @@ interface SegmentWidgetProps {
   nextSegment?: Segment;
   index: number;
   onDelete: (index: number) => void;
+  onTextChange: (text: string) => void;
   onClick: (segment: Segment) => void;
   isActive: boolean;
   isCurrent: boolean;
@@ -85,6 +85,7 @@ const SegmentWidget: React.FC<SegmentWidgetProps> = ({
   nextSegment,
   index,
   onDelete,
+  onTextChange,
   onClick,
   isActive,
   isCurrent,
@@ -183,8 +184,8 @@ const SegmentWidget: React.FC<SegmentWidgetProps> = ({
 
         <TextArea
           value={segment.text}
-          onChange={() => {}}
-          readOnly
+          onChange={onTextChange}
+          autoFocus
           style={{ minHeight: '40px' }}
         />
       </div>
@@ -209,7 +210,6 @@ export const SidePanelTranscription = ({
 
   useEffect(() => {
     if (!changed) {
-      return;
       return;
     }
     patchAsset({
@@ -252,11 +252,36 @@ export const SidePanelTranscription = ({
       setSegments([]);
       return;
     }
+
+    const localTranscription = assetData[
+      '__aux/nebula:transcription'
+    ] as TranscriptionData | null;
+    if (localTranscription?.segments) {
+      setSegments(localTranscription.segments);
+      return;
+    }
+
     getSegments(assetData?.id).catch((err: unknown) => {
       console.error('Failed to fetch transcription:', err);
       setSegments([]);
     });
-  }, [assetData?.id]);
+  }, [assetData?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const onAdd = () => {
+    const newSegment: Segment = {
+      start: position,
+      end: position + 1,
+      text: '',
+    };
+    setSegments((prev) => {
+      const newSegments = [...prev, newSegment].sort((a, b) => a.start - b.start);
+
+      const newIndex = newSegments.indexOf(newSegment);
+      setActiveSegmentIndex(newIndex);
+      return newSegments;
+    });
+    setChanged(true);
+  };
 
   const onDelete = (index: number) => {
     setActiveSegmentIndex(null);
@@ -266,6 +291,15 @@ export const SidePanelTranscription = ({
       newSegments.splice(index, 1);
       return newSegments;
     });
+  };
+
+  const onTextChange = (index: number, text: string) => {
+    setSegments((prev) => {
+      const newSegments = [...prev];
+      newSegments[index] = { ...newSegments[index], text };
+      return newSegments;
+    });
+    setChanged(true);
   };
 
   const onClick = (segment: Segment) => {
@@ -319,6 +353,7 @@ export const SidePanelTranscription = ({
           value={searchTerm}
           onChange={setSearchTerm}
         />
+        <Button icon="add" onClick={onAdd} tooltip="Add segment" />
       </Navbar>
       <Section className="grow column">
         <ScrollBox>
@@ -333,6 +368,9 @@ export const SidePanelTranscription = ({
                 nextSegment={segments[index + 1]}
                 onClick={onClick}
                 onDelete={onDelete}
+                onTextChange={(text) => {
+                  onTextChange(index, text);
+                }}
                 position={position}
                 index={index}
                 isActive={index === activeSegmentIndex}
