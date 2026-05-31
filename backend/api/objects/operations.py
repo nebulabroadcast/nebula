@@ -204,7 +204,6 @@ class Operations(APIRequest):
                         obj.update(operation.data)
                     await obj.save()
 
-
                     for key, value in aux_data.items():
                         await nebula.db.execute(
                             """
