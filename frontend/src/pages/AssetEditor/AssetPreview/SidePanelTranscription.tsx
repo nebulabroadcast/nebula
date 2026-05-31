@@ -209,7 +209,7 @@ export const SidePanelTranscription = ({
 
   useEffect(() => {
     if (!changed) {
-      console.log('No changes to save for transcription segments');
+      return;
       return;
     }
     patchAsset({
