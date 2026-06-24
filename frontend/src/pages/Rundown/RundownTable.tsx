@@ -211,7 +211,7 @@ const RundownTable: React.FC<RundownTableProps> = ({
     let fields: any[];
     if (object_type === 'event') {
       fields = [...(channelConfig?.fields || [])];
-    } else if (objectData.item_role === 'placeholder') {
+    } else if (['placeholder', 'live'].includes(objectData.item_role)) {
       fields = [{ name: 'title' }, { name: 'duration' }];
     } else if (['lead_in', 'lead_out'].includes(objectData.item_role)) {
       return;

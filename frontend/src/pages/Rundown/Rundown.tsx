@@ -32,10 +32,7 @@ const Rundown: React.FC<RundownProps> = ({ draggedObjects }) => {
   const { currentChannelId } = useNebula();
 
   const [startTime, setStartTime] = useState<Date | null>(null);
-  const [rundownMode, setRundownMode] = useLocalStorage<string>(
-    'mam.rundown.mode',
-    'edit'
-  );
+  const [rundownMode, setRundownMode] = useLocalStorage('mam.rundown.mode', 'edit');
 
   const [rundown, setRundown] = useState<RundownRow[] | null>(null);
   const [loading, setLoading] = useState(false);
