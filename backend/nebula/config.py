@@ -77,6 +77,20 @@ class NebulaConfig(BaseModel):
         description="Enable experimental features",
     )
 
+    twelvelabs_api_key: str | None = Field(
+        None,
+        description=(
+            "TwelveLabs API key. When set, the analyze_twelvelabs endpoint can "
+            "generate descriptive metadata and transcripts for assets using the "
+            "Pegasus video-understanding model. Obtain a key at https://twelvelabs.io"
+        ),
+    )
+
+    twelvelabs_model: str = Field(
+        "pegasus1.5",
+        description="TwelveLabs Pegasus model used for asset analysis",
+    )
+
 
 def load_config() -> NebulaConfig:
     prefix = "NEBULA_"

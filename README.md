@@ -35,6 +35,11 @@ Simple and fast media catalog based on [EBU&nbsp;Core](https://tech.ebu.ch/Metad
 genre, editorial format, atmosphere, rights, relations, and technical metadata,
 while its very fast search engine makes navigation among media files very easy.
 
+Descriptive metadata can optionally be generated automatically using the
+[TwelveLabs](https://twelvelabs.io) Pegasus video-understanding model. Set
+`NEBULA_TWELVELABS_API_KEY` to enable the `analyze_twelvelabs` endpoint, which
+describes an asset's content and stores the result for cataloguing.
+
 
 The low-resolution preview allows for editorial review, trimming, and the creation of sub-clips.
 
