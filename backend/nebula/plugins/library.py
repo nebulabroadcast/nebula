@@ -19,8 +19,7 @@ PLUGIN_TYPES = {
 
 def load_manifest(manifest_path: str) -> dict[str, Any]:
     if not os.path.isfile(manifest_path):
-        raise nebula.NebulaException(f"Manifest not found: {manifest_path}")
-
+        raise nebula.NotFoundException(f"Manifest file {manifest_path} not found")
     try:
         with open(manifest_path, "rb") as f:
             manifest = tomllib.load(f)
