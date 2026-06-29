@@ -57,6 +57,7 @@ const VideoPlayerBody = forwardRef<VideoPlayerRef, VideoPlayerProps>((props, ref
   const [markIn, setMarkIn] = useState<number | null | undefined>(props.markIn);
   const [markOut, setMarkOut] = useState<number | null | undefined>(props.markOut);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [desiredSeekFrame, setDesiredSeekFrame] = useState<number | null>(null);
 
   const isPlayingRef = useRef(isPlaying);
   const durFramesRef = useRef(durFrames);
@@ -198,7 +199,18 @@ const VideoPlayerBody = forwardRef<VideoPlayerRef, VideoPlayerProps>((props, ref
     if (!videoElement) return;
     const correctedFrame = Math.max(0, Math.min(frame, durFramesRef.current - 1));
     const newTime = frames2time(correctedFrame, props.frameRate);
+    if (videoElement.readyState < 2) {
+      setDesiredSeekFrame(correctedFrame);
+      return;
+    }
     videoElement.currentTime = newTime;
+  };
+
+  const onCanPlayThrough = () => {
+    if (desiredSeekFrame !== null) {
+      seekToFrame(desiredSeekFrame);
+      setDesiredSeekFrame(null);
+    }
   };
 
   const onScrubFinished = (atTime: number) => {
@@ -323,6 +335,7 @@ const VideoPlayerBody = forwardRef<VideoPlayerRef, VideoPlayerProps>((props, ref
               disablePictureInPicture={true}
               disableRemotePlayback={true}
               onTimeUpdate={updatePos}
+              onCanPlayThrough={onCanPlayThrough}
               src={props.src}
             />
             <VideoOverlay
