@@ -95,6 +95,8 @@ async def _create_new_event(
             else:
                 item = nebula.Item(connection=conn, username=username)
             item.update(item_data)
+            if item["id_asset"]:
+                await item.get_asset()  # ensure asset is loaded
             item["id_bin"] = new_bin.id
             item["position"] = position
             new_bin["duration"] += item.duration

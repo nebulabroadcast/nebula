@@ -39,6 +39,7 @@ def load_template(name: str) -> dict[str, Any]:
 
 def get_week_start(date: str, hour: int = 0, minute: int = 0) -> datetime.datetime:
     """Get the start of the week for the given date"""
+    date = date.split("T", maxsplit=1)[0]  # Remove time if present
     this_date = datetime.datetime.strptime(date, "%Y-%m-%d")  # noqa: DTZ007
     week_start_midnight = this_date - datetime.timedelta(days=this_date.weekday())
     return datetime.datetime(  # noqa: DTZ001
