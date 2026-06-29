@@ -48,7 +48,10 @@ const SchedulerNav: React.FC<SchedulerNavProps> = ({
   const onDateChange = (newDateVal: string) => {
     const [dsHH, dsMM] = channelConfig?.day_start || [7, 0];
 
-    const newDate = new Date(newDateVal);
+    const newDateX = new Date(newDateVal);
+    // add 12 hours to the date to avoid timezone issues
+    const newDate = new Date(newDateX.getTime() + 12 * 60 * 60 * 1000);
+
     const dayOfWeek = newDate.getDay();
     const diff = newDate.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
     const weekStart = new Date(newDate.setDate(diff));
@@ -56,6 +59,7 @@ const SchedulerNav: React.FC<SchedulerNavProps> = ({
 
     const pageTitle = createTitle(weekStart, channelConfig?.name || 'Unknown channel');
     setPageTitle(pageTitle);
+
     setStartTime(weekStart);
     setDate(new Date(newDateVal));
   };

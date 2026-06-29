@@ -29,7 +29,7 @@ const RundownNav: React.FC<RundownNavProps> = ({
     const newDateX = new Date(date);
     // add 12 hours to the date to avoid timezone issues
     const newDate = new Date(newDateX.getTime() + 12 * 60 * 60 * 1000);
-    
+
     newDate.setHours(dsHH, dsMM, 0, 0);
     const pageTitle = `${newDate.toLocaleDateString(nebula.locale, {
       month: 'long',

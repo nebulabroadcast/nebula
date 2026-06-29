@@ -40,13 +40,12 @@ const drawEvents = (
     const gradientEnd = startPos.y + eventHeight;
     const gradient = ctx.createLinearGradient(0, startPos.y, 0, gradientEnd);
     let eventColor = '#7287fd'; // default color
-    if (event.color){
+    if (event.color) {
       const r = (event.color >> 16) & 0xff;
       const g = (event.color >> 8) & 0xff;
       const b = event.color & 0xff;
-      eventColor = `rgba(${r}, ${g}, ${b}, .7)`;
+      eventColor = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
     }
-
 
     gradient.addColorStop(0, eventColor);
     gradient.addColorStop(1, 'transparent');

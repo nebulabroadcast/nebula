@@ -31,7 +31,9 @@ const DateNav: React.FC<DateNavProps> = ({ onChange, skipBy = 1 }) => {
     let dateParam = searchParams.get('date');
     if (!dateParam) dateParam = dateToDateString(new Date());
     const currentDate = new Date(dateParam);
-    const newDate = new Date(currentDate.getTime() + 12 * 3600 * 1000 + (days * 24 * 60 * 60 * 1000));
+    const newDate = new Date(
+      currentDate.getTime() + 12 * 3600 * 1000 + days * 24 * 60 * 60 * 1000
+    );
     setSearchParams((o) => {
       o.set('date', dateToDateString(newDate));
       return o;

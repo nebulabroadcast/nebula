@@ -44,7 +44,7 @@ class EventData(BaseModel):
     )
 
 
-async def _create_new_event(
+async def _create_new_event(  # noqa: C901
     channel: PlayoutChannelSettings,
     event_data: EventData,
     user: nebula.User | None,
