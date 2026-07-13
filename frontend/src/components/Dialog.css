@@ -12,26 +12,51 @@
   max-height: 80%;
   border: none;
 
+  --transition-duration: 0.3s;
+
   /* Animated parameters */
 
-  transition: all 0.3s ease;
+  transition: 
+    opacity var(--transition-duration) ease,
+    scale var(--transition-duration) ease,
+    display var(--transition-duration) ease allow-discrete,
+    overlay var(--transition-duration) ease allow-discrete;
+
   opacity: 0;
-  transform: scale(0.9);
+  scale: 0.6;
 
   &::backdrop {
-    background-color: rgba(0, 0, 0, 0);
-    backdrop-filter: none;
+    background-color: rgba(0, 0, 0, 0.6);
     z-index: 999;
+
+    transition: 
+      background-color var(--transition-duration) ease allow-discrete,
+      backdrop-filter var(--transition-duration) ease allow-discrete,
+      display var(--transition-duration) ease allow-discrete,
+      overlay var(--transition-duration) ease allow-discrete;
   }
 
   &[open] {
     opacity: 1;
-    transform: scale(1);
+    scale: 1;
+
+    @starting-style {
+      opacity: 0;
+      scale: 0.6;
+    }
+
     &::backdrop {
       background-color: rgba(0, 0, 0, 0.6);
       backdrop-filter: blur(2px);
+
+      @starting-style {
+        background-color: rgba(0, 0, 0, 0);
+        backdrop-filter: blur(0px);
+      }
     }
+
   }
+
 
   /* Guts */
 
