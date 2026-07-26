@@ -130,8 +130,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
       return () => {
         console.log(`Unsubscribing component from topic: ${topic}`);
         const handlers = subscriptions.current.get(topic) as
-          | Set<WebsocketMessageHandler>
-          | undefined;
+          Set<WebsocketMessageHandler> | undefined;
         if (handlers) {
           handlers.delete(handler as (topic: string, data: any) => void);
           // Clean up the topic entry if no handlers are left

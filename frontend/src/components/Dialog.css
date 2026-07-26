@@ -16,7 +16,7 @@
 
   /* Animated parameters */
 
-  transition: 
+  transition:
     opacity var(--transition-duration) ease,
     scale var(--transition-duration) ease,
     display var(--transition-duration) ease allow-discrete,
@@ -29,7 +29,7 @@
     background-color: rgba(0, 0, 0, 0.6);
     z-index: 999;
 
-    transition: 
+    transition:
       background-color var(--transition-duration) ease allow-discrete,
       backdrop-filter var(--transition-duration) ease allow-discrete,
       display var(--transition-duration) ease allow-discrete,
@@ -54,9 +54,7 @@
         backdrop-filter: blur(0px);
       }
     }
-
   }
-
 
   /* Guts */
 

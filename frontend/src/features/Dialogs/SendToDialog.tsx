@@ -24,7 +24,9 @@ const SendToDialog = ({
   const [sendToOptions, setSendToOptions] = useState<ActionItemModel[] | null>(null);
   const [dialogShow, setDialogShow] = useState(false);
 
-  const onCancel = () => { handleCancel() };
+  const onCancel = () => {
+    handleCancel();
+  };
   const onConfirm = (action: number) => {
     nebula
       .request('send', { ids: assets, id_action: action })
@@ -51,14 +53,15 @@ const SendToDialog = ({
             <Button
               key={option.id}
               label={option.name}
-              onClick={() => { onConfirm(option.id); }}
+              onClick={() => {
+                onConfirm(option.id);
+              }}
             />
           );
         })}
       </>
     );
   }, [sendToOptions]);
-
 
   useEffect(() => {
     const body = document.querySelector('body');
@@ -94,7 +97,7 @@ const SendToDialog = ({
   );
 
   if (!dialogShow) {
-    return
+    return;
   }
 
   return (
