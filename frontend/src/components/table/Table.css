@@ -23,10 +23,11 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      height: 24px;
     }
 
     td {
-      padding: 4px 8px;
+      padding: 0 8px;
       max-width: 300px;
       color: var(--color-text);
       user-select: none;
@@ -64,7 +65,6 @@
         background-color: var(--color-surface-03);
         position: sticky;
         top: 0;
-        height: var(--input-height);
         outline: 2px solid var(--color-surface-02);
       }
 
@@ -107,9 +107,8 @@
         &.action {
           padding: 0;
           button {
-            min-height: 22px;
-            max-height: 22px;
-            padding: 2px;
+            min-height: 18px;
+            max-height: 28px;
             width: 100%;
             background: transparent;
             border: 1px solid #666688;
