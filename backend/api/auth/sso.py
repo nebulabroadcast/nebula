@@ -34,7 +34,7 @@ class SSOLogin(APIRequest):
 
         redirect_uri = f"{base_url}/api/sso/callback/{provider}"
         nebula.log.debug(f"Redirect URI: {redirect_uri}")
-        return await client.authorize_redirect(request, redirect_uri)  # type: ignore[no-untyped-call, no-any-return]
+        return await client.authorize_redirect(request, redirect_uri)  # type: ignore[no-any-return]
 
 
 class SSOLoginCallback(APIRequest):

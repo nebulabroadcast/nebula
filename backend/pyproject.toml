@@ -61,26 +61,28 @@ line-ending = "auto"
 select = ["ALL"]
 
 ignore = [
-  "BLE",     # FIXME: blind exceptions. I don't like them either, but they are useful in some cases
+  "BLE",     # blind exceptions. I don't like them either, but they are useful in some cases
   "COM812",  # OK: messes with formatter
-  "D",       # FIXME: docstrings. Naaah.
+  "D",       # docstrings. Naaah.
   "EM",      # OK: String literals in exception messages (why not?)
   "FBT",     # Boolean positional argument (WTF?)
-  "FIX002",  # FIXME: TODOs
+  "FIX002",  # TODOs
   "ISC001",  # OK: Incompatible with formatting
   "PLR2004", # OK: Magic numbers (just a few)
-  "PTH",     # FIXME: path-like objects
+  "PTH",     # path-like objects
   "S101",    # OK: I like asserts. They make mypy happy
   "S104",    # OK: bind to all interfaces (We need this)
   "S110",    # OK: except: pass 
-  "S608",    # FIXME: sql injections. let's wait for template strings
+  "S608",    # sql injections. let's wait for template strings
   "SIM105",  # OK: contextlib.suppress is ugly
   "TD002",   # Author name in TODOs
   "TD003",   # Issue link in TODOs
   "TRY003",  # OK: Avoid specicying long messages outside of exceptions
-  "ANN",     # FIXME: Any
+  "ANN",     # Any
   "ERA",     # Commented out code
-  "RUF012",  # FIXME ClassVar
+  "RUF012",  # ClassVar
+  "CPY001",  # Copyright header
+  "PLR0917", # Too many positional arguments in function call
 ]
 
 [tool.mypy]
