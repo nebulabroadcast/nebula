@@ -1,9 +1,3 @@
-import React, { useMemo, useEffect, useState } from 'react';
-import { toast } from 'react-toastify';
-import styled from 'styled-components';
-import { useNebula } from '@features/Nebula';
-
-import nebula from '@/nebula';
 import {
   Spacer,
   Select,
@@ -15,7 +9,14 @@ import {
   Section,
 } from '@components';
 import { Navbar } from '@components';
+import { useNebula } from '@features/Nebula';
+import React, { useMemo, useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
+import styled from 'styled-components';
+
 import type { PlayoutPluginManifest, PlayoutPluginSlot } from '../../client';
+
+import nebula from '@/nebula';
 
 const PluginFormWrapper = styled.div`
   display: flex;
@@ -120,7 +121,7 @@ const PluginPanel: React.FC<PluginPanelProps> = ({ plugin, onError }) => {
               <PluginSlot
                 slot={slot}
                 value={formData[slot.name]}
-                onChange={(val) => setFormData((o) => ({ ...o, [slot.name]: val }))}
+                onChange={(val) => { setFormData((o) => ({ ...o, [slot.name]: val })); }}
               />
             </FormRow>
           ))}

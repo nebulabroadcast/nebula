@@ -14,10 +14,11 @@ import formatRundownDifference from './formatRundownDifference';
 import formatRundownRunMode from './formatRundownRunMode';
 import formatRundownSymbol from './formatRundownSymbol';
 import formatRundownTime from './formatRundownTime';
+
 import { TableRowData, TableCellFormatter } from '@components/table/types';
 
 const formatRowHighlightColor = (rowData: TableRowData) => {
-  switch (rowData['status']) {
+  switch (rowData.status) {
     case 0:
       return 'var(--color-red)';
     case 2:
@@ -40,7 +41,7 @@ const formatRowHighlightColor = (rowData: TableRowData) => {
 };
 
 const formatRowHighlightStyle = (rowData: TableRowData) => {
-  switch (rowData['status']) {
+  switch (rowData.status) {
     case 5:
       return 'dashed';
     case 6:
@@ -74,7 +75,7 @@ const getDefaultFormatter = (key: string): TableCellFormatter => {
       return (rowData, key) => formatMetaTimecode(rowData, key);
 
     case 'select':
-      // eslint-disable-next-line
+       
       return (rowData, key) => {
         if (!metaType.cs) return <td>{rowData[key] as string}</td>;
 
@@ -86,7 +87,7 @@ const getDefaultFormatter = (key: string): TableCellFormatter => {
       };
 
     case 'list':
-      // eslint-disable-next-line
+       
       return (rowData, key) => {
         const values = (rowData[key] as string[]) || [];
         if (!metaType.cs) return <td>{values.join(', ')}</td>;
@@ -103,7 +104,7 @@ const getDefaultFormatter = (key: string): TableCellFormatter => {
 
 const getFormatter = (key: string): TableCellFormatter => {
   if (['subtitle', 'description'].includes(key))
-    // eslint-disable-next-line
+     
     return (rowData, key) => <td>{rowData[key] as React.ReactNode}</td>;
 
   switch (key) {

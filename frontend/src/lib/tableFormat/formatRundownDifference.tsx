@@ -1,9 +1,9 @@
-import { Timecode } from '@wfoxall/timeframe';
 import { TableRowData } from '@components/table/types';
+import { Timecode } from '@wfoxall/timeframe';
 
 const formatRundownDifference = (rowData: TableRowData, _key: string) => {
-  const scheduled = (rowData['scheduled_time'] as number) || 0;
-  const broadcast = (rowData['broadcast_time'] as number) || 0;
+  const scheduled = (rowData.scheduled_time as number) || 0;
+  const broadcast = (rowData.broadcast_time as number) || 0;
   const diff = scheduled - broadcast;
 
   const formattedDiff = new Timecode(Math.abs(diff) * 25, 25)

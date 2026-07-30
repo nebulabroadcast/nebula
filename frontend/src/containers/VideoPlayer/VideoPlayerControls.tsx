@@ -153,7 +153,7 @@ const VideoPlayerControls: React.FC<VideoPlayerControlsProps> = ({
       if (e.ctrlKey || e.altKey || e.metaKey) return;
 
       // abort if focused on editable element
-      if (isEditableTarget(e.target as HTMLElement)) return;
+      if (isEditableTarget(e.target)) return;
 
       // abort when shift key is pressed
       if (e.shiftKey) return;

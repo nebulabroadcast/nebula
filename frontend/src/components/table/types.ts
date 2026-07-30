@@ -14,7 +14,7 @@ export interface TableColumn {
 
 export interface TableDroppable {
   type: string;
-  items: {
+  items: Array<{
     id: string | number;
     type: string;
     title?: string;
@@ -22,7 +22,7 @@ export interface TableDroppable {
     duration?: number;
     mark_in?: number;
     mark_out?: number;
-  }[];
+  }>;
 }
 
 export interface TableDraggableItem {

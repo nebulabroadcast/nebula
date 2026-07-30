@@ -1,16 +1,18 @@
-import nebula from '@/nebula';
 import { Table } from '@components';
+import type { TableDraggableItem, TableRowData } from '@components/table/types';
 import { useDialog } from '@features/Dialogs';
+import { useNebula } from '@features/Nebula';
 import { formatRowHighlightColor, formatRowHighlightStyle } from '@lib/tableFormat';
 import React, { useMemo, useRef, useEffect } from 'react';
 import { useSearchParams, useLocation } from 'react-router';
 
+import type { RundownRow } from '../../client';
+
 import RundownTableWrapper from './RundownTableWrapper';
 import { getRunModeOptions, getRundownColumns } from './utils';
 
-import { useNebula } from '@features/Nebula';
-import type { RundownRow } from '../../client';
-import type { TableDraggableItem, TableRowData } from '@components/table/types';
+
+import nebula from '@/nebula';
 
 interface RundownTableProps {
   data: RundownRow[];
@@ -19,10 +21,10 @@ interface RundownTableProps {
   currentItem?: number | string | null;
   cuedItem?: number | string | null;
   loading: boolean;
-  selectedItems: (number | string)[];
-  setSelectedItems: (items: (number | string)[]) => void;
-  selectedEvents: (number | string)[];
-  setSelectedEvents: (events: (number | string)[]) => void;
+  selectedItems: Array<number | string>;
+  setSelectedItems: (items: Array<number | string>) => void;
+  selectedEvents: Array<number | string>;
+  setSelectedEvents: (events: Array<number | string>) => void;
   focusedObject: RundownRow | null;
   setFocusedObject: (object: RundownRow | null) => void;
   rundownMode: string;
@@ -89,7 +91,7 @@ const RundownTable: React.FC<RundownTableProps> = ({
 
     // get the row element and scroll to it
     const query = `[data-index="${scrollToIndex}"]`;
-    const row = tableRef.current.querySelector(query) as HTMLElement;
+    const row = tableRef.current.querySelector(query)!;
     if (row) {
       const pos = row.offsetTop - (row.parentNode as HTMLElement).offsetTop;
       const parent = row.parentNode?.parentNode?.parentNode as HTMLElement; // he he he
@@ -138,7 +140,7 @@ const RundownTable: React.FC<RundownTableProps> = ({
   };
 
   const onSetPrimary = async () => {
-    if (!focusedObject || !focusedObject.id_asset) return;
+    if (!focusedObject?.id_asset) return;
     const id_asset = focusedObject.id_asset;
     const id_event = focusedObject.id_event;
     try {
@@ -304,7 +306,7 @@ const RundownTable: React.FC<RundownTableProps> = ({
       }
     }
 
-    let newSelectedItems: (number | string)[] = [];
+    let newSelectedItems: Array<number | string> = [];
     if (event.ctrlKey) {
       if (selectedItems.includes(row.id)) {
         newSelectedItems = selectedItems.filter((obj) => obj !== row.id);
@@ -398,7 +400,7 @@ const RundownTable: React.FC<RundownTableProps> = ({
           res.push({
             label: `Solve using ${solver}`,
             icon: 'change_circle',
-            onClick: () => onSolve(solver),
+            onClick: () => { onSolve(solver); },
           });
         }
       }
@@ -458,7 +460,7 @@ const RundownTable: React.FC<RundownTableProps> = ({
         droppable={
           draggedObjects ? { type: 'mixed', items: draggedObjects } : undefined
         }
-        onDrop={(droppable, dropIndex) => onDrop(droppable.items, dropIndex ?? 0)}
+        onDrop={(droppable, dropIndex) => { onDrop(droppable.items, dropIndex ?? 0); }}
       />
     </RundownTableWrapper>
   );

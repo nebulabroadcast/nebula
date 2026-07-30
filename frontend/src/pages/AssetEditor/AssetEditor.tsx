@@ -2,6 +2,7 @@ import { Loader, Section } from '@components';
 import { TableDraggableItem } from '@components/table/types';
 import MetadataEditor from '@containers/MetadataEditor';
 import { useDialog } from '@features/Dialogs';
+import { JobsTable } from '@features/JobsTable';
 import { useNebula } from '@features/Nebula';
 import { useWebSocket } from '@features/Websocket';
 import { useLocalStorage } from '@lib/useLocalStorage';
@@ -14,6 +15,7 @@ import { toast } from 'react-toastify';
 import AssetMainProps from './AssetMainProps';
 import { AssetPreview } from './AssetPreview';
 import AssetEditorNav from './EditorNav';
+
 
 import nebula from '@/nebula';
 
@@ -63,7 +65,7 @@ const getEnabledActions = ({
   const folderChange = !assetData.id && edit;
   const flag = !!(assetData.id && !nebula.user?.is_limited);
   const upload = !!(assetData.id && edit);
-  const actions = !!(assetData?.id && !isChanged);
+  const actions = !!assetData?.id;
   const advanced = !limited;
 
   return {
@@ -98,6 +100,10 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
   const [editorMode, setEditorMode] = useLocalStorage<'metadata' | 'preview'>(
     'mam.editor.mode',
     'metadata'
+  );
+  const [showJobs, setShowJobs] = useLocalStorage<boolean>(
+    'mam.editor.showJobs',
+    true
   );
   const [, setSearchParams] = useSearchParams();
 
@@ -528,8 +534,24 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
         editorMode={editorMode}
         setEditorMode={setEditorMode}
         enabledActions={enabledActions as EnabledActions}
+        showJobs={showJobs}
+        setShowJobs={setShowJobs}
       />
-      {Object.keys(assetData || {}).length > 0 && mainComponent()}
+      {Object.keys(assetData || {}).length > 0 && (
+        <>
+          {mainComponent()}
+          {assetData?.id && showJobs && (
+            <Section
+              style={{
+                height: 60,
+                position: 'relative',
+              }}
+            >
+              <JobsTable assetId={assetData.id} className="contained" />
+            </Section>
+          )}
+        </>
+      )}
     </div>
   );
 };

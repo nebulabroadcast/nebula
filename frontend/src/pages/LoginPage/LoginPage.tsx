@@ -190,13 +190,13 @@ const LoginPage = ({ motd, onLogin, ssoOptions }: LoginPageProps) => {
           <StandardLogin
             ssoOptions={ssoOptions}
             onLogin={onLogin}
-            onPasswordReset={() => setMode('password-reset')}
+            onPasswordReset={() => { setMode('password-reset'); }}
           />
         )}
         {mode === 'password-reset' && (
           <PasswordReset
             token={passwordResetToken}
-            onGoBack={() => setMode('standard')}
+            onGoBack={() => { setMode('standard'); }}
           />
         )}
         {motd && <small>{motd}</small>}

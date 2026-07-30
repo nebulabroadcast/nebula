@@ -72,7 +72,7 @@ export const AudioContextProvider: React.FC<AudioContextProviderProps> = ({
     if (numChannels) {
       // Cleanup old nodes to prevent leaks and overlaps
       if (gainNodes.length) {
-        gainNodes.forEach((node) => node.disconnect());
+        gainNodes.forEach((node) => { node.disconnect(); });
       }
       if (splitterRef.current) {
         splitterRef.current.disconnect();

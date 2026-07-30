@@ -1,5 +1,5 @@
-import clsx from 'clsx';
 import { TableRowData } from '@components/table/types';
+import clsx from 'clsx';
 
 const STATUSES = [
   'offline',

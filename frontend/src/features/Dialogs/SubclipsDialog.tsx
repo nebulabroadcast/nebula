@@ -26,8 +26,8 @@ const SubclipsDialog = ({
   handleCancel,
   handleConfirm,
 }: SubclipsDialogProps) => {
-  const onCancel = () => handleCancel();
-  const onConfirm = (option: Subclip[]) => handleConfirm(option);
+  const onCancel = () => { handleCancel(); };
+  const onConfirm = (option: Subclip[]) => { handleConfirm(option); };
 
   const body = useMemo(() => {
     const options: Subclip[] = [
@@ -52,12 +52,12 @@ const SubclipsDialog = ({
             <Button
               key={idx}
               label={option.title || option.name}
-              onClick={() => onConfirm([option])}
+              onClick={() => { onConfirm([option]); }}
             />
           );
         })}
 
-        <Button label="All subclips" onClick={() => onConfirm(asset.subclips || [])} />
+        <Button label="All subclips" onClick={() => { onConfirm(asset.subclips || []); }} />
       </>
     );
   }, [asset]);

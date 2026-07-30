@@ -1,15 +1,16 @@
+import { Navbar, NavbarTitle, Button, Spacer } from '@components';
 import Sessions from '@containers/Sessions';
 import { useNebula } from '@features/Nebula';
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { toast } from 'react-toastify';
 
-import nebula from '@/nebula';
-import { Navbar, NavbarTitle, Button, Spacer } from '@components';
 import type { UserModel } from '../../../client';
 
 import UserForm from './UserForm';
 import UserList from './UserList';
+
+import nebula from '@/nebula';
 
 const UsersPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -46,7 +47,7 @@ const UsersPage: React.FC = () => {
           }))
         );
       })
-      .finally(() => setLoading(false));
+      .finally(() => { setLoading(false); });
   };
 
   useEffect(() => {
@@ -91,7 +92,7 @@ const UsersPage: React.FC = () => {
 
   const copyUser = () => {
     const copy = { ...userData };
-    const keysToRemove: (keyof UserModel)[] = [
+    const keysToRemove: Array<keyof UserModel> = [
       'id',
       'login',
       'password',
@@ -119,7 +120,7 @@ const UsersPage: React.FC = () => {
             icon="content_copy"
             label="Duplicate user"
             tooltip="Create a new user by copying the current one"
-            onClick={() => copyUser()}
+            onClick={() => { copyUser(); }}
             disabled={!userData?.id}
           />
           <Spacer />

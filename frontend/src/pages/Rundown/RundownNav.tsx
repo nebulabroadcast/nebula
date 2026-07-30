@@ -1,9 +1,9 @@
+import { Navbar, Spacer, RadioButton } from '@components';
 import DateNav from '@containers/DateNav';
+import { useNebula } from '@features/Nebula';
 import React, { useMemo } from 'react';
 
 import nebula from '@/nebula';
-import { Navbar, Spacer, RadioButton } from '@components';
-import { useNebula } from '@features/Nebula';
 
 interface RundownNavProps {
   startTime: Date | null;
@@ -31,11 +31,11 @@ const RundownNav: React.FC<RundownNavProps> = ({
     const newDate = new Date(newDateX.getTime() + 12 * 60 * 60 * 1000);
 
     newDate.setHours(dsHH, dsMM, 0, 0);
-    const pageTitle = `${newDate.toLocaleDateString(nebula.locale, {
+    const pageTitle = newDate.toLocaleDateString(nebula.locale, {
       month: 'long',
       weekday: 'long',
       day: 'numeric',
-    })}`;
+    });
     setPageTitle(pageTitle);
     setStartTime(newDate);
   };

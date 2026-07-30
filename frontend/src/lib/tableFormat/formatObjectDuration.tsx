@@ -1,5 +1,5 @@
-import { Timecode } from '@wfoxall/timeframe';
 import { TableRowData } from '@components/table/types';
+import { Timecode } from '@wfoxall/timeframe';
 
 const formatObjectDuration = (rowData: TableRowData, key: string) => {
   if (rowData.run_mode === 4) {

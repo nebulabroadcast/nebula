@@ -1,7 +1,7 @@
+import { Navbar, InputText, Button, Spacer } from '@components';
 import React from 'react';
 import { NavLink } from 'react-router';
 
-import { Navbar, InputText, Button, Spacer } from '@components';
 
 interface JobsNavProps {
   searchQuery: string;
@@ -16,7 +16,7 @@ const JobsNav: React.FC<JobsNavProps> = ({ searchQuery, setSearchQuery }) => {
       <NavLink to="/jobs/failed">Failed</NavLink>
       <Spacer />
       <InputText placeholder="Search" value={searchQuery} onChange={setSearchQuery} />
-      <Button icon="close" onClick={() => setSearchQuery('')} />
+      <Button icon="close" onClick={() => { setSearchQuery(''); }} />
     </Navbar>
   );
 };

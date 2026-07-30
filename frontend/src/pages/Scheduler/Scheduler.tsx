@@ -1,22 +1,22 @@
 import { Section, Loader, LoaderWrapper } from '@components';
+import { TableDraggableItem } from '@components/table/types';
 import Calendar from '@containers/Calendar';
+import {
+  CalendarEvent,
+  ContextMenuItem,
+  DraggedExternal,
+} from '@containers/Calendar/types';
 import { useDialog } from '@features/Dialogs';
 import { useWebSocket } from '@features/Websocket';
 import { DateTime } from 'luxon';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { toast } from 'react-toastify';
 
-import nebula from '@/nebula';
 
 import SchedulerNav from './SchedulerNav';
 
 import { useNebula } from '@/features/Nebula';
-import { TableDraggableItem } from '@components/table/types';
-import {
-  CalendarEvent,
-  ContextMenuItem,
-  DraggedExternal,
-} from '@containers/Calendar/types';
+import nebula from '@/nebula';
 
 interface SchedulerProps {
   draggedObjects?: TableDraggableItem[] | null;
@@ -247,7 +247,7 @@ const Scheduler: React.FC<SchedulerProps> = ({ draggedObjects }) => {
       label: 'Delete',
       icon: 'delete',
       hlColor: 'var(--color-red)',
-      onClick: (event) => deleteEvent(event.id),
+      onClick: (event) => { deleteEvent(event.id); },
     },
   ];
 
@@ -267,13 +267,13 @@ const Scheduler: React.FC<SchedulerProps> = ({ draggedObjects }) => {
       if (topic !== 'objects_changed') return;
       const { object_type, objects } = message;
       if (object_type !== 'event') return;
-      const shouldReload = (objects as (string | number)[]).some((id) =>
+      const shouldReload = (objects as Array<string | number>).some((id) =>
         eventIdsRef.current.has(id)
       );
       if (shouldReload) loadEvents();
     }; // handlePubSub
     const unsubscribe = ws.subscribe('objects_changed', handlePubSub);
-    return () => unsubscribe();
+    return () => { unsubscribe(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ws]);
 

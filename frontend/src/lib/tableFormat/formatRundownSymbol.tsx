@@ -1,6 +1,7 @@
-import nebula from '@/nebula';
 import { Icon } from '@components';
 import { TableRowData } from '@components/table/types';
+
+import nebula from '@/nebula';
 
 const formatRundownSymbol = (rowData: TableRowData) => {
   let icon = '';

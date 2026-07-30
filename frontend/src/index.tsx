@@ -4,15 +4,15 @@ import { createRoot } from 'react-dom/client';
 import { RouterProvider } from 'react-router';
 import { ToastContainer, Flip } from 'react-toastify';
 
-import router from './router';
 import { TooltipProvider } from './components/TooltipProvider';
+import router from './router';
 
 import 'react-toastify/dist/ReactToastify.css';
 import 'material-symbols';
 import './index.scss';
 import './datepicker.scss';
 
-const root = createRoot(document.getElementById('root') as HTMLElement);
+const root = createRoot(document.getElementById('root')!);
 root.render(
   <React.StrictMode>
     <NebulaProvider>
