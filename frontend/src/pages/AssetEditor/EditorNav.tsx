@@ -1,6 +1,20 @@
-import React from 'react';
+import contentType from 'content-type';
+import React, { useState, useMemo, useCallback } from 'react';
 
-import { Navbar, Button, Spacer, RadioButton, ToolbarSeparator } from '@/components';
+import ContextActionResult from './ContextAction';
+
+import {
+  Navbar,
+  Button,
+  Spacer,
+  RadioButton,
+  Dropdown,
+  ToolbarSeparator,
+} from '@/components';
+import type { DropdownOptionProps } from '@/components/Dropdown';
+import { useDialog } from '@/features/Dialogs';
+import { useNebula } from '@/features/Nebula';
+import nebula from '@/nebula';
 
 interface AssetEditorNavProps {
   assetData: Record<string, any>;
@@ -17,7 +31,17 @@ interface AssetEditorNavProps {
     revert: boolean;
     save: boolean;
     flag: boolean;
+    actions: boolean;
   };
+  showJobs: boolean;
+  setShowJobs: (value: boolean | ((val: boolean) => boolean)) => void;
+}
+
+interface FolderLink {
+  name: string;
+  source_key: string;
+  target_key: string;
+  view: number;
 }
 
 const QC_STATE_OPTIONS = [
@@ -54,9 +78,113 @@ const AssetEditorNav: React.FC<AssetEditorNavProps> = ({
   editorMode,
   setEditorMode,
   enabledActions,
+  showJobs,
+  setShowJobs,
 }) => {
+  const [contextActionResult, setContextActionResult] = useState<{
+    contentType: string;
+    payload: any;
+  } | null>(null);
+  const showDialog = useDialog();
+  const { setCurrentView, setSearchQuery } = useNebula();
+
+  const currentFolder = useMemo(() => {
+    if (!nebula.settings?.folders) return null;
+    return nebula.settings.folders.find((f) => f.id === assetData?.id_folder) || null;
+  }, [assetData.id_folder]);
+
+  const scopedEndpoints = useMemo((): DropdownOptionProps[] => {
+    const result: DropdownOptionProps[] = [];
+    if (!assetData?.id) return result;
+    const assetId = assetData.id as number;
+    const endpoints = nebula.getScopedEndpoints('asset');
+    for (const endpoint of endpoints) {
+      result.push({
+        label: endpoint.title,
+        onClick: () => {
+          void nebula
+            .request(endpoint.endpoint, { id_asset: assetId })
+            .then((response) => {
+              const ct = response.headers['content-type'] as string;
+              setContextActionResult({
+                contentType: ct ? contentType.parse(ct).type : 'application/json',
+                payload: response.data,
+              });
+            })
+            .catch((err: unknown) => {
+              console.error(err);
+            });
+        },
+      });
+    }
+    return result;
+  }, [assetData.id]);
+
+  const linkOptions = useMemo((): DropdownOptionProps[] => {
+    if (!currentFolder?.links) return [];
+
+    const links = currentFolder.links as FolderLink[];
+    return links.map((l) => ({
+      label: l.name,
+      disabled: !assetData[l.source_key],
+      onClick: () => {
+        const val = assetData[l.source_key] as string | number;
+        const query = `${l.target_key}:${val}`;
+        setCurrentView(l.view);
+        setSearchQuery(query);
+      },
+    }));
+  }, [assetData, currentFolder, setCurrentView, setSearchQuery]);
+
+  const sendTo = useCallback(() => {
+    if (!assetData?.id) return;
+    void showDialog('sendto', 'Send to...', { assets: [assetData.id as number] })
+      .then(() => {
+        /* noop */
+      })
+      .catch(() => {
+        /* noop */
+      });
+  }, [assetData.id, showDialog]);
+
+  const assetActions = useMemo((): DropdownOptionProps[] => {
+    const result: DropdownOptionProps[] = [
+      {
+        label: 'Send to...',
+        disabled: !assetData?.id,
+        onClick: () => {
+          sendTo();
+        },
+      },
+      ...scopedEndpoints,
+      ...linkOptions,
+      {
+        label: showJobs ? 'Hide jobs' : 'Show jobs',
+        icon: showJobs ? 'visibility_off' : 'visibility',
+        onClick: () => {
+          setShowJobs((prev) => !prev);
+        },
+        separator: true,
+      },
+    ];
+    if (result.length > 2) {
+      result[1].separator = true;
+    }
+    return result;
+  }, [scopedEndpoints, linkOptions, assetData.id, sendTo, showJobs, setShowJobs]);
+
   return (
     <Navbar>
+      {contextActionResult && (
+        <ContextActionResult
+          mime={contextActionResult.contentType}
+          payload={contextActionResult.payload}
+          onHide={() => {
+            setContextActionResult(null);
+          }}
+        />
+      )}
+
       <Button
         icon="add"
         onClick={onNewAsset}
@@ -79,6 +207,11 @@ const AssetEditorNav: React.FC<AssetEditorNavProps> = ({
         ]}
         value={editorMode}
         onChange={setEditorMode as (mode: string) => void}
+      />
+      <Dropdown
+        options={assetActions}
+        disabled={!enabledActions.actions}
+        label="Actions"
       />
 
       <Spacer />

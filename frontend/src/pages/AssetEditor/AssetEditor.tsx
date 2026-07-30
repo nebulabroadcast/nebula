@@ -15,6 +15,8 @@ import AssetMainProps from './AssetMainProps';
 import { AssetPreview } from './AssetPreview';
 import AssetEditorNav from './EditorNav';
 
+import { JobsTable } from '@features/JobsTable';
+
 import nebula from '@/nebula';
 
 interface EnabledActions {
@@ -63,7 +65,7 @@ const getEnabledActions = ({
   const folderChange = !assetData.id && edit;
   const flag = !!(assetData.id && !nebula.user?.is_limited);
   const upload = !!(assetData.id && edit);
-  const actions = !!(assetData?.id && !isChanged);
+  const actions = !!assetData?.id;
   const advanced = !limited;
 
   return {
@@ -98,6 +100,10 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
   const [editorMode, setEditorMode] = useLocalStorage<'metadata' | 'preview'>(
     'mam.editor.mode',
     'metadata'
+  );
+  const [showJobs, setShowJobs] = useLocalStorage<boolean>(
+    'mam.editor.showJobs',
+    true
   );
   const [, setSearchParams] = useSearchParams();
 
@@ -528,8 +534,26 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
         editorMode={editorMode}
         setEditorMode={setEditorMode}
         enabledActions={enabledActions as EnabledActions}
+        showJobs={showJobs}
+        setShowJobs={setShowJobs}
       />
-      {Object.keys(assetData || {}).length > 0 && mainComponent()}
+      {Object.keys(assetData || {}).length > 0 && (
+        <>
+          {mainComponent()}
+          {assetData?.id && showJobs && (
+            <Section
+              style={{
+                height: 180,
+                minHeight: 120,
+                flexShrink: 0,
+                position: 'relative',
+              }}
+            >
+              <JobsTable assetId={assetData.id} className="contained" />
+            </Section>
+          )}
+        </>
+      )}
     </div>
   );
 };

@@ -1,8 +1,6 @@
-import contentType from 'content-type';
 import React, { useState, useMemo } from 'react';
 
 import AssigneesButton from './AssigneesButton';
-import ContextActionResult from './ContextAction';
 import MetadataDetail from './MetadataDetail';
 
 import {
@@ -15,9 +13,7 @@ import {
   Dialog,
 } from '@/components';
 import type { DropdownOptionProps } from '@/components/Dropdown';
-import { useDialog } from '@/features/Dialogs';
 import { UploadButton } from '@/features/MediaUpload';
-import { useNebula } from '@/features/Nebula';
 import nebula from '@/nebula';
 
 interface AssetMainPropsProps {
@@ -38,17 +34,11 @@ const AssetMainProps: React.FC<AssetMainPropsProps> = ({
   enabledActions,
 }) => {
   const [detailsVisible, setDetailsVisible] = useState(false);
-  const [contextActionResult, setContextActionResult] = useState<{
-    contentType: string;
-    payload: any;
-  } | null>(null);
-  const showDialog = useDialog();
-  const { setCurrentView, setSearchQuery } = useNebula();
 
   const currentFolder = useMemo(() => {
     if (!nebula.settings?.folders) return null;
     return nebula.settings.folders.find((f) => f.id === assetData?.id_folder) || null;
-  }, [assetData?.id_folder]);
+  }, [assetData.id_folder]);
 
   const folderOptions = useMemo((): DropdownOptionProps[] => {
     return (nebula.getWritableFolders() || []).map((f) => ({
@@ -61,73 +51,10 @@ const AssetMainProps: React.FC<AssetMainPropsProps> = ({
     }));
   }, [setMeta]);
 
-  // Actions
-
-  const scopedEndpoints = useMemo((): DropdownOptionProps[] => {
-    const result: DropdownOptionProps[] = [];
-    const endpoints = nebula.getScopedEndpoints('asset');
-    for (const endpoint of endpoints) {
-      result.push({
-        label: endpoint.title,
-        onClick: () => {
-          nebula
-            .request(endpoint.endpoint, { id_asset: assetData.id })
-            .then((response) => {
-              const ct = response.headers['content-type'] as string;
-              setContextActionResult({
-                contentType: ct ? contentType.parse(ct).type : 'application/json',
-                payload: response.data,
-              });
-            });
-        },
-      });
-    }
-    return result;
-  }, [assetData.id]);
-
-  const linkOptions = useMemo((): DropdownOptionProps[] => {
-    if (!currentFolder?.links) return [];
-
-    return currentFolder.links.map((l: any) => ({
-      label: l.name,
-      disabled: !assetData[l.source_key],
-      onClick: () => {
-        const query = `${l.target_key}:${assetData[l.source_key]}`;
-        setCurrentView(l.view);
-        setSearchQuery(query);
-      },
-    }));
-  }, [assetData, currentFolder, setCurrentView, setSearchQuery]);
-
-  const sendTo = () => {
-    showDialog('sendto', 'Send to...', { assets: [assetData.id] })
-      .then(() => {})
-      .catch(() => {});
-  };
-
-  const assetActions = useMemo((): DropdownOptionProps[] => {
-    const result: DropdownOptionProps[] = [
-      {
-        label: 'Send to...',
-        onClick: () => {
-          sendTo();
-        },
-      },
-      ...scopedEndpoints,
-      ...linkOptions,
-    ];
-    if (result.length > 1) {
-      result[1].separator = true;
-    }
-    return result;
-  }, [scopedEndpoints, linkOptions, assetData.id]);
-
-  // End actions
-
   const fps = useMemo(() => {
     if (!assetData) return 25;
     return (assetData['video/fps_f'] as number) || 25;
-  }, [assetData['video/fps_f']]);
+  }, [assetData]);
 
   return (
     <Navbar>
@@ -140,16 +67,6 @@ const AssetMainProps: React.FC<AssetMainPropsProps> = ({
         >
           <MetadataDetail assetData={assetData} />
         </Dialog>
-      )}
-
-      {contextActionResult && (
-        <ContextActionResult
-          mime={contextActionResult.contentType}
-          payload={contextActionResult.payload}
-          onHide={() => {
-            setContextActionResult(null);
-          }}
-        />
       )}
 
       <Dropdown
@@ -188,20 +105,13 @@ const AssetMainProps: React.FC<AssetMainPropsProps> = ({
       <Spacer />
 
       {enabledActions.advanced && (
-        <>
-          <Dropdown
-            options={assetActions}
-            disabled={!enabledActions.actions}
-            label="Actions"
-          />
-          <Button
-            icon="manage_search"
-            label="Details"
-            onClick={() => {
-              setDetailsVisible(true);
-            }}
-          />
-        </>
+        <Button
+          icon="manage_search"
+          label="Details"
+          onClick={() => {
+            setDetailsVisible(true);
+          }}
+        />
       )}
 
       {nebula.settings?.system?.ui_asset_upload && (
