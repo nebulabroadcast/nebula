@@ -80,22 +80,26 @@ const PluginPanel: React.FC<PluginPanelProps> = ({ plugin, onError }) => {
           <Button
             key={slot.name}
             label={slot.name}
-            onClick={() =>
+            onClick={() => {
+              if (currentChannelId === null) return;
               nebula
-                .request('playout', {
-                  action: 'plugin_exec',
-                  id_channel: currentChannelId,
-                  payload: {
-                    name: plugin.name,
-                    action: slot.name,
-                    data: formData,
+                .playout({
+                  body: {
+                    action: 'plugin_exec',
+                    id_channel: currentChannelId,
+                    payload: {
+                      name: plugin.name,
+                      action: slot.name,
+                      data: formData,
+                    },
                   },
+                  throwOnError: true,
                 })
                 .then(() => {
                   toast.info(`Action ${slot.name} executed successfully`);
                 })
-                .catch(onError)
-            }
+                .catch(onError);
+            }}
           />
         ))}
     </>
@@ -145,10 +149,11 @@ const PlayoutPlugins: React.FC<PlayoutPluginsProps> = ({ onError }) => {
   const [currentPlugin, setCurrentPlugin] = useState<string | null>(null);
 
   useEffect(() => {
+    if (currentChannelId === null) return;
     nebula
-      .request('playout', {
-        id_channel: currentChannelId,
-        action: 'plugin_list',
+      .playout({
+        body: { id_channel: currentChannelId, action: 'plugin_list' },
+        throwOnError: true,
       })
       .then((res) => {
         const plugins = res.data.plugins || [];

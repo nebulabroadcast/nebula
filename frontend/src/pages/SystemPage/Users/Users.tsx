@@ -36,14 +36,14 @@ const UsersPage: React.FC = () => {
   const loadUsers = () => {
     setLoading(true);
     nebula
-      .request('list-users')
+      .listUsers({ throwOnError: true })
       .then((res) => {
         setUsers(
-          res.data.users.map((user: UserModel) => ({
+          res.data.users.map((user) => ({
             ...user,
             password: undefined,
             api_key: undefined,
-            api_key_preview: (user as any).api_key,
+            api_key_preview: user.api_key,
           }))
         );
       })
@@ -72,7 +72,7 @@ const UsersPage: React.FC = () => {
 
   const onSave = () => {
     nebula
-      .request('save-user', userData)
+      .saveUser({ body: userData as UserModel, throwOnError: true })
       .then(() => {
         loadUsers();
         toast.success('User saved');

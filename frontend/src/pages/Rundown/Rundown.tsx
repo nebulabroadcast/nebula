@@ -120,13 +120,18 @@ const Rundown: React.FC<RundownProps> = ({ draggedObjects }) => {
   };
 
   const loadRundown = () => {
-    if (!startTime || currentChannelRef.current === null) return;
+    const id_channel = currentChannelRef.current;
+    const date = currentDateRef.current;
+    if (!startTime || id_channel === null || !date) return;
     setLoading(true);
     const requestParams = {
-      date: dateToDateString(currentDateRef.current!),
-      id_channel: currentChannelRef.current,
+      date: dateToDateString(date),
+      id_channel,
     };
-    nebula.request('rundown', requestParams).then(onResponse).catch(onError);
+    nebula
+      .rundown({ body: requestParams, throwOnError: true })
+      .then(onResponse)
+      .catch(onError);
   };
 
   useEffect(() => {
@@ -149,6 +154,8 @@ const Rundown: React.FC<RundownProps> = ({ draggedObjects }) => {
     }
     const rundown = rundownDataRef.current;
     if (!rundown) return;
+    const id_channel = currentChannelRef.current;
+    if (id_channel === null) return;
     const dropAfterRow = rundown[index];
     let i = -1;
     const newOrder: any[] = [];
@@ -212,10 +219,13 @@ const Rundown: React.FC<RundownProps> = ({ draggedObjects }) => {
     setLoading(true);
 
     try {
-      await nebula.request('order', {
-        id_channel: currentChannelRef.current,
-        id_bin: id_bin,
-        order: newOrder,
+      await nebula.order({
+        body: {
+          id_channel,
+          id_bin: id_bin,
+          order: newOrder,
+        },
+        throwOnError: true,
       });
       loadRundown();
     } catch (error) {

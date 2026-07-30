@@ -29,7 +29,7 @@ const SendToDialog = ({
   };
   const onConfirm = (action: number) => {
     nebula
-      .request('send', { ids: assets, id_action: action })
+      .send({ body: { ids: assets, id_action: action }, throwOnError: true })
       .then(() => {
         toast.success('Job request accepted');
       })
@@ -70,9 +70,9 @@ const SendToDialog = ({
     }
 
     nebula
-      .request('actions', { ids: assets })
+      .actions({ body: { ids: assets }, throwOnError: true })
       .then((response) => {
-        setSendToOptions(response.data.actions);
+        setSendToOptions(response.data.actions || []);
       })
       .catch(() => {
         setSendToOptions([]);

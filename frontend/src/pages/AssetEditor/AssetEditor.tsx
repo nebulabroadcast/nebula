@@ -119,9 +119,12 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
     (id_asset: number | string) => {
       setLoading(true);
       nebula
-        .request('get', { ids: [id_asset], type: 'asset' })
+        .get({
+          body: { object_type: 'asset', ids: [Number(id_asset)] },
+          throwOnError: true,
+        })
         .then((response) => {
-          const data = response.data.data[0] || {};
+          const data = response.data.data?.[0] || {};
           setAssetData(data);
           setOriginalData(data);
           assetIdRef.current = id_asset;
@@ -152,9 +155,12 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
     const changedKeys = changedKeysRef.current;
     setLoading(true);
     nebula
-      .request('get', { ids: [assetIdRef.current], type: 'asset' })
+      .get({
+        body: { object_type: 'asset', ids: [Number(assetIdRef.current)] },
+        throwOnError: true,
+      })
       .then((response) => {
-        const freshData = response.data.data[0] || {};
+        const freshData = response.data.data?.[0] || {};
 
         setAssetData((oldFormData) => {
           const newFormData = { ...oldFormData };
@@ -323,14 +329,14 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
       })
         .then(() => {
           nebula
-            .request('set', { id: assetData.id, data: assetData })
+            .set({ body: { id: assetData.id, data: assetData }, throwOnError: true })
             .then((res) => {
               // reload browser if it's a new asset
               // (if it already exists, it will be updated over ws,
               // but new assets won't be displayed until the browser is reloaded)
               if (!assetData.id) {
                 const newId = res.data.id;
-                setFocusedAsset(newId);
+                setFocusedAsset(newId ?? null);
                 reloadBrowser();
               }
             })
@@ -417,12 +423,15 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
       }
       setLoading(true);
       nebula
-        .request('set', { id: assetData.id, data: payload || assetData })
+        .set({
+          body: { id: assetData.id, data: payload || assetData },
+          throwOnError: true,
+        })
         .then((res) => {
           //reload browser if it's a new asset
           if (!assetData.id) {
             const newId = res.data.id;
-            loadAsset(newId);
+            if (newId != null) loadAsset(newId);
             reloadBrowser();
           }
           // if asset already exists, we wait for the ws message to update the data

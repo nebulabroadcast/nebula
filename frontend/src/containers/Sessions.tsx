@@ -39,9 +39,9 @@ const Sessions: React.FC<SessionsProps> = ({ userId }) => {
     if (!userId) return;
     setLoading(true);
     return nebula
-      .request('list-sessions', { id_user: userId })
+      .listSessions({ body: { id_user: userId }, throwOnError: true })
       .then((res) => {
-        setSessions(res.data as SessionModel[]);
+        setSessions(res.data);
       })
       .catch((err: unknown) => {
         console.error(err);
@@ -54,7 +54,7 @@ const Sessions: React.FC<SessionsProps> = ({ userId }) => {
   const invalidateSession = useCallback(
     (token: string) => {
       void nebula
-        .request('invalidate-session', { token })
+        .invalidateSession({ body: { token }, throwOnError: true })
         .then(() => {
           void loadSessions();
         })

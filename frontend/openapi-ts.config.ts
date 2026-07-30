@@ -4,8 +4,6 @@ import { defineConfig } from '@hey-api/openapi-ts';
 const mode = process.env.NODE_ENV || 'development';
 const env = loadEnv(mode, process?.cwd(), '');
 
-console.log('env', env);
-
 const SERVER_URL = env.SERVER_URL || 'http://localhost:4455';
 
 export default defineConfig({
@@ -15,6 +13,5 @@ export default defineConfig({
     lint: 'eslint',
     path: './src/client',
   },
-  // we're only generating types.
-  plugins: ['@hey-api/typescript'],
+  plugins: ['@hey-api/typescript', '@hey-api/client-axios', '@hey-api/sdk'],
 });

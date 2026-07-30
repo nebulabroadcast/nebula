@@ -3,8 +3,10 @@
 import { Dropdown } from '@components';
 import { useDialog } from '@features/Dialogs';
 import { useNebula } from '@features/Nebula';
+import { dateToDateString } from '@lib/utils';
 import React, { useState, useEffect, useMemo } from 'react';
 
+import type { SchedulingTemplateItemModel } from '@/client';
 import nebula from '@/nebula';
 
 const dmessage = `
@@ -13,11 +15,6 @@ Template will be merged with existing events.
 
 This operation cannot be undone.
 `;
-
-interface SchedulingTemplate {
-  name: string;
-  title: string;
-}
 
 interface ApplySchedulingTemplateProps {
   loadEvents: () => void;
@@ -33,7 +30,7 @@ const ApplySchedulingTemplate: React.FC<ApplySchedulingTemplateProps> = ({
   setLoading,
 }) => {
   const { currentChannelId } = useNebula();
-  const [templates, setTemplates] = useState<SchedulingTemplate[]>([]);
+  const [templates, setTemplates] = useState<SchedulingTemplateItemModel[]>([]);
   const showDialog = useDialog();
 
   const channelConfig = useMemo(() => {
@@ -42,8 +39,8 @@ const ApplySchedulingTemplate: React.FC<ApplySchedulingTemplateProps> = ({
   }, [currentChannelId]);
 
   const loadTemplates = () => {
-    nebula.request('list-scheduling-templates', {}).then((response) => {
-      const fetchedTemplates = response.data.templates as SchedulingTemplate[];
+    nebula.listSchedulingTemplates({ throwOnError: true }).then((response) => {
+      const fetchedTemplates = response.data.templates || [];
       fetchedTemplates.sort((a, b) => {
         if (a.name === channelConfig?.default_template) return -1;
         if (b.name === channelConfig?.default_template) return 1;
@@ -72,10 +69,13 @@ const ApplySchedulingTemplate: React.FC<ApplySchedulingTemplateProps> = ({
     }
 
     try {
-      await nebula.request('apply-scheduling-template', {
-        template_name,
-        id_channel,
-        date,
+      await nebula.applySchedulingTemplate({
+        body: {
+          template_name,
+          id_channel,
+          date: date ? dateToDateString(date) : '',
+        },
+        throwOnError: true,
       });
       loadEvents();
     } catch {

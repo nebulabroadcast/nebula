@@ -1,5 +1,5 @@
 import { Table, Section } from '@components';
-import type { TableColumn, TableSortDirection } from '@components/table/types';
+import type { TableColumn, TableRowData, TableSortDirection } from '@components/table/types';
 import Pagination from '@containers/Pagination';
 import { useDialog } from '@features/Dialogs';
 import { useNebula } from '@features/Nebula';
@@ -17,19 +17,15 @@ import { toast } from 'react-toastify';
 
 import BrowserNav from './BrowserNav';
 
+import type { BrowseAssetsRequest } from '@/client';
 import { useWebSocket } from '@/features/Websocket';
 import nebula from '@/nebula';
 
 const ROWS_PER_PAGE = 200;
 
-interface RequestParams {
-  view: number;
-  query: string;
-  limit: number;
-  offset: number;
-  order_by: string;
-  order_dir: string;
-}
+type RequestParams = Required<
+  Pick<BrowseAssetsRequest, 'view' | 'query' | 'limit' | 'offset' | 'order_by' | 'order_dir'>
+>;
 
 interface BrowserTableProps {
   isDragging: boolean;
@@ -55,7 +51,7 @@ const BrowserTable = ({ isDragging }: BrowserTableProps) => {
   const ws = useWebSocket();
 
   const [columns, setColumns] = useState<TableColumn[]>([]);
-  const [data, setData] = useState([]);
+  const [data, setData] = useState<TableRowData[]>([]);
   const [loading, setLoading] = useState(false);
   const [sortBy, setSortBy] = useLocalStorage('mam.browser.sortBy', 'ctime');
   const [sortDirection, setSortDirection] = useLocalStorage<TableSortDirection>(
@@ -120,7 +116,7 @@ const BrowserTable = ({ isDragging }: BrowserTableProps) => {
     const params = requestParamsRef.current;
     if (!params) return;
     nebula
-      .request('browse', params)
+      .browse({ body: params, throwOnError: true })
       .then((response) => {
         const hasMore = response.data.data.length > ROWS_PER_PAGE;
         const rows = response.data.data.slice(0, ROWS_PER_PAGE);
@@ -246,7 +242,7 @@ const BrowserTable = ({ isDragging }: BrowserTableProps) => {
       data: { status },
     }));
     nebula
-      .request('ops', { operations })
+      .ops({ body: { operations }, throwOnError: true })
       .then(() => {
         toast.success('Status updated');
       })

@@ -3,7 +3,6 @@ import { DialogProvider } from '@features/Dialogs';
 import { MediaUploadProvider, MediaUploadMonitor } from '@features/MediaUpload';
 import { WebSocketProvider } from '@features/Websocket';
 import { useLocalStorage } from '@lib/useLocalStorage';
-import axios from 'axios';
 import { useState, useEffect, useMemo, Suspense } from 'react';
 import { Outlet, useLocation } from 'react-router';
 
@@ -11,7 +10,7 @@ import type { InitResponse } from './client';
 import LoadingPage from './pages/LoadingPage';
 import LoginPage from './pages/LoginPage/LoginPage';
 
-import nebula from '@/nebula';
+import nebula, { client } from '@/nebula';
 
 const App = () => {
   const [accessToken, setAccessToken] = useLocalStorage<string | null>(
@@ -32,25 +31,29 @@ const App = () => {
   // Ensure server connection
 
   useEffect(() => {
-    axios.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
-    axios.defaults.headers.common['X-Client-Id'] = nebula.senderId;
-    axios
-      .post<InitResponse>('/api/init', {})
+    client.instance.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
+    client.instance.defaults.headers.common['X-Client-Id'] = nebula.senderId;
+    nebula
+      .init({ throwOnError: true })
       .then((response) => {
-        setInitData(response.data);
-        nebula.settings = response.data.settings || undefined;
-        nebula.experimental = response.data.experimental || false;
-        nebula.plugins = response.data.frontend_plugins || [];
-        nebula.scopedEndpoints = response.data.scoped_endpoints || [];
-        nebula.loginBackground = response.data.background || false;
-        nebula.user = response.data.user || undefined;
-        axios.interceptors.response.use(
+        const data: InitResponse = response.data;
+        setInitData(data);
+        nebula.settings = data.settings || undefined;
+        nebula.experimental = data.experimental || false;
+        nebula.plugins = data.frontend_plugins || [];
+        nebula.scopedEndpoints = data.scoped_endpoints || [];
+        nebula.loginBackground = data.background || false;
+        nebula.user = data.user || undefined;
+        client.instance.interceptors.response.use(
           (response) => {
             return response;
           },
           (error) => {
-            if (error.response.status === 401 && window.location.pathname !== '/') {
-              window.location.href = '/';
+            if (error.response?.status === 401) {
+              setAccessToken(null);
+              if (window.location.pathname !== '/') {
+                window.location.href = '/';
+              }
             }
             return Promise.reject(error);
           }

@@ -1,11 +1,10 @@
 import { Table, Button } from '@components';
 import { useWebSocket } from '@features/Websocket';
 import formatMetaDatetime from '@lib/tableFormat/formatMetaDatetime';
-import type { AxiosResponse } from 'axios';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { NavLink } from 'react-router';
 
-import type { JobListItem, JobState } from '@/client';
+import type { JobListItem, JobState, ManageJobsRequest } from '@/client';
 import nebula from '@/nebula';
 
 const NOT_RESTARTABLE = ['import'];
@@ -53,18 +52,17 @@ export const JobsTable: React.FC<JobsTableProps> = ({
 
   const loadJobs = useCallback(() => {
     setLoading(true);
-    const params: Record<string, any> = {
-      view: effectiveView,
+    const params: ManageJobsRequest = {
+      view: effectiveView as ManageJobsRequest['view'],
       search_query: searchQuery,
     };
     if (assetId !== undefined) {
       params.asset_ids = [Number(assetId)];
     }
     nebula
-      .request('jobs', params)
-      .then((response: AxiosResponse) => {
-        const data = response.data as { jobs?: JobListItem[] };
-        setJobs(data.jobs || []);
+      .jobs({ body: params, throwOnError: true })
+      .then((response) => {
+        setJobs(response.data.jobs || []);
       })
       .catch((err: unknown) => {
         console.error(err);
@@ -81,13 +79,13 @@ export const JobsTable: React.FC<JobsTableProps> = ({
   }, [jobsStatusKey, effectiveView, searchQuery, assetId, loadJobs]);
 
   const restartJob = (id: number) => {
-    void nebula.request('jobs', { restart: id }).then(() => {
+    void nebula.jobs({ body: { restart: id }, throwOnError: true }).then(() => {
       loadJobs();
     });
   };
 
   const abortJob = (id: number) => {
-    void nebula.request('jobs', { abort: id }).then(() => {
+    void nebula.jobs({ body: { abort: id }, throwOnError: true }).then(() => {
       loadJobs();
     });
   };
@@ -127,9 +125,11 @@ export const JobsTable: React.FC<JobsTableProps> = ({
     const enabled = [0, 5].includes(row.status);
 
     const setPriority = (priority: number) => {
-      void nebula.request('jobs', { priority: [row.id, priority] }).then(() => {
-        loadJobs();
-      });
+      void nebula
+        .jobs({ body: { priority: [row.id, priority] }, throwOnError: true })
+        .then(() => {
+          loadJobs();
+        });
     };
 
     const PRIORITIES = [
