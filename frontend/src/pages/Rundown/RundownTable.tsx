@@ -91,9 +91,9 @@ const RundownTable: React.FC<RundownTableProps> = ({
 
     // get the row element and scroll to it
     const query = `[data-index="${scrollToIndex}"]`;
-    const row = tableRef.current.querySelector(query)!;
+    const row = tableRef.current.querySelector(query);
     if (row) {
-      const pos = row.offsetTop - (row.parentNode as HTMLElement).offsetTop;
+      const pos = (row as HTMLElement).offsetTop - (row.parentNode as HTMLElement).offsetTop;
       const parent = row.parentNode?.parentNode?.parentNode as HTMLElement; // he he he
       if (parent) {
         parent.scrollTop = pos;
@@ -135,8 +135,8 @@ const RundownTable: React.FC<RundownTableProps> = ({
     if (!ids.length) return;
 
     showDialog('sendto', 'Send to...', { assets: ids })
-      .then(() => {})
-      .catch(() => {});
+      .then(() => { })
+      .catch(() => { });
   };
 
   const onSetPrimary = async () => {
