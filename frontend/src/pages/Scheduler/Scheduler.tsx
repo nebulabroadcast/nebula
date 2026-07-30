@@ -15,6 +15,7 @@ import { toast } from 'react-toastify';
 
 import SchedulerNav from './SchedulerNav';
 
+import type { EventData } from '@/client';
 import { useNebula } from '@/features/Nebula';
 import nebula from '@/nebula';
 
@@ -86,7 +87,13 @@ const Scheduler: React.FC<SchedulerProps> = ({ draggedObjects }) => {
   const loadEvents = () => {
     if (!startTime || currentChannelId === null) return;
     setLoading(true);
-    nebula.request('scheduler', requestParams).then(onResponse).catch(onError);
+    nebula
+      .scheduler({
+        body: { ...requestParams, id_channel: currentChannelId },
+        throwOnError: true,
+      })
+      .then(onResponse)
+      .catch(onError);
   };
 
   // Saving events to the server
@@ -98,11 +105,11 @@ const Scheduler: React.FC<SchedulerProps> = ({ draggedObjects }) => {
     const finalData: Record<string, any> = {};
 
     try {
-      const res = await nebula.request('get', {
-        object_type: 'event',
-        ids: [id],
+      const res = await nebula.get({
+        body: { object_type: 'event', ids: [Number(id)] },
+        throwOnError: true,
       });
-      const edata = res.data.data[0];
+      const edata = res.data.data?.[0] || {};
       for (const field of fields) {
         initialData[field.name] = edata[field.name];
       }
@@ -126,6 +133,7 @@ const Scheduler: React.FC<SchedulerProps> = ({ draggedObjects }) => {
   };
 
   const saveEvent = async (event: any) => {
+    if (currentChannelId === null) return;
     const payload: Record<string, any> = {
       start: event.start,
       meta: {},
@@ -177,9 +185,16 @@ const Scheduler: React.FC<SchedulerProps> = ({ draggedObjects }) => {
       }
     }
 
-    const params = { ...requestParams, events: [payload] };
+    const params = {
+      ...requestParams,
+      id_channel: currentChannelId,
+      events: [payload] as EventData[],
+    };
     setLoading(true);
-    nebula.request('scheduler', params).then(onResponse).catch(onError);
+    nebula
+      .scheduler({ body: params, throwOnError: true })
+      .then(onResponse)
+      .catch(onError);
   };
 
   //
@@ -194,11 +209,11 @@ const Scheduler: React.FC<SchedulerProps> = ({ draggedObjects }) => {
     const initialData: Record<string, any> = {};
     if (event.id) {
       try {
-        const res = await nebula.request('get', {
-          object_type: 'event',
-          ids: [event.id],
+        const res = await nebula.get({
+          body: { object_type: 'event', ids: [Number(event.id)] },
+          throwOnError: true,
         });
-        const edata = res.data.data[0];
+        const edata = res.data.data?.[0] || {};
         for (const field of fields) {
           initialData[field.name] = edata[field.name];
         }
@@ -216,9 +231,17 @@ const Scheduler: React.FC<SchedulerProps> = ({ draggedObjects }) => {
   };
 
   const deleteEvent = (eventId: string | number) => {
+    if (currentChannelId === null) return;
     setLoading(true);
-    const params = { ...requestParams, delete: [eventId] };
-    nebula.request('scheduler', params).then(loadEvents).catch(onError);
+    const params = {
+      ...requestParams,
+      id_channel: currentChannelId,
+      delete: [Number(eventId)],
+    };
+    nebula
+      .scheduler({ body: params, throwOnError: true })
+      .then(loadEvents)
+      .catch(onError);
   };
 
   const deleteUnaired = async () => {
@@ -229,10 +252,18 @@ const Scheduler: React.FC<SchedulerProps> = ({ draggedObjects }) => {
 
     showDialog('confirm', 'Delete unaired events', { message })
       .then(() => {
+        if (currentChannelId === null) return;
         setLoading(true);
-        const eventIds = events.map((e) => e.id);
-        const params = { ...requestParams, delete: eventIds };
-        nebula.request('scheduler', params).then(loadEvents).catch(onError);
+        const eventIds = events.map((e) => Number(e.id));
+        const params = {
+          ...requestParams,
+          id_channel: currentChannelId,
+          delete: eventIds,
+        };
+        nebula
+          .scheduler({ body: params, throwOnError: true })
+          .then(loadEvents)
+          .catch(onError);
       })
       .catch(() => {});
   };

@@ -56,7 +56,7 @@ const ChangePasswordForm: React.FC = () => {
     }
 
     nebula
-      .request('password', { password })
+      .password({ body: { password }, throwOnError: true })
       .then(() => {
         toast.success('Password changed');
         setPassword('');

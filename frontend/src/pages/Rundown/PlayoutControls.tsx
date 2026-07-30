@@ -7,6 +7,7 @@ import styled from 'styled-components';
 
 import PlayoutPlugins from './PlayoutPlugins';
 
+import type { PlayoutAction } from '@/client';
 import nebula from '@/nebula';
 
 
@@ -143,13 +144,13 @@ const PlayoutControls: React.FC<PlayoutControlsProps> = ({
     return () => { clearInterval(timer); };
   }, []);
 
-  const onCommand = (command: string, payload?: any) => {
+  const onCommand = (command: PlayoutAction, payload?: Record<string, unknown>) => {
+    if (currentChannelId === null) return;
     console.log('Command', command);
     nebula
-      .request('playout', {
-        id_channel: currentChannelId,
-        action: command,
-        payload,
+      .playout({
+        body: { id_channel: currentChannelId, action: command, payload },
+        throwOnError: true,
       })
       .then(loadRundown)
       .catch(onError);

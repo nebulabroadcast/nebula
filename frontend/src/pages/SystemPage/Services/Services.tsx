@@ -1,4 +1,4 @@
-import type { ServiceListItem, ServiceState } from '@client';
+import type { ManageServicesRequest, ServiceListItem, ServiceState } from '@client';
 import { Table, Button, InputSwitch, Spacer, Section, Icon } from '@components';
 import { TableColumn } from '@components/table/types';
 import { useNebula } from '@features/Nebula';
@@ -103,9 +103,9 @@ const ServicesPage: React.FC = () => {
     }
     setLoading(true);
     nebula
-      .request('services', payload)
+      .services({ body: payload as ManageServicesRequest, throwOnError: true })
       .then((response) => {
-        setServices(response.data.services);
+        setServices(response.data.services || []);
       })
       .catch((err) => {
         console.error(err);

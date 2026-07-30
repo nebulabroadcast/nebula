@@ -1,5 +1,4 @@
 import { Button, InputText, InputPassword, ButtonLink } from '@components';
-import axios from 'axios';
 import { useState, useEffect, useRef, FormEvent, CSSProperties } from 'react';
 import { toast } from 'react-toastify';
 
@@ -68,8 +67,8 @@ const StandardLogin = ({
 
   const onSubmit = (event: FormEvent) => {
     event.preventDefault();
-    axios
-      .post('/api/login', { username, password })
+    nebula
+      .login({ body: { username, password }, throwOnError: true })
       .then((response) => {
         onLogin(response.data.access_token);
       })
@@ -150,9 +149,11 @@ const LoginPage = ({ motd, onLogin, ssoOptions }: LoginPageProps) => {
     window.history.replaceState({}, document.title, window.location.pathname);
     if (access_token) {
       // exchange tokens
-      axios.post('/api/token-exchange', { access_token }).then((response) => {
-        onLogin(response.data.access_token);
-      });
+      nebula
+        .tokenExchange({ body: { access_token }, throwOnError: true })
+        .then((response) => {
+          onLogin(response.data.access_token);
+        });
     } else if (error) {
       toast.error(error);
     } else {

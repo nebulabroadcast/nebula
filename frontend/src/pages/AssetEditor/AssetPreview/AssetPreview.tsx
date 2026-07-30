@@ -1,6 +1,5 @@
 import VideoPlayer from '@containers/VideoPlayer';
 import { VideoPlayerRef } from '@containers/VideoPlayer/types';
-import axios from 'axios';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 
 import { SidePanel } from './SidePanel';
@@ -57,10 +56,10 @@ export const AssetPreview: React.FC<PreviewProps> = ({ assetData, setAssetData }
       setLoading(false);
       return;
     }
-    axios
-      .get<ProxyInfo>(`/proxy/${assetData.id}/info`)
+    nebula
+      .getProxyInfo({ path: { id_asset: assetData.id }, throwOnError: true })
       .then((response) => {
-        setProxyInfo(response.data);
+        setProxyInfo(response.data as ProxyInfo);
       })
       .catch(() => {
         setProxyInfo(null);

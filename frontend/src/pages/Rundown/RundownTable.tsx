@@ -6,7 +6,7 @@ import { formatRowHighlightColor, formatRowHighlightStyle } from '@lib/tableForm
 import React, { useMemo, useRef, useEffect } from 'react';
 import { useSearchParams, useLocation } from 'react-router';
 
-import type { RundownRow } from '../../client';
+import type { ObjectType, RundownRow } from '../../client';
 
 import RundownTableWrapper from './RundownTableWrapper';
 import { getRunModeOptions, getRundownColumns } from './utils';
@@ -124,8 +124,11 @@ const RundownTable: React.FC<RundownTableProps> = ({
   const deleteSelectedItems = () => {
     if (!selectedItems.length) return;
     console.debug('Deleting items:', selectedItems);
-    const payload = { object_type: 'item', ids: selectedItems };
-    nebula.request('delete', payload).then(loadRundown).catch(onError);
+    const payload = { object_type: 'item' as ObjectType, ids: selectedItems.map(Number) };
+    nebula
+      .delete_({ body: payload, throwOnError: true })
+      .then(loadRundown)
+      .catch(onError);
   };
 
   const onSendTo = () => {
@@ -144,9 +147,9 @@ const RundownTable: React.FC<RundownTableProps> = ({
     const id_asset = focusedObject.id_asset;
     const id_event = focusedObject.id_event;
     try {
-      const res = await nebula.request('get', {
-        object_type: 'asset',
-        ids: [id_asset],
+      const res = await nebula.get({
+        body: { object_type: 'asset', ids: [id_asset] },
+        throwOnError: true,
       });
       console.log('Asset:', res.data.data);
       if (!res.data?.data?.length) {
@@ -160,10 +163,9 @@ const RundownTable: React.FC<RundownTableProps> = ({
         emeta[key] = meta[key] || null;
       }
       emeta.id_asset = id_asset;
-      await nebula.request('set', {
-        object_type: 'event',
-        id: id_event,
-        data: emeta,
+      await nebula.set({
+        body: { object_type: 'event', id: id_event, data: emeta },
+        throwOnError: true,
       });
 
       loadRundown();
@@ -179,12 +181,18 @@ const RundownTable: React.FC<RundownTableProps> = ({
         (row) => row.item_role === 'placeholder' && selectedItems.includes(row.id)
       )
       .map((row) => row.id);
-    nebula.request('solve', { solver, items }).then(loadRundown).catch(onError);
+    nebula
+      .solve({ body: { solver, items }, throwOnError: true })
+      .then(loadRundown)
+      .catch(onError);
   };
 
-  const updateObject = (object_type: string, id: number | string, data: any) => {
-    const operations = [{ object_type, id, data }];
-    nebula.request('ops', { operations }).then(loadRundown).catch(onError);
+  const updateObject = (object_type: ObjectType, id: number | string, data: any) => {
+    const operations = [{ object_type, id: Number(id), data }];
+    nebula
+      .ops({ body: { operations }, throwOnError: true })
+      .then(loadRundown)
+      .catch(onError);
   };
 
   const setRunMode = (
@@ -195,14 +203,14 @@ const RundownTable: React.FC<RundownTableProps> = ({
     updateObject(object_type, id, { run_mode });
   };
 
-  const editObject = async (object_type: string, id: number | string) => {
+  const editObject = async (object_type: ObjectType, id: number | string) => {
     let objectData: any = {};
     try {
-      const res = await nebula.request('get', {
-        object_type,
-        ids: [id],
+      const res = await nebula.get({
+        body: { object_type, ids: [Number(id)] },
+        throwOnError: true,
       });
-      objectData = res.data.data[0];
+      objectData = res.data.data?.[0];
     } catch (err) {
       onError(err);
       return;
@@ -233,11 +241,11 @@ const RundownTable: React.FC<RundownTableProps> = ({
 
     if (object_type === 'item' && objectData.id_asset) {
       try {
-        const res = await nebula.request('get', {
-          object_type: 'asset',
-          ids: [objectData.id_asset],
+        const res = await nebula.get({
+          body: { object_type: 'asset', ids: [objectData.id_asset] },
+          throwOnError: true,
         });
-        const assetData = res.data.data[0];
+        const assetData = res.data.data?.[0] || {};
         for (const field of fields) {
           const key = field.name;
           if (!objectData[key]) objectData[key] = assetData[key];
@@ -293,12 +301,15 @@ const RundownTable: React.FC<RundownTableProps> = ({
     setSelectedEvents([]);
     if (event.detail === 2) {
       // doubleClick
-      if (rundownMode === 'control' && row.type === 'item') {
+      if (rundownMode === 'control' && row.type === 'item' && currentChannelId !== null) {
         nebula
-          .request('playout', {
-            id_channel: currentChannelId,
-            action: 'cue',
-            payload: { id_item: row.id },
+          .playout({
+            body: {
+              id_channel: currentChannelId,
+              action: 'cue',
+              payload: { id_item: row.id },
+            },
+            throwOnError: true,
           })
           .then(loadRundown)
           .catch(onError);

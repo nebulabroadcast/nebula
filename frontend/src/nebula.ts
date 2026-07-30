@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 
 import type {
@@ -11,8 +10,16 @@ import type {
   ScopedEndpoint,
   BasePlayoutChannelSettings,
 } from './client';
+import { client } from './client/client.gen';
+import * as api from './client/sdk.gen';
+
+export { client };
 
 const nebula = {
+  // Typed, per-endpoint API calls generated from the backend's OpenAPI schema
+  // (see openapi-ts.config.ts). Call e.g. nebula.jobs({ body, throwOnError: true }).
+  ...api,
+
   // Settings
 
   settings: undefined as ClientSettingsModel | undefined,
@@ -27,12 +34,15 @@ const nebula = {
 
   // API
 
+  // Generic escape hatch for endpoints whose name isn't known at compile
+  // time (e.g. plugin-provided actions picked from a runtime list).
+  // Uses the same axios instance (and auth wiring) as the generated calls above.
   request(endpoint: string, data = {}) {
-    return axios.post(`/api/${endpoint}`, data);
+    return client.instance.post(`/api/${endpoint}`, data);
   },
 
   getAccessToken(): string {
-    const header = axios.defaults?.headers?.common.Authorization;
+    const header = client.instance.defaults.headers.common.Authorization;
     return typeof header === 'string' ? header.replace('Bearer ', '') : '';
   },
 

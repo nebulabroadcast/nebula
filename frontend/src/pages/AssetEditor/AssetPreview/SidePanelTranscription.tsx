@@ -54,10 +54,9 @@ interface SegmentWidgetProps {
 }
 
 const getTranscription = async (assetId: number): Promise<Segment[]> => {
-  let response = await nebula.request('get-aux', {
-    object_id: assetId,
-    key: 'nebula:transcription',
-    can_fail: true,
+  let response = await nebula.getAux({
+    body: { object_id: assetId, key: 'nebula:transcription', can_fail: true },
+    throwOnError: true,
   });
   let tdata = response.data as TranscriptionData | null;
 
@@ -65,10 +64,9 @@ const getTranscription = async (assetId: number): Promise<Segment[]> => {
     return tdata.segments;
   }
 
-  response = await nebula.request('get-aux', {
-    object_id: assetId,
-    key: 'openai:transcription',
-    can_fail: true,
+  response = await nebula.getAux({
+    body: { object_id: assetId, key: 'openai:transcription', can_fail: true },
+    throwOnError: true,
   });
   tdata = response.data as TranscriptionData | null;
 
