@@ -1,6 +1,6 @@
-import React from 'react';
 import { Navbar } from '@components';
 import DraggableIcon from '@containers/DraggableIcon';
+import React from 'react';
 
 const dragIcons = [
   {

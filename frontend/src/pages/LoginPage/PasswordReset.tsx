@@ -1,7 +1,7 @@
-import { toast } from 'react-toastify';
-import axios from 'axios';
 import { InputText, InputPassword, Button } from '@components';
+import axios from 'axios';
 import React from 'react';
+import { toast } from 'react-toastify';
 
 import { LoginForm } from './LoginPage.styled';
 import NebulaLogo from '/src/assets/logo-wide.svg';

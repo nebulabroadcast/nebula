@@ -32,7 +32,7 @@ const nebula = {
   },
 
   getAccessToken(): string {
-    const header = axios.defaults?.headers?.common['Authorization'];
+    const header = axios.defaults?.headers?.common.Authorization;
     return typeof header === 'string' ? header.replace('Bearer ', '') : '';
   },
 
@@ -48,7 +48,7 @@ const nebula = {
     );
   },
 
-  csOptions(key: string): (ClientCsItemModel & { value: string })[] {
+  csOptions(key: string): Array<ClientCsItemModel & { value: string }> {
     const cs = this.settings?.cs?.[key] || {};
     const result = [];
     for (const value in cs) {
@@ -105,9 +105,7 @@ const nebula = {
     if (!this.user) return false;
     if (this.user.is_admin) return true;
 
-    const userPermissions: {
-      [key: string]: boolean | string | number | (string | number | boolean)[];
-    } = this.user.permissions || {};
+    const userPermissions: Record<string, boolean | string | number | Array<string | number | boolean>> = this.user.permissions || {};
 
     if (!Object.keys(userPermissions).includes(permission)) {
       return false;

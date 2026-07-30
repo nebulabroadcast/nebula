@@ -1,3 +1,4 @@
+import type { TableDraggableItem } from '@components/table/types';
 import { useDialog } from '@features/Dialogs';
 import { useNebula } from '@features/Nebula';
 import { useWebSocket } from '@features/Websocket';
@@ -8,14 +9,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router';
 import { toast } from 'react-toastify';
 
-import nebula from '@/nebula';
 import type { RundownRow } from '../../client';
-import type { TableDraggableItem } from '@components/table/types';
 
 import PlayoutControls from './PlayoutControls';
 import RundownEditTools from './RundownEditTools';
 import RundownNav from './RundownNav';
 import RundownTable from './RundownTable';
+
+import nebula from '@/nebula';
 
 interface RundownProps {
   draggedObjects?: TableDraggableItem[] | null;
@@ -38,8 +39,8 @@ const Rundown: React.FC<RundownProps> = ({ draggedObjects }) => {
   const [loading, setLoading] = useState(false);
 
   const [playoutStatus, setPlayoutStatus] = useState<any>(null);
-  const [selectedItems, setSelectedItems] = useState<(number | string)[]>([]);
-  const [selectedEvents, setSelectedEvents] = useState<(number | string)[]>([]);
+  const [selectedItems, setSelectedItems] = useState<Array<number | string>>([]);
+  const [selectedEvents, setSelectedEvents] = useState<Array<number | string>>([]);
   const [focusedObject, setFocusedObject] = useState<RundownRow | null>(null);
 
   //

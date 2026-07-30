@@ -1,14 +1,15 @@
-import React, { useState, useMemo } from 'react';
 
-import nebula from '@/nebula';
+
+import DateNav from '@containers/DateNav';
+import React, { useState, useMemo } from 'react';
 
 import ApplySchedulingTemplate from './ApplySchedulingTemplate';
 import { createTitle } from './utils';
 
 import { Navbar, Button, Spacer } from '@/components';
-import DateNav from '@containers/DateNav';
 import DraggableIcon from '@/containers/DraggableIcon';
 import { useNebula } from '@/features/Nebula';
+import nebula from '@/nebula';
 
 const dragIcons = [
   {

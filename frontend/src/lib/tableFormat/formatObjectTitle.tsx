@@ -1,7 +1,8 @@
 import { Spacer } from '@components';
-import styled from 'styled-components';
-import nebula from '@/nebula';
 import { TableRowData } from '@components/table/types';
+import styled from 'styled-components';
+
+import nebula from '@/nebula';
 
 const TitleNote = styled.span`
   color: var(--color-text-dim);

@@ -1,8 +1,8 @@
-import { Timecode } from '@wfoxall/timeframe';
 import { TableRowData } from '@components/table/types';
+import { Timecode } from '@wfoxall/timeframe';
 
 const formatMetaTimecode = (rowData: TableRowData, key: string) => {
-  let duration = (rowData[key] as number) || 0;
+  const duration = (rowData[key] as number) || 0;
   if (!duration) return <td></td>;
 
   const fps = (rowData['video/fps_f'] as number) || 25;

@@ -1,7 +1,8 @@
-import nebula from '@/nebula';
-import { getColumnWidth, getFormatter } from '@lib/tableFormat';
-import type { TableColumn } from '@components/table/types';
 import type { ContextMenuOption } from '@components/ContextMenu';
+import type { TableColumn } from '@components/table/types';
+import { getColumnWidth, getFormatter } from '@lib/tableFormat';
+
+import nebula from '@/nebula';
 
 const getRunModeOptions = (
   object_type: 'event' | 'item',
@@ -18,22 +19,22 @@ const getRunModeOptions = (
         label: 'Run: Auto',
         icon: 'play_arrow',
         separator: true,
-        onClick: () => func('event', selection, 0),
+        onClick: () => { func('event', selection, 0); },
       },
       {
         label: 'Run: Manual',
         icon: 'hand_gesture',
-        onClick: () => func('event', selection, 1),
+        onClick: () => { func('event', selection, 1); },
       },
       {
         label: 'Run: Soft',
         icon: 'hourglass_empty',
-        onClick: () => func('event', selection, 2),
+        onClick: () => { func('event', selection, 2); },
       },
       {
         label: 'Run Hard',
         icon: 'hourglass_bottom',
-        onClick: () => func('event', selection, 3),
+        onClick: () => { func('event', selection, 3); },
       },
     ];
   }
@@ -43,17 +44,17 @@ const getRunModeOptions = (
         label: 'Run auto',
         icon: 'play_arrow',
         separator: true,
-        onClick: () => func('item', selection, 0),
+        onClick: () => { func('item', selection, 0); },
       },
       {
         label: 'Manual',
         icon: 'hand_gesture',
-        onClick: () => func('item', selection, 1),
+        onClick: () => { func('item', selection, 1); },
       },
       {
         label: 'Skip',
         icon: 'skip_next',
-        onClick: () => func('item', selection, 4),
+        onClick: () => { func('item', selection, 4); },
       },
     ];
   }

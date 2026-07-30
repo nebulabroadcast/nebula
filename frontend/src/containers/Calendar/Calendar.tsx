@@ -475,7 +475,7 @@ const Calendar: React.FC<CalendarProps> = ({
             id="calendar"
             ref={calendarRef}
             onMouseDown={onMouseDown}
-            onMouseUp={onMouseUpHandler as React.MouseEventHandler<HTMLCanvasElement>}
+            onMouseUp={onMouseUpHandler}
             onClick={onClick}
           />
         </div>

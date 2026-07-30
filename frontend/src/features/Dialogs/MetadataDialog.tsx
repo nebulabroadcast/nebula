@@ -1,7 +1,7 @@
 import { Button, Dialog } from '@components';
+import MetadataEditor from '@containers/MetadataEditor';
 import { useState } from 'react';
 
-import MetadataEditor from '@containers/MetadataEditor';
 import type { ClientMetaTypeModel } from '../../client';
 
 interface MetadataDialogProps {
@@ -9,7 +9,7 @@ interface MetadataDialogProps {
   handleCancel: () => void;
   handleConfirm: (data: Record<string, any>) => void;
   title: React.ReactNode;
-  fields: (ClientMetaTypeModel & { name: string })[];
+  fields: Array<ClientMetaTypeModel & { name: string }>;
 }
 
 const MetadataDialog = ({
@@ -21,9 +21,9 @@ const MetadataDialog = ({
 }: MetadataDialogProps) => {
   const [data, setData] = useState(initialData);
 
-  const onReset = () => setData(initialData);
-  const onCancel = () => handleCancel();
-  const onConfirm = () => handleConfirm(data);
+  const onReset = () => { setData(initialData); };
+  const onCancel = () => { handleCancel(); };
+  const onConfirm = () => { handleConfirm(data); };
 
   const footer = (
     <>

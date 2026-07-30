@@ -2,6 +2,7 @@ import { Loader, Section } from '@components';
 import { TableDraggableItem } from '@components/table/types';
 import MetadataEditor from '@containers/MetadataEditor';
 import { useDialog } from '@features/Dialogs';
+import { JobsTable } from '@features/JobsTable';
 import { useNebula } from '@features/Nebula';
 import { useWebSocket } from '@features/Websocket';
 import { useLocalStorage } from '@lib/useLocalStorage';
@@ -15,7 +16,6 @@ import AssetMainProps from './AssetMainProps';
 import { AssetPreview } from './AssetPreview';
 import AssetEditorNav from './EditorNav';
 
-import { JobsTable } from '@features/JobsTable';
 
 import nebula from '@/nebula';
 

@@ -1,5 +1,6 @@
-import React from 'react';
 import { Table, Section } from '@components';
+import React from 'react';
+
 import type { UserModel } from '../../../client';
 
 interface UserListProps {
@@ -17,7 +18,7 @@ const UserList: React.FC<UserListProps> = ({ onSelect, users, currentId, loading
         data={users}
         loading={loading}
         selection={currentId ? [currentId] : []}
-        onRowClick={(row) => onSelect(row.id as number)}
+        onRowClick={(row) => { onSelect(row.id as number); }}
         keyField="id"
         columns={[
           {

@@ -131,7 +131,7 @@ const useMediaUploadLogic = (): MediaUploadContextType => {
     activeUploadRef.current = nextTask.id;
 
     const { id, file, controller } = nextTask;
-    updateTask(id, { status: UPLOAD_STATUS.UPLOADING as MediaUploadStatus });
+    updateTask(id, { status: UPLOAD_STATUS.UPLOADING });
 
     try {
       const handleProgress = (event: AxiosProgressEvent) => {
@@ -154,7 +154,7 @@ const useMediaUploadLogic = (): MediaUploadContextType => {
 
       toast.success(`File "${file.name}" uploaded successfully.`);
       updateTask(id, {
-        status: UPLOAD_STATUS.SUCCESS as MediaUploadStatus,
+        status: UPLOAD_STATUS.SUCCESS,
         progress: 100,
         bytesTransferred: file.size,
       });
@@ -165,7 +165,7 @@ const useMediaUploadLogic = (): MediaUploadContextType => {
       } else {
         console.error(`Upload ${id} failed:`, error);
         updateTask(id, {
-          status: UPLOAD_STATUS.ERROR as MediaUploadStatus,
+          status: UPLOAD_STATUS.ERROR,
           progress: 0,
         });
       }

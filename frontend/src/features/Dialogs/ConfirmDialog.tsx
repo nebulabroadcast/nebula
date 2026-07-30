@@ -18,8 +18,8 @@ const ConfirmDialog = ({
   title,
   message,
 }: ConfirmDialogProps) => {
-  const onCancel = () => handleCancel();
-  const onConfirm = () => handleConfirm();
+  const onCancel = () => { handleCancel(); };
+  const onConfirm = () => { handleConfirm(); };
 
   const footer = (
     <>

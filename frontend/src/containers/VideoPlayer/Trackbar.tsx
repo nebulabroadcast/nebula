@@ -11,7 +11,7 @@ interface TrackbarProps {
   onScrubFinished?: (time: number) => void;
   markIn?: number;
   markOut?: number;
-  bufferedRanges: { start: number; end: number }[];
+  bufferedRanges: Array<{ start: number; end: number }>;
   frameRate: number;
   marks?: Record<string, number>;
 }
