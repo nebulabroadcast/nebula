@@ -45,10 +45,11 @@ async def restart_job(id_job: int, user: nebula.User) -> None:
         status=5,
         retries=0,
         progress=0,
-        message=$1
-        WHERE id = $2
+        message=$1,
+        creation_time=$2
+        WHERE id = $3
     """
-    await nebula.db.execute(query, message, id_job)
+    await nebula.db.execute(query, message, int(time.time()), id_job)
     await nebula.msg(
         "job_progress",
         id=id_job,
@@ -172,10 +173,8 @@ class ManageJobs(APIRequest):
         LEFT JOIN actions as ac ON ac.id = j.id_action
         {("WHERE " + (" AND ".join(conds))) if conds else ""}
         ORDER BY
-            j.progress DESC NULLS LAST,
-            j.end_time DESC,
-            j.start_time DESC,
-            j.creation_time DESC
+            j.creation_time DESC,
+            j.end_time DESC
         LIMIT 100
         """
 
