@@ -1,4 +1,5 @@
-import type { ManageServicesRequest, ServiceListItem, ServiceState } from '@client';
+import { ServiceState } from '@client';
+import type { ManageServicesRequest, ServiceListItem } from '@client';
 import { Table, Button, InputSwitch, Spacer, Section, Icon } from '@components';
 import { TableColumn } from '@components/table/types';
 import { useNebula } from '@features/Nebula';
@@ -49,15 +50,15 @@ const BlinkIcon = styled(Icon)`
 const formatStatus = (rowData: ExtendedServiceItem) => {
   const status = rowData.status;
   switch (status) {
-    case 0:
+    case ServiceState.STOPPED:
       return <td>Stopped</td>;
-    case 1:
+    case ServiceState.STARTED:
       return <td>Running</td>;
-    case 2:
+    case ServiceState.STARTING:
       return <td>Starting</td>;
-    case 3:
+    case ServiceState.STOPPING:
       return <td>Stopping</td>;
-    case 4:
+    case ServiceState.KILL:
       return <td>Killing</td>;
     default:
       return <td>Unknown</td>;
@@ -140,7 +141,7 @@ const ServicesPage: React.FC = () => {
     const status = rowData.status;
     let b = null;
     switch (status) {
-      case 0:
+      case ServiceState.STOPPED:
         b = (
           <Button
             onClick={() => {
@@ -150,7 +151,7 @@ const ServicesPage: React.FC = () => {
           />
         );
         break;
-      case 1:
+      case ServiceState.STARTED:
         b = (
           <Button
             onClick={() => {
@@ -160,7 +161,7 @@ const ServicesPage: React.FC = () => {
           />
         );
         break;
-      case 3:
+      case ServiceState.STOPPING:
         b = (
           <Button
             onClick={() => {

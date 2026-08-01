@@ -6,6 +6,7 @@ import { formatRowHighlightColor, formatRowHighlightStyle } from '@lib/tableForm
 import React, { useMemo, useRef, useEffect } from 'react';
 import { useSearchParams, useLocation } from 'react-router';
 
+import { RunMode } from '../../client';
 import type { ObjectType, RundownRow } from '../../client';
 
 import RundownTableWrapper from './RundownTableWrapper';
@@ -205,7 +206,7 @@ const RundownTable: React.FC<RundownTableProps> = ({
   const setRunMode = (
     object_type: 'event' | 'item',
     id: number | string,
-    run_mode: number
+    run_mode: RunMode
   ) => {
     updateObject(object_type, id, { run_mode });
   };
