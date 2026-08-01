@@ -1,7 +1,38 @@
 import enum
 
+from pydantic import GetJsonSchemaHandler
+from pydantic.json_schema import JsonSchemaValue
+from pydantic_core import CoreSchema
 
-class ObjectStatus(enum.IntEnum):
+
+class SchemaEnumMixin:
+    """Expose enumeration member names in the generated JSON schema.
+
+    JSON schema has no notion of member names, so `enum` members end up
+    as bare values (e.g. `0 | 1 | 2`) in the OpenAPI schema and in every
+    client generated from it. This mixin adds the `x-enum-varnames`
+    extension, which client generators use to reconstruct the names.
+    """
+
+    @classmethod
+    def __get_pydantic_json_schema__(
+        cls,
+        core_schema: CoreSchema,
+        handler: GetJsonSchemaHandler,
+    ) -> JsonSchemaValue:
+        schema = handler(core_schema)
+        assert issubclass(cls, enum.Enum)
+        # Iterating the class (as opposed to __members__) skips aliases,
+        # which keeps the names aligned with the values pydantic emits.
+        schema["x-enum-varnames"] = [member.name for member in cls]
+        return schema
+
+
+class IntEnum(SchemaEnumMixin, enum.IntEnum):
+    """Integer enumeration with member names exposed to the JSON schema."""
+
+
+class ObjectStatus(IntEnum):
     """Object status enumeration.
 
     This enumeration is used to indicate the status of an object.
@@ -42,7 +73,7 @@ class ObjectStatus(enum.IntEnum):
     RETRIEVING = 11
 
 
-class ContentType(enum.IntEnum):
+class ContentType(IntEnum):
     AUDIO = 1
     VIDEO = 2
     IMAGE = 3
@@ -55,7 +86,7 @@ class ContentType(enum.IntEnum):
     PACKAGE = 10
 
 
-class JobState(enum.IntEnum):
+class JobState(IntEnum):
     PENDING = 0
     IN_PROGRESS = 1
     COMPLETED = 2
@@ -65,13 +96,13 @@ class JobState(enum.IntEnum):
     SKIPPED = 6
 
 
-class MediaType(enum.IntEnum):
+class MediaType(IntEnum):
     VIRTUAL = 0
     FILE = 1
     URI = 2
 
 
-class MetaClass(enum.IntEnum):
+class MetaClass(IntEnum):
     STRING = 0  # Single-line plain text (default)
     TEXT = 1  # Multiline text. 'syntax' can be provided in config
     INTEGER = 2  # Integer only value (for db keys, counts, etc.)
@@ -86,7 +117,7 @@ class MetaClass(enum.IntEnum):
     COLOR = 11  # stored as integer
 
 
-class ObjectType(enum.Enum):
+class ObjectType(SchemaEnumMixin, enum.Enum):
     ASSET = "asset"
     ITEM = "item"
     BIN = "bin"
@@ -94,7 +125,7 @@ class ObjectType(enum.Enum):
     USER = "user"
 
 
-class ObjectTypeId(enum.IntEnum):
+class ObjectTypeId(IntEnum):
     ASSET = 0
     ITEM = 1
     BIN = 2
@@ -102,7 +133,7 @@ class ObjectTypeId(enum.IntEnum):
     USER = 4
 
 
-class RunMode(enum.IntEnum):
+class RunMode(IntEnum):
     RUN_AUTO = 0
     RUN_MANUAL = 1
     RUN_SOFT = 2
@@ -110,7 +141,7 @@ class RunMode(enum.IntEnum):
     RUN_SKIP = 4
 
 
-class QCState(enum.IntEnum):
+class QCState(IntEnum):
     NEW = 0
     AUTO_REJECTED = 1
     AUTO_ACCEPTED = 2
@@ -118,7 +149,7 @@ class QCState(enum.IntEnum):
     ACCEPTED = 4
 
 
-class ServiceState(enum.IntEnum):
+class ServiceState(IntEnum):
     STOPPED = 0
     STARTED = 1
     STARTING = 2

@@ -13,5 +13,12 @@ export default defineConfig({
     lint: 'eslint',
     path: './src/client',
   },
-  plugins: ['@hey-api/typescript', '@hey-api/client-axios', '@hey-api/sdk'],
+  plugins: [
+    // 'javascript' emits enums as plain const objects, so schema enums can be
+    // referenced by name (JobState.COMPLETED) instead of by their raw value.
+    // Member names come from the x-enum-varnames extension in the schema.
+    { name: '@hey-api/typescript', enums: 'javascript' },
+    '@hey-api/client-axios',
+    '@hey-api/sdk',
+  ],
 });
