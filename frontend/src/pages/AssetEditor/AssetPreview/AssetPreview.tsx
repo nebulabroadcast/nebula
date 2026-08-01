@@ -150,7 +150,7 @@ export const AssetPreview: React.FC<PreviewProps> = ({ assetData, setAssetData }
           setMarkIn={setMarkIn}
           setMarkOut={setMarkOut}
           marks={
-            assetData.poster_frame !== undefined
+            assetData.poster_frame != null
               ? { poster_frame: assetData.poster_frame }
               : undefined
           }

@@ -204,22 +204,45 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
     }
   };
 
-  // Update changed keys ref
-  // This is used to track which keys have been changed by the user,
-  // so that we don't overwrite them when refetching unchanged fields
+  // Which keys have been changed by the user
+  // (compared to the data we loaded from the server).
+  // Unset values are normalized to null, so clearing a field
+  // is a change, but setting it to 0 or an empty string is a change too.
+
+  const changedKeys = useMemo(() => {
+    const result = new Set<string>();
+    const allKeys = new Set([...Object.keys(assetData), ...Object.keys(originalData)]);
+    for (const key of allKeys) {
+      if (key === 'id') continue;
+      if (isEqual(assetData[key] ?? null, originalData[key] ?? null)) continue;
+      result.add(key);
+    }
+    return result;
+  }, [assetData, originalData]);
+
+  // Keep a ref of the changed keys, so the websocket handler
+  // doesn't overwrite them when refetching unchanged fields
 
   useEffect(() => {
     // don't update changed keys while loading
     if (loading) return;
-    if (isEmpty(assetData) || isEmpty(originalData)) return;
-    const changedKeys = new Set<string>();
-    for (const key in assetData) {
-      if (!isEqual(originalData[key] || null, assetData[key] || null)) {
-        changedKeys.add(key);
-      }
-    }
     changedKeysRef.current = changedKeys;
-  }, [assetData, originalData, loading]);
+  }, [changedKeys, loading]);
+
+  // Data of the set request.
+  // For existing assets, only the fields the user has changed are sent,
+  // for new ones everything we have.
+  // Cleared fields are sent as null, which unsets them server-side.
+
+  const savePayload = useMemo(() => {
+    const keys = assetData.id ? changedKeys : new Set(Object.keys(assetData));
+    const result: Record<string, any> = {};
+    for (const key of keys) {
+      if (key === 'id') continue;
+      result[key] = assetData[key] ?? null;
+    }
+    return result;
+  }, [changedKeys, assetData]);
 
   // If the asset is new, set the default folder
   // (first writable folder)
@@ -292,13 +315,10 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
   // Are there unsaved changes that can be saved?
   // This returns true only if a field that is editable has changed
 
-  const isChanged = useMemo(() => {
-    for (const key of editableFieldNames) {
-      if (isEqual(assetData[key], originalData[key])) continue;
-      return true;
-    }
-    return false;
-  }, [assetData, originalData, editableFieldNames]);
+  const isChanged = useMemo(
+    () => editableFieldNames.some((key) => changedKeys.has(key)),
+    [changedKeys, editableFieldNames]
+  );
 
   // Which actions are enabled (save, revert, etc.)
   // This is used to disable buttons when there are no changes
@@ -325,7 +345,7 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
       })
         .then(() => {
           nebula
-            .set({ body: { id: assetData.id, data: assetData }, throwOnError: true })
+            .set({ body: { id: assetData.id, data: savePayload }, throwOnError: true })
             .then((res) => {
               // reload browser if it's a new asset
               // (if it already exists, it will be updated over ws,
@@ -358,6 +378,7 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
   }, [
     isChanged,
     assetData,
+    savePayload,
     focusedAsset,
     loadAsset,
     reloadBrowser,
@@ -405,6 +426,8 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
     setSelectedAssets([]);
     setFocusedAsset(null);
     setAssetData(ndata);
+    // the clone is a brand new object, so everything we have is a change
+    setOriginalData({});
   };
 
   const onRevert = () => {
@@ -420,7 +443,7 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
       setLoading(true);
       nebula
         .set({
-          body: { id: assetData.id, data: payload || assetData },
+          body: { id: assetData.id, data: payload || savePayload },
           throwOnError: true,
         })
         .then((res) => {
@@ -445,7 +468,7 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
       // we don't clear the loading state here,
       // we wait for the ws message that confirms the asset has been updated
     },
-    [assetData, enabledActions.save, loadAsset, reloadBrowser]
+    [assetData.id, savePayload, enabledActions.save, loadAsset, reloadBrowser]
   );
 
   // Keyboard shortcuts

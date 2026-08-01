@@ -30,21 +30,21 @@ export const SidePanelMain = ({
   };
 
   const goToPosterFrame = () => {
-    if (assetData.poster_frame !== undefined) {
+    if (assetData.poster_frame != null) {
       videoPlayerRef.current?.seek(assetData.poster_frame);
     }
   };
 
   const clearPosterFrame = () => {
-    patchAsset({ poster_frame: undefined });
+    patchAsset({ poster_frame: null });
   };
 
   const onSetMarks = () => {
     // Set asset mark_in and mark_out values
     // (content primary selection)
     patchAsset({
-      mark_in: selection.mark_in || undefined,
-      mark_out: selection.mark_out || undefined,
+      mark_in: selection.mark_in ?? null,
+      mark_out: selection.mark_out ?? null,
     });
   };
 
@@ -71,7 +71,7 @@ export const SidePanelMain = ({
           icon="delete"
           tooltip="Clear marks"
           onClick={() => {
-            patchAsset({ mark_in: undefined, mark_out: undefined });
+            patchAsset({ mark_in: null, mark_out: null });
           }}
         />
         <InputTimecode
