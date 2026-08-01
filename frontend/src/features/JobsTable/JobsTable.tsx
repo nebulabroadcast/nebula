@@ -243,7 +243,7 @@ export const JobsTable: React.FC<JobsTableProps> = ({
 
   const activeHideColumns = useMemo(() => {
     if (hideColumns !== undefined) return hideColumns;
-    if (assetId !== undefined) return ['asset_name', 'id'];
+    if (assetId !== undefined) return ['asset_name', 'id', 'idec'];
     return [];
   }, [hideColumns, assetId]);
 
