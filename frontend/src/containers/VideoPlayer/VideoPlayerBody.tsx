@@ -10,6 +10,7 @@ import {
 import {
   useState,
   useEffect,
+  useMemo,
   useRef,
   useCallback,
   useImperativeHandle,
@@ -265,10 +266,16 @@ const VideoPlayerBody = forwardRef<VideoPlayerRef, VideoPlayerProps>((props, ref
     }
   };
 
-  // half of the nodes will be on the left, the other half on the right
-  const numChannels = gainNodes.length;
-  const leftNodes = gainNodes.slice(0, numChannels / 2);
-  const rightNodes = gainNodes.slice(numChannels / 2);
+  // half of the nodes will be on the left, the other half on the right.
+  // Keep the identity of the arrays stable - the meters treat a new array
+  // as new audio and start their ballistics from scratch.
+  const [leftNodes, rightNodes] = useMemo(
+    () => [
+      gainNodes.slice(0, gainNodes.length / 2),
+      gainNodes.slice(gainNodes.length / 2),
+    ],
+    [gainNodes]
+  );
 
   return (
     <VideoPlayerContainer>
