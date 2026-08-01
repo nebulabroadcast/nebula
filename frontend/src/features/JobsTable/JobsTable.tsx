@@ -4,7 +4,9 @@ import formatMetaDatetime from '@lib/tableFormat/formatMetaDatetime';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { NavLink } from 'react-router';
 
-import type { JobListItem, JobState, ManageJobsRequest } from '@/client';
+import type { WebSocketJobProgressMessage } from './types';
+
+import type { JobListItem, ManageJobsRequest } from '@/client';
 import nebula from '@/nebula';
 
 const NOT_RESTARTABLE = ['import'];
@@ -26,14 +28,6 @@ export interface JobsTableProps {
   hideColumns?: string[];
   className?: string;
   style?: React.CSSProperties;
-}
-
-interface WebSocketJobProgressMessage {
-  id: number;
-  status: JobState;
-  progress: number;
-  message?: string;
-  id_asset?: number;
 }
 
 export const JobsTable: React.FC<JobsTableProps> = ({

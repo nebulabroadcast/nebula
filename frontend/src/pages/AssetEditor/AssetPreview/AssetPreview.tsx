@@ -1,6 +1,9 @@
 import VideoPlayer from '@containers/VideoPlayer';
 import { VideoPlayerRef } from '@containers/VideoPlayer/types';
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { JOB_STATE_COMPLETED } from '@features/JobsTable';
+import type { WebSocketJobProgressMessage } from '@features/JobsTable';
+import { useWebSocket } from '@features/Websocket';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 
 import { SidePanel } from './SidePanel';
 import type { AssetData, ProxyInfo } from './types';
@@ -49,25 +52,62 @@ export const AssetPreview: React.FC<PreviewProps> = ({ assetData, setAssetData }
     });
   };
 
-  useEffect(() => {
-    setLoading(true);
-    if (!assetData.id) {
-      setProxyInfo(null);
-      setLoading(false);
-      return;
-    }
-    nebula
-      .getProxyInfo({ path: { id_asset: assetData.id }, throwOnError: true })
-      .then((response) => {
-        setProxyInfo(response.data as ProxyInfo);
-      })
-      .catch(() => {
+  const loadProxyInfo = useCallback(
+    (silent = false) => {
+      if (!silent) setLoading(true);
+      if (!assetData.id) {
         setProxyInfo(null);
-      })
-      .finally(() => {
         setLoading(false);
-      });
-  }, [assetData.id]);
+        return;
+      }
+      nebula
+        .getProxyInfo({ path: { id_asset: assetData.id }, throwOnError: true })
+        .then((response) => {
+          const newInfo = response.data as ProxyInfo;
+          // keep the original object if nothing changed, so the video
+          // source stays stable and the player does not reload
+          setProxyInfo((prevInfo) =>
+            prevInfo?.id === newInfo.id &&
+            prevInfo?.available === newInfo.available &&
+            prevInfo?.timestamp === newInfo.timestamp
+              ? prevInfo
+              : newInfo
+          );
+        })
+        .catch(() => {
+          setProxyInfo(null);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    },
+    [assetData.id]
+  );
+
+  useEffect(() => {
+    loadProxyInfo();
+  }, [loadProxyInfo]);
+
+  // When a job of the currently opened asset finishes, the proxy may have
+  // been re-created. Reload the proxy info and let the player pick it up.
+
+  const { subscribe } = useWebSocket();
+
+  useEffect(() => {
+    if (!assetData.id) return;
+
+    const handleJobProgress = (
+      topic: string,
+      messageData: WebSocketJobProgressMessage
+    ) => {
+      if (topic !== 'job_progress') return;
+      if (messageData.status !== JOB_STATE_COMPLETED) return;
+      if (messageData.id_asset !== assetData.id) return;
+      loadProxyInfo(true);
+    };
+
+    return subscribe<WebSocketJobProgressMessage>('job_progress', handleJobProgress);
+  }, [subscribe, assetData.id, loadProxyInfo]);
 
   const warning = useMemo(() => {
     if (loading) return undefined;
