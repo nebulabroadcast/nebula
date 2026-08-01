@@ -6,10 +6,28 @@ import { NavLink } from 'react-router';
 
 import type { WebSocketJobProgressMessage } from './types';
 
+import { JobState } from '@/client';
 import type { JobListItem, ManageJobsRequest } from '@/client';
 import nebula from '@/nebula';
 
+// Service types which cannot be restarted
 const NOT_RESTARTABLE = ['import'];
+
+const ABORTABLE_STATES: JobState[] = [
+  JobState.PENDING,
+  JobState.IN_PROGRESS,
+  JobState.RESTART,
+];
+
+const RESTARTABLE_STATES: JobState[] = [
+  JobState.COMPLETED,
+  JobState.FAILED,
+  JobState.ABORTED,
+  JobState.SKIPPED,
+];
+
+// States in which the job priority can still be changed
+const PRIORITIZABLE_STATES: JobState[] = [JobState.PENDING, JobState.RESTART];
 
 const formatTitle = (rowData: Record<string, any>, key: string) => {
   const row = rowData as JobListItem;
@@ -86,7 +104,7 @@ export const JobsTable: React.FC<JobsTableProps> = ({
 
   const formatAction = (rowData: Record<string, any>) => {
     const row = rowData as JobListItem;
-    if ([0, 1, 5].includes(row.status)) {
+    if (ABORTABLE_STATES.includes(row.status)) {
       return (
         <td className="action">
           <Button
@@ -97,7 +115,7 @@ export const JobsTable: React.FC<JobsTableProps> = ({
           />
         </td>
       );
-    } else if ([2, 3, 4, 6].includes(row.status)) {
+    } else if (RESTARTABLE_STATES.includes(row.status)) {
       return (
         <td className="action">
           <Button
@@ -118,7 +136,7 @@ export const JobsTable: React.FC<JobsTableProps> = ({
 
   const formatPriority = (rowData: Record<string, any>, key: string) => {
     const row = rowData as JobListItem;
-    const enabled = [0, 5].includes(row.status);
+    const enabled = PRIORITIZABLE_STATES.includes(row.status);
 
     const setPriority = (priority: number) => {
       void nebula

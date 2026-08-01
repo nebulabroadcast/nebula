@@ -18,7 +18,9 @@ export default defineConfig({
     // referenced by name (JobState.COMPLETED) instead of by their raw value.
     // Member names come from the x-enum-varnames extension in the schema.
     { name: '@hey-api/typescript', enums: 'javascript' },
-    '@hey-api/client-axios',
+    // The client is served from the same origin as the API, so never bake in
+    // the base URL advertised by whichever server the schema was pulled from.
+    { name: '@hey-api/client-axios', baseUrl: false },
     '@hey-api/sdk',
   ],
 });

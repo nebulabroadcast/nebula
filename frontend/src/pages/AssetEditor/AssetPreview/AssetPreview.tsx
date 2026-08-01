@@ -1,6 +1,5 @@
 import VideoPlayer from '@containers/VideoPlayer';
 import { VideoPlayerRef } from '@containers/VideoPlayer/types';
-import { JOB_STATE_COMPLETED } from '@features/JobsTable';
 import type { WebSocketJobProgressMessage } from '@features/JobsTable';
 import { useWebSocket } from '@features/Websocket';
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
@@ -8,6 +7,7 @@ import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { SidePanel } from './SidePanel';
 import type { AssetData, ProxyInfo } from './types';
 
+import { JobState } from '@/client';
 import nebula from '@/nebula';
 
 interface PreviewProps {
@@ -101,7 +101,7 @@ export const AssetPreview: React.FC<PreviewProps> = ({ assetData, setAssetData }
       messageData: WebSocketJobProgressMessage
     ) => {
       if (topic !== 'job_progress') return;
-      if (messageData.status !== JOB_STATE_COMPLETED) return;
+      if (messageData.status !== JobState.COMPLETED) return;
       if (messageData.id_asset !== assetData.id) return;
       loadProxyInfo(true);
     };

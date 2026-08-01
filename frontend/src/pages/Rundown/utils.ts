@@ -2,6 +2,7 @@ import type { ContextMenuOption } from '@components/ContextMenu';
 import type { TableColumn } from '@components/table/types';
 import { getColumnWidth, getFormatter } from '@lib/tableFormat';
 
+import { RunMode } from '@/client';
 import nebula from '@/nebula';
 
 const getRunModeOptions = (
@@ -10,7 +11,7 @@ const getRunModeOptions = (
   func: (
     object_type: 'event' | 'item',
     selection: number | string,
-    run_mode: number
+    run_mode: RunMode
   ) => void
 ): ContextMenuOption[] => {
   if (object_type === 'event') {
@@ -20,28 +21,28 @@ const getRunModeOptions = (
         icon: 'play_arrow',
         separator: true,
         onClick: () => {
-          func('event', selection, 0);
+          func('event', selection, RunMode.RUN_AUTO);
         },
       },
       {
         label: 'Run: Manual',
         icon: 'hand_gesture',
         onClick: () => {
-          func('event', selection, 1);
+          func('event', selection, RunMode.RUN_MANUAL);
         },
       },
       {
         label: 'Run: Soft',
         icon: 'hourglass_empty',
         onClick: () => {
-          func('event', selection, 2);
+          func('event', selection, RunMode.RUN_SOFT);
         },
       },
       {
         label: 'Run Hard',
         icon: 'hourglass_bottom',
         onClick: () => {
-          func('event', selection, 3);
+          func('event', selection, RunMode.RUN_HARD);
         },
       },
     ];
@@ -53,21 +54,21 @@ const getRunModeOptions = (
         icon: 'play_arrow',
         separator: true,
         onClick: () => {
-          func('item', selection, 0);
+          func('item', selection, RunMode.RUN_AUTO);
         },
       },
       {
         label: 'Manual',
         icon: 'hand_gesture',
         onClick: () => {
-          func('item', selection, 1);
+          func('item', selection, RunMode.RUN_MANUAL);
         },
       },
       {
         label: 'Skip',
         icon: 'skip_next',
         onClick: () => {
-          func('item', selection, 4);
+          func('item', selection, RunMode.RUN_SKIP);
         },
       },
     ];
