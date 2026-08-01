@@ -1,18 +1,27 @@
-import { Button, ErrorBanner, InputTimecode, Navbar, Section } from '@components';
-import React, {
+import {
+  Button,
+  ErrorBanner,
+  InputTimecode,
+  Loader,
+  LoaderWrapper,
+  Navbar,
+  Section,
+} from '@components';
+import {
   useState,
   useEffect,
   useRef,
+  useCallback,
   useImperativeHandle,
   forwardRef,
 } from 'react';
 import styled from 'styled-components';
 
-import { useAudioContext } from './AudioContext';
 import ChannelSelect from './ChannelSelect';
+import { PlayerEngine, type OverlayRenderer, type TimeRange } from './PlayerEngine';
 import Trackbar from './Trackbar';
 import { VideoPlayerProps, VideoPlayerRef } from './types';
-import VideoOverlay from './VideoOverlay';
+import { useAudioGraph } from './useAudioGraph';
 import VideoPlayerControls from './VideoPlayerControls';
 import VUMeter from './VUMeter';
 
@@ -35,7 +44,7 @@ const VideoContainer = styled.div`
   height: 100%;
 `;
 
-const Video = styled.video`
+const VideoCanvas = styled.canvas`
   height: 100%;
   width: 100%;
   object-fit: contain;
@@ -44,38 +53,150 @@ const Video = styled.video`
 const time2frames = (time: number, frameRate: number) => Math.round(time * frameRate);
 const frames2time = (frames: number, frameRate: number) => frames / frameRate;
 
-const DEFAULT_VIDEO_DIMENSIONS = {
-  width: 600,
-  height: 400,
+// Safe area and center cross, drawn over the video frame.
+// Line widths are divided by the scale, so they stay one pixel wide
+// on screen regardless of the resolution of the media.
+
+const SAFE_AREA_MARGIN = 0.05;
+
+const drawGuides: OverlayRenderer = (context, width, height, scale) => {
+  context.strokeStyle = '#cccccc';
+  context.lineWidth = scale;
+
+  context.setLineDash([]);
+  context.strokeRect(
+    width * SAFE_AREA_MARGIN,
+    height * SAFE_AREA_MARGIN,
+    width * (1 - 2 * SAFE_AREA_MARGIN),
+    height * (1 - 2 * SAFE_AREA_MARGIN)
+  );
+
+  context.setLineDash([5 * scale, 5 * scale]);
+  context.beginPath();
+  context.moveTo(width / 2, 0);
+  context.lineTo(width / 2, height);
+  context.moveTo(0, height / 2);
+  context.lineTo(width, height / 2);
+  context.stroke();
 };
 
 const VideoPlayerBody = forwardRef<VideoPlayerRef, VideoPlayerProps>((props, ref) => {
-  const { audioContext, videoRef, gainNodes, numChannels } = useAudioContext();
+  const { audioContext, inputNode, gainNodes, setChannelCount } = useAudioGraph();
 
   const [posFrames, setPosFrames] = useState(0);
   const [durFrames, setDurFrames] = useState(0);
   const [markIn, setMarkIn] = useState<number | null | undefined>(props.markIn);
   const [markOut, setMarkOut] = useState<number | null | undefined>(props.markOut);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [desiredSeekFrame, setDesiredSeekFrame] = useState<number | null>(null);
-
-  const isPlayingRef = useRef(isPlaying);
-  const durFramesRef = useRef(durFrames);
-  const markInRef = useRef(markIn);
-  const markOutRef = useRef(markOut);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const [loop, setLoop] = useState(false);
-  const [videoDimensions, setVideoDimensions] = useState(DEFAULT_VIDEO_DIMENSIONS);
   const [showOverlay, setShowOverlay] = useState(false);
-  const [bufferedRanges, setBufferedRanges] = useState<
-    Array<{ start: number; end: number }>
-  >([]);
+  const [bufferedRanges, setBufferedRanges] = useState<TimeRange[]>([]);
+
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const engineRef = useRef<PlayerEngine | null>(null);
+
+  const frameRateRef = useRef(props.frameRate);
+  const loopRef = useRef(loop);
+  const markInRef = useRef(markIn);
+  const markOutRef = useRef(markOut);
+  const durFramesRef = useRef(durFrames);
+
+  useEffect(() => {
+    frameRateRef.current = props.frameRate;
+  }, [props.frameRate]);
+
+  useEffect(() => {
+    loopRef.current = loop;
+  }, [loop]);
+
+  useEffect(() => {
+    durFramesRef.current = durFrames;
+  }, [durFrames]);
+
+  //
+  // Engine
+  //
+
+  const seekToFrame = useCallback((frame: number) => {
+    const engine = engineRef.current;
+    if (!engine) return;
+    void engine.seek(frames2time(frame, frameRateRef.current));
+  }, []);
+
+  useEffect(() => {
+    const engine = new PlayerEngine(
+      {
+        onTime: (time) => {
+          const frame = time2frames(time, frameRateRef.current);
+          setPosFrames(frame);
+
+          // loop over the selected region during playback
+          if (!loopRef.current || !engine.playing) return;
+          const outFrame =
+            markOutRef.current != null
+              ? time2frames(markOutRef.current, frameRateRef.current)
+              : durFramesRef.current - 1;
+          const inFrame =
+            markInRef.current != null
+              ? time2frames(markInRef.current, frameRateRef.current)
+              : 0;
+          if (frame < outFrame || inFrame >= outFrame) return;
+          void engine.seek(frames2time(inFrame, frameRateRef.current));
+        },
+        onDuration: (duration) => {
+          setDurFrames(time2frames(duration, frameRateRef.current));
+        },
+        onPlayingChange: setIsPlaying,
+        onLoadingChange: setLoading,
+        onChannelCount: setChannelCount,
+        onBufferedRanges: setBufferedRanges,
+        onError: setError,
+      },
+      frameRateRef.current
+    );
+    engine.attachCanvas(canvasRef.current);
+    engineRef.current = engine;
+
+    return () => {
+      engine.destroy();
+      engineRef.current = null;
+    };
+  }, [setChannelCount]);
+
+  useEffect(() => {
+    engineRef.current?.setFrameRate(props.frameRate);
+  }, [props.frameRate]);
+
+  useEffect(() => {
+    engineRef.current?.setAudioGraph(audioContext, inputNode);
+  }, [audioContext, inputNode]);
+
+  // Load the media
+
+  useEffect(() => {
+    const engine = engineRef.current;
+    if (!engine) return;
+    setPosFrames(0);
+    setError(null);
+    if (props.src) {
+      void engine.load(props.src);
+    } else {
+      engine.unload();
+    }
+  }, [props.src]);
 
   useImperativeHandle(ref, () => ({
     seek: (time: number) => {
       seekToFrame(time2frames(time, props.frameRate));
     },
   }));
+
+  //
+  // Position and marks
+  //
 
   useEffect(() => {
     if (!props.setPosition) return;
@@ -84,32 +205,14 @@ const VideoPlayerBody = forwardRef<VideoPlayerRef, VideoPlayerProps>((props, ref
   }, [posFrames, props.frameRate, props.setPosition]);
 
   useEffect(() => {
-    durFramesRef.current = durFrames;
-  }, [durFrames]);
-
-  useEffect(() => {
-    if (!props.src) {
-      if (videoRef.current) videoRef.current.src = '';
-      setPosFrames(0);
-      setDurFrames(0);
-      setMarkIn(null);
-      setMarkOut(null);
-      setIsPlaying(false);
-      return;
-    }
-  }, [props.src, videoRef]);
-
-  // Propagating markIn and markOut to parent component
-
-  useEffect(() => {
     if (props.setMarkIn) {
       props.setMarkIn(markIn ?? null);
-      markInRef.current = markIn;
     }
+    markInRef.current = markIn;
     if (props.setMarkOut) {
       props.setMarkOut(markOut ?? null);
-      markOutRef.current = markOut;
     }
+    markOutRef.current = markOut;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [markIn, markOut, props.setMarkIn, props.setMarkOut]);
 
@@ -125,163 +228,50 @@ const VideoPlayerBody = forwardRef<VideoPlayerRef, VideoPlayerProps>((props, ref
     }
   }, [props.markOut]);
 
-  useEffect(() => {
-    isPlayingRef.current = isPlaying;
-  }, [isPlaying]);
-
-  // Video dimensions
+  // Guides, drawn straight onto the video frame
 
   useEffect(() => {
-    if (!videoRef.current) return;
+    engineRef.current?.setOverlayRenderer(showOverlay ? drawGuides : null);
+  }, [showOverlay]);
 
-    const updateVideoDimensions = () => {
-      if (!videoRef.current) return;
-      const width = videoRef.current.clientWidth;
-      const height = videoRef.current.clientHeight;
-      setVideoDimensions({ width, height });
-    };
+  // Overlays are scaled to the displayed size of the frame,
+  // so the frame has to be repainted when the canvas is resized
 
-    const parentElement = videoRef.current;
-    const resizeObserver = new ResizeObserver(updateVideoDimensions);
-    resizeObserver.observe(parentElement);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const resizeObserver = new ResizeObserver(() => {
+      engineRef.current?.redraw();
+    });
+    resizeObserver.observe(canvas);
 
     return () => {
-      resizeObserver.unobserve(parentElement);
+      resizeObserver.unobserve(canvas);
     };
-  }, [videoRef]);
+  }, []);
 
-  // Position
-
-  const updatePos = () => {
-    const video = videoRef.current;
-    if (!video) return;
-    const atFrame = time2frames(video.currentTime, props.frameRate);
-    setPosFrames(atFrame);
-    if (!isPlayingRef.current) return;
-    if (!loop) return;
-
-    const markOutFrame =
-      time2frames(markOutRef.current ?? 0, props.frameRate) || durFramesRef.current - 1;
-
-    if (atFrame >= markOutFrame && atFrame < markOutFrame + 4) {
-      video.currentTime = markInRef.current ?? 0;
-      video.play().catch(console.error);
-    }
-  };
-
-  useEffect(() => {
-    let animationFrameId: number;
-    let timeoutId: number;
-
-    const updatePosMon = () => {
-      if (!videoRef.current) return;
-      if (isPlayingRef.current) {
-        updatePos();
-        timeoutId = setTimeout(() => {
-          animationFrameId = requestAnimationFrame(updatePosMon);
-        }, 40);
-      } else {
-        updatePos();
-      }
-    };
-
-    updatePosMon();
-
-    return () => {
-      clearTimeout(timeoutId);
-      cancelAnimationFrame(animationFrameId);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isPlaying]);
-
-  const seekToFrame = (frame: number) => {
-    const videoElement = videoRef.current;
-    if (!videoElement) return;
-    const correctedFrame = Math.max(0, Math.min(frame, durFramesRef.current - 1));
-    const newTime = frames2time(correctedFrame, props.frameRate);
-    if (videoElement.readyState < 2) {
-      setDesiredSeekFrame(correctedFrame);
-      return;
-    }
-    videoElement.currentTime = newTime;
-  };
-
-  const onCanPlayThrough = () => {
-    if (desiredSeekFrame !== null) {
-      seekToFrame(desiredSeekFrame);
-      setDesiredSeekFrame(null);
-    }
-  };
-
-  const onScrubFinished = (atTime: number) => {
-    setTimeout(() => {
-      const fr = time2frames(atTime, props.frameRate);
-      seekToFrame(fr);
-    }, 40);
-  };
-
-  // Aux
-
-  const handleLoad = () => {
-    setIsPlaying(false);
-    setPosFrames(0);
-    setBufferedRanges([]);
-  };
-
-  const handleLoadedMetadata = () => {
-    if (!videoRef.current) return;
-    setDurFrames(time2frames(videoRef.current.duration, props.frameRate));
-    const width = videoRef.current.clientWidth;
-    const height = videoRef.current.clientHeight;
-    setVideoDimensions({ width, height });
-    setIsPlaying(!videoRef.current.paused);
-    setBufferedRanges([]);
-  };
-
-  const handlePlay = () => {
-    setIsPlaying(true);
-  };
-
-  const handlePause = () => {
-    if (videoRef.current?.paused) {
-      setIsPlaying(false);
-      setTimeout(() => {
-        seekToFrame(posFrames + 1);
-      }, 40);
-    }
-  };
-
-  const handleEnded = () => {
-    // unused
-  };
-
-  const handleProgress = (e: React.SyntheticEvent<HTMLVideoElement>) => {
-    const video = e.target as HTMLVideoElement;
-    const buffered = video.buffered;
-    if (!buffered.length) return;
-    const ranges: Array<{ start: number; end: number }> = [];
-    for (let i = 0; i < buffered.length; i++) {
-      const r = { start: buffered.start(i), end: buffered.end(i) };
-      ranges.push(r);
-    }
-    setBufferedRanges(ranges);
-  };
+  //
+  // Transport
+  //
 
   const onPlayPause = () => {
-    if (!videoRef.current) return;
-    if (videoRef.current.paused) {
-      videoRef.current.play().catch(console.error);
+    const engine = engineRef.current;
+    if (!engine) return;
+    if (engine.playing) {
+      engine.pause();
     } else {
-      videoRef.current.pause();
+      void engine.play();
     }
   };
 
   // half of the nodes will be on the left, the other half on the right
-  const leftNodes = (gainNodes || []).slice(0, numChannels / 2);
-  const rightNodes = (gainNodes || []).slice(numChannels / 2);
+  const numChannels = gainNodes.length;
+  const leftNodes = gainNodes.slice(0, numChannels / 2);
+  const rightNodes = gainNodes.slice(numChannels / 2);
 
   return (
-    <VideoPlayerContainer style={{ display: videoRef.current ? 'flex' : 'none' }}>
+    <VideoPlayerContainer>
       <Navbar>
         <InputTimecode
           value={posFrames}
@@ -323,26 +313,12 @@ const VideoPlayerBody = forwardRef<VideoPlayerRef, VideoPlayerProps>((props, ref
         <VUMeter gainNodes={leftNodes} audioContext={audioContext} />
         <VideoSpace>
           <VideoContainer>
-            <Video
-              ref={videoRef}
-              controls={false}
-              onLoadedData={handleLoad}
-              onLoadedMetadata={handleLoadedMetadata}
-              onEnded={handleEnded}
-              onPlay={handlePlay}
-              onPause={handlePause}
-              onProgress={handleProgress}
-              disablePictureInPicture={true}
-              disableRemotePlayback={true}
-              onTimeUpdate={updatePos}
-              onCanPlayThrough={onCanPlayThrough}
-              src={props.src}
-            />
-            <VideoOverlay
-              videoWidth={videoDimensions.width}
-              videoHeight={videoDimensions.height}
-              showOverlay={showOverlay}
-            />
+            <VideoCanvas ref={canvasRef} />
+            {loading && (
+              <LoaderWrapper>
+                <Loader />
+              </LoaderWrapper>
+            )}
             <ErrorBanner
               style={{
                 position: 'absolute',
@@ -351,7 +327,7 @@ const VideoPlayerBody = forwardRef<VideoPlayerRef, VideoPlayerProps>((props, ref
                 transform: 'translateX(-50%)',
               }}
             >
-              {props.warning}
+              {error || props.warning}
             </ErrorBanner>
           </VideoContainer>
         </VideoSpace>
@@ -366,7 +342,6 @@ const VideoPlayerBody = forwardRef<VideoPlayerRef, VideoPlayerProps>((props, ref
         onScrub={(t) => {
           seekToFrame(time2frames(t, props.frameRate));
         }}
-        onScrubFinished={onScrubFinished}
         markIn={markIn ?? undefined}
         markOut={markOut ?? undefined}
         bufferedRanges={bufferedRanges}
