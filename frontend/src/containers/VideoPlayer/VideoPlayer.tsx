@@ -217,16 +217,16 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>((props, ref) =>
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [markIn, markOut, props.setMarkIn, props.setMarkOut]);
 
+  // The marks always follow the media. An asset without marks has to clear
+  // the selection of the previous one, so no mark means no selection here,
+  // rather than keeping whatever was set before.
+
   useEffect(() => {
-    if (props.markIn !== undefined) {
-      setMarkIn(props.markIn);
-    }
+    setMarkIn(props.markIn ?? null);
   }, [props.markIn]);
 
   useEffect(() => {
-    if (props.markOut !== undefined) {
-      setMarkOut(props.markOut);
-    }
+    setMarkOut(props.markOut ?? null);
   }, [props.markOut]);
 
   // Guides, drawn straight onto the video frame
