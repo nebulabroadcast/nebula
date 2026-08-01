@@ -154,7 +154,7 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>((props, ref) =>
         onLoadingChange: setLoading,
         onChannelCount: setChannelCount,
         onBufferedRanges: setBufferedRanges,
-        onError: setError,
+        onError: console.warn,
       },
       frameRateRef.current
     );

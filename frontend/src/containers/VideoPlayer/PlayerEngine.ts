@@ -17,7 +17,59 @@ const FRAME_QUEUE_SIZE = 8;
 // giving the decoders a moment to fill the pipeline first
 const PLAYBACK_START_DELAY = 0.1;
 
+// A request that hasn't produced response headers within this time is
+// considered stalled and is aborted, so it can be retried
+const REQUEST_TIMEOUT = 8000;
+
+// Retries of stalled or failed requests, capped so recovery stays quick
+const MAX_REQUEST_ATTEMPTS = 10;
+const MAX_RETRY_DELAY = 2;
+
+// How long a single frame decode may block the ones queued behind it
+const STILL_TIMEOUT = 1500;
+
 const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+/**
+ * fetch, but a request that never gets answered eventually gives up.
+ *
+ * Media requests can get stuck in a pending state indefinitely (proxies,
+ * CDNs, dropped connections). Since such a request neither resolves nor
+ * rejects, nothing downstream can recover from it - aborting it turns the
+ * hang into a rejection, which mediabunny answers with a retry.
+ *
+ * Only the wait for the response headers is limited. Once they arrive, the
+ * body may stream for as long as it needs to.
+ */
+const fetchWithTimeout: typeof fetch = async (input, init) => {
+  const controller = new AbortController();
+
+  // mediabunny cancels its own requests (on dispose, for instance)
+  const outerSignal = init?.signal;
+  if (outerSignal) {
+    if (outerSignal.aborted) {
+      controller.abort(outerSignal.reason);
+    } else {
+      outerSignal.addEventListener(
+        'abort',
+        () => controller.abort(outerSignal.reason),
+        {
+          once: true,
+        }
+      );
+    }
+  }
+
+  const timer = setTimeout(() => {
+    controller.abort(new Error('The request timed out'));
+  }, REQUEST_TIMEOUT);
+
+  try {
+    return await fetch(input, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+};
 
 /**
  * Draws on top of the video frame. Receives the canvas context, the size of
@@ -100,7 +152,9 @@ export class PlayerEngine {
   private clockOriginMedia = 0;
 
   private pendingStill: number | null = null;
-  private stillInFlight = false;
+  private stillId = 0;
+  private activeStillId: number | null = null;
+  private drawnStillId = 0;
 
   private lastEmittedFrame = -1;
 
@@ -168,7 +222,13 @@ export class PlayerEngine {
     const generation = this.generation;
 
     try {
-      const source = new UrlSource(src);
+      const source = new UrlSource(src, {
+        fetchFn: fetchWithTimeout,
+        getRetryDelay: (previousAttempts) =>
+          previousAttempts >= MAX_REQUEST_ATTEMPTS
+            ? null
+            : Math.min(MAX_RETRY_DELAY, 0.2 * 2 ** previousAttempts),
+      });
       // every read tells us a bit more about what part of the media
       // we already have at hand
       source.on('read', ({ start, end }) => {
@@ -191,7 +251,8 @@ export class PlayerEngine {
         throw new Error(`Unsupported video codec (${codec ?? 'unknown'})`);
       }
       if (generation !== this.generation) return;
-      this.videoSink = new CanvasSink(videoTrack);
+      const videoSink = new CanvasSink(videoTrack);
+      this.videoSink = videoSink;
 
       const audioTrack = await input.getPrimaryAudioTrack();
       if (generation !== this.generation) return;
@@ -214,8 +275,14 @@ export class PlayerEngine {
 
       this.currentTimeValue = 0;
       this.emitTime(0, true);
-      this.pendingStill = 0;
-      await this.processStills();
+
+      // keep the loading indicator up until there is something to look at
+      const firstFrame = await videoSink.getCanvas(0);
+      if (generation !== this.generation) return;
+      if (firstFrame) {
+        this.drawnStillId = ++this.stillId;
+        this.drawFrame(firstFrame);
+      }
     } catch (error) {
       if (generation === this.generation) this.reportError(error);
     } finally {
@@ -235,6 +302,8 @@ export class PlayerEngine {
     this.currentTimeValue = 0;
     this.lastEmittedFrame = -1;
     this.pendingStill = null;
+    // a decode of the previous media must not hold up the next one
+    this.activeStillId = null;
     this.lastFrame = null;
     this.clearCanvas();
 
@@ -364,44 +433,60 @@ export class PlayerEngine {
   //
 
   /**
-   * Display the frame at the given position. Only one decode runs at a time,
-   * and only the most recent request is served, so scrubbing never queues up
-   * work it no longer needs.
+   * Display the frame at the given position. Requests are served one at a
+   * time and only the newest one is kept, so scrubbing doesn't queue up work
+   * it no longer needs.
    */
   private requestStill(time: number) {
     this.pendingStill = time;
-    if (this.stillInFlight) return;
-    void this.processStills();
+    this.drainStills();
   }
 
-  private async processStills() {
-    this.stillInFlight = true;
-    try {
-      while (this.pendingStill !== null) {
-        const time = this.pendingStill;
-        this.pendingStill = null;
-        const sink = this.videoSink;
-        if (!sink) break;
-        const sourceGeneration = this.sourceGeneration;
-        try {
-          // ask for the middle of the frame, so that rounding of the
-          // requested position can't land us on the previous one
-          const wrapped = await sink.getCanvas(time + 0.5 / this.frameRate);
-          // Display it unless it belongs to media we no longer show or
-          // playback took over the canvas in the meantime. A newer position
-          // may have been requested while decoding - that one is served by
-          // the next turn of this loop, so drawing this frame keeps the
-          // picture moving while scrubbing instead of waiting it out.
-          if (sourceGeneration !== this.sourceGeneration || this.playingValue) continue;
-          if (wrapped) this.drawFrame(wrapped);
-        } catch (error) {
-          // errors of superseded requests are not interesting
-          if (sourceGeneration === this.sourceGeneration) this.reportError(error);
-        }
-      }
-    } finally {
-      this.stillInFlight = false;
-    }
+  private drainStills() {
+    if (this.activeStillId !== null) return;
+
+    const time = this.pendingStill;
+    if (time === null) return;
+    this.pendingStill = null;
+
+    const sink = this.videoSink;
+    if (!sink) return;
+
+    const sourceGeneration = this.sourceGeneration;
+    const id = ++this.stillId;
+    this.activeStillId = id;
+
+    // A decode that takes too long must not block the requests behind it.
+    // Reading the media can stall for reasons we have no control over, and
+    // a scrub that waits for it to finish is a scrub that never happens.
+    // The frame is still drawn if it does arrive, unless something newer
+    // has been displayed in the meantime.
+    const release = () => {
+      if (this.activeStillId !== id) return;
+      this.activeStillId = null;
+      this.drainStills();
+    };
+    const timer = setTimeout(release, STILL_TIMEOUT);
+
+    // ask for the middle of the frame, so that rounding of the
+    // requested position can't land us on the previous one
+    sink
+      .getCanvas(time + 0.5 / this.frameRate)
+      .then((wrapped) => {
+        if (sourceGeneration !== this.sourceGeneration) return;
+        if (this.playingValue) return;
+        if (!wrapped || id <= this.drawnStillId) return;
+        this.drawnStillId = id;
+        this.drawFrame(wrapped);
+      })
+      .catch((error: unknown) => {
+        // errors of superseded requests are not interesting
+        if (sourceGeneration === this.sourceGeneration) this.reportError(error);
+      })
+      .finally(() => {
+        clearTimeout(timer);
+        release();
+      });
   }
 
   private drawFrame(wrapped: WrappedCanvas) {
@@ -556,7 +641,11 @@ export class PlayerEngine {
         if (generation !== this.generation) return;
       }
     } catch (error) {
-      if (generation === this.generation) this.reportError(error);
+      if (generation !== this.generation) return;
+      // without frames there is nothing to play, so don't let the clock
+      // keep running over a frozen picture
+      this.reportError(error);
+      this.pause();
     } finally {
       await frames.return();
     }
