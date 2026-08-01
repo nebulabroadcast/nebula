@@ -1,5 +1,3 @@
-
-
 import { Dropdown } from '@components';
 import { useDialog } from '@features/Dialogs';
 import { useNebula } from '@features/Nebula';
@@ -39,7 +37,7 @@ const ApplySchedulingTemplate: React.FC<ApplySchedulingTemplateProps> = ({
   }, [currentChannelId]);
 
   const loadTemplates = () => {
-    nebula.listSchedulingTemplates({ throwOnError: true }).then((response) => {
+    void nebula.listSchedulingTemplates({ throwOnError: true }).then((response) => {
       const fetchedTemplates = response.data.templates || [];
       fetchedTemplates.sort((a, b) => {
         if (a.name === channelConfig?.default_template) return -1;

@@ -16,10 +16,7 @@ const hexToRgb = (hex: string): [number, number, number] => {
   return [r, g, b];
 };
 
-export const getTextColor = (
-  backgroundColor: string,
-  threshold = 128
-): TextColor => {
+export const getTextColor = (backgroundColor: string, threshold = 128): TextColor => {
   // Determines the ideal text color (black or white) against a given background hex color
   try {
     const [r, g, b] = hexToRgb(backgroundColor);

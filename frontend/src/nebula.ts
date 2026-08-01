@@ -115,7 +115,10 @@ const nebula = {
     if (!this.user) return false;
     if (this.user.is_admin) return true;
 
-    const userPermissions: Record<string, boolean | string | number | Array<string | number | boolean>> = this.user.permissions || {};
+    const userPermissions: Record<
+      string,
+      boolean | string | number | Array<string | number | boolean>
+    > = this.user.permissions || {};
 
     if (!Object.keys(userPermissions).includes(permission)) {
       return false;

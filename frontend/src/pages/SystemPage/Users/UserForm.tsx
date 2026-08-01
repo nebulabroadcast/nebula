@@ -60,19 +60,25 @@ const UserForm: React.FC<UserFormProps> = ({ userData, setUserData }) => {
             <InputText
               value={userData?.login || ''}
               disabled={!!userData?.id}
-              onChange={(value) => { setValue('login', value); }}
+              onChange={(value) => {
+                setValue('login', value);
+              }}
             />
           </FormRow>
           <FormRow title="Full name">
             <InputText
               value={userData?.full_name || ''}
-              onChange={(value) => { setValue('full_name', value); }}
+              onChange={(value) => {
+                setValue('full_name', value);
+              }}
             />
           </FormRow>
           <FormRow title="Email">
             <InputText
               value={userData?.email || ''}
-              onChange={(value) => { setValue('email', value); }}
+              onChange={(value) => {
+                setValue('email', value);
+              }}
             />
             <Button
               label="Send invite email"
@@ -97,7 +103,9 @@ const UserForm: React.FC<UserFormProps> = ({ userData, setUserData }) => {
           <FormRow title="Password">
             <InputPassword
               value={userData?.password || ''}
-              onChange={(value) => { setValue('password', value); }}
+              onChange={(value) => {
+                setValue('password', value);
+              }}
               autoComplete="new-password"
               placeholder="Change current password"
             />
@@ -114,7 +122,9 @@ const UserForm: React.FC<UserFormProps> = ({ userData, setUserData }) => {
           <FormRow title="Local network only">
             <InputSwitch
               value={userData?.local_network_only || false}
-              onChange={(value) => { setValue('local_network_only', value); }}
+              onChange={(value) => {
+                setValue('local_network_only', value);
+              }}
             />
           </FormRow>
         </Form>

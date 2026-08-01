@@ -12,7 +12,6 @@ import { DateTime } from 'luxon';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { toast } from 'react-toastify';
 
-
 import SchedulerNav from './SchedulerNav';
 
 import type { EventData } from '@/client';
@@ -126,7 +125,7 @@ const Scheduler: React.FC<SchedulerProps> = ({ draggedObjects }) => {
       for (const field of fields) {
         finalData[field.name] = res[field.name] || null;
       }
-      saveEvent(finalData);
+      void saveEvent(finalData);
     } catch {
       console.log('User cancelled event copy');
     }
@@ -224,7 +223,7 @@ const Scheduler: React.FC<SchedulerProps> = ({ draggedObjects }) => {
 
     try {
       const r = await showDialog('metadata', title, { fields, initialData });
-      saveEvent({ ...r, id: event.id });
+      void saveEvent({ ...r, id: event.id });
     } catch {
       //
     }
@@ -244,7 +243,7 @@ const Scheduler: React.FC<SchedulerProps> = ({ draggedObjects }) => {
       .catch(onError);
   };
 
-  const deleteUnaired = async () => {
+  const deleteUnaired = () => {
     const message =
       'Are you sure you want to delete unaired events in this week?\n\n' +
       'This action is not undoable. ' +
@@ -265,20 +264,26 @@ const Scheduler: React.FC<SchedulerProps> = ({ draggedObjects }) => {
           .then(loadEvents)
           .catch(onError);
       })
-      .catch(() => {});
+      .catch(() => {
+        // dialog dismissed, do nothing
+      });
   };
 
   const contextMenu: ContextMenuItem[] = [
     {
       label: 'Edit',
       icon: 'edit',
-      onClick: editEvent,
+      onClick: (event) => {
+        void editEvent(event);
+      },
     },
     {
       label: 'Delete',
       icon: 'delete',
       hlColor: 'var(--color-red)',
-      onClick: (event) => { deleteEvent(event.id); },
+      onClick: (event) => {
+        deleteEvent(event.id);
+      },
     },
   ];
 
@@ -304,7 +309,9 @@ const Scheduler: React.FC<SchedulerProps> = ({ draggedObjects }) => {
       if (shouldReload) loadEvents();
     }; // handlePubSub
     const unsubscribe = ws.subscribe('objects_changed', handlePubSub);
-    return () => { unsubscribe(); };
+    return () => {
+      unsubscribe();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ws]);
 

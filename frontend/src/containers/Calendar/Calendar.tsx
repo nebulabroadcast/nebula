@@ -273,7 +273,7 @@ const Calendar: React.FC<CalendarProps> = ({
     searchParams.set('date', targetDate);
     const hash = `#${event.id}`;
     const fullPath = `${basePath}?${searchParams.toString()}${hash}`;
-    navigate(fullPath);
+    void navigate(fullPath);
   };
 
   const onClick = (evt: React.MouseEvent<HTMLCanvasElement>) => {

@@ -51,7 +51,7 @@ const UriComponent: React.FC<UriComponentProps> = ({ children, ...props }) => {
       <button
         onClick={() => {
           if (props.href) {
-            navigator.clipboard.writeText(props.href);
+            void navigator.clipboard.writeText(props.href);
             toast.success('Copied to clipboard');
           }
         }}
@@ -118,7 +118,7 @@ const TableDialog: React.FC<TableDialogProps> = ({
       .join('\n');
 
     const clipboardText = columnHeadersString + '\n' + dataString;
-    navigator.clipboard.writeText(clipboardText);
+    void navigator.clipboard.writeText(clipboardText);
     toast.success('Copied to clipboard');
   };
 

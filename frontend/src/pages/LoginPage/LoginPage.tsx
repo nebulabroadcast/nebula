@@ -1,5 +1,5 @@
 import { Button, InputText, InputPassword, ButtonLink } from '@components';
-import { useState, useEffect, useRef, FormEvent, CSSProperties } from 'react';
+import { useState, useEffect, useRef, SyntheticEvent, CSSProperties } from 'react';
 import { toast } from 'react-toastify';
 
 import type { SsoOption } from '../../client';
@@ -65,7 +65,7 @@ const StandardLogin = ({
     }
   }, []);
 
-  const onSubmit = (event: FormEvent) => {
+  const onSubmit = (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
     nebula
       .login({ body: { username, password }, throwOnError: true })
@@ -149,7 +149,7 @@ const LoginPage = ({ motd, onLogin, ssoOptions }: LoginPageProps) => {
     window.history.replaceState({}, document.title, window.location.pathname);
     if (access_token) {
       // exchange tokens
-      nebula
+      void nebula
         .tokenExchange({ body: { access_token }, throwOnError: true })
         .then((response) => {
           onLogin(response.data.access_token);
@@ -191,13 +191,17 @@ const LoginPage = ({ motd, onLogin, ssoOptions }: LoginPageProps) => {
           <StandardLogin
             ssoOptions={ssoOptions}
             onLogin={onLogin}
-            onPasswordReset={() => { setMode('password-reset'); }}
+            onPasswordReset={() => {
+              setMode('password-reset');
+            }}
           />
         )}
         {mode === 'password-reset' && (
           <PasswordReset
             token={passwordResetToken}
-            onGoBack={() => { setMode('standard'); }}
+            onGoBack={() => {
+              setMode('standard');
+            }}
           />
         )}
         {motd && <small>{motd}</small>}

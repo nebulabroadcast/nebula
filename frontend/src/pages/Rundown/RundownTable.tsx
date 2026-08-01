@@ -11,7 +11,6 @@ import type { ObjectType, RundownRow } from '../../client';
 import RundownTableWrapper from './RundownTableWrapper';
 import { getRunModeOptions, getRundownColumns } from './utils';
 
-
 import nebula from '@/nebula';
 
 interface RundownTableProps {
@@ -93,7 +92,8 @@ const RundownTable: React.FC<RundownTableProps> = ({
     const query = `[data-index="${scrollToIndex}"]`;
     const row = tableRef.current.querySelector(query);
     if (row) {
-      const pos = (row as HTMLElement).offsetTop - (row.parentNode as HTMLElement).offsetTop;
+      const pos =
+        (row as HTMLElement).offsetTop - (row.parentNode as HTMLElement).offsetTop;
       const parent = row.parentNode?.parentNode?.parentNode as HTMLElement; // he he he
       if (parent) {
         parent.scrollTop = pos;
@@ -124,7 +124,10 @@ const RundownTable: React.FC<RundownTableProps> = ({
   const deleteSelectedItems = () => {
     if (!selectedItems.length) return;
     console.debug('Deleting items:', selectedItems);
-    const payload = { object_type: 'item' as ObjectType, ids: selectedItems.map(Number) };
+    const payload = {
+      object_type: 'item' as ObjectType,
+      ids: selectedItems.map(Number),
+    };
     nebula
       .delete_({ body: payload, throwOnError: true })
       .then(loadRundown)
@@ -138,8 +141,12 @@ const RundownTable: React.FC<RundownTableProps> = ({
     if (!ids.length) return;
 
     showDialog('sendto', 'Send to...', { assets: ids })
-      .then(() => { })
-      .catch(() => { });
+      .then(() => {
+        // nothing to do after sending
+      })
+      .catch(() => {
+        // dialog dismissed, do nothing
+      });
   };
 
   const onSetPrimary = async () => {
@@ -301,7 +308,11 @@ const RundownTable: React.FC<RundownTableProps> = ({
     setSelectedEvents([]);
     if (event.detail === 2) {
       // doubleClick
-      if (rundownMode === 'control' && row.type === 'item' && currentChannelId !== null) {
+      if (
+        rundownMode === 'control' &&
+        row.type === 'item' &&
+        currentChannelId !== null
+      ) {
         nebula
           .playout({
             body: {
@@ -411,7 +422,9 @@ const RundownTable: React.FC<RundownTableProps> = ({
           res.push({
             label: `Solve using ${solver}`,
             icon: 'change_circle',
-            onClick: () => { onSolve(solver); },
+            onClick: () => {
+              onSolve(solver);
+            },
           });
         }
       }
@@ -471,7 +484,9 @@ const RundownTable: React.FC<RundownTableProps> = ({
         droppable={
           draggedObjects ? { type: 'mixed', items: draggedObjects } : undefined
         }
-        onDrop={(droppable, dropIndex) => { onDrop(droppable.items, dropIndex ?? 0); }}
+        onDrop={(droppable, dropIndex) => {
+          onDrop(droppable.items, dropIndex ?? 0);
+        }}
       />
     </RundownTableWrapper>
   );

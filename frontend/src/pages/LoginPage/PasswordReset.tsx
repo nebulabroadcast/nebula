@@ -18,7 +18,7 @@ export const PasswordReset = ({ token, onGoBack }: PasswordResetProps) => {
 
   const buttonRef = React.useRef<HTMLButtonElement>(null);
 
-  const onResetRequest = (event: React.FormEvent) => {
+  const onResetRequest = (event: React.SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
     axios
       .post('/api/password-reset', { email })
@@ -35,7 +35,7 @@ export const PasswordReset = ({ token, onGoBack }: PasswordResetProps) => {
       });
   };
 
-  const onResetCallback = (event: React.FormEvent) => {
+  const onResetCallback = (event: React.SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (password !== confirmPassword) {
       toast.error('Passwords do not match');

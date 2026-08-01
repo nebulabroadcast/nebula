@@ -1,5 +1,3 @@
-
-
 import DateNav from '@containers/DateNav';
 import React, { useState, useMemo } from 'react';
 

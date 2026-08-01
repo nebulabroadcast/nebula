@@ -93,7 +93,7 @@ const Rundown: React.FC<RundownProps> = ({ draggedObjects }) => {
     if (currentEvent) {
       let newPath = `${currentPath}?${query.toString()}`;
       newPath += `#${currentEvent}`;
-      navigate(newPath, { replace: true });
+      void navigate(newPath, { replace: true });
     }
   });
 

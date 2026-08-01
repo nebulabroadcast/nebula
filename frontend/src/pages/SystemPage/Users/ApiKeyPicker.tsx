@@ -3,7 +3,6 @@ import React, { useState, useMemo } from 'react';
 import { toast } from 'react-toastify';
 import styled from 'styled-components';
 
-
 const SubRow = styled.div`
   display: flex;
   flex-direction: row;
@@ -44,7 +43,9 @@ const ApiKeyPicker: React.FC<ApiKeyPickerProps> = ({ setApiKey, apiKeyPreview })
     const newKey = createApiKey();
     return (
       <Dialog
-        onHide={() => { setDialogVisible(false); }}
+        onHide={() => {
+          setDialogVisible(false);
+        }}
         style={{ width: 550 }}
         header="Create API key"
         footer={
@@ -52,7 +53,9 @@ const ApiKeyPicker: React.FC<ApiKeyPickerProps> = ({ setApiKey, apiKeyPreview })
             <Button
               icon="close"
               label="Cancel"
-              onClick={() => { setDialogVisible(false); }}
+              onClick={() => {
+                setDialogVisible(false);
+              }}
             />
             <Button
               icon="check"
@@ -75,20 +78,24 @@ const ApiKeyPicker: React.FC<ApiKeyPickerProps> = ({ setApiKey, apiKeyPreview })
           <InputText
             value={newKey}
             readOnly
-            onChange={() => {}}
+            onChange={() => {
+              // read-only field
+            }}
             style={{
               flexGrow: 1,
               fontFamily: 'monospace',
               fontStyle: 'normal',
               textAlign: 'center',
             }}
-            onDoubleClick={(e) => { (e.target as HTMLInputElement).select(); }}
+            onDoubleClick={(e) => {
+              (e.target as HTMLInputElement).select();
+            }}
           />
           <Button
             icon="content_copy"
             tooltip="Copy to clipboard"
             onClick={() => {
-              navigator.clipboard.writeText(newKey);
+              void navigator.clipboard.writeText(newKey);
               toast.success('Copied to clipboard');
             }}
           />
@@ -114,7 +121,9 @@ const ApiKeyPicker: React.FC<ApiKeyPickerProps> = ({ setApiKey, apiKeyPreview })
         icon="key"
         label="Create API key"
         style={{ maxWidth: 150 }}
-        onClick={() => { setDialogVisible(true); }}
+        onClick={() => {
+          setDialogVisible(true);
+        }}
       />
       {dialog}
     </>

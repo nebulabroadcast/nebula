@@ -174,7 +174,7 @@ const useMediaUploadLogic = (): MediaUploadContextType => {
       isProcessingRef.current = false;
       // Process the next task immediately
       processQueueTimeoutRef.current = setTimeout(() => {
-        processQueue();
+        void processQueue();
       }, 500);
     }
   }, [updateTask]);
@@ -197,7 +197,7 @@ const useMediaUploadLogic = (): MediaUploadContextType => {
     // Only trigger if we have queued items and aren't already processing
     const hasQueuedItems = queue.some((task) => task?.status === UPLOAD_STATUS.QUEUED);
     if (hasQueuedItems && !isProcessingRef.current && !activeUploadRef.current) {
-      processQueue();
+      void processQueue();
     }
   }, [queue, processQueue]);
 

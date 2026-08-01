@@ -1,5 +1,9 @@
 import { Table, Section } from '@components';
-import type { TableColumn, TableRowData, TableSortDirection } from '@components/table/types';
+import type {
+  TableColumn,
+  TableRowData,
+  TableSortDirection,
+} from '@components/table/types';
 import Pagination from '@containers/Pagination';
 import { useDialog } from '@features/Dialogs';
 import { useNebula } from '@features/Nebula';
@@ -24,7 +28,10 @@ import nebula from '@/nebula';
 const ROWS_PER_PAGE = 200;
 
 type RequestParams = Required<
-  Pick<BrowseAssetsRequest, 'view' | 'query' | 'limit' | 'offset' | 'order_by' | 'order_dir'>
+  Pick<
+    BrowseAssetsRequest,
+    'view' | 'query' | 'limit' | 'offset' | 'order_by' | 'order_dir'
+  >
 >;
 
 interface BrowserTableProps {
@@ -115,7 +122,7 @@ const BrowserTable = ({ isDragging }: BrowserTableProps) => {
     // Use current value of requestParamsRef to avoid stale data
     const params = requestParamsRef.current;
     if (!params) return;
-    nebula
+    void nebula
       .browse({ body: params, throwOnError: true })
       .then((response) => {
         const hasMore = response.data.data.length > ROWS_PER_PAGE;
@@ -181,7 +188,7 @@ const BrowserTable = ({ isDragging }: BrowserTableProps) => {
   const onRowClick = (rowData: Record<string, any>, event: React.MouseEvent) => {
     let newSelectedAssets = [];
     if (event.ctrlKey) {
-      if (selectedAssets.includes(rowData.id)) {
+      if (selectedAssets.includes(rowData.id as number)) {
         newSelectedAssets = selectedAssets.filter((obj) => obj !== rowData.id);
       } else {
         newSelectedAssets = [...selectedAssets, rowData.id];
@@ -192,7 +199,9 @@ const BrowserTable = ({ isDragging }: BrowserTableProps) => {
       );
       const focusedIndex =
         data.findIndex((row: Record<string, any>) => row.id === focusedAsset) ||
-        data.findIndex((row: Record<string, any>) => selectedAssets.includes(row.id)) ||
+        data.findIndex((row: Record<string, any>) =>
+          selectedAssets.includes(row.id as number)
+        ) ||
         clickedIndex ||
         0;
 
@@ -202,7 +211,7 @@ const BrowserTable = ({ isDragging }: BrowserTableProps) => {
       // Get the ids of the rows in the range
       const rangeIds = data
         .slice(min, max + 1)
-        .map((row: Record<string, any>) => row.id);
+        .map((row: Record<string, any>) => row.id as number);
 
       newSelectedAssets = [...new Set([...selectedAssets, ...rangeIds])];
     } else {
@@ -259,7 +268,9 @@ const BrowserTable = ({ isDragging }: BrowserTableProps) => {
         .then(() => {
           saveSelectionStatus(status);
         })
-        .catch(() => {});
+        .catch(() => {
+          // dialog dismissed, do nothing
+        });
     } else {
       saveSelectionStatus(status);
     }
@@ -267,8 +278,12 @@ const BrowserTable = ({ isDragging }: BrowserTableProps) => {
 
   const sendTo = () => {
     showDialog('sendto', 'Send to...', { assets: selectedAssets })
-      .then(() => {})
-      .catch(() => {});
+      .then(() => {
+        // nothing to do after sending
+      })
+      .catch(() => {
+        // dialog dismissed, do nothing
+      });
   };
 
   const contextMenu = () => [

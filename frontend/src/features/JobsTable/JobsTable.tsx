@@ -110,7 +110,9 @@ export const JobsTable: React.FC<JobsTableProps> = ({
             onClick={() => {
               restartJob(row.id);
             }}
-            disabled={row.service_type ? NOT_RESTARTABLE.includes(row.service_type) : false}
+            disabled={
+              row.service_type ? NOT_RESTARTABLE.includes(row.service_type) : false
+            }
             label="Restart"
           />
         </td>

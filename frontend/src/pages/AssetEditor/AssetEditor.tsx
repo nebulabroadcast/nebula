@@ -16,7 +16,6 @@ import AssetMainProps from './AssetMainProps';
 import { AssetPreview } from './AssetPreview';
 import AssetEditorNav from './EditorNav';
 
-
 import nebula from '@/nebula';
 
 interface EnabledActions {
@@ -101,10 +100,7 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
     'mam.editor.mode',
     'metadata'
   );
-  const [showJobs, setShowJobs] = useLocalStorage<boolean>(
-    'mam.editor.showJobs',
-    true
-  );
+  const [showJobs, setShowJobs] = useLocalStorage<boolean>('mam.editor.showJobs', true);
   const [, setSearchParams] = useSearchParams();
 
   const assetIdRef = useRef<number | string | null>(focusedAsset);

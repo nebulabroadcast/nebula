@@ -125,7 +125,9 @@ const PluginPanel: React.FC<PluginPanelProps> = ({ plugin, onError }) => {
               <PluginSlot
                 slot={slot}
                 value={formData[slot.name]}
-                onChange={(val) => { setFormData((o) => ({ ...o, [slot.name]: val })); }}
+                onChange={(val) => {
+                  setFormData((o) => ({ ...o, [slot.name]: val }));
+                }}
               />
             </FormRow>
           ))}

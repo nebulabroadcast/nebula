@@ -18,7 +18,9 @@ const UserList: React.FC<UserListProps> = ({ onSelect, users, currentId, loading
         data={users}
         loading={loading}
         selection={currentId ? [currentId] : []}
-        onRowClick={(row) => { onSelect(row.id as number); }}
+        onRowClick={(row) => {
+          onSelect(row.id as number);
+        }}
         keyField="id"
         columns={[
           {

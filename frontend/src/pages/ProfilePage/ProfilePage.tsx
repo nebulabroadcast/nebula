@@ -29,13 +29,31 @@ const ProfileForm: React.FC = () => {
       </PanelHeader>
       <Form>
         <FormRow title="Login">
-          <InputText value={user.login} disabled onChange={() => {}} />
+          <InputText
+            value={user.login}
+            disabled
+            onChange={() => {
+              // read-only field
+            }}
+          />
         </FormRow>
         <FormRow title="Full name">
-          <InputText value={user.full_name || ''} disabled onChange={() => {}} />
+          <InputText
+            value={user.full_name || ''}
+            disabled
+            onChange={() => {
+              // read-only field
+            }}
+          />
         </FormRow>
         <FormRow title="Email">
-          <InputText value={user.email || ''} disabled onChange={() => {}} />
+          <InputText
+            value={user.email || ''}
+            disabled
+            onChange={() => {
+              // read-only field
+            }}
+          />
         </FormRow>
         <FormRow title="">
           <Button label="Save" icon="check" disabled />

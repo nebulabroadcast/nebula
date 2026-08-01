@@ -35,7 +35,7 @@ const UsersPage: React.FC = () => {
 
   const loadUsers = () => {
     setLoading(true);
-    nebula
+    void nebula
       .listUsers({ throwOnError: true })
       .then((res) => {
         setUsers(
@@ -47,7 +47,9 @@ const UsersPage: React.FC = () => {
           }))
         );
       })
-      .finally(() => { setLoading(false); });
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
   useEffect(() => {
@@ -67,7 +69,7 @@ const UsersPage: React.FC = () => {
   }, [currentId, users]);
 
   const onSelect = (userId: number | string) => {
-    navigate(`/system/users?id=${userId}`);
+    void navigate(`/system/users?id=${userId}`);
   };
 
   const onSave = () => {
@@ -101,9 +103,9 @@ const UsersPage: React.FC = () => {
       'email',
     ];
     for (const key of keysToRemove) {
-      delete copy[key];
+      Reflect.deleteProperty(copy, key);
     }
-    navigate('/system/users?copy=true');
+    void navigate('/system/users?copy=true');
     setUserData(copy);
   };
 
@@ -120,7 +122,9 @@ const UsersPage: React.FC = () => {
             icon="content_copy"
             label="Duplicate user"
             tooltip="Create a new user by copying the current one"
-            onClick={() => { copyUser(); }}
+            onClick={() => {
+              copyUser();
+            }}
             disabled={!userData?.id}
           />
           <Spacer />

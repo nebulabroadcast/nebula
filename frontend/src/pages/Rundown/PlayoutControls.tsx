@@ -10,7 +10,6 @@ import PlayoutPlugins from './PlayoutPlugins';
 import type { PlayoutAction } from '@/client';
 import nebula from '@/nebula';
 
-
 const ControlsSection = styled.section`
   flex-direction: column;
   gap: 8px;
@@ -141,7 +140,9 @@ const PlayoutControls: React.FC<PlayoutControlsProps> = ({
 
   useEffect(() => {
     const timer = setInterval(onTimer, 40);
-    return () => { clearInterval(timer); };
+    return () => {
+      clearInterval(timer);
+    };
   }, []);
 
   const onCommand = (command: PlayoutAction, payload?: Record<string, unknown>) => {
@@ -179,18 +180,42 @@ const PlayoutControls: React.FC<PlayoutControlsProps> = ({
             <Button
               label="Take"
               style={{ border: '1px solid var(--color-green-muted)' }}
-              onClick={() => { onCommand('take'); }}
+              onClick={() => {
+                onCommand('take');
+              }}
             />
             <Button
               label="Freeze"
               style={{ border: '1px solid var(--color-red-muted)' }}
-              onClick={() => { onCommand('freeze'); }}
+              onClick={() => {
+                onCommand('freeze');
+              }}
             />
-            <Button label="Retake" onClick={() => { onCommand('retake'); }} />
-            <Button label="Abort" onClick={() => { onCommand('abort'); }} />
+            <Button
+              label="Retake"
+              onClick={() => {
+                onCommand('retake');
+              }}
+            />
+            <Button
+              label="Abort"
+              onClick={() => {
+                onCommand('abort');
+              }}
+            />
             <Button label="Loop" onClick={() => toast.error('not implemented')} />
-            <Button label="Cue prev" onClick={() => { onCommand('cue_backward'); }} />
-            <Button label="Cue next" onClick={() => { onCommand('cue_forward'); }} />
+            <Button
+              label="Cue prev"
+              onClick={() => {
+                onCommand('cue_backward');
+              }}
+            />
+            <Button
+              label="Cue next"
+              onClick={() => {
+                onCommand('cue_forward');
+              }}
+            />
           </ButtonRow>
         </ControlsSection>
       )}

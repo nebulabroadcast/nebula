@@ -1,6 +1,6 @@
-import nebula from '@/nebula';
-
 import './cellStyles.scss';
+
+import { TableRowData, TableCellFormatter } from '@components/table/types';
 
 import formatAuthorship from './formatAuthorship';
 import formatMetaDatetime from './formatMetaDatetime';
@@ -15,7 +15,7 @@ import formatRundownRunMode from './formatRundownRunMode';
 import formatRundownSymbol from './formatRundownSymbol';
 import formatRundownTime from './formatRundownTime';
 
-import { TableRowData, TableCellFormatter } from '@components/table/types';
+import nebula from '@/nebula';
 
 const formatRowHighlightColor = (rowData: TableRowData) => {
   switch (rowData.status) {
@@ -75,7 +75,6 @@ const getDefaultFormatter = (key: string): TableCellFormatter => {
       return (rowData, key) => formatMetaTimecode(rowData, key);
 
     case 'select':
-       
       return (rowData, key) => {
         if (!metaType.cs) return <td>{rowData[key] as string}</td>;
 
@@ -87,7 +86,6 @@ const getDefaultFormatter = (key: string): TableCellFormatter => {
       };
 
     case 'list':
-       
       return (rowData, key) => {
         const values = (rowData[key] as string[]) || [];
         if (!metaType.cs) return <td>{values.join(', ')}</td>;
@@ -104,7 +102,6 @@ const getDefaultFormatter = (key: string): TableCellFormatter => {
 
 const getFormatter = (key: string): TableCellFormatter => {
   if (['subtitle', 'description'].includes(key))
-     
     return (rowData, key) => <td>{rowData[key] as React.ReactNode}</td>;
 
   switch (key) {

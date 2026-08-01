@@ -22,7 +22,13 @@ const MetadataDetail: React.FC<MetadataDetailProps> = ({ assetData }) => {
 
             return (
               <FormRow key={key} title={metaType.title}>
-                <InputText value={String(value || '')} readOnly onChange={() => {}} />
+                <InputText
+                  value={String(value || '')}
+                  readOnly
+                  onChange={() => {
+                    // read-only field
+                  }}
+                />
               </FormRow>
             );
           })}

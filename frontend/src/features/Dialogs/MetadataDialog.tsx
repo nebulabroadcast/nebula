@@ -21,9 +21,15 @@ const MetadataDialog = ({
 }: MetadataDialogProps) => {
   const [data, setData] = useState(initialData);
 
-  const onReset = () => { setData(initialData); };
-  const onCancel = () => { handleCancel(); };
-  const onConfirm = () => { handleConfirm(data); };
+  const onReset = () => {
+    setData(initialData);
+  };
+  const onCancel = () => {
+    handleCancel();
+  };
+  const onConfirm = () => {
+    handleConfirm(data);
+  };
 
   const footer = (
     <>

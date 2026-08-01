@@ -59,7 +59,7 @@ const StoragesPage = () => {
 
   useEffect(() => {
     setPageTitle('Storages');
-    nebula.statsStorages({ throwOnError: true }).then((response) => {
+    void nebula.statsStorages({ throwOnError: true }).then((response) => {
       setData(response.data as StoragesData);
       console.log(response.data);
     });

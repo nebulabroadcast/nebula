@@ -144,7 +144,7 @@ const VUMeter: React.FC<VUMeterProps> = ({ gainNodes, audioContext }) => {
       gainNodes.forEach((gainNode, index) => {
         try {
           gainNode.disconnect(analysers[index]);
-        } catch (e) {
+        } catch {
           // ignore
         }
       });
