@@ -75,7 +75,7 @@ export const AssetPreview: React.FC<PreviewProps> = ({ assetData, setAssetData }
           );
         })
         .catch(() => {
-          setProxyInfo(null);
+          if (!silent) setProxyInfo(null);
         })
         .finally(() => {
           setLoading(false);
