@@ -90,6 +90,7 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>((props, ref) =>
   const [markOut, setMarkOut] = useState<number | null | undefined>(props.markOut);
   const [isPlaying, setIsPlaying] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [seeking, setSeeking] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [loop, setLoop] = useState(false);
@@ -152,6 +153,7 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>((props, ref) =>
         },
         onPlayingChange: setIsPlaying,
         onLoadingChange: setLoading,
+        onSeekingChange: setSeeking,
         onChannelCount: setChannelCount,
         onBufferedRanges: setBufferedRanges,
         onError: console.warn,
@@ -321,7 +323,7 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>((props, ref) =>
         <VideoSpace>
           <VideoContainer>
             <VideoCanvas ref={canvasRef} />
-            {loading && (
+            {(loading || seeking) && (
               <LoaderWrapper>
                 <Loader />
               </LoaderWrapper>

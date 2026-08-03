@@ -28,6 +28,10 @@ const MAX_RETRY_DELAY = 2;
 // How long a single frame decode may block the ones queued behind it
 const STILL_TIMEOUT = 1500;
 
+// A seek that resolves faster than this doesn't report itself as pending,
+// so that the indicator doesn't flash on every frame step
+const SEEK_INDICATOR_DELAY = 250;
+
 const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 /**
@@ -93,6 +97,8 @@ export interface PlayerEngineCallbacks {
   onDuration: (duration: number) => void;
   onPlayingChange: (playing: boolean) => void;
   onLoadingChange: (loading: boolean) => void;
+  /** The picture is behind the requested position and is catching up */
+  onSeekingChange: (seeking: boolean) => void;
   onChannelCount: (channels: number) => void;
   onBufferedRanges: (ranges: TimeRange[]) => void;
   onError: (message: string | null) => void;
@@ -155,6 +161,9 @@ export class PlayerEngine {
   private stillId = 0;
   private activeStillId: number | null = null;
   private drawnStillId = 0;
+
+  private seekingValue = false;
+  private seekingTimer: number | null = null;
 
   private lastEmittedFrame = -1;
 
@@ -304,6 +313,7 @@ export class PlayerEngine {
     this.pendingStill = null;
     // a decode of the previous media must not hold up the next one
     this.activeStillId = null;
+    this.endSeeking();
     this.lastFrame = null;
     this.clearCanvas();
 
@@ -381,6 +391,8 @@ export class PlayerEngine {
       this.currentTimeValue = 0;
     }
     this.playingValue = true;
+    // playback owns the canvas from now on, a pending still is irrelevant
+    this.endSeeking();
     this.callbacks.onPlayingChange(true);
     await this.startPipeline(this.currentTimeValue);
   }
@@ -439,7 +451,33 @@ export class PlayerEngine {
    */
   private requestStill(time: number) {
     this.pendingStill = time;
+    this.beginSeeking();
     this.drainStills();
+  }
+
+  /**
+   * The displayed frame is no longer the one we want. Reported only if it
+   * stays that way for a moment - a seek that is served from what we
+   * already have is instant and needs no indicator.
+   */
+  private beginSeeking() {
+    if (this.seekingValue || this.seekingTimer !== null) return;
+    this.seekingTimer = window.setTimeout(() => {
+      this.seekingTimer = null;
+      this.seekingValue = true;
+      this.callbacks.onSeekingChange(true);
+    }, SEEK_INDICATOR_DELAY);
+  }
+
+  /** The picture caught up with the requested position */
+  private endSeeking() {
+    if (this.seekingTimer !== null) {
+      clearTimeout(this.seekingTimer);
+      this.seekingTimer = null;
+    }
+    if (!this.seekingValue) return;
+    this.seekingValue = false;
+    this.callbacks.onSeekingChange(false);
   }
 
   private drainStills() {
@@ -450,7 +488,11 @@ export class PlayerEngine {
     this.pendingStill = null;
 
     const sink = this.videoSink;
-    if (!sink) return;
+    if (!sink) {
+      // nothing to decode from, so nothing to wait for either
+      this.endSeeking();
+      return;
+    }
 
     const sourceGeneration = this.sourceGeneration;
     const id = ++this.stillId;
@@ -485,6 +527,9 @@ export class PlayerEngine {
       })
       .finally(() => {
         clearTimeout(timer);
+        // this was the last requested position, so whatever it produced,
+        // the picture is as close to it as it is going to get
+        if (id === this.stillId && this.pendingStill === null) this.endSeeking();
         release();
       });
   }
