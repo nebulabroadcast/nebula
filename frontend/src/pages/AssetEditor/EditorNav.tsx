@@ -152,12 +152,11 @@ const AssetEditorNav: React.FC<AssetEditorNavProps> = ({
       {
         label: 'Send to...',
         disabled: !assetData?.id,
+        icon: 'send',
         onClick: () => {
           sendTo();
         },
       },
-      ...scopedEndpoints,
-      ...linkOptions,
       {
         label: showJobs ? 'Hide jobs' : 'Show jobs',
         icon: showJobs ? 'visibility_off' : 'visibility',
@@ -166,6 +165,8 @@ const AssetEditorNav: React.FC<AssetEditorNavProps> = ({
         },
         separator: true,
       },
+      ...scopedEndpoints,
+      ...linkOptions,
     ];
     if (result.length > 2) {
       result[1].separator = true;
@@ -208,10 +209,11 @@ const AssetEditorNav: React.FC<AssetEditorNavProps> = ({
         value={editorMode}
         onChange={setEditorMode as (mode: string) => void}
       />
+
       <Dropdown
         options={assetActions}
         disabled={!enabledActions.actions}
-        label="Actions"
+        icon="more_vert"
       />
 
       <Spacer />

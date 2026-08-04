@@ -17,6 +17,7 @@ import { AssetPreview } from './AssetPreview';
 import AssetEditorNav from './EditorNav';
 
 import nebula from '@/nebula';
+import { AxiosError } from 'axios';
 
 interface EnabledActions {
   save: boolean;
@@ -104,7 +105,7 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
   const [, setSearchParams] = useSearchParams();
 
   const assetIdRef = useRef<number | string | null>(focusedAsset);
-  const changedKeysRef = useRef(new Set<string>());
+  const changedKeysRef = useRef(new Set([] as string[]));
 
   const showDialog = useDialog();
   const ws = useWebSocket();
@@ -175,7 +176,8 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
 
         setOriginalData(freshData);
       })
-      .catch((error) => {
+      .catch((error: unknown) => {
+        if (!(error instanceof AxiosError)) return;
         toast.error(
           <>
             <strong>Unable to refresh asset</strong>
@@ -356,7 +358,8 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
                 reloadBrowser();
               }
             })
-            .catch((error) => {
+            .catch((error: unknown) => {
+              if (!(error instanceof AxiosError)) return;
               toast.error(
                 <>
                   <strong>Unable to save asset</strong>
