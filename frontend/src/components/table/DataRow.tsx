@@ -60,11 +60,14 @@ const DataRow = ({
 
   const handleClick = (event: React.MouseEvent<HTMLTableRowElement>) => {
     const isContextMenu = event.type === 'contextmenu' || event.button === 2;
-    if (isContextMenu && onContextMenu) {
-      const cell = (event.target as HTMLElement).closest('td');
+    if (isContextMenu && onContextMenu && event.target instanceof Element) {
+      const cell = event.target.closest('td');
       if (cell?.parentElement) {
-        const index = Array.prototype.indexOf.call(cell.parentElement.children, cell);
-        const column = columns[index];
+        const columnIndex = Array.prototype.indexOf.call(
+          cell.parentElement.children,
+          cell
+        );
+        const column = columns[columnIndex];
         if (column) onContextMenu(rowData, column.name);
       }
     }
