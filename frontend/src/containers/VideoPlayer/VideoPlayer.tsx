@@ -31,6 +31,8 @@ const VideoPlayerContainer = styled.div`
   flex-grow: 1;
   flex-direction: column;
   gap: 8px;
+  min-width: 0;
+  min-height: 0;
 `;
 
 const VideoSpace = styled.div`
@@ -38,11 +40,16 @@ const VideoSpace = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+  min-width: 0;
+  min-height: 0;
 `;
 
 const VideoContainer = styled.div`
   position: relative;
+  width: 100%;
   height: 100%;
+  min-width: 0;
+  min-height: 0;
 `;
 
 const VideoCanvas = styled.canvas`

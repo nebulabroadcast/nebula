@@ -574,7 +574,7 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
           {assetData?.id && showJobs && (
             <Section
               style={{
-                height: 60,
+                minHeight: 120,
                 position: 'relative',
               }}
             >

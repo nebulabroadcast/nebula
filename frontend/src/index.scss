@@ -158,12 +158,16 @@ section:not(.Toastify) {
   display: flex;
   flex-direction: row;
   gap: var(--section-gap);
+  min-width: 0;
+  min-height: 0;
 }
 
 .column {
   display: flex;
   flex-direction: column;
   gap: var(--section-gap);
+  min-width: 0;
+  min-height: 0;
 }
 
 .transparent {
@@ -181,6 +185,8 @@ section:not(.Toastify) {
 .grow {
   position: relative;
   flex-grow: 1;
+  min-width: 0;
+  min-height: 0;
 }
 
 .third {
