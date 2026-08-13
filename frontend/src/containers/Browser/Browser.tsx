@@ -230,7 +230,7 @@ const BrowserTable = ({ isDragging }: BrowserTableProps) => {
   };
 
   const focusNext = (offset: number) => {
-    if (!focusedAsset) return;
+    if (focusedAsset === null) return;
     const nextIndex =
       data.findIndex((row: Record<string, any>) => row.id === focusedAsset) + offset;
     if (nextIndex < data.length) {
