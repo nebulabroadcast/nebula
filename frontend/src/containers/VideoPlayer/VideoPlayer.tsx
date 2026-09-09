@@ -270,8 +270,8 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>((props, ref) =>
     const renderer: OverlayRenderer | null =
       showOverlay || scanClip
         ? (context, width, height, scale) => {
-            if (showOverlay) drawGuides(context, width, height, scale);
             if (scanClip) clippingOverlay(context, width, height, scale);
+            if (showOverlay) drawGuides(context, width, height, scale);
           }
         : null;
 
