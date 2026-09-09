@@ -3,7 +3,7 @@ from typing import Any, Self, TypeVar, cast
 
 import asyncpg
 
-from nebula.db import DB, DatabaseConnection, db
+from nebula.db import DatabaseConnection, db
 from nebula.enum import ObjectTypeId
 from nebula.exceptions import (
     BadRequestException,
@@ -15,7 +15,7 @@ from nebula.messaging import msg
 from nebula.metadata.format import format_meta
 from nebula.metadata.normalize import normalize_meta
 from nebula.settings import settings
-from nx.utils import slugify
+from nebula.utils import slugify
 
 T = TypeVar("T", bound="BaseObject")
 
@@ -54,6 +54,9 @@ class BaseObject:
     meta: dict[str, Any] = {}
     defaults: dict[str, Any] = {}
     db_columns: list[str] = []
+    # Deprecated. Kept for plugin backward compatibility: nebula.db tracks
+    # the current connection/transaction internally, so there is no longer
+    # a need to pass a specific connection around.
     connection: DatabaseConnection | None = None
     username: str | None = None  # Name of the user operating on the object
 
@@ -63,12 +66,7 @@ class BaseObject:
         connection: DatabaseConnection | None = None,
         username: str | None = None,
     ) -> None:
-        if connection is not None:
-            assert isinstance(connection, asyncpg.pool.PoolConnectionProxy | DB)
-            self.connection = connection
-        else:
-            self.connection = db
-
+        self.connection = connection or db
         self.username = username
 
         if meta is None:
@@ -157,8 +155,7 @@ class BaseObject:
         username: str | None = None,
     ) -> Self:
         """Load an object from the database"""
-        conn = connection or db
-        res = await conn.fetch(
+        res = await db.fetch(
             f"SELECT meta FROM {cls.object_type}s WHERE id = $1", object_id
         )
         if not res:
@@ -219,28 +216,13 @@ class BaseObject:
     async def delete(self) -> None:
         if not self.id:
             raise BadRequestException("Unable to delete unsaved asset")
-        if isinstance(self.connection, DB):
-            pool = await self.connection.pool()
-            async with pool.acquire() as conn, conn.transaction():
-                await self._delete()
-        elif (
-            self.connection is not None
-            and hasattr(self.connection, "is_in_transaction")
-            and self.connection.is_in_transaction()
-        ):
+        async with db.transaction():
             await self._delete()
-        else:
-            assert isinstance(self.connection, asyncpg.Connection)
-            async with self.connection.transaction():
-                await self._delete()
 
     async def _delete(self) -> None:
-        assert self.connection is not None
         await self.delete_children()
-        await self.connection.execute(
-            f"DELETE FROM {self.object_type}s WHERE id = $1", self.id
-        )
-        await self.connection.execute(
+        await db.execute(f"DELETE FROM {self.object_type}s WHERE id = $1", self.id)
+        await db.execute(
             "DELETE FROM ft WHERE object_type = $1 AND id = $2",
             ObjectTypeId[self.object_type.upper()].value,
             self.id,
@@ -250,19 +232,8 @@ class BaseObject:
         pass
 
     async def save(self, notify: bool = True, initiator: str | None = None) -> None:
-        assert self.connection is not None
-        if isinstance(self.connection, DB):
-            pool = await self.connection.pool()
-            async with pool.acquire() as conn, conn.transaction():
-                await self._save()
-        elif (
-            hasattr(self.connection, "is_in_transaction")
-            and self.connection.is_in_transaction()
-        ):
+        async with db.transaction():
             await self._save()
-        else:
-            async with self.connection.transaction():
-                await self._save()
         if notify:
             await msg(
                 "objects_changed",
@@ -273,11 +244,10 @@ class BaseObject:
         log.info(f"Saved {self}", user=self.username)
 
     async def _save(self) -> None:
-        assert self.connection is not None
         if self.id is None:
             await self._insert()
         else:
-            await self.connection.execute(
+            await db.execute(
                 "DELETE FROM ft WHERE object_type = $1 AND id = $2",
                 ObjectTypeId[self.object_type.upper()].value,
                 self.id,
@@ -292,7 +262,7 @@ class BaseObject:
             for word, weight in create_ft_index(self.meta).items()
         ]
 
-        await self.connection.executemany(
+        await db.executemany(
             """
             INSERT INTO ft (id, object_type, weight, value)
             VALUES ($1, $2, $3, $4)
@@ -302,7 +272,6 @@ class BaseObject:
         await self._update()
 
     async def _insert(self) -> None:
-        assert self.connection is not None
         self.meta["ctime"] = self.meta["mtime"] = time.time()
         placeholders = ", ".join(
             ["$" + str(i) for i in range(1, len(self.db_columns) + 2)]
@@ -313,11 +282,10 @@ class BaseObject:
             """
         qargs = [self.meta[col] for col in self.db_columns] + [self.meta]
 
-        res = await self.connection.fetch(query, *qargs)
+        res = await db.fetch(query, *qargs)
         self.meta["id"] = res[0]["id"]
 
     async def _update(self) -> None:
-        assert self.connection is not None
         self.meta["mtime"] = time.time()
         upcols = ", ".join(
             [col + " = $" + str(i) for i, col in enumerate(self.db_columns, 1)]
@@ -333,4 +301,4 @@ class BaseObject:
             self.meta,
             self.id,
         ]
-        await self.connection.execute(query, *qargs)
+        await db.execute(query, *qargs)

@@ -23,8 +23,7 @@ async def set_items_order(request: OrderRequest, user: nebula.User) -> OrderResp
     affected_bins: list[int] = [id_bin]
     pos = 1
 
-    pool = await nebula.db.pool()
-    async with pool.acquire() as conn, conn.transaction():
+    async with nebula.db.transaction():
         for obj in order:
             item: nebula.Item | None = None
 
@@ -33,7 +32,6 @@ async def set_items_order(request: OrderRequest, user: nebula.User) -> OrderResp
                     # Adding a virtual item (such as placeholder)
                     item = nebula.Item.from_meta(
                         obj.meta,
-                        connection=conn,
                         username=user.name,
                     )
 
@@ -44,9 +42,7 @@ async def set_items_order(request: OrderRequest, user: nebula.User) -> OrderResp
                     item["id_bin"] = id_bin
                 else:
                     # Moving an existing item
-                    item = await nebula.Item.load(
-                        obj.id, connection=conn, username=user.name
-                    )
+                    item = await nebula.Item.load(obj.id, username=user.name)
                     assert item is not None
 
                     if not item["id_bin"]:
@@ -70,7 +66,6 @@ async def set_items_order(request: OrderRequest, user: nebula.User) -> OrderResp
                 )
                 asset = await nebula.Asset.load(
                     obj.id,
-                    connection=conn,
                     username=user.name,
                 )
                 if not asset:
@@ -92,7 +87,6 @@ async def set_items_order(request: OrderRequest, user: nebula.User) -> OrderResp
                     item_meta.pop(key, None)
                 item = nebula.Item.from_meta(
                     item_meta,
-                    connection=conn,
                     username=user.name,
                 )
                 assert item is not None, "Item should not be None at this point"

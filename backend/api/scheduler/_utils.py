@@ -1,7 +1,7 @@
 import asyncpg
 
 import nebula
-from nx.utils import format_time
+from nebula.utils import format_time
 
 
 async def get_event_at_time(id_channel: int, timestamp: int) -> nebula.Event | None:
@@ -35,8 +35,7 @@ async def delete_events(ids: list[int], user: nebula.User | None = None) -> list
     username = user.name if user else None
 
     deleted_event_ids = []
-    pool = await nebula.db.pool()
-    async with pool.acquire() as conn, conn.transaction():
+    async with nebula.db.transaction():
         for id_event in ids:
             event = await nebula.Event.load(id_event, username=username)
             id_bin = event["id_magic"]

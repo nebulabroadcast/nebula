@@ -62,7 +62,7 @@ from .objects.event import Event
 from .objects.item import Item
 from .objects.user import User
 from .plugins import CLIPlugin
-from .redis import Redis as redis  # noqa: N813
+from .redis import redis
 from .settings import load_settings, settings
 from .storages import Storage, storages
 

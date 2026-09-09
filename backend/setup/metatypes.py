@@ -4,10 +4,14 @@ from typing import Any
 import aiofiles
 
 from nebula.common import json_loads
-from nebula.db import DatabaseConnection
+from nebula.db import db
 
 
-async def setup_metatypes(meta_types: dict[str, Any], db: DatabaseConnection) -> None:
+async def setup_metatypes(meta_types: dict[str, Any], **kwargs: Any) -> None:
+    # Accepts and ignores a legacy `db`/`connection` keyword argument for
+    # backward compatibility: nebula.db tracks the current
+    # connection/transaction internally.
+    _ = kwargs
     languages = ["en", "cs"]
 
     aliases: dict[str, dict[str, Any]] = {}

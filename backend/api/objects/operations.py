@@ -118,7 +118,6 @@ class Operations(APIRequest):
         request: OperationsRequest,
         user: CurrentUser,
     ) -> OperationsResponse:
-        pool = await nebula.db.pool()
         result = []
         reload_settings = False
         affected_bins: list[int] = []
@@ -136,7 +135,7 @@ class Operations(APIRequest):
                 aux_data[_key] = value
 
             try:
-                async with pool.acquire() as conn, conn.transaction():
+                async with nebula.db.transaction():
                     object_class = get_object_class_by_name(operation.object_type)
 
                     # Object ACL on which ACL check will be performed
@@ -145,7 +144,7 @@ class Operations(APIRequest):
                     acl_obj: BaseObject
 
                     if operation.id is None:
-                        obj = object_class(connection=conn, username=user.name)
+                        obj = object_class(username=user.name)
                         operation.data.pop("id", None)
                         obj["created_by"] = user.id
                         obj["updated_by"] = user.id
@@ -154,7 +153,6 @@ class Operations(APIRequest):
                     else:
                         obj = await object_class.load(
                             operation.id,
-                            connection=conn,
                             username=user.name,
                         )
                         obj["updated_by"] = user.id
@@ -195,7 +193,11 @@ class Operations(APIRequest):
                             await validator(
                                 obj,
                                 operation.data,
-                                connection=conn,
+                                # Kept for plugin backward compatibility.
+                                # nebula.db tracks the current transaction
+                                # internally, so this is now always the
+                                # global db singleton.
+                                connection=nebula.db,
                                 user=user,
                             )
                         except nebula.RequestSettingsReload:

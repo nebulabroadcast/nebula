@@ -115,6 +115,15 @@ wheels = [
 ]
 
 [[package]]
+name = "aioshutil"
+version = "1.6"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/d3/bd/dcea5abb1792269e70cc75d5f9ae9adbdfba0f0d08a207eb788ec3b469b6/aioshutil-1.6.tar.gz", hash = "sha256:9eae342b9a4cacc2c2c5877877a2d2f7a2b66c62aa1ab57d7e95c8cfd4ede507", size = 7843, upload-time = "2025-10-21T08:42:23.742Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/68/92/7020e67ad83095ecc2ce751c24a63df332fb9a34ebfe14bc12a6b21b8f58/aioshutil-1.6-py3-none-any.whl", hash = "sha256:e0711de25ade421b70094b2a27c69bef6356127013744fec05f019f36732c1bd", size = 4705, upload-time = "2025-10-21T08:42:22.892Z" },
+]
+
+[[package]]
 name = "aiosignal"
 version = "1.4.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1042,6 +1051,7 @@ dependencies = [
     { name = "itsdangerous" },
     { name = "jinja2" },
     { name = "mistune" },
+    { name = "nx-framework" },
     { name = "pydantic" },
     { name = "python-dotenv" },
     { name = "redis" },
@@ -1081,6 +1091,7 @@ requires-dist = [
     { name = "itsdangerous", specifier = ">=2.2.0" },
     { name = "jinja2", specifier = ">=3.1.6" },
     { name = "mistune", specifier = ">=3.2.0" },
+    { name = "nx-framework", specifier = ">=0.0.9" },
     { name = "pydantic", specifier = ">=2.12.5" },
     { name = "python-dotenv", specifier = ">=1.2.1" },
     { name = "redis", specifier = ">=7.1.0" },
@@ -1103,6 +1114,24 @@ dev = [
     { name = "types-aiofiles", specifier = ">=25.1.0.20251011" },
     { name = "types-authlib", specifier = ">=1.6.6.20260116" },
     { name = "types-requests", specifier = ">=2.32.4.20260107" },
+]
+
+[[package]]
+name = "nx-framework"
+version = "0.0.9"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "aiofiles" },
+    { name = "aioshutil" },
+    { name = "pydantic", extra = ["email"] },
+    { name = "pydantic-settings" },
+    { name = "python-dotenv" },
+    { name = "shortuuid" },
+    { name = "unidecode" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/4c/f7/6315371c4de4a6395aba5e06caac2bf9bee728601a26ce93f6e8bac3a280/nx_framework-0.0.9.tar.gz", hash = "sha256:59c9f3744b0ea2f34f56ae8abc67bd994e1f8d94748480fe7d0a7800c6bcba2d", size = 18429, upload-time = "2026-06-11T20:40:19.672Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/94/65/0ea2e10232f7490fe219ae9190b684b050c1c18f3a265966c958d98cbb2d/nx_framework-0.0.9-py3-none-any.whl", hash = "sha256:b5e8b4bedda404ff77a02939ddc59735c7308a6d6a1fe9d61a79e701b628c537", size = 22538, upload-time = "2026-06-11T20:40:18.173Z" },
 ]
 
 [[package]]
@@ -1233,6 +1262,11 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/fd/7b/122376b1fd3c62c1ed9dc80c931ace4844b3c55407b6fb2d199377c9736f/pydantic-2.13.4-py3-none-any.whl", hash = "sha256:45a282cde31d808236fd7ea9d919b128653c8b38b393d1c4ab335c62924d9aba", size = 472262, upload-time = "2026-05-06T13:43:02.641Z" },
 ]
 
+[package.optional-dependencies]
+email = [
+    { name = "email-validator" },
+]
+
 [[package]]
 name = "pydantic-core"
 version = "2.46.4"
@@ -1287,6 +1321,20 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/30/a6/9f9f380dbb301f67023bf8f707aaa75daadf84f7152d95c410fd7e81d994/pydantic_core-2.46.4-cp314-cp314t-win32.whl", hash = "sha256:e846ae7835bf0703ae43f534ab79a867146dadd59dc9ca5c8b53d5c8f7c9ef02", size = 1955575, upload-time = "2026-05-06T13:38:51.116Z" },
     { url = "https://files.pythonhosted.org/packages/40/1f/f1eb9eb350e795d1af8586289746f5c5677d16043040d63710e22abc43c9/pydantic_core-2.46.4-cp314-cp314t-win_amd64.whl", hash = "sha256:2108ba5c1c1eca18030634489dc544844144ee36357f2f9f780b93e7ddbb44b5", size = 2051624, upload-time = "2026-05-06T13:38:21.672Z" },
     { url = "https://files.pythonhosted.org/packages/f6/d2/42dd53d0a85c27606f316d3aa5d2869c4e8470a5ed6dec30e4a1abe19192/pydantic_core-2.46.4-cp314-cp314t-win_arm64.whl", hash = "sha256:4fcbe087dbc2068af7eda3aa87634eba216dbda64d1ae73c8684b621d33f6596", size = 2017325, upload-time = "2026-05-06T13:40:52.723Z" },
+]
+
+[[package]]
+name = "pydantic-settings"
+version = "2.15.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pydantic" },
+    { name = "python-dotenv" },
+    { name = "typing-inspection" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/68/ca/31c57507b13119d7d3cfa1576dad2911a4861e3be07b579395f4e9d393f9/pydantic_settings-2.15.0.tar.gz", hash = "sha256:694b793e84f766ba76a90ebdefc01d0a9a045dab0382bee70393da93712ad117", size = 261253, upload-time = "2026-08-07T09:24:57.419Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/30/a4/2bffa9f8e804325a09867f0e9d30795c80ea9f8d62560bd1b6ad6220eb2f/pydantic_settings-2.15.0-py3-none-any.whl", hash = "sha256:0ba092c291c94baceb5eff768aa0d56400a457585bc0175925a5a5510303da42", size = 69413, upload-time = "2026-08-07T09:24:55.839Z" },
 ]
 
 [[package]]

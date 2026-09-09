@@ -17,6 +17,10 @@ async def scheduler(  # noqa: C901, PLR0913, PLR0915, PLR0912
 ) -> SchedulerResponse:
     """Modify and display channel schedule"""
 
+    assert nebula.db.is_in_transaction, (
+        "Scheduler must be called within a transaction"
+    )
+
     username = user.name if user else None
     start_time: float | None = None
     end_time: float | None = None

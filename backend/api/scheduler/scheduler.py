@@ -51,15 +51,16 @@ class Scheduler(APIRequest):
 
         editable = user.can("scheduler_edit", request.id_channel)
 
-        result = await scheduler(
-            request.id_channel,
-            date=request.date,
-            days=request.days,
-            editable=editable,
-            events=request.events,
-            delete=request.delete,
-            user=user,
-        )
+        async with nebula.db.transaction():
+            result = await scheduler(
+                request.id_channel,
+                date=request.date,
+                days=request.days,
+                editable=editable,
+                events=request.events,
+                delete=request.delete,
+                user=user,
+            )
 
         if result.affected_bins:
             await bin_refresh(

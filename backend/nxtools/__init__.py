@@ -1,5 +1,5 @@
 # This file provides backward compatibility for the nxtools package, that has been
-# removed. This module re-exports selected functions from the nx.utils module.
+# removed. This module re-exports selected functions from the nebul.utils module.
 # This allows existing code that imports from nxtools to continue working
 # without modification, but this is deprecated and will be removed in Nebula 6.2
 
@@ -29,7 +29,7 @@ __all__ = [
 ]
 
 
-from nx.utils import (
+from nebula.utils import (
     camelize,
     create_hash,
     create_uuid,

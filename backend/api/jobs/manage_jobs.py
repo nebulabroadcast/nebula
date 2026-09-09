@@ -1,7 +1,7 @@
 import time
 
 import nebula
-from nx.utils import slugify
+from nebula.utils import slugify
 from server import APIRequest
 from server.dependencies import CurrentUser
 

@@ -1,7 +1,8 @@
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 import nebula
-from nebula.db import DatabaseConnection
 from nebula.settings.models import PlayoutChannelSettings
 
 Serializable = int | str | float | list[str] | bool | None
@@ -44,92 +45,79 @@ class EventData(BaseModel):
     )
 
 
-async def _create_new_event(  # noqa: C901
-    channel: PlayoutChannelSettings,
-    event_data: EventData,
-    user: nebula.User | None,
-    conn: DatabaseConnection,
-) -> None:
-    """Create a new event from the given data."""
-
-    username = user.name if user else None
-
-    new_bin = nebula.Bin(connection=conn, username=username)
-    new_event = nebula.Event(connection=conn, username=username)
-
-    await new_bin.save()
-
-    new_bin["duration"] = 0
-    new_event["id_magic"] = new_bin.id
-    new_event["id_channel"] = channel.id
-    new_event["start"] = event_data.start
-
-    asset_meta = {}
-    position = 0
-    if event_data.id_asset:
-        asset = await nebula.Asset.load(
-            event_data.id_asset, connection=conn, username=username
-        )
-
-        new_event["id_asset"] = event_data.id_asset
-
-        new_item = nebula.Item(connection=conn, username=username)
-        new_item["id_asset"] = event_data.id_asset
-        new_item["id_bin"] = new_bin.id
-        new_item["position"] = position
-        new_item["mark_in"] = asset["mark_in"]
-        new_item["mark_out"] = asset["mark_out"]
-
-        await new_item.save()
-        new_bin["duration"] = asset.duration
-        asset_meta = asset.meta
-        position += 1
-
-    if event_data.items:
-        for item_data in event_data.items:
-            if item_data.get("id"):
-                assert isinstance(item_data["id"], int), "Invalid item ID"
-                item = await nebula.Item.load(
-                    item_data["id"], connection=conn, username=username
-                )
-            else:
-                item = nebula.Item(connection=conn, username=username)
-            item.update(item_data)
-            if item["id_asset"]:
-                await item.get_asset()  # ensure asset is loaded
-            item["id_bin"] = new_bin.id
-            item["position"] = position
-            new_bin["duration"] += item.duration
-            await item.save()
-            position += 1
-
-    for field in channel.fields:
-        if (value := asset_meta.get(field.name)) is not None:
-            new_event[field.name] = value
-
-        if event_data.meta is not None:
-            value = event_data.meta.get(field.name)
-            if value is not None:
-                new_event[field.name] = value
-
-    try:
-        await new_event.save()
-        await new_bin.save()
-    except Exception as e:
-        raise nebula.ConflictException from e
-
-
-async def create_new_event(
+async def create_new_event(  # noqa: C901, PLR0915
     channel: PlayoutChannelSettings,
     event_data: EventData,
     user: nebula.User | None = None,
-    conn: DatabaseConnection | None = None,
+    **kwargs: Any,
 ) -> None:
-    """Create a new event from the given data."""
+    """Create a new event from the given data.
 
-    if conn:
-        return await _create_new_event(channel, event_data, user, conn)
+    Accepts and ignores a legacy `connection`/`conn` keyword argument for
+    backward compatibility with plugins: nebula.db tracks the current
+    connection/transaction internally, so there is nothing left to pass in.
+    """
+    _ = kwargs
 
-    pool = await nebula.db.pool()
-    async with pool.acquire() as _conn, _conn.transaction():
-        return await _create_new_event(channel, event_data, user, _conn)
+    username = user.name if user else None
+
+    async with nebula.db.transaction():
+        new_bin = nebula.Bin(username=username)
+        new_event = nebula.Event(username=username)
+
+        await new_bin.save()
+
+        new_bin["duration"] = 0
+        new_event["id_magic"] = new_bin.id
+        new_event["id_channel"] = channel.id
+        new_event["start"] = event_data.start
+
+        asset_meta = {}
+        position = 0
+        if event_data.id_asset:
+            asset = await nebula.Asset.load(event_data.id_asset, username=username)
+
+            new_event["id_asset"] = event_data.id_asset
+
+            new_item = nebula.Item(username=username)
+            new_item["id_asset"] = event_data.id_asset
+            new_item["id_bin"] = new_bin.id
+            new_item["position"] = position
+            new_item["mark_in"] = asset["mark_in"]
+            new_item["mark_out"] = asset["mark_out"]
+
+            await new_item.save()
+            new_bin["duration"] = asset.duration
+            asset_meta = asset.meta
+            position += 1
+
+        if event_data.items:
+            for item_data in event_data.items:
+                if item_data.get("id"):
+                    assert isinstance(item_data["id"], int), "Invalid item ID"
+                    item = await nebula.Item.load(item_data["id"], username=username)
+                else:
+                    item = nebula.Item(username=username)
+                item.update(item_data)
+                if item["id_asset"]:
+                    await item.get_asset()  # ensure asset is loaded
+                item["id_bin"] = new_bin.id
+                item["position"] = position
+                new_bin["duration"] += item.duration
+                await item.save()
+                position += 1
+
+        for field in channel.fields:
+            if (value := asset_meta.get(field.name)) is not None:
+                new_event[field.name] = value
+
+            if event_data.meta is not None:
+                value = event_data.meta.get(field.name)
+                if value is not None:
+                    new_event[field.name] = value
+
+        try:
+            await new_event.save()
+            await new_bin.save()
+        except Exception as e:
+            raise nebula.ConflictException from e

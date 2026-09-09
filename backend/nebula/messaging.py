@@ -4,11 +4,11 @@ import time
 from typing import Any
 
 from nebula.config import config
-from nebula.redis import Redis
+from nebula.redis import redis
 
 
 async def msg(topic: str, **data: Any) -> None:
-    await Redis.publish(
+    await redis.publish(
         json.dumps(
             [
                 time.time(),
