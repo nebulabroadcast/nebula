@@ -26,6 +26,7 @@ interface TableProps {
     rowData: TableRowData,
     event: React.MouseEvent<HTMLTableRowElement>
   ) => void;
+  onContextMenu?: (rowData: TableRowData, columnName: string) => void;
   onKeyDown?: (event: React.KeyboardEvent<HTMLTableElement>) => void;
   selection?: Array<string | number>;
   rowHighlightColor?: (rowData: TableRowData) => string | undefined;
@@ -50,6 +51,7 @@ const Table = ({
   style,
   keyField,
   onRowClick,
+  onContextMenu,
   onKeyDown,
   selection,
   rowHighlightColor,
@@ -122,6 +124,7 @@ const Table = ({
             rowData={rowData}
             columns={columns}
             onRowClick={onRowClick}
+            onContextMenu={onContextMenu}
             rowHighlightColor={rowHighlightColor}
             rowHighlightStyle={rowHighlightStyle}
             rowClass={rowClass}
@@ -141,6 +144,7 @@ const Table = ({
     keyField,
     rowHighlightColor,
     onRowClick,
+    onContextMenu,
     rowClass,
     rowHighlightStyle,
   ]);

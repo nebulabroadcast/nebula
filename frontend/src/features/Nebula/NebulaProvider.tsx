@@ -2,6 +2,8 @@ import React, { createContext, useState, useCallback } from 'react';
 
 import type { NebulaContextType, NebulaState } from './types';
 
+import type { ConditionModel } from '@/client';
+
 const LS_KEY_CURRENT_CHANNEL = 'mam.currentChannelId';
 const LS_KEY_CURRENT_VIEW = 'mam.currentViewId';
 const LS_KEY_SEARCH_QUERY = 'mam.searchQuery';
@@ -12,6 +14,7 @@ const DEFAULT_NEBULA_CONTEXT: NebulaState = {
   currentChannelId: JSON.parse(localStorage.getItem(LS_KEY_CURRENT_CHANNEL) || 'null'),
   currentViewId: JSON.parse(localStorage.getItem(LS_KEY_CURRENT_VIEW) || 'null'),
   searchQuery: JSON.parse(localStorage.getItem(LS_KEY_SEARCH_QUERY) || '""'),
+  filterConditions: [],
   focusedAsset: null,
   selectedAssets: [],
 };
@@ -44,6 +47,10 @@ export const NebulaProvider: React.FC<NebulaProviderProps> = ({
     setNebulaState((prev) => ({ ...prev, searchQuery: query }));
   }, []);
 
+  const setFilterConditions = useCallback((conditions: ConditionModel[]) => {
+    setNebulaState((prev) => ({ ...prev, filterConditions: conditions }));
+  }, []);
+
   const setSelectedAssets = useCallback((assetIds: number[]) => {
     setNebulaState((prev) => ({ ...prev, selectedAssets: assetIds }));
   }, []);
@@ -70,6 +77,7 @@ export const NebulaProvider: React.FC<NebulaProviderProps> = ({
     setCurrentView,
     reloadBrowser,
     setSearchQuery,
+    setFilterConditions,
     setSelectedAssets,
     setFocusedAsset,
     setPageTitle,
