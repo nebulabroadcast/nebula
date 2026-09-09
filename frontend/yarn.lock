@@ -4056,6 +4056,7 @@ __metadata:
     react-markdown: "npm:^10.1.0"
     react-router: "npm:^7.9.3"
     react-toastify: "npm:^11.0.3"
+    rrule: "npm:^2.8.1"
     sass: "npm:^1.93.2"
     styled-components: "npm:^6.1.19"
     typescript: "npm:~5.9.3"
@@ -4744,6 +4745,15 @@ __metadata:
   bin:
     rolldown: ./bin/cli.mjs
   checksum: 10c0/d22c80c70d71a36abde7dca7217f66d94cdb5d0c03185205de808d368ab1b8fd5e78ff4db10efc69c5f68a5f9d03d59c8ace848f1f85c4aab79330162a10b3e7
+  languageName: node
+  linkType: hard
+
+"rrule@npm:^2.8.1":
+  version: 2.8.1
+  resolution: "rrule@npm:2.8.1"
+  dependencies:
+    tslib: "npm:^2.4.0"
+  checksum: 10c0/c9350620bbd57d0cdf99320b576121a2d7ed579fda4ae50891e2779c7dfd6dc7b174b558b6598adefb1f0e053549dc977740e1a265f77dcf0827aaeea60b45e7
   languageName: node
   linkType: hard
 
