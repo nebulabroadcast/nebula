@@ -2,15 +2,15 @@ import time
 from typing import Any, Self, TypeVar, cast
 
 import asyncpg
+from nx.db import DB, db
+from nx.logging import logger as log
 
-from nebula.db import DatabaseConnection, db
 from nebula.enum import ObjectTypeId
 from nebula.exceptions import (
     BadRequestException,
     NotFoundException,
     ValidationException,
 )
-from nebula.log import log
 from nebula.messaging import msg
 from nebula.metadata.format import format_meta
 from nebula.metadata.normalize import normalize_meta
@@ -57,17 +57,18 @@ class BaseObject:
     # Deprecated. Kept for plugin backward compatibility: nebula.db tracks
     # the current connection/transaction internally, so there is no longer
     # a need to pass a specific connection around.
-    connection: DatabaseConnection | None = None
-    username: str | None = None  # Name of the user operating on the object
+    connection: DB | None = None
 
     def __init__(
         self,
         meta: dict[str, Any] | None = None,
-        connection: DatabaseConnection | None = None,
-        username: str | None = None,
+        connection: DB | None = None,
+        **kwargs: Any,
     ) -> None:
+        # **kwargs absorbs a legacy `username` argument: who's acting is now
+        # read ambiently from nebula.context, not threaded through objects.
+        _ = kwargs
         self.connection = connection or db
-        self.username = username
 
         if meta is None:
             meta = {}
@@ -151,10 +152,11 @@ class BaseObject:
     async def load(
         cls,
         object_id: int,
-        connection: DatabaseConnection | None = None,
-        username: str | None = None,
+        connection: DB | None = None,
+        **kwargs: Any,
     ) -> Self:
         """Load an object from the database"""
+        _ = kwargs  # legacy `username` argument, see BaseObject.__init__
         res = await db.fetch(
             f"SELECT meta FROM {cls.object_type}s WHERE id = $1", object_id
         )
@@ -162,14 +164,14 @@ class BaseObject:
             raise NotFoundException(
                 f"{cls.object_type.capitalize()} ID {object_id} not found"
             )
-        return cls(meta=res[0]["meta"], connection=connection, username=username)
+        return cls(meta=res[0]["meta"], connection=connection)
 
     @classmethod
     def from_row(
         cls,
         row: asyncpg.Record,
-        connection: DatabaseConnection | None = None,
-        username: str | None = None,
+        connection: DB | None = None,
+        **kwargs: Any,
     ) -> Self:
         """Return an object from a database row.
 
@@ -177,34 +179,37 @@ class BaseObject:
         Note that no validation is performed.
         Do not use with untrusted data.
         """
-        return cls(meta=dict(row["meta"]), connection=connection, username=username)
+        _ = kwargs  # legacy `username` argument, see BaseObject.__init__
+        return cls(meta=dict(row["meta"]), connection=connection)
 
     @classmethod
     def from_meta(
         cls,
         meta: dict[str, Any],
-        connection: DatabaseConnection | None = None,
-        username: str | None = None,
+        connection: DB | None = None,
+        **kwargs: Any,
     ) -> Self:
         """Return an object from a metadata dict.
 
         Note that no validation is performed.
         Do not use with untrusted data.
         """
-        return cls(meta=meta, connection=connection, username=username)
+        _ = kwargs  # legacy `username` argument, see BaseObject.__init__
+        return cls(meta=meta, connection=connection)
 
     @classmethod
     def from_untrusted(
         cls,
         meta: dict[str, Any],
-        connection: DatabaseConnection | None = None,
-        username: str | None = None,
+        connection: DB | None = None,
+        **kwargs: Any,
     ) -> Self:
         """Return an object from a metadata dict.
 
         Values are normalized and validated.
         """
-        res = cls(connection=connection, username=username)
+        _ = kwargs  # legacy `username` argument, see BaseObject.__init__
+        res = cls(connection=connection)
         for key, value in meta.items():
             res[key] = value
         return res
@@ -231,7 +236,10 @@ class BaseObject:
     async def delete_children(self) -> None:
         pass
 
-    async def save(self, notify: bool = True, initiator: str | None = None) -> None:
+    async def save(self, notify: bool = True, **kwargs: Any) -> None:
+        # **kwargs absorbs a legacy `initiator` argument: msg() now reads
+        # the current initiator from nebula.context itself.
+        _ = kwargs
         async with db.transaction():
             await self._save()
         if notify:
@@ -239,9 +247,8 @@ class BaseObject:
                 "objects_changed",
                 object_type=self.object_type,
                 objects=[self.id],
-                initiator=initiator,
             )
-        log.info(f"Saved {self}", user=self.username)
+        log.info(f"Saved {self}")
 
     async def _save(self) -> None:
         if self.id is None:

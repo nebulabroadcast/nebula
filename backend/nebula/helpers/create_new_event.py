@@ -45,25 +45,23 @@ class EventData(BaseModel):
     )
 
 
-async def create_new_event(  # noqa: C901, PLR0915
+async def create_new_event(  # noqa: C901
     channel: PlayoutChannelSettings,
     event_data: EventData,
-    user: nebula.User | None = None,
     **kwargs: Any,
 ) -> None:
     """Create a new event from the given data.
 
-    Accepts and ignores a legacy `connection`/`conn` keyword argument for
-    backward compatibility with plugins: nebula.db tracks the current
-    connection/transaction internally, so there is nothing left to pass in.
+    Accepts and ignores legacy `connection`/`conn`/`user` keyword arguments
+    for backward compatibility with plugins: nebula.db tracks the current
+    connection/transaction internally, and who's acting is read ambiently
+    from nebula.context, so there is nothing left to pass in.
     """
     _ = kwargs
 
-    username = user.name if user else None
-
     async with nebula.db.transaction():
-        new_bin = nebula.Bin(username=username)
-        new_event = nebula.Event(username=username)
+        new_bin = nebula.Bin()
+        new_event = nebula.Event()
 
         await new_bin.save()
 
@@ -75,11 +73,11 @@ async def create_new_event(  # noqa: C901, PLR0915
         asset_meta = {}
         position = 0
         if event_data.id_asset:
-            asset = await nebula.Asset.load(event_data.id_asset, username=username)
+            asset = await nebula.Asset.load(event_data.id_asset)
 
             new_event["id_asset"] = event_data.id_asset
 
-            new_item = nebula.Item(username=username)
+            new_item = nebula.Item()
             new_item["id_asset"] = event_data.id_asset
             new_item["id_bin"] = new_bin.id
             new_item["position"] = position
@@ -95,9 +93,9 @@ async def create_new_event(  # noqa: C901, PLR0915
             for item_data in event_data.items:
                 if item_data.get("id"):
                     assert isinstance(item_data["id"], int), "Invalid item ID"
-                    item = await nebula.Item.load(item_data["id"], username=username)
+                    item = await nebula.Item.load(item_data["id"])
                 else:
-                    item = nebula.Item(username=username)
+                    item = nebula.Item()
                 item.update(item_data)
                 if item["id_asset"]:
                     await item.get_asset()  # ensure asset is loaded

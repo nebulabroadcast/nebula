@@ -45,6 +45,7 @@ class ApplySchedulingTemplate(APIRequest):
         user: CurrentUser,
         request: ApplySchedulingTemplateRequest,
     ) -> None:
+        _ = user  # Required to gate this endpoint behind authentication
         if not (channel := nebula.settings.get_playout_channel(request.id_channel)):
             raise nebula.BadRequestException(f"No such channel {request.id_channel}")
 
@@ -94,4 +95,4 @@ class ApplySchedulingTemplate(APIRequest):
                         edata.pop(new_ts)
 
             for event_data in edata.values():
-                await create_new_event(channel, event_data, user)
+                await create_new_event(channel, event_data)

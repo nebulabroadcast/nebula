@@ -8,7 +8,7 @@ from nebula.enum import ObjectType
 from nebula.helpers.scheduling import bin_refresh
 from nebula.objects.utils import get_object_class_by_name
 from server import APIModel, APIRequest
-from server.dependencies import CurrentUser, RequestInitiator
+from server.dependencies import CurrentUser
 
 
 class DeleteObjectsRequest(APIModel):
@@ -40,7 +40,6 @@ class DeleteObjects(APIRequest):
         self,
         request: DeleteObjectsRequest,
         user: CurrentUser,
-        initiator: RequestInitiator,
     ) -> None:
         """Delete given objects."""
         match request.object_type:
@@ -54,7 +53,7 @@ class DeleteObjects(APIRequest):
 
                 query = "DELETE FROM items WHERE id = ANY($1) RETURNING id, id_bin"
                 affected_bins = set()
-                nebula.log.debug(f"Deleted items: {request.ids}", user=user.name)
+                nebula.log.debug(f"Deleted items: {request.ids}")
                 try:
                     async for row in nebula.db.iterate(query, request.ids):
                         affected_bins.add(row["id_bin"])
@@ -62,7 +61,7 @@ class DeleteObjects(APIRequest):
                     raise nebula.ConflictException(
                         "Cannot delete item because it was already aired"
                     ) from e
-                await bin_refresh(list(affected_bins), initiator=initiator)
+                await bin_refresh(list(affected_bins))
                 return
 
             case ObjectType.USER:

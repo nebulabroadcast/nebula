@@ -30,10 +30,7 @@ async def set_items_order(request: OrderRequest, user: nebula.User) -> OrderResp
             if obj.type == "item":
                 if not obj.id:
                     # Adding a virtual item (such as placeholder)
-                    item = nebula.Item.from_meta(
-                        obj.meta,
-                        username=user.name,
-                    )
+                    item = nebula.Item.from_meta(obj.meta)
 
                     assert isinstance(item, nebula.Item)  # mypy
 
@@ -42,14 +39,13 @@ async def set_items_order(request: OrderRequest, user: nebula.User) -> OrderResp
                     item["id_bin"] = id_bin
                 else:
                     # Moving an existing item
-                    item = await nebula.Item.load(obj.id, username=user.name)
+                    item = await nebula.Item.load(obj.id)
                     assert item is not None
 
                     if not item["id_bin"]:
                         nebula.log.error(
                             f"Attempted data insert TYPE: {obj.type} ID: {obj.id}"
-                            f"META: {obj.meta} to item. This should never happen.",
-                            user=user.name,
+                            f"META: {obj.meta} to item. This should never happen."
                         )
                         continue
 
@@ -64,31 +60,23 @@ async def set_items_order(request: OrderRequest, user: nebula.User) -> OrderResp
                 assert obj.id is not None, (
                     "Asset ID must not be None when inserting asset to rundown"
                 )
-                asset = await nebula.Asset.load(
-                    obj.id,
-                    username=user.name,
-                )
+                asset = await nebula.Asset.load(obj.id)
                 if not asset:
                     nebula.log.error(
-                        f"Unable to append {obj.type} ID {obj.id}. Asset not found",
-                        user=user.name,
+                        f"Unable to append {obj.type} ID {obj.id}. Asset not found"
                     )
                     continue
 
                 if not can_append(asset, channel.rundown_accepts):
                     nebula.log.error(
-                        f"Unable to append {obj.type} ID {obj.id}. Asset not allowed",
-                        user=user.name,
+                        f"Unable to append {obj.type} ID {obj.id}. Asset not allowed"
                     )
                     continue
 
                 item_meta = {**obj.meta}
                 for key in ["id", "id_bin", "id_channel", "id_asset", "pos"]:
                     item_meta.pop(key, None)
-                item = nebula.Item.from_meta(
-                    item_meta,
-                    username=user.name,
-                )
+                item = nebula.Item.from_meta(item_meta)
                 assert item is not None, "Item should not be None at this point"
                 item["id_asset"] = asset.id
 

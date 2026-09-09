@@ -1,3 +1,5 @@
+from typing import Any
+
 import asyncpg
 
 import nebula
@@ -17,12 +19,13 @@ async def get_event_at_time(id_channel: int, timestamp: int) -> nebula.Event | N
         LIMIT 1
     """
 
-    async for record in nebula.db.iterate(query, id_channel, timestamp):
+    record = await nebula.db.fetchrow(query, id_channel, timestamp)
+    if record:
         return nebula.Event.from_meta(record["meta"])
     return None
 
 
-async def delete_events(ids: list[int], user: nebula.User | None = None) -> list[int]:
+async def delete_events(ids: list[int], **kwargs: Any) -> list[int]:
     """Delete events from the database.
 
     It also deletes the associated bins and items. Events with
@@ -31,13 +34,14 @@ async def delete_events(ids: list[int], user: nebula.User | None = None) -> list
 
     Returns a list of event IDs that were deleted.
     """
-
-    username = user.name if user else None
+    # **kwargs absorbs a legacy `user` argument, kept for backward
+    # compatibility. Who's acting is read ambiently where it's needed.
+    _ = kwargs
 
     deleted_event_ids = []
     async with nebula.db.transaction():
         for id_event in ids:
-            event = await nebula.Event.load(id_event, username=username)
+            event = await nebula.Event.load(id_event)
             id_bin = event["id_magic"]
 
             try:
@@ -64,10 +68,12 @@ async def get_events_in_range(
     id_channel: int,
     start_time: float,
     end_time: float,
-    user: nebula.User | None = None,
+    **kwargs: Any,
 ) -> list[nebula.Event]:
     """Return a list of events in the given time range"""
-    username = user.name if user else None
+    # **kwargs absorbs a legacy `user` argument, kept for backward
+    # compatibility. Who's acting is read ambiently where it's needed.
+    _ = kwargs
     result: list[nebula.Event] = []
 
     if not (start_time and end_time):
@@ -76,15 +82,14 @@ async def get_events_in_range(
 
     nebula.log.trace(
         f"Requested events of channel {id_channel} "
-        f"from {format_time(int(start_time))} to {format_time(int(end_time))}",
-        user=username,
+        f"from {format_time(int(start_time))} to {format_time(int(end_time))}"
     )
     result = []
 
     # Events between start_time and end_time
     # and the last event before end_time
-    async for row in nebula.db.iterate(
-        """
+
+    query = """
         (
             SELECT
                 e.meta AS emeta,
@@ -112,7 +117,9 @@ async def get_events_in_range(
             AND e.id_magic = o.id
         )
         ORDER BY start ASC
-        """,
+        """
+    for row in await nebula.db.fetch(
+        query,
         id_channel,
         start_time,
         end_time,

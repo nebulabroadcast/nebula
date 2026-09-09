@@ -9,20 +9,15 @@ from pydantic import Field, PostgresDsn
 
 
 class NebulaConfigModel(ConfigModel):
-    # nx.config.ConfigModel defaults to postgresql://nx:nx@postgres:5432/nx,
-    # which doesn't match Nebula's conventional default credentials/database
-    # name used in dev and testing deployments. Override it to keep those
-    # working without requiring an explicit NEBULA_POSTGRES(_URL) override.
     postgres_url: PostgresDsn = PostgresDsn(
         "postgresql://nebula:nebula@postgres:5432/nebula"
     )
 
-    # nx.config.ConfigModel's log_level doesn't include "SUCCESS", which
-    # nebula's own LogLevel enum has (and which older deployments may set
-    # NEBULA_LOG_LEVEL to). Widen it back.
-    log_level: Literal[
-        "TRACE", "DEBUG", "INFO", "SUCCESS", "WARNING", "ERROR", "CRITICAL"
-    ] = "DEBUG"  # type: ignore[assignment]
+    # nx.config.ConfigModel defaults log_stack to True, which appends the
+    # caller's module/func/file/line to every single log line. Too verbose
+    # for normal operation, so default it off (NEBULA_LOG_STACK=true to
+    # re-enable e.g. while debugging).
+    log_stack: bool = False
 
     site_name: str = Field(
         "nebula",

@@ -10,26 +10,24 @@ if TYPE_CHECKING:
 ItemRuns = dict[int, tuple[float, float]]
 
 
-async def bin_refresh(
-    bins: list[int],
-    initiator: str | None = None,
-    user: nebula.User | None = None,
-) -> None:
+async def bin_refresh(bins: list[int], **kwargs: Any) -> None:
+    # **kwargs absorbs legacy `initiator`/`user` arguments: both are now
+    # read ambiently from nebula.context.
+    _ = kwargs
     if not bins:
         return
 
-    username = user.name if user else None
+    user = nebula.context.current_user()
 
     for id_bin in bins:
         # Resave bin to update duration
-        b = await nebula.Bin.load(id_bin, username=username)
+        b = await nebula.Bin.load(id_bin)
         await b.get_items()
         if user:
             b["updated_by"] = user.id
         # this log message triggers storing bin duration to its meta
         nebula.log.trace(
-            f"New duration of {b} is {s2time(b.duration)} ({len(b.items)} items)",
-            user=username,
+            f"New duration of {b} is {s2time(b.duration)} ({len(b.items)} items)"
         )
         await b.save(notify=False)
 
@@ -40,19 +38,17 @@ async def bin_refresh(
         c.id = e.id_channel AND
         e.id_magic = ANY($1)
     """
-    changed_events = [row["id_event"] async for row in nebula.db.iterate(query, bins)]
+    changed_events = [row["id_event"] for row in await nebula.db.fetch(query, bins)]
     await nebula.msg(
         "objects_changed",
         object_type="bin",
         objects=bins,
-        initiator=initiator,
     )
     if changed_events:
         await nebula.msg(
             "objects_changed",
             object_type="event",
             objects=changed_events,
-            initiator=initiator,
         )
     return
 

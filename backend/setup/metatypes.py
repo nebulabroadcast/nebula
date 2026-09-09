@@ -3,8 +3,8 @@ from typing import Any
 
 import aiofiles
 
+from nebula import db
 from nebula.common import json_loads
-from nebula.db import db
 
 
 async def setup_metatypes(meta_types: dict[str, Any], **kwargs: Any) -> None:

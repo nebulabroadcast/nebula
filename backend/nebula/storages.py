@@ -2,8 +2,9 @@ import os
 import posixpath
 from typing import Any
 
+from nx.logging import logger as log
+
 from nebula.config import config
-from nebula.log import log
 from nebula.settings import settings
 from nebula.settings.models import StorageSettings
 

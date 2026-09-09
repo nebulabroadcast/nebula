@@ -1,7 +1,8 @@
 from typing import TYPE_CHECKING, Any
 
+from nx.logging import logger as log
+
 from nebula.enum import ContentType, MediaType, MetaClass, ObjectStatus, QCState
-from nebula.log import log
 from nebula.metadata.utils import get_cs_titles
 from nebula.settings import settings
 from nebula.utils import format_filesize, format_time, s2tc

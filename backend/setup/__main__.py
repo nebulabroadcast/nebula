@@ -4,9 +4,8 @@ import sys
 import aiofiles
 import asyncpg
 
+from nebula import db, log
 from nebula.config import config
-from nebula.db import db
-from nebula.log import log
 from nebula.objects.user import User
 from setup.dump import dump_settings
 from setup.settings import setup_settings

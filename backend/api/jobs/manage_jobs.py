@@ -26,6 +26,7 @@ async def can_user_control_job(user: nebula.User, id_job: int) -> bool:
             AND (
                 a.meta->>'created_by'::INTEGER = $2
                 OR a.meta->'assignees' @> '[$2]'::JSONB
+            )
         """
         res = await nebula.db.fetch(query, id_job, user.id)
         return bool(res)
@@ -35,7 +36,7 @@ async def can_user_control_job(user: nebula.User, id_job: int) -> bool:
 async def restart_job(id_job: int, user: nebula.User) -> None:
     if not await can_user_control_job(user, id_job):
         raise nebula.ForbiddenException("You cannot restart this job")
-    nebula.log.info(f"Restarting job {id_job}", user=user.name)
+    nebula.log.info(f"Restarting job {id_job}")
     message = f"Restarted by {user.name}"
     query = """
         UPDATE jobs SET
@@ -62,7 +63,7 @@ async def restart_job(id_job: int, user: nebula.User) -> None:
 async def abort_job(id_job: int, user: nebula.User) -> None:
     if not await can_user_control_job(user, id_job):
         raise nebula.ForbiddenException("You cannot abort this job")
-    nebula.log.info(f"Aborting job {id_job}", user=user.name)
+    nebula.log.info(f"Aborting job {id_job}")
     message = f"Aborted by {user.name}"
     query = """
         UPDATE jobs SET
@@ -84,7 +85,7 @@ async def set_priority(id_job: int, priority: int, user: nebula.User) -> None:
     """Set the priority of a job if the user has the necessary permissions"""
     if not await can_user_control_job(user, id_job):
         raise nebula.ForbiddenException("You cannot set priority of this job")
-    nebula.log.info(f"Setting priority of job {id_job} to {priority}", user=user.name)
+    nebula.log.info(f"Setting priority of job {id_job} to {priority}")
     query = "UPDATE jobs SET priority = $1 WHERE id = $2"
     await nebula.db.execute(query, priority, id_job)
 

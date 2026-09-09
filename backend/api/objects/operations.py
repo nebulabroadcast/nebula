@@ -144,17 +144,14 @@ class Operations(APIRequest):
                     acl_obj: BaseObject
 
                     if operation.id is None:
-                        obj = object_class(username=user.name)
+                        obj = object_class()
                         operation.data.pop("id", None)
                         obj["created_by"] = user.id
                         obj["updated_by"] = user.id
 
                         acl_obj = object_class.from_meta(operation.data)
                     else:
-                        obj = await object_class.load(
-                            operation.id,
-                            username=user.name,
-                        )
+                        obj = await object_class.load(operation.id)
                         obj["updated_by"] = user.id
                         acl_obj = object_class.from_meta({**obj.meta})
 
