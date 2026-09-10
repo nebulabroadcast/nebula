@@ -1,13 +1,12 @@
 export interface EnabledActions {
-  save: boolean;
-  edit: boolean;
-  revert: boolean;
-  folderChange: boolean;
-  create: boolean;
-  clone: boolean;
   actions: boolean;
+  clone: boolean;
+  create: boolean;
+  edit: boolean;
   flag: boolean;
-  upload: boolean;
-  advanced: boolean;
+  folderChange: boolean;
+  revert: boolean;
+  save: boolean;
   spreadsheetIngest: boolean;
+  upload: boolean;
 }

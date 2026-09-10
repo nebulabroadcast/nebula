@@ -63,17 +63,14 @@ const AssetMainProps: React.FC<AssetMainPropsProps> = ({
         readOnly={!!assetData.status || !enabledActions.edit}
       />
 
-      {enabledActions.advanced && (
-        <>
-          <ToolbarSeparator />
-          <AssigneesButton
-            assignees={(assetData?.assignees as number[]) || []}
-            setAssignees={(val) => {
-              setMeta('assignees', val);
-            }}
-          />
-        </>
-      )}
+      <ToolbarSeparator />
+
+      <AssigneesButton
+        assignees={(assetData?.assignees as number[]) || []}
+        setAssignees={(val) => {
+          setMeta('assignees', val);
+        }}
+      />
     </Navbar>
   );
 };
