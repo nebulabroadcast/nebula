@@ -30,6 +30,7 @@ interface EnabledActions {
   flag: boolean;
   upload: boolean;
   advanced: boolean;
+  ingest: boolean;
 }
 
 const getEnabledActions = ({
@@ -65,7 +66,9 @@ const getEnabledActions = ({
   const folderChange = !assetData.id && edit;
   const flag = !!(assetData.id && !nebula.user?.is_limited);
   const upload = !!(assetData.id && edit);
-  const actions = !!assetData?.id;
+  // spreadsheet ingest creates new assets in the current folder
+  const ingest = writableFolderIds.includes(assetData.id_folder as number);
+  const actions = !!assetData?.id || ingest;
   const advanced = !limited;
 
   return {
@@ -79,6 +82,7 @@ const getEnabledActions = ({
     flag,
     upload,
     advanced,
+    ingest,
   };
 };
 

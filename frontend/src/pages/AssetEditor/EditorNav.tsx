@@ -32,6 +32,7 @@ interface AssetEditorNavProps {
     save: boolean;
     flag: boolean;
     actions: boolean;
+    ingest: boolean;
   };
   showJobs: boolean;
   setShowJobs: (value: boolean | ((val: boolean) => boolean)) => void;
@@ -147,6 +148,17 @@ const AssetEditorNav: React.FC<AssetEditorNavProps> = ({
       });
   }, [assetData.id, showDialog]);
 
+  const spreadsheetIngest = useCallback(() => {
+    if (!currentFolder) return;
+    showDialog('spreadsheet', `Spreadsheet ingest: ${currentFolder.name}`, {
+      folderId: currentFolder.id,
+      // an existing asset is used as an example row of the template
+      example: assetData.id ? assetData : undefined,
+    }).catch(() => {
+      // dismissed. the dialog reloads the browser itself if any asset was created
+    });
+  }, [currentFolder, assetData, showDialog]);
+
   const assetActions = useMemo((): DropdownOptionProps[] => {
     const result: DropdownOptionProps[] = [
       {
@@ -167,12 +179,28 @@ const AssetEditorNav: React.FC<AssetEditorNavProps> = ({
       },
       ...scopedEndpoints,
       ...linkOptions,
+      {
+        label: 'Spreadsheet ingest',
+        icon: 'table_view',
+        disabled: !enabledActions.ingest,
+        onClick: spreadsheetIngest,
+        separator: true,
+      },
     ];
     if (result.length > 2) {
       result[1].separator = true;
     }
     return result;
-  }, [scopedEndpoints, linkOptions, assetData.id, sendTo, showJobs, setShowJobs]);
+  }, [
+    scopedEndpoints,
+    linkOptions,
+    assetData.id,
+    sendTo,
+    showJobs,
+    setShowJobs,
+    enabledActions.ingest,
+    spreadsheetIngest,
+  ]);
 
   return (
     <Navbar>
