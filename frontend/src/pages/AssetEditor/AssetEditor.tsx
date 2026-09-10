@@ -18,20 +18,7 @@ import AssetEditorNav from './EditorNav';
 
 import nebula from '@/nebula';
 import { AxiosError } from 'axios';
-
-interface EnabledActions {
-  save: boolean;
-  edit: boolean;
-  revert: boolean;
-  folderChange: boolean;
-  create: boolean;
-  clone: boolean;
-  actions: boolean;
-  flag: boolean;
-  upload: boolean;
-  advanced: boolean;
-  ingest: boolean;
-}
+import type { EnabledActions } from './types';
 
 const getEnabledActions = ({
   assetData,
@@ -67,8 +54,10 @@ const getEnabledActions = ({
   const flag = !!(assetData.id && !nebula.user?.is_limited);
   const upload = !!(assetData.id && edit);
   // spreadsheet ingest creates new assets in the current folder
-  const ingest = writableFolderIds.includes(assetData.id_folder as number);
-  const actions = !!assetData?.id || ingest;
+  const spreadsheetIngest = writableFolderIds.includes(assetData.id_folder as number);
+  // should we enable actions menu? Yes, if an asset is loaded (has an id)
+  // or if the user can ingest new assets (spreadsheet ingest)
+  const actions = !!assetData?.id || spreadsheetIngest;
   const advanced = !limited;
 
   return {
@@ -82,7 +71,7 @@ const getEnabledActions = ({
     flag,
     upload,
     advanced,
-    ingest,
+    spreadsheetIngest,
   };
 };
 
