@@ -150,7 +150,8 @@ const SeriesScheduleDialog = ({
   );
 
   const occurrences = useMemo(() => {
-    if (anchorIndex < 0) return { forward: [] as DateTime[], backward: [] as DateTime[] };
+    if (anchorIndex < 0)
+      return { forward: [] as DateTime[], backward: [] as DateTime[] };
     return computeOccurrences({
       anchor,
       options: recurrence,
@@ -162,7 +163,9 @@ const SeriesScheduleDialog = ({
   const rows: EpisodeRow[] = useMemo(() => {
     if (anchorIndex < 0) return [];
 
-    const checkedByIndex = episodes.map((ep, i) => i === anchorIndex || !excluded.has(ep.id));
+    const checkedByIndex = episodes.map(
+      (ep, i) => i === anchorIndex || !excluded.has(ep.id)
+    );
     const dates: Array<DateTime | null> = new Array(episodes.length).fill(null);
     dates[anchorIndex] = anchor;
 
@@ -300,7 +303,10 @@ const SeriesScheduleDialog = ({
                 value={recurrence.freq}
                 options={FREQ_OPTIONS}
                 onChange={(v) => {
-                  setRecurrence((r) => ({ ...r, freq: (v as RecurrenceFreq) || 'WEEKLY' }));
+                  setRecurrence((r) => ({
+                    ...r,
+                    freq: (v as RecurrenceFreq) || 'WEEKLY',
+                  }));
                 }}
               />
             </FormRow>
@@ -353,7 +359,9 @@ const SeriesScheduleDialog = ({
                   mode="date"
                   placeholder="yyyy-MM-dd"
                   className=""
-                  value={recurrence.until ? Math.floor(recurrence.until.toSeconds()) : 0}
+                  value={
+                    recurrence.until ? Math.floor(recurrence.until.toSeconds()) : 0
+                  }
                   onChange={(v) => {
                     setRecurrence((r) => ({
                       ...r,
@@ -378,10 +386,7 @@ const SeriesScheduleDialog = ({
               title="Avoid gaps"
               tooltip="When an episode is skipped, shift the next episode into its slot instead of leaving the slot empty"
             >
-              <InputSwitch
-                value={fillGaps}
-                onChange={setFillGaps}
-              />
+              <InputSwitch value={fillGaps} onChange={setFillGaps} />
             </FormRow>
           </Form>
 
