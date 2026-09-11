@@ -24,8 +24,8 @@ async def can_user_control_job(user: nebula.User, id_job: int) -> bool:
             SELECT a.id FROM assets a, jobs j
             WHERE j.id = $1 AND j.id_asset = a.id
             AND (
-                a.meta->>'created_by'::INTEGER = $2
-                OR a.meta->'assignees' @> '[$2]'::JSONB
+                (a.meta->>'created_by')::INTEGER = $2
+                OR a.meta->'assignees' @> jsonb_build_array($2)
             )
         """
         res = await nebula.db.fetch(query, id_job, user.id)
