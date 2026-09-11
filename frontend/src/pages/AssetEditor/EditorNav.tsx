@@ -2,6 +2,8 @@ import contentType from 'content-type';
 import React, { useState, useMemo, useCallback } from 'react';
 
 import ContextActionResult from './ContextAction';
+import MetadataDetail from './MetadataDetail';
+import type { EnabledActions } from './types';
 
 import {
   Navbar,
@@ -10,9 +12,11 @@ import {
   RadioButton,
   Dropdown,
   ToolbarSeparator,
+  Dialog,
 } from '@/components';
 import type { DropdownOptionProps } from '@/components/Dropdown';
 import { useDialog } from '@/features/Dialogs';
+import { MediaUploadDialog, useMediaUpload } from '@/features/MediaUpload';
 import { useNebula } from '@/features/Nebula';
 import nebula from '@/nebula';
 
@@ -25,14 +29,7 @@ interface AssetEditorNavProps {
   setMeta: (key: string, value: any, instant?: boolean) => void;
   editorMode: 'metadata' | 'preview';
   setEditorMode: (mode: 'metadata' | 'preview') => void;
-  enabledActions: {
-    create: boolean;
-    clone: boolean;
-    revert: boolean;
-    save: boolean;
-    flag: boolean;
-    actions: boolean;
-  };
+  enabledActions: EnabledActions;
   showJobs: boolean;
   setShowJobs: (value: boolean | ((val: boolean) => boolean)) => void;
 }
@@ -85,8 +82,18 @@ const AssetEditorNav: React.FC<AssetEditorNavProps> = ({
     contentType: string;
     payload: any;
   } | null>(null);
+  const [detailsVisible, setDetailsVisible] = useState(false);
+  const [uploadVisible, setUploadVisible] = useState(false);
   const showDialog = useDialog();
   const { setCurrentView, setSearchQuery } = useNebula();
+  const { queue } = useMediaUpload();
+
+  // There's already an upload task for this asset in the queue
+  const isUploading = queue.some(
+    (task) =>
+      task.id === assetData.id &&
+      (task.status === 'queued' || task.status === 'uploading')
+  );
 
   const currentFolder = useMemo(() => {
     if (!nebula.settings?.folders) return null;
@@ -101,6 +108,7 @@ const AssetEditorNav: React.FC<AssetEditorNavProps> = ({
     for (const endpoint of endpoints) {
       result.push({
         label: endpoint.title,
+        separator: result.length === 0,
         onClick: () => {
           void nebula
             .request(endpoint.endpoint, { id_asset: assetId })
@@ -124,8 +132,9 @@ const AssetEditorNav: React.FC<AssetEditorNavProps> = ({
     if (!currentFolder?.links) return [];
 
     const links = currentFolder.links as FolderLink[];
-    return links.map((l) => ({
+    return links.map((l, idx) => ({
       label: l.name,
+      separator: idx === 0,
       disabled: !assetData[l.source_key],
       onClick: () => {
         const val = assetData[l.source_key] as string | number;
@@ -147,6 +156,21 @@ const AssetEditorNav: React.FC<AssetEditorNavProps> = ({
       });
   }, [assetData.id, showDialog]);
 
+  const spreadsheetIngest = useCallback(() => {
+    if (!currentFolder) return;
+    showDialog('spreadsheet', `Spreadsheet ingest: ${currentFolder.name}`, {
+      folderId: currentFolder.id,
+      // an existing asset is used as an example row of the template
+      example: assetData.id ? assetData : undefined,
+    }).catch(() => {
+      // dismissed. the dialog reloads the browser itself if any asset was created
+    });
+  }, [currentFolder, assetData, showDialog]);
+
+  //
+  // Asset actions dropdown menu
+  //
+
   const assetActions = useMemo((): DropdownOptionProps[] => {
     const result: DropdownOptionProps[] = [
       {
@@ -157,22 +181,57 @@ const AssetEditorNav: React.FC<AssetEditorNavProps> = ({
           sendTo();
         },
       },
+    ];
+    if (enabledActions.upload) {
+      result.push({
+        label: isUploading ? 'Uploading...' : 'Upload media',
+        icon: 'upload',
+        disabled: isUploading,
+        onClick: () => {
+          setUploadVisible(true);
+        },
+      });
+    }
+    result.push(
+      {
+        label: 'Spreadsheet ingest',
+        icon: 'table_view',
+        disabled: !enabledActions.spreadsheetIngest,
+        onClick: spreadsheetIngest,
+      },
+      {
+        label: 'Details',
+        icon: 'manage_search',
+        onClick: () => {
+          setDetailsVisible(true);
+        },
+      },
       {
         label: showJobs ? 'Hide jobs' : 'Show jobs',
         icon: showJobs ? 'visibility_off' : 'visibility',
         onClick: () => {
           setShowJobs((prev) => !prev);
         },
-        separator: true,
-      },
-      ...scopedEndpoints,
-      ...linkOptions,
-    ];
-    if (result.length > 2) {
-      result[1].separator = true;
-    }
+      }
+    );
+    result.push(...scopedEndpoints, ...linkOptions);
     return result;
-  }, [scopedEndpoints, linkOptions, assetData.id, sendTo, showJobs, setShowJobs]);
+  }, [
+    scopedEndpoints,
+    linkOptions,
+    assetData.id,
+    sendTo,
+    showJobs,
+    setShowJobs,
+    enabledActions.upload,
+    enabledActions.spreadsheetIngest,
+    isUploading,
+    spreadsheetIngest,
+  ]);
+
+  //
+  // Render the full navigation bar with buttons and dropdowns
+  //
 
   return (
     <Navbar>
@@ -186,17 +245,47 @@ const AssetEditorNav: React.FC<AssetEditorNavProps> = ({
         />
       )}
 
+      {detailsVisible && (
+        <Dialog
+          style={{ height: '80%', width: '80%' }}
+          onHide={() => {
+            setDetailsVisible(false);
+          }}
+        >
+          <MetadataDetail assetData={assetData} />
+        </Dialog>
+      )}
+
+      {uploadVisible && (
+        <MediaUploadDialog
+          id={assetData.id}
+          title={assetData.title as string}
+          contentType={assetData.content_type}
+          onHide={() => {
+            setUploadVisible(false);
+          }}
+        />
+      )}
+
       <Button
         icon="add"
         onClick={onNewAsset}
-        label="New asset"
+        label="New"
+        tooltip="Create a new asset"
         disabled={!enabledActions.create}
       />
       <Button
         icon="content_copy"
         onClick={onCloneAsset}
-        label="Clone asset"
+        label="Clone"
+        tooltip="Clone this asset"
         disabled={!enabledActions.clone}
+      />
+
+      <Dropdown
+        options={assetActions}
+        disabled={!enabledActions.actions}
+        icon="more_vert"
       />
 
       <Spacer />
@@ -208,12 +297,6 @@ const AssetEditorNav: React.FC<AssetEditorNavProps> = ({
         ]}
         value={editorMode}
         onChange={setEditorMode as (mode: string) => void}
-      />
-
-      <Dropdown
-        options={assetActions}
-        disabled={!enabledActions.actions}
-        icon="more_vert"
       />
 
       <Spacer />

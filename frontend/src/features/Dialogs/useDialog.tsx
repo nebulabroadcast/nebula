@@ -13,6 +13,7 @@ import ConfirmDialog from './ConfirmDialog';
 import MetadataDialog from './MetadataDialog';
 import SendToDialog from './SendToDialog';
 import SeriesScheduleDialog from './SeriesScheduleDialog';
+import SpreadsheetIngestDialog from './SpreadsheetIngestDialog';
 import SubclipsDialog from './SubclipsDialog';
 
 interface DialogContextType {
@@ -76,6 +77,8 @@ export const DialogProvider = ({ children }: { children: ReactNode }) => {
         return SubclipsDialog as ComponentType<any>;
       case 'seriesSchedule':
         return SeriesScheduleDialog as ComponentType<any>;
+      case 'spreadsheet':
+        return SpreadsheetIngestDialog as ComponentType<any>;
       default:
         return null;
     }

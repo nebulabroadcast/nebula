@@ -6,6 +6,7 @@ import { JobsTable } from '@features/JobsTable';
 import { useNebula } from '@features/Nebula';
 import { useWebSocket } from '@features/Websocket';
 import { useLocalStorage } from '@lib/useLocalStorage';
+import { AxiosError } from 'axios';
 import clsx from 'clsx';
 import { isEqual, isEmpty } from 'lodash';
 import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
@@ -15,22 +16,9 @@ import { toast } from 'react-toastify';
 import AssetMainProps from './AssetMainProps';
 import { AssetPreview } from './AssetPreview';
 import AssetEditorNav from './EditorNav';
+import type { EnabledActions } from './types';
 
 import nebula from '@/nebula';
-import { AxiosError } from 'axios';
-
-interface EnabledActions {
-  save: boolean;
-  edit: boolean;
-  revert: boolean;
-  folderChange: boolean;
-  create: boolean;
-  clone: boolean;
-  actions: boolean;
-  flag: boolean;
-  upload: boolean;
-  advanced: boolean;
-}
 
 const getEnabledActions = ({
   assetData,
@@ -64,21 +52,24 @@ const getEnabledActions = ({
 
   const folderChange = !assetData.id && edit;
   const flag = !!(assetData.id && !nebula.user?.is_limited);
-  const upload = !!(assetData.id && edit);
-  const actions = !!assetData?.id;
-  const advanced = !limited;
+  const upload = !!(nebula.settings?.system?.ui_asset_upload && assetData.id && edit);
+  // spreadsheet ingest creates new assets in the current folder
+  const spreadsheetIngest = writableFolderIds.includes(assetData.id_folder as number);
+  // should we enable actions menu? Yes, if an asset is loaded (has an id)
+  // or if the user can ingest new assets (spreadsheet ingest)
+  const actions = !!assetData?.id || spreadsheetIngest;
 
   return {
-    save,
-    edit,
-    revert,
-    folderChange,
-    create,
-    clone,
     actions,
+    clone,
+    create,
+    edit,
     flag,
+    folderChange,
+    revert,
+    save,
+    spreadsheetIngest,
     upload,
-    advanced,
   };
 };
 
