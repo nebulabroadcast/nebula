@@ -351,7 +351,7 @@ const formatCell = (column: IngestColumn, value: unknown): string => {
     case 'timecode':
       return typeof value === 'number' && value ? formatTimecode(value) : '';
     case 'color':
-      return typeof value === 'number' && value
+      return typeof value === 'number'
         ? `#${value.toString(16).padStart(6, '0')}`
         : '';
     case 'select':
