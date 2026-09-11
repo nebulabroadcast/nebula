@@ -65,12 +65,14 @@ const AssetMainProps: React.FC<AssetMainPropsProps> = ({
 
       <ToolbarSeparator />
 
-      <AssigneesButton
-        assignees={(assetData?.assignees as number[]) || []}
-        setAssignees={(val) => {
-          setMeta('assignees', val);
-        }}
-      />
+      {!nebula.user?.is_limited && (
+        <AssigneesButton
+          assignees={(assetData?.assignees as number[]) || []}
+          setAssignees={(val) => {
+            setMeta('assignees', val);
+          }}
+        />
+      )}
     </Navbar>
   );
 };
