@@ -2,7 +2,7 @@ from pydantic import Field
 
 import nebula
 from nebula.enum import *  # noqa: F403
-from nx.utils import xml
+from nebula.utils import xml
 from server import APIModel, APIRequest
 from server.dependencies import CurrentUser
 

@@ -2,9 +2,9 @@ import hashlib
 from typing import Any, cast
 
 import asyncpg
+from nx.db import db
 
 from nebula.config import config
-from nebula.db import db
 from nebula.exceptions import (
     LoginFailedException,
     NebulaException,

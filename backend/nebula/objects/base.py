@@ -2,20 +2,20 @@ import time
 from typing import Any, Self, TypeVar, cast
 
 import asyncpg
+from nx.db import DB, db
+from nx.logging import logger as log
 
-from nebula.db import DB, DatabaseConnection, db
 from nebula.enum import ObjectTypeId
 from nebula.exceptions import (
     BadRequestException,
     NotFoundException,
     ValidationException,
 )
-from nebula.log import log
 from nebula.messaging import msg
 from nebula.metadata.format import format_meta
 from nebula.metadata.normalize import normalize_meta
 from nebula.settings import settings
-from nx.utils import slugify
+from nebula.utils import slugify
 
 T = TypeVar("T", bound="BaseObject")
 
@@ -54,22 +54,21 @@ class BaseObject:
     meta: dict[str, Any] = {}
     defaults: dict[str, Any] = {}
     db_columns: list[str] = []
-    connection: DatabaseConnection | None = None
-    username: str | None = None  # Name of the user operating on the object
+    # Deprecated. Kept for plugin backward compatibility: nebula.db tracks
+    # the current connection/transaction internally, so there is no longer
+    # a need to pass a specific connection around.
+    connection: DB | None = None
 
     def __init__(
         self,
         meta: dict[str, Any] | None = None,
-        connection: DatabaseConnection | None = None,
-        username: str | None = None,
+        connection: DB | None = None,
+        **kwargs: Any,
     ) -> None:
-        if connection is not None:
-            assert isinstance(connection, asyncpg.pool.PoolConnectionProxy | DB)
-            self.connection = connection
-        else:
-            self.connection = db
-
-        self.username = username
+        # **kwargs absorbs a legacy `username` argument: who's acting is now
+        # read ambiently from nebula.context, not threaded through objects.
+        _ = kwargs
+        self.connection = connection or db
 
         if meta is None:
             meta = {}
@@ -153,26 +152,26 @@ class BaseObject:
     async def load(
         cls,
         object_id: int,
-        connection: DatabaseConnection | None = None,
-        username: str | None = None,
+        connection: DB | None = None,
+        **kwargs: Any,
     ) -> Self:
         """Load an object from the database"""
-        conn = connection or db
-        res = await conn.fetch(
+        _ = kwargs  # legacy `username` argument, see BaseObject.__init__
+        res = await db.fetch(
             f"SELECT meta FROM {cls.object_type}s WHERE id = $1", object_id
         )
         if not res:
             raise NotFoundException(
                 f"{cls.object_type.capitalize()} ID {object_id} not found"
             )
-        return cls(meta=res[0]["meta"], connection=connection, username=username)
+        return cls(meta=res[0]["meta"], connection=connection)
 
     @classmethod
     def from_row(
         cls,
         row: asyncpg.Record,
-        connection: DatabaseConnection | None = None,
-        username: str | None = None,
+        connection: DB | None = None,
+        **kwargs: Any,
     ) -> Self:
         """Return an object from a database row.
 
@@ -180,34 +179,37 @@ class BaseObject:
         Note that no validation is performed.
         Do not use with untrusted data.
         """
-        return cls(meta=dict(row["meta"]), connection=connection, username=username)
+        _ = kwargs  # legacy `username` argument, see BaseObject.__init__
+        return cls(meta=dict(row["meta"]), connection=connection)
 
     @classmethod
     def from_meta(
         cls,
         meta: dict[str, Any],
-        connection: DatabaseConnection | None = None,
-        username: str | None = None,
+        connection: DB | None = None,
+        **kwargs: Any,
     ) -> Self:
         """Return an object from a metadata dict.
 
         Note that no validation is performed.
         Do not use with untrusted data.
         """
-        return cls(meta=meta, connection=connection, username=username)
+        _ = kwargs  # legacy `username` argument, see BaseObject.__init__
+        return cls(meta=meta, connection=connection)
 
     @classmethod
     def from_untrusted(
         cls,
         meta: dict[str, Any],
-        connection: DatabaseConnection | None = None,
-        username: str | None = None,
+        connection: DB | None = None,
+        **kwargs: Any,
     ) -> Self:
         """Return an object from a metadata dict.
 
         Values are normalized and validated.
         """
-        res = cls(connection=connection, username=username)
+        _ = kwargs  # legacy `username` argument, see BaseObject.__init__
+        res = cls(connection=connection)
         for key, value in meta.items():
             res[key] = value
         return res
@@ -219,28 +221,13 @@ class BaseObject:
     async def delete(self) -> None:
         if not self.id:
             raise BadRequestException("Unable to delete unsaved asset")
-        if isinstance(self.connection, DB):
-            pool = await self.connection.pool()
-            async with pool.acquire() as conn, conn.transaction():
-                await self._delete()
-        elif (
-            self.connection is not None
-            and hasattr(self.connection, "is_in_transaction")
-            and self.connection.is_in_transaction()
-        ):
+        async with db.transaction():
             await self._delete()
-        else:
-            assert isinstance(self.connection, asyncpg.Connection)
-            async with self.connection.transaction():
-                await self._delete()
 
     async def _delete(self) -> None:
-        assert self.connection is not None
         await self.delete_children()
-        await self.connection.execute(
-            f"DELETE FROM {self.object_type}s WHERE id = $1", self.id
-        )
-        await self.connection.execute(
+        await db.execute(f"DELETE FROM {self.object_type}s WHERE id = $1", self.id)
+        await db.execute(
             "DELETE FROM ft WHERE object_type = $1 AND id = $2",
             ObjectTypeId[self.object_type.upper()].value,
             self.id,
@@ -249,35 +236,25 @@ class BaseObject:
     async def delete_children(self) -> None:
         pass
 
-    async def save(self, notify: bool = True, initiator: str | None = None) -> None:
-        assert self.connection is not None
-        if isinstance(self.connection, DB):
-            pool = await self.connection.pool()
-            async with pool.acquire() as conn, conn.transaction():
-                await self._save()
-        elif (
-            hasattr(self.connection, "is_in_transaction")
-            and self.connection.is_in_transaction()
-        ):
+    async def save(self, notify: bool = True, **kwargs: Any) -> None:
+        # **kwargs absorbs a legacy `initiator` argument: msg() now reads
+        # the current initiator from nebula.context itself.
+        _ = kwargs
+        async with db.transaction():
             await self._save()
-        else:
-            async with self.connection.transaction():
-                await self._save()
         if notify:
             await msg(
                 "objects_changed",
                 object_type=self.object_type,
                 objects=[self.id],
-                initiator=initiator,
             )
-        log.info(f"Saved {self}", user=self.username)
+        log.info(f"Saved {self}")
 
     async def _save(self) -> None:
-        assert self.connection is not None
         if self.id is None:
             await self._insert()
         else:
-            await self.connection.execute(
+            await db.execute(
                 "DELETE FROM ft WHERE object_type = $1 AND id = $2",
                 ObjectTypeId[self.object_type.upper()].value,
                 self.id,
@@ -292,7 +269,7 @@ class BaseObject:
             for word, weight in create_ft_index(self.meta).items()
         ]
 
-        await self.connection.executemany(
+        await db.executemany(
             """
             INSERT INTO ft (id, object_type, weight, value)
             VALUES ($1, $2, $3, $4)
@@ -302,7 +279,6 @@ class BaseObject:
         await self._update()
 
     async def _insert(self) -> None:
-        assert self.connection is not None
         self.meta["ctime"] = self.meta["mtime"] = time.time()
         placeholders = ", ".join(
             ["$" + str(i) for i in range(1, len(self.db_columns) + 2)]
@@ -313,11 +289,10 @@ class BaseObject:
             """
         qargs = [self.meta[col] for col in self.db_columns] + [self.meta]
 
-        res = await self.connection.fetch(query, *qargs)
+        res = await db.fetch(query, *qargs)
         self.meta["id"] = res[0]["id"]
 
     async def _update(self) -> None:
-        assert self.connection is not None
         self.meta["mtime"] = time.time()
         upcols = ", ".join(
             [col + " = $" + str(i) for i, col in enumerate(self.db_columns, 1)]
@@ -333,4 +308,4 @@ class BaseObject:
             self.meta,
             self.id,
         ]
-        await self.connection.execute(query, *qargs)
+        await db.execute(query, *qargs)

@@ -2,7 +2,7 @@ from collections.abc import AsyncGenerator
 
 import nebula
 from nebula.helpers.scheduling import bin_refresh
-from nx.utils import format_time
+from nebula.utils import format_time
 
 from .common import modules_root
 

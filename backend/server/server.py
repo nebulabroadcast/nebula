@@ -16,6 +16,7 @@ from nebula.exceptions import NebulaException, NotFoundException
 from nebula.plugins.frontend import get_frontend_plugins
 from nebula.settings import load_settings
 from server.endpoints import install_endpoints
+from server.middleware.context import RequestContextMiddleware
 from server.middleware.session import SessionMiddleware
 from server.storage_monitor import storage_monitor
 from server.websocket import messaging
@@ -57,6 +58,7 @@ app = FastAPI(
 )
 
 app.add_middleware(SessionMiddleware)
+app.add_middleware(RequestContextMiddleware)
 
 
 #

@@ -1,11 +1,24 @@
+__all__ = ["NebulaConfigModel", "config"]
+
 import os
-from typing import Literal
+from typing import Literal, cast
 
 import dotenv
-from pydantic import BaseModel, Field
+from nx.config import ConfigModel, ConfigProxy
+from pydantic import Field, PostgresDsn
 
 
-class NebulaConfig(BaseModel):
+class NebulaConfigModel(ConfigModel):
+    postgres_url: PostgresDsn = PostgresDsn(
+        "postgresql://nebula:nebula@postgres:5432/nebula"
+    )
+
+    # nx.config.ConfigModel defaults log_stack to True, which appends the
+    # caller's module/func/file/line to every single log line. Too verbose
+    # for normal operation, so default it off (NEBULA_LOG_STACK=true to
+    # re-enable e.g. while debugging).
+    log_stack: bool = False
+
     site_name: str = Field(
         "nebula",
         description="",
@@ -14,16 +27,6 @@ class NebulaConfig(BaseModel):
     motd: str = Field(
         "",
         description="Message of the day",
-    )
-
-    postgres: str = Field(
-        "postgres://nebula:nebula@postgres/nebula",
-        description="PostgreSQL connection string",
-    )
-
-    redis: str = Field(
-        "redis://redis",
-        description="Redis connection string",
     )
 
     frontend_dir: str = Field(
@@ -65,30 +68,41 @@ class NebulaConfig(BaseModel):
         ),
     )
 
-    log_level: Literal[
-        "trace", "debug", "info", "success", "warning", "error", "critical"
-    ] = Field(
-        "debug",
-        description="Logging level",
-    )
-
     enable_experimental: bool = Field(
         False,
         description="Enable experimental features",
     )
 
+    @property
+    def postgres(self) -> str:
+        """Deprecated alias for postgres_url."""
+        return str(self.postgres_url)
 
-def load_config() -> NebulaConfig:
-    prefix = "NEBULA_"
-    config_data = {}
+    @property
+    def redis(self) -> str:
+        """Deprecated alias for redis_url."""
+        return str(self.redis_url)
+
+
+# Older Nebula deployments set NEBULA_POSTGRES / NEBULA_REDIS as bare
+# connection strings. nx.config.ConfigModel expects NEBULA_POSTGRES_URL /
+# NEBULA_REDIS_URL instead, so alias the old names to keep existing
+# .env files and deployments working unmodified.
+_ENV_ALIASES = {
+    "NEBULA_POSTGRES": "NEBULA_POSTGRES_URL",
+    "NEBULA_REDIS": "NEBULA_REDIS_URL",
+}
+
+
+def _load_config() -> NebulaConfigModel:
     dotenv.load_dotenv()
-    for key, value in os.environ.items():
-        if not key.startswith(prefix):
-            continue
+    for old, new in _ENV_ALIASES.items():
+        if old in os.environ and new not in os.environ:
+            os.environ[new] = os.environ[old]
 
-        target_key = key.removeprefix(prefix).lower()
-        config_data[target_key] = value
-    return NebulaConfig(**config_data)
+    proxy = ConfigProxy[NebulaConfigModel]()
+    proxy.initialize(NebulaConfigModel, "NEBULA")
+    return cast("NebulaConfigModel", proxy)
 
 
-config: NebulaConfig = load_config()
+config = _load_config()

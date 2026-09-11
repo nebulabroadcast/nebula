@@ -1,6 +1,6 @@
 from typing import Any
 
-from nebula.log import log as logger
+from nx.logging import logger
 
 
 class RequestSettingsReload(Exception):  # noqa: N818

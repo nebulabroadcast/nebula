@@ -1,8 +1,8 @@
 from typing import Any
 
+import nx
+
 from nebula.config import config
-from nebula.db import db
-from nebula.log import log
 from nebula.settings.metatypes import MetaType
 from nebula.settings.models import (
     CSItemModel,
@@ -37,7 +37,7 @@ async def get_server_settings() -> ServerSettings:
     # System settings
 
     query = "SELECT key, value FROM settings"
-    result["system"] = {row["key"]: row["value"] async for row in db.iterate(query)}
+    result["system"] = {row["key"]: row["value"] async for row in nx.db.iterate(query)}
     result["system"]["site_name"] = config.site_name
 
     # Storages
@@ -45,7 +45,7 @@ async def get_server_settings() -> ServerSettings:
     query = "SELECT id, settings FROM storages ORDER BY id ASC"
     result["storages"] = [
         StorageSettings(id=row["id"], **row["settings"])
-        async for row in db.iterate(query)
+        async for row in nx.db.iterate(query)
     ]
 
     # Playout channels
@@ -53,7 +53,7 @@ async def get_server_settings() -> ServerSettings:
     query = "SELECT * FROM channels WHERE channel_type = 0 ORDER BY id ASC"
     result["playout_channels"] = [
         PlayoutChannelSettings(id=row["id"], **row["settings"])
-        async for row in db.iterate(query)
+        async for row in nx.db.iterate(query)
     ]
 
     # Folders
@@ -61,14 +61,15 @@ async def get_server_settings() -> ServerSettings:
     query = "SELECT id, settings FROM folders ORDER BY id ASC"
     result["folders"] = [
         FolderSettings(id=row["id"], **row["settings"])
-        async for row in db.iterate(query)
+        async for row in nx.db.iterate(query)
     ]
 
     # Views
 
     query = "SELECT id, settings FROM views ORDER BY id ASC"
     result["views"] = [
-        ViewSettings(id=row["id"], **row["settings"]) async for row in db.iterate(query)
+        ViewSettings(id=row["id"], **row["settings"])
+        async for row in nx.db.iterate(query)
     ]
 
     # Metatypes
@@ -76,14 +77,14 @@ async def get_server_settings() -> ServerSettings:
     query = "SELECT key, settings FROM meta_types"
     result["metatypes"] = {
         row["key"]: MetaType.from_settings(row["settings"])
-        async for row in db.iterate(query)
+        async for row in nx.db.iterate(query)
     }
 
     # Classification schemes
 
     _cs: dict[str, CSModel] = {}
     query = "SELECT cs, value, settings FROM cs ORDER BY value"
-    async for row in db.iterate(query):
+    async for row in nx.db.iterate(query):
         scheme = row["cs"]
         item = CSItemModel.from_settings(row["value"], row["settings"])
         if scheme not in _cs:
@@ -101,7 +102,7 @@ async def load_settings() -> None:
     This function is called on application startup.
     Either in nebula.server on_init handler or by nebula.run
     """
-    log.trace("Loading settings")
+    nx.log.trace("Loading settings")
     new_settings = await get_server_settings()
 
     new_settings_dict = new_settings.model_dump()

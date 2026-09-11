@@ -51,11 +51,10 @@ class SetPassword(APIRequest):
                     "Only admin can change other user's password"
                 )
             query = "SELECT meta FROM users WHERE login = $1"
-            async for row in nebula.db.iterate(query, request.login):
-                target_user = nebula.User.from_row(row)
-                break
-            else:
+            row = await nebula.db.fetchrow(query, request.login)
+            if not row:
                 raise nebula.NotFoundException(f"User {request.login} not found")
+            target_user = nebula.User.from_row(row)
         else:
             target_user = user
 

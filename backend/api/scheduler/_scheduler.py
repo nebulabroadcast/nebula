@@ -1,3 +1,5 @@
+from typing import Any
+
 import nebula
 from nebula.helpers.create_new_event import EventData, create_new_event
 from nebula.helpers.scheduling import parse_rundown_date
@@ -13,11 +15,13 @@ async def scheduler(  # noqa: C901, PLR0913, PLR0915, PLR0912
     delete: list[int] | None = None,
     events: list[EventData] | None = None,
     editable: bool = True,
-    user: nebula.User | None = None,
+    **kwargs: Any,
 ) -> SchedulerResponse:
     """Modify and display channel schedule"""
+    # **kwargs absorbs a legacy `user` argument, kept for backward
+    # compatibility. Who's acting is read ambiently where it's needed.
+    _ = kwargs
 
-    username = user.name if user else None
     start_time: float | None = None
     end_time: float | None = None
     delete = delete or []
@@ -38,7 +42,7 @@ async def scheduler(  # noqa: C901, PLR0913, PLR0915, PLR0912
     #
 
     if delete and editable:
-        deleted_event_ids = await delete_events(delete, user=user)
+        deleted_event_ids = await delete_events(delete)
         affected_events.extend(deleted_event_ids)
     #
     # Create / update events
@@ -66,13 +70,11 @@ async def scheduler(  # noqa: C901, PLR0913, PLR0915, PLR0912
                     # Replace event with itself. This is a no-op.
                     continue
 
-                asset = await nebula.Asset.load(event_data.id_asset, username=username)
+                asset = await nebula.Asset.load(event_data.id_asset)
                 assert asset
 
                 # load the existing bin
-                ex_bin = await nebula.Bin.load(
-                    event_at_position["id_magic"], username=username
-                )
+                ex_bin = await nebula.Bin.load(event_at_position["id_magic"])
                 await ex_bin.get_items()
 
                 for item in ex_bin.items:
@@ -85,7 +87,7 @@ async def scheduler(  # noqa: C901, PLR0913, PLR0915, PLR0912
                         break
                 else:
                     # no primary asset found, so append it
-                    new_item = nebula.Item(username=username)
+                    new_item = nebula.Item()
                     new_item["id_asset"] = event_data.id_asset
                     new_item["id_bin"] = ex_bin.id
                     new_item["position"] = len(ex_bin.items)
@@ -117,7 +119,7 @@ async def scheduler(  # noqa: C901, PLR0913, PLR0915, PLR0912
 
         elif event_data.id:
             # Update existing event
-            event = await nebula.Event.load(event_data.id, username=username)
+            event = await nebula.Event.load(event_data.id)
             event["start"] = event_data.start
             for field in channel.fields:
                 if event_data.meta and (field.name in event_data.meta):
@@ -127,7 +129,7 @@ async def scheduler(  # noqa: C901, PLR0913, PLR0915, PLR0912
 
         else:
             # create new event
-            await create_new_event(channel, event_data, user=user)
+            await create_new_event(channel, event_data)
 
     # Return existing events
 
@@ -136,7 +138,6 @@ async def scheduler(  # noqa: C901, PLR0913, PLR0915, PLR0912
             channel.id,
             start_time,
             end_time,
-            user=user,
         )
     else:
         c_events = []

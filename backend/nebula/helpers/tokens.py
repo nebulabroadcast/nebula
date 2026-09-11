@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from typing import Any, Literal
 
 import nebula
-from nx.utils.hashing import hash_data
+from nebula.utils.hashing import hash_data
 
 ShortLivedTokenType = Literal["password-reset"]
 
