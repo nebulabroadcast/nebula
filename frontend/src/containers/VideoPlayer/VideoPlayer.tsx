@@ -276,7 +276,14 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>((props, ref) =>
         : null;
 
     engineRef.current?.setOverlayRenderer(renderer);
-  }, [showOverlay, showLumaClip, showChromaClip, scanDuringPlayback, isPlaying, clippingOverlay]);
+  }, [
+    showOverlay,
+    showLumaClip,
+    showChromaClip,
+    scanDuringPlayback,
+    isPlaying,
+    clippingOverlay,
+  ]);
 
   // Overlays are scaled to the displayed size of the frame,
   // so the frame has to be repainted when the canvas is resized

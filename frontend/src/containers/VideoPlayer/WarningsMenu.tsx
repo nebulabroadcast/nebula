@@ -37,7 +37,11 @@ const WarningsMenu = ({
 
   return (
     <div className="nb-dropdown">
-      <Button icon="warning" tooltip="Broadcast safety warnings" active={anyClipWarning} />
+      <Button
+        icon="warning"
+        tooltip="Broadcast safety warnings"
+        active={anyClipWarning}
+      />
       <WarningsContent className="dropdown-content">
         <WarningsRow>
           Luma range warning

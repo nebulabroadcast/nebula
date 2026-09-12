@@ -1,4 +1,4 @@
-import { DateTime } from 'luxon';
+import { DateTime, Zone } from 'luxon';
 import { RRule, Frequency, Weekday } from 'rrule';
 
 export type RecurrenceFreq = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
@@ -85,6 +85,16 @@ const applyEndCondition = (
   return occurrences;
 };
 
+// rrule does its date math on the UTC fields of a JS Date, so it's given
+// "floating" dates whose UTC fields hold the local wall-clock time, as the
+// rrule docs recommend. Otherwise weekdays would be matched in UTC and the
+// local air time would shift by an hour across DST changes.
+const toFloating = (dt: DateTime): Date =>
+  dt.setZone('utc', { keepLocalTime: true }).toJSDate();
+
+const fromFloating = (d: Date, zone: Zone): DateTime =>
+  DateTime.fromJSDate(d, { zone: 'utc' }).setZone(zone, { keepLocalTime: true });
+
 /**
  * Compute episode air dates around an anchor date, both forward and
  * backward, using an RRULE-style recurrence. RRULE only generates
@@ -99,16 +109,22 @@ export const computeOccurrences = ({
   backwardCount,
 }: ComputeOccurrencesArgs): { forward: DateTime[]; backward: DateTime[] } => {
   const ruleOptions = toRRuleOptions(options);
+  const start = toFloating(anchor);
 
-  // Forward: anchor is occurrence 0, we need `forwardCount` more after it.
+  // Forward: the first `forwardCount` occurrences strictly after the anchor.
+  // dtstart is only an occurrence itself when it matches the rule (e.g. the
+  // anchor's weekday is selected), so drop it by value, not by position.
   let forward: DateTime[] = [];
   if (forwardCount > 0) {
     const rule = new RRule({
       ...ruleOptions,
-      dtstart: anchor.toJSDate(),
+      dtstart: start,
     });
     const raw = rule.all((_date, i) => i <= forwardCount);
-    forward = raw.slice(1).map((d) => DateTime.fromJSDate(d, { zone: anchor.zone }));
+    forward = raw
+      .filter((d) => d > start)
+      .slice(0, forwardCount)
+      .map((d) => fromFloating(d, anchor.zone));
     forward = applyEndCondition(forward, options);
   }
 
@@ -118,13 +134,15 @@ export const computeOccurrences = ({
   let backward: DateTime[] = [];
   if (backwardCount > 0) {
     const margin = backwardCount + 4; // safety buffer for byweekday filtering
-    const shiftedStart = shiftBack(anchor, options.freq, options.interval, margin);
+    const shiftedStart = toFloating(
+      shiftBack(anchor, options.freq, options.interval, margin)
+    );
     const rule = new RRule({
       ...ruleOptions,
-      dtstart: shiftedStart.toJSDate(),
+      dtstart: shiftedStart,
     });
-    const raw = rule.between(shiftedStart.toJSDate(), anchor.toJSDate(), false);
-    const all = raw.map((d) => DateTime.fromJSDate(d, { zone: anchor.zone }));
+    const raw = rule.between(shiftedStart, start, false);
+    const all = raw.map((d) => fromFloating(d, anchor.zone));
     backward = all.slice(-backwardCount);
   }
 
