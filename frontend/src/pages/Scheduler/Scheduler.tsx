@@ -217,13 +217,17 @@ const Scheduler: React.FC<SchedulerProps> = ({ draggedObjects }) => {
   const onSeriesDrop = async (dragged: DraggedExternal, time: Date) => {
     const start = Math.floor(time.getTime() / 1000);
 
-    let serieId: unknown;
+    // serie should be a string, but it may also be a numeric row id
+    let serieId: string | undefined;
     try {
       const res = await nebula.get({
         body: { object_type: 'asset', ids: [Number(dragged.id)] },
         throwOnError: true,
       });
-      serieId = res.data.data?.[0]?.serie;
+      const serie = res.data.data?.[0]?.serie;
+      if (typeof serie === 'string' || typeof serie === 'number') {
+        serieId = String(serie);
+      }
     } catch (e) {
       console.error('Failed to load asset metadata', e);
     }

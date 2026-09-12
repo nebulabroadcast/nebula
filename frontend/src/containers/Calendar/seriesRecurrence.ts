@@ -4,7 +4,7 @@ import { RRule, Frequency, Weekday } from 'rrule';
 export type RecurrenceFreq = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
 export type RecurrenceEndMode = 'never' | 'until' | 'count';
 
-// Sunday(0)..Saturday(6), matches luxon's weekday % 7 (luxon: Mon=1..Sun=7)
+// Mon..Sun in display order, luxonWeekday uses luxon numbering (Mon=1..Sun=7)
 export const WEEKDAYS: Array<{
   label: string;
   rruleDay: Weekday;
@@ -66,19 +66,20 @@ const toRRuleOptions = (options: RecurrenceOptions) => {
   };
 };
 
+// UNTIL and COUNT are classic RRULE end conditions counted from dtstart (the
+// anchor), so they only bound the forward direction - backward fill is
+// already bounded by how many earlier episodes exist.
 const applyEndCondition = (
   occurrences: DateTime[],
-  options: RecurrenceOptions,
-  isAfterAnchor: boolean
+  options: RecurrenceOptions
 ): DateTime[] => {
   if (options.endMode === 'until' && options.until) {
-    const until = options.until;
-    return occurrences.filter((d) => (isAfterAnchor ? d <= until : d >= until));
+    // until is picked as a date, so include episodes airing on that day
+    const until = options.until.endOf('day');
+    return occurrences.filter((d) => d <= until);
   }
-  // COUNT is classic RRULE semantics: N occurrences total, starting at
-  // dtstart (the anchor). It only bounds the forward direction here -
-  // backward fill is already bounded by how many earlier episodes exist.
-  if (options.endMode === 'count' && options.count && isAfterAnchor) {
+  if (options.endMode === 'count' && options.count) {
+    // N occurrences total, including the anchor itself
     return occurrences.slice(0, Math.max(0, options.count - 1));
   }
   return occurrences;
@@ -108,7 +109,7 @@ export const computeOccurrences = ({
     });
     const raw = rule.all((_date, i) => i <= forwardCount);
     forward = raw.slice(1).map((d) => DateTime.fromJSDate(d, { zone: anchor.zone }));
-    forward = applyEndCondition(forward, options, true);
+    forward = applyEndCondition(forward, options);
   }
 
   // Backward: shift dtstart back by whole periods so the recurrence phase
@@ -125,7 +126,6 @@ export const computeOccurrences = ({
     const raw = rule.between(shiftedStart.toJSDate(), anchor.toJSDate(), false);
     const all = raw.map((d) => DateTime.fromJSDate(d, { zone: anchor.zone }));
     backward = all.slice(-backwardCount);
-    backward = applyEndCondition(backward, options, false);
   }
 
   return { forward, backward };
