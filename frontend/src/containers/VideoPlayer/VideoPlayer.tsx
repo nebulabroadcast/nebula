@@ -7,6 +7,7 @@ import {
   Navbar,
   Section,
 } from '@components';
+import { useLocalStorage } from '@lib/useLocalStorage';
 import {
   useState,
   useEffect,
@@ -19,12 +20,14 @@ import {
 import styled from 'styled-components';
 
 import ChannelSelect from './ChannelSelect';
+import { makeClippingOverlay } from './clipping';
 import { PlayerEngine, type OverlayRenderer, type TimeRange } from './PlayerEngine';
 import Trackbar from './Trackbar';
 import { VideoPlayerProps, VideoPlayerRef } from './types';
 import { useAudioGraph } from './useAudioGraph';
 import VideoPlayerControls from './VideoPlayerControls';
 import VUMeter from './VUMeter';
+import WarningsMenu from './WarningsMenu';
 
 const VideoPlayerContainer = styled.div`
   display: flex;
@@ -102,6 +105,18 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>((props, ref) =>
 
   const [loop, setLoop] = useState(false);
   const [showOverlay, setShowOverlay] = useState(false);
+  const [showLumaClip, setShowLumaClip] = useLocalStorage(
+    'mam.videoPlayer.showLumaClip',
+    false
+  );
+  const [showChromaClip, setShowChromaClip] = useLocalStorage(
+    'mam.videoPlayer.showChromaClip',
+    false
+  );
+  const [scanDuringPlayback, setScanDuringPlayback] = useLocalStorage(
+    'mam.videoPlayer.scanDuringPlayback',
+    false
+  );
   const [bufferedRanges, setBufferedRanges] = useState<TimeRange[]>([]);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -238,11 +253,30 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>((props, ref) =>
     setMarkOut(props.markOut ?? null);
   }, [props.markOut]);
 
-  // Guides, drawn straight onto the video frame
+  // Guides and clipping warnings, drawn straight onto the video frame.
+  // The clipping scan reads every pixel of the frame, so by default it only
+  // runs on still frames (paused, scrubbing) unless explicitly asked to also
+  // run during playback.
+
+  const clippingOverlay = useMemo(
+    () => makeClippingOverlay({ luma: showLumaClip, chroma: showChromaClip }),
+    [showLumaClip, showChromaClip]
+  );
 
   useEffect(() => {
-    engineRef.current?.setOverlayRenderer(showOverlay ? drawGuides : null);
-  }, [showOverlay]);
+    const clipEnabled = showLumaClip || showChromaClip;
+    const scanClip = clipEnabled && (scanDuringPlayback || !isPlaying);
+
+    const renderer: OverlayRenderer | null =
+      showOverlay || scanClip
+        ? (context, width, height, scale) => {
+            if (scanClip) clippingOverlay(context, width, height, scale);
+            if (showOverlay) drawGuides(context, width, height, scale);
+          }
+        : null;
+
+    engineRef.current?.setOverlayRenderer(renderer);
+  }, [showOverlay, showLumaClip, showChromaClip, scanDuringPlayback, isPlaying, clippingOverlay]);
 
   // Overlays are scaled to the displayed size of the frame,
   // so the frame has to be repainted when the canvas is resized
@@ -315,6 +349,14 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>((props, ref) =>
             setShowOverlay(!showOverlay);
           }}
           active={showOverlay}
+        />
+        <WarningsMenu
+          showLumaClip={showLumaClip}
+          setShowLumaClip={setShowLumaClip}
+          showChromaClip={showChromaClip}
+          setShowChromaClip={setShowChromaClip}
+          scanDuringPlayback={scanDuringPlayback}
+          setScanDuringPlayback={setScanDuringPlayback}
         />
         <InputTimecode
           value={durFrames}
