@@ -49,10 +49,10 @@ def description_validator(value: Any) -> str:
 
 
 def id_validator(value: Any) -> int:
-    if not isinstance(value, int):
-        raise TypeError(f"Asset id must be numeric, got {type(value).__name__}")
+    if not isinstance(value, int) or isinstance(value, bool):
+        raise TypeError(f"Asset id must be an integer, got {type(value).__name__}")
     if value <= 0:
-        raise ValueError("Asset id must be a non-negative integer")
+        raise ValueError("Asset id must be a positive integer")
     return value
 
 
