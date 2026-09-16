@@ -39,12 +39,10 @@ class TokenManager:
         blocking_hash = None
         if blocking_id is not None:
             blocking_hash = hash_data(blocking_id)
-            block_expires_at = None
-            with suppress(KeyError):
-                block_expires_at = await nebula.redis.get_json(
-                    "short-lived-token-lock",
-                    blocking_hash,
-                )
+            block_expires_at = await nebula.redis.get_json(
+                "short-lived-token-lock",
+                blocking_hash,
+            )
             if block_expires_at is not None and time.time() < block_expires_at:
                 nebula.log.warning(
                     f"Unable to create {token_type} token. "

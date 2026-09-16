@@ -1,7 +1,8 @@
 from typing import cast
 
+from nx.utils import coalesce
+
 import nebula
-from nebula.helpers.coalescer import Coalescer
 from nebula.helpers.scheduling import bin_refresh
 from server.dependencies import CurrentUser
 from server.request import APIRequest
@@ -34,7 +35,6 @@ class Scheduler(APIRequest):
         if not (request.events or request.delete):
             # Read-only request. coalesce the requests and
             # Return directly
-            coalesce = Coalescer()
             return cast(
                 "SchedulerResponse",
                 await coalesce(

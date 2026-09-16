@@ -1,7 +1,8 @@
 from typing import cast
 
+from nx.utils import coalesce
+
 import nebula
-from nebula.helpers.coalescer import Coalescer
 from server.dependencies import CurrentUser
 from server.request import APIRequest
 
@@ -37,6 +38,5 @@ class GetRundown(APIRequest):
         if not user.can("rundown_view", request.id_channel):
             raise nebula.ForbiddenException("You are not allowed to view this rundown")
 
-        coalesce = Coalescer()
         rundown = await coalesce(load_rundown, request.id_channel, request.date)
         return cast("RundownResponse", rundown)
