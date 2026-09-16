@@ -57,8 +57,7 @@ def id_validator(value: Any) -> int:
 
 
 def color_validator(value: Any) -> int:
-    if isinstance(value, int) and 0 <= value <= 0xFFFFFF:
-        return value
+    if isinstance(value, int) and not isinstance(value, bool) and 0 <= value <= 0xFFFFFF:
     if isinstance(value, str) and re.match(
         r"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$", value
     ):
