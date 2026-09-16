@@ -137,7 +137,7 @@ class TemplateImporter:
                 id=None,
                 start=evt_start,
                 items=tpl.get("items", None),
-                id_asset=tpl.get("id_asset", None),
+                id_asset=meta.get("id_asset"),
                 run_mode=meta.pop("run_mode", None),
                 meta=meta,
             )
