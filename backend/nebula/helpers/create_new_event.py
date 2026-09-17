@@ -51,7 +51,7 @@ class EventData(BaseModel):
     )
 
 
-async def create_new_event(  # noqa: C901
+async def create_new_event(  # noqa: C901, PLR0915
     channel: PlayoutChannelSettings,
     event_data: EventData,
     **kwargs: Any,
@@ -82,7 +82,7 @@ async def create_new_event(  # noqa: C901
         asset_meta = {}
         position = 0
         if event_data.id_asset:
-            asset = await nebula.Asset.load( event_data.id_asset)
+            asset = await nebula.Asset.load(event_data.id_asset)
 
             new_event["id_asset"] = event_data.id_asset
 

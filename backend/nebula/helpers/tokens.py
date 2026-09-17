@@ -1,6 +1,5 @@
 import secrets
 import time
-from contextlib import suppress
 from dataclasses import dataclass
 from typing import Any, Literal
 

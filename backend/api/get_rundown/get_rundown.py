@@ -1,8 +1,7 @@
 from typing import cast
 
-from nx.utils import coalesce
-
 import nebula
+from nx.utils import coalesce
 from server.dependencies import CurrentUser
 from server.request import APIRequest
 

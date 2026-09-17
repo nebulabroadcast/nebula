@@ -34,6 +34,7 @@ def run_mode_validator(value: Any) -> RunMode:
         raise TypeError(f"Run mode must be a string, got {type(value).__name__}")
     return RunMode.from_str(value)
 
+
 def title_validator(value: Any) -> str:
     if not isinstance(value, str):
         raise TypeError(f"Title must be a string, got {type(value).__name__}")
