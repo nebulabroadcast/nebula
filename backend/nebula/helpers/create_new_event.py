@@ -3,6 +3,7 @@ from typing import Any
 from pydantic import BaseModel, Field
 
 import nebula
+from nebula.enum import RunMode
 from nebula.settings.models import PlayoutChannelSettings
 
 Serializable = int | str | float | list[str] | bool | None
@@ -20,6 +21,11 @@ class EventData(BaseModel):
         ...,
         title="Start time",
         examples=[1620000000],
+    )
+
+    run_mode: RunMode | None = Field(
+        None,
+        title="Run mode",
     )
 
     id_asset: int | None = Field(
@@ -70,10 +76,13 @@ async def create_new_event(  # noqa: C901
         new_event["id_channel"] = channel.id
         new_event["start"] = event_data.start
 
+        if event_data.run_mode is not None:
+            new_event["run_mode"] = event_data.run_mode.value
+
         asset_meta = {}
         position = 0
         if event_data.id_asset:
-            asset = await nebula.Asset.load(event_data.id_asset)
+            asset = await nebula.Asset.load( event_data.id_asset)
 
             new_event["id_asset"] = event_data.id_asset
 

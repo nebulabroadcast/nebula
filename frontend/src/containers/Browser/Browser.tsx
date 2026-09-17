@@ -197,13 +197,20 @@ const BrowserTable = ({ isDragging }: BrowserTableProps) => {
       const clickedIndex = data.findIndex(
         (row: Record<string, any>) => row.id === rowData.id
       );
+      const focusedAssetIndex = data.findIndex(
+        (row: Record<string, any>) => row.id === focusedAsset
+      );
+      const firstSelectedIndex = data.findIndex((row: Record<string, any>) =>
+        selectedAssets.includes(row.id as number)
+      );
       const focusedIndex =
-        data.findIndex((row: Record<string, any>) => row.id === focusedAsset) ||
-        data.findIndex((row: Record<string, any>) =>
-          selectedAssets.includes(row.id as number)
-        ) ||
-        clickedIndex ||
-        0;
+        focusedAssetIndex !== -1
+          ? focusedAssetIndex
+          : firstSelectedIndex !== -1
+            ? firstSelectedIndex
+            : clickedIndex !== -1
+              ? clickedIndex
+              : 0;
 
       const min = Math.min(clickedIndex, focusedIndex);
       const max = Math.max(clickedIndex, focusedIndex);
@@ -223,7 +230,7 @@ const BrowserTable = ({ isDragging }: BrowserTableProps) => {
   };
 
   const focusNext = (offset: number) => {
-    if (!focusedAsset) return;
+    if (focusedAsset === null) return;
     const nextIndex =
       data.findIndex((row: Record<string, any>) => row.id === focusedAsset) + offset;
     if (nextIndex < data.length) {

@@ -140,6 +140,21 @@ class RunMode(IntEnum):
     RUN_HARD = 3
     RUN_SKIP = 4
 
+    @classmethod
+    def from_str(cls, mode_str: str) -> "RunMode":
+        """Convert a string to a RunMode enum member."""
+        mapping = {
+            "auto": cls.RUN_AUTO,
+            "manual": cls.RUN_MANUAL,
+            "soft": cls.RUN_SOFT,
+            "hard": cls.RUN_HARD,
+            "skip": cls.RUN_SKIP,
+        }
+        try:
+            return mapping[mode_str.lower()]
+        except KeyError as e:
+            raise ValueError(f"Invalid run mode: {mode_str}") from e
+
 
 class QCState(IntEnum):
     NEW = 0

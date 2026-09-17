@@ -185,7 +185,7 @@ class NebulaStoragesRequest(APIRequest):
                 )
                 continue
 
-            usage = await get_nebula_folders_usage(storage_id)
+            usage = list(await get_nebula_folders_usage(storage_id))
             playout_usage = await get_nebula_playout_usage(storage_id)
             if playout_usage.usage > 0:
                 usage.append(playout_usage)

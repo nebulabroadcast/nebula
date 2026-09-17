@@ -26,6 +26,7 @@ interface CalendarProps {
   events: CalendarEvent[];
   saveEvent: (event: any) => void;
   copyEvent: (id: string | number, newTs: number) => void;
+  onSeriesDrop?: (dragged: DraggedExternal, time: Date) => void;
   contextMenu: ContextMenuItem[];
 }
 
@@ -35,6 +36,7 @@ const Calendar: React.FC<CalendarProps> = ({
   events,
   saveEvent,
   copyEvent,
+  onSeriesDrop,
   contextMenu,
 }) => {
   const navigate = useNavigate();
@@ -297,11 +299,15 @@ const Calendar: React.FC<CalendarProps> = ({
     if (!calendarRef?.current) return;
     if (draggedExternal && cursorTime.current) {
       console.debug('Dropped external', draggedExternal, cursorTime.current);
-      saveEvent({
-        id_asset: draggedExternal.id,
-        is_empty_event: true,
-        start: Math.floor(cursorTime.current.getTime() / 1000),
-      });
+      if (e.ctrlKey && onSeriesDrop) {
+        onSeriesDrop(draggedExternal, cursorTime.current);
+      } else {
+        saveEvent({
+          id_asset: draggedExternal.id,
+          is_empty_event: true,
+          start: Math.floor(cursorTime.current.getTime() / 1000),
+        });
+      }
     } else if (draggedEvent.current && cursorTime.current) {
       console.debug('Dropped event', draggedEvent.current, cursorTime.current);
 

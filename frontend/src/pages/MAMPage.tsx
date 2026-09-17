@@ -22,6 +22,7 @@ import Scheduler from '@/pages/Scheduler';
 
 const MAMContainer = styled.div`
   flex-grow: 1;
+  min-height: 0;
 
   .__dbk__gutter.Dark {
     background-color: var(--color-surface-01);
@@ -32,6 +33,7 @@ const MAMContainer = styled.div`
     flex-direction: column;
     gap: var(--section-gap);
     min-width: 400px;
+    min-height: 0;
   }
 
   .__dbk__child-wrapper:last-child {
