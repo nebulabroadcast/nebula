@@ -22,6 +22,7 @@ import { toast } from 'react-toastify';
 import BrowserNav from './BrowserNav';
 
 import type { BrowseAssetsRequest } from '@/client';
+import type { ContextMenuOption } from '@/components/ContextMenu';
 import { useWebSocket } from '@/features/Websocket';
 import nebula from '@/nebula';
 
@@ -30,7 +31,7 @@ const ROWS_PER_PAGE = 200;
 type RequestParams = Required<
   Pick<
     BrowseAssetsRequest,
-    'view' | 'query' | 'limit' | 'offset' | 'order_by' | 'order_dir'
+    'view' | 'query' | 'conditions' | 'limit' | 'offset' | 'order_by' | 'order_dir'
   >
 >;
 
@@ -42,10 +43,12 @@ const BrowserTable = ({ isDragging }: BrowserTableProps) => {
   const {
     currentViewId,
     searchQuery,
+    filterConditions,
     selectedAssets,
     focusedAsset,
     browserRefreshId,
     setCurrentView,
+    setFilterConditions,
     setSelectedAssets,
     setFocusedAsset,
   } = useNebula();
@@ -71,6 +74,9 @@ const BrowserTable = ({ isDragging }: BrowserTableProps) => {
 
   const dataRef = useRef(data);
   const requestParamsRef = useRef<RequestParams | null>(null);
+  const contextCellRef = useRef<{ rowData: TableRowData; columnName: string } | null>(
+    null
+  );
 
   //
   // References
@@ -98,6 +104,7 @@ const BrowserTable = ({ isDragging }: BrowserTableProps) => {
     requestParamsRef.current = {
       view: currentViewId,
       query: searchQuery || '',
+      conditions: filterConditions.length ? filterConditions : null,
       limit: ROWS_PER_PAGE + 1,
       offset: page ? (page - 1) * ROWS_PER_PAGE : 0,
       order_by: sortBy,
@@ -107,12 +114,20 @@ const BrowserTable = ({ isDragging }: BrowserTableProps) => {
     // show loading indicator only if the user initiated the refresh
     setLoading(true);
     loadData();
-  }, [currentView, searchQuery, sortBy, sortDirection, page, browserRefreshId]);
+  }, [
+    currentView,
+    searchQuery,
+    filterConditions,
+    sortBy,
+    sortDirection,
+    page,
+    browserRefreshId,
+  ]);
 
   useEffect(() => {
-    // Reset page when view or search query changes
+    // Reset page when view, search query or filters change
     setPage(1);
-  }, [currentView, searchQuery, sortBy, sortDirection]);
+  }, [currentView, searchQuery, filterConditions, sortBy, sortDirection]);
 
   //
   // Data loading
@@ -293,38 +308,72 @@ const BrowserTable = ({ isDragging }: BrowserTableProps) => {
       });
   };
 
-  const contextMenu = () => [
-    {
-      label: 'Send to...',
-      icon: 'send',
-      onClick: () => {
-        sendTo();
+  const contextMenu = (): ContextMenuOption[] => {
+    const options: ContextMenuOption[] = [];
+
+    const cell = contextCellRef.current;
+    const cellValue = cell && cell.rowData[cell.columnName];
+    if (
+      cell &&
+      cellValue !== null &&
+      cellValue !== undefined &&
+      cellValue !== '' &&
+      typeof cellValue !== 'object'
+    ) {
+      const columnName = cell.columnName;
+      options.push({
+        label: `Filter by ${nebula.metaType(columnName).header}`,
+        icon: 'filter_alt',
+        separator: true,
+        onClick: () => {
+          setFilterConditions([
+            ...filterConditions.filter((condition) => condition.key !== columnName),
+            {
+              key: columnName,
+              value: cellValue as string | number | boolean,
+              operator: '=',
+            },
+          ]);
+        },
+      });
+    }
+
+    options.push(
+      {
+        label: 'Send to...',
+        separator: options.length > 0,
+        icon: 'send',
+        onClick: () => {
+          sendTo();
+        },
       },
-    },
-    {
-      label: 'Reset',
-      icon: 'undo',
-      onClick: () => {
-        setSelectionStatus(5, 'Do you want to reload selected assets metadata?');
+      {
+        label: 'Reset',
+        icon: 'undo',
+        onClick: () => {
+          setSelectionStatus(5, 'Do you want to reload selected assets metadata?');
+        },
       },
-    },
-    {
-      label: 'Archive',
-      separator: true,
-      icon: 'archive',
-      onClick: () => {
-        setSelectionStatus(4, 'Do you want to move selected assets to archive?');
+      {
+        label: 'Archive',
+        separator: true,
+        icon: 'archive',
+        onClick: () => {
+          setSelectionStatus(4, 'Do you want to move selected assets to archive?');
+        },
       },
-    },
-    {
-      label: 'Trash',
-      icon: 'delete',
-      hlColor: 'var(--color-red)',
-      onClick: () => {
-        setSelectionStatus(3, 'Do you want to move selected assets to trash?');
-      },
-    },
-  ];
+      {
+        label: 'Trash',
+        icon: 'delete',
+        hlColor: 'var(--color-red)',
+        onClick: () => {
+          setSelectionStatus(3, 'Do you want to move selected assets to trash?');
+        },
+      }
+    );
+
+    return options;
+  };
 
   const tableClass = clsx('contained', isDragging && 'no-scroll');
 
@@ -338,6 +387,9 @@ const BrowserTable = ({ isDragging }: BrowserTableProps) => {
           keyField="id"
           selection={selectedAssets}
           onRowClick={onRowClick}
+          onContextMenu={(rowData, columnName) => {
+            contextCellRef.current = { rowData, columnName };
+          }}
           onKeyDown={onKeyDown}
           rowHighlightColor={formatRowHighlightColor}
           rowHighlightStyle={formatRowHighlightStyle}
