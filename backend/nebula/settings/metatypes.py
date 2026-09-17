@@ -79,5 +79,5 @@ class MetaType(SettingsModel):
             order=settings.get("order"),
             filter=settings.get("filter"),
             default=settings.get("default", DEFAULT_VALUES[settings["class"]]),
-            syntax=settings.get("syntax")
+            syntax=settings.get("syntax"),
         )

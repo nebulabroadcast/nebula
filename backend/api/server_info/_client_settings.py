@@ -1,12 +1,12 @@
 from typing import Any
 
-from nebula.settings.metatypes import SyntaxOption
 from pydantic import Field
 
 import nebula
 from nebula.enum import ContentType
 from nebula.filetypes import FileTypes
 from nebula.settings.common import LanguageCode, SettingsModel
+from nebula.settings.metatypes import SyntaxOption
 from nebula.settings.models import (
     BasePlayoutChannelSettings,
     BaseSystemSettings,
@@ -191,7 +191,7 @@ async def get_client_settings(lang: LanguageCode) -> ClientSettingsModel:
             order=v.order,
             filter=v.filter,
             default=v.default,
-            syntax=v.syntax
+            syntax=v.syntax,
         )
 
     #
