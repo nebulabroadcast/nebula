@@ -7,6 +7,7 @@ import {
   InputSwitch,
   InputText,
   InputTimecode,
+  MarkdownEditor,
   RadioButton,
   Select,
   TextArea,
@@ -113,7 +114,12 @@ const EditorField: React.FC<EditorFieldProps> = ({
       editor = <InputText value={value} onChange={onChange} disabled={disabled} />;
       break;
     case 'text':
-      editor = <TextArea value={value} onChange={onChange} disabled={disabled} />;
+      editor =
+        metaType.syntax === 'md' ? (
+          <MarkdownEditor value={value} onChange={onChange} disabled={disabled} />
+        ) : (
+          <TextArea value={value} onChange={onChange} disabled={disabled} />
+        );
       break;
     case 'select':
       editor =
