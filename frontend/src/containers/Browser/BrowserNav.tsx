@@ -8,7 +8,14 @@ import { useNebula } from '@/features/Nebula';
 import nebula from '@/nebula';
 
 const BrowserNav: React.FC = () => {
-  const { currentViewId, searchQuery, setCurrentView, setSearchQuery } = useNebula();
+  const {
+    currentViewId,
+    searchQuery,
+    filterConditions,
+    setCurrentView,
+    setSearchQuery,
+    setFilterConditions,
+  } = useNebula();
 
   const currentView = useMemo(() => {
     return nebula.settings?.views?.find((v) => v.id === currentViewId);
@@ -54,6 +61,21 @@ const BrowserNav: React.FC = () => {
           iconOnRight={true}
         />
         <Spacer />
+        {filterConditions.map((condition) => (
+          <Button
+            key={condition.key}
+            label={`${nebula.metaType(condition.key).header}: ${condition.value}`}
+            icon="filter_alt_off"
+            iconOnRight={true}
+            onClick={() => {
+              setFilterConditions(
+                filterConditions.filter((c) => c.key !== condition.key)
+              );
+            }}
+            className="tool"
+            tooltip="Clear filter"
+          />
+        ))}
         <InputText placeholder="Search" onChange={setSearchText} value={searchText} />
         <Button
           icon="close"
@@ -65,7 +87,7 @@ const BrowserNav: React.FC = () => {
         />
       </Navbar>
     ),
-    [currentView?.name, searchText, viewOptions]
+    [currentView?.name, searchText, viewOptions, filterConditions, setFilterConditions]
   );
 
   return navbar;

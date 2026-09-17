@@ -12,6 +12,7 @@ interface DataRowProps {
     rowData: TableRowData,
     event: React.MouseEvent<HTMLTableRowElement>
   ) => void;
+  onContextMenu?: (rowData: TableRowData, columnName: string) => void;
   rowHighlightColor?: (rowData: TableRowData) => string | undefined;
   rowHighlightStyle?: (
     rowData: TableRowData
@@ -27,6 +28,7 @@ const DataRow = ({
   rowData,
   columns,
   onRowClick,
+  onContextMenu,
   rowHighlightColor,
   rowHighlightStyle,
   rowClass,
@@ -57,7 +59,19 @@ const DataRow = ({
   });
 
   const handleClick = (event: React.MouseEvent<HTMLTableRowElement>) => {
-    if (event.type === 'contextmenu' || event.button === 2) {
+    const isContextMenu = event.type === 'contextmenu' || event.button === 2;
+    if (isContextMenu && onContextMenu && event.target instanceof Element) {
+      const cell = event.target.closest('td');
+      if (cell?.parentElement) {
+        const columnIndex = Array.prototype.indexOf.call(
+          cell.parentElement.children,
+          cell
+        );
+        const column = columns[columnIndex];
+        if (column) onContextMenu(rowData, column.name);
+      }
+    }
+    if (isContextMenu) {
       // if we're right-clicking, and the row is already selected,
       // don't change the selection - just show the context menu
       if (selected) return;
