@@ -135,6 +135,13 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>((props, ref) =>
     void engine.seek(frames2time(frame, frameRateRef.current));
   }, []);
 
+  const onScrub = useCallback(
+    (t: number) => {
+      seekToFrame(time2frames(t, props.frameRate));
+    },
+    [seekToFrame, props.frameRate]
+  );
+
   useEffect(() => {
     const engine = new PlayerEngine(
       {
@@ -355,9 +362,7 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>((props, ref) =>
         frameRate={props.frameRate}
         isPlaying={isPlaying}
         currentTime={frames2time(posFrames, props.frameRate)}
-        onScrub={(t) => {
-          seekToFrame(time2frames(t, props.frameRate));
-        }}
+        onScrub={onScrub}
         markIn={markIn ?? undefined}
         markOut={markOut ?? undefined}
         bufferedRanges={bufferedRanges}

@@ -1,6 +1,7 @@
 import { Loader, Section } from '@components';
 import { TableDraggableItem } from '@components/table/types';
 import MetadataEditor from '@containers/MetadataEditor';
+import Splitter, { SplitDirection } from '@devbookhq/splitter';
 import { useDialog } from '@features/Dialogs';
 import { JobsTable } from '@features/JobsTable';
 import { useNebula } from '@features/Nebula';
@@ -12,6 +13,7 @@ import { isEqual, isEmpty } from 'lodash';
 import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router';
 import { toast } from 'react-toastify';
+import styled from 'styled-components';
 
 import AssetMainProps from './AssetMainProps';
 import { AssetPreview } from './AssetPreview';
@@ -19,6 +21,24 @@ import AssetEditorNav from './EditorNav';
 import type { EnabledActions } from './types';
 
 import nebula from '@/nebula';
+
+const JobsSplitterContainer = styled.div`
+  flex-grow: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+
+  .__dbk__gutter.Dark {
+    background-color: var(--color-surface-01);
+  }
+
+  .__dbk__child-wrapper {
+    display: flex;
+    flex-direction: column;
+    min-width: 0 !important;
+    min-height: 60px;
+  }
+`;
 
 const getEnabledActions = ({
   assetData,
@@ -93,6 +113,10 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
     'metadata'
   );
   const [showJobs, setShowJobs] = useLocalStorage<boolean>('mam.editor.showJobs', true);
+  const [jobsSplitterSizes, setJobsSplitterSizes] = useLocalStorage<number[] | null>(
+    'mam.editor.jobsSplitterSizes',
+    null
+  );
   const [, setSearchParams] = useSearchParams();
 
   const assetIdRef = useRef<number | string | null>(focusedAsset);
@@ -500,6 +524,14 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
   // Render
   //
 
+  const onJobsResizeStart = () => {
+    document.body.style.userSelect = 'none';
+  };
+  const onJobsResizeEnd = (_gutter: number, size: number[]) => {
+    setJobsSplitterSizes(size);
+    document.body.style.userSelect = '';
+  };
+
   const mainComponent = () => {
     switch (editorMode) {
       case 'preview':
@@ -559,21 +591,24 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
         showJobs={showJobs}
         setShowJobs={setShowJobs}
       />
-      {Object.keys(assetData || {}).length > 0 && (
-        <>
-          {mainComponent()}
-          {assetData?.id && showJobs && (
-            <Section
-              style={{
-                minHeight: 120,
-                position: 'relative',
-              }}
+      {Object.keys(assetData || {}).length > 0 &&
+        (assetData?.id && showJobs ? (
+          <JobsSplitterContainer>
+            <Splitter
+              direction={SplitDirection.Vertical}
+              onResizeStarted={onJobsResizeStart}
+              onResizeFinished={onJobsResizeEnd}
+              initialSizes={jobsSplitterSizes || [75, 25]}
             >
-              <JobsTable assetId={assetData.id} className="contained" />
-            </Section>
-          )}
-        </>
-      )}
+              {mainComponent()}
+              <Section className="grow">
+                <JobsTable assetId={assetData.id} className="contained" />
+              </Section>
+            </Splitter>
+          </JobsSplitterContainer>
+        ) : (
+          mainComponent()
+        ))}
     </div>
   );
 };
