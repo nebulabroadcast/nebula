@@ -1,6 +1,8 @@
 import datetime
+import re
 from typing import Any, Literal
 
+from nebula.enum import RunMode
 from nebula.helpers.create_new_event import EventData
 
 from ._utils import get_week_start
@@ -27,13 +29,10 @@ DAY_NAMES: list[DayKey] = [
 ]
 
 
-<<<<<<< Updated upstream
-=======
 def run_mode_validator(value: Any) -> RunMode:
     if not isinstance(value, str):
         raise TypeError(f"Run mode must be a string, got {type(value).__name__}")
     return RunMode.from_str(value)
-
 
 def title_validator(value: Any) -> str:
     if not isinstance(value, str):
@@ -84,7 +83,6 @@ EVENT_META_VALIDATORS = {
 }
 
 
->>>>>>> Stashed changes
 class TemplateImporter:
     day_start_hour: int
     day_start_minute: int
@@ -134,16 +132,20 @@ class TemplateImporter:
             evt_start = int(day_start_ts + toffset - self.day_start_offset)
 
             meta = {}
-            for mkey in ["title", "description", "id_asset", "color"]:
-                if tpl.get(mkey):
-                    meta[mkey] = tpl[mkey]
+            for mkey, validator in EVENT_META_VALIDATORS.items():
+                provide_value = tpl.get(mkey)
+                if provide_value is None:
+                    continue
+                validated_value = validator(provide_value)
+                meta[mkey] = validated_value
 
             event_data = EventData(
                 id=None,
                 start=evt_start,
                 items=tpl.get("items", None),
+                id_asset=meta.get("id_asset"),
+                run_mode=meta.pop("run_mode", None),
                 meta=meta,
-                id_asset=tpl.get("id_asset", None),
             )
 
             self.events[evt_start] = event_data
