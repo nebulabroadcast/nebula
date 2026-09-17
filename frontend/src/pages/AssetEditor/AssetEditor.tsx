@@ -1,36 +1,44 @@
 import { Loader, Section } from '@components';
 import { TableDraggableItem } from '@components/table/types';
 import MetadataEditor from '@containers/MetadataEditor';
+import Splitter, { SplitDirection } from '@devbookhq/splitter';
 import { useDialog } from '@features/Dialogs';
 import { JobsTable } from '@features/JobsTable';
 import { useNebula } from '@features/Nebula';
 import { useWebSocket } from '@features/Websocket';
 import { useLocalStorage } from '@lib/useLocalStorage';
+import { AxiosError } from 'axios';
 import clsx from 'clsx';
 import { isEqual, isEmpty } from 'lodash';
 import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router';
 import { toast } from 'react-toastify';
+import styled from 'styled-components';
 
 import AssetMainProps from './AssetMainProps';
 import { AssetPreview } from './AssetPreview';
 import AssetEditorNav from './EditorNav';
+import type { EnabledActions } from './types';
 
 import nebula from '@/nebula';
-import { AxiosError } from 'axios';
 
-interface EnabledActions {
-  save: boolean;
-  edit: boolean;
-  revert: boolean;
-  folderChange: boolean;
-  create: boolean;
-  clone: boolean;
-  actions: boolean;
-  flag: boolean;
-  upload: boolean;
-  advanced: boolean;
-}
+const JobsSplitterContainer = styled.div`
+  flex-grow: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+
+  .__dbk__gutter.Dark {
+    background-color: var(--color-surface-01);
+  }
+
+  .__dbk__child-wrapper {
+    display: flex;
+    flex-direction: column;
+    min-width: 0 !important;
+    min-height: 60px;
+  }
+`;
 
 const getEnabledActions = ({
   assetData,
@@ -64,21 +72,24 @@ const getEnabledActions = ({
 
   const folderChange = !assetData.id && edit;
   const flag = !!(assetData.id && !nebula.user?.is_limited);
-  const upload = !!(assetData.id && edit);
-  const actions = !!assetData?.id;
-  const advanced = !limited;
+  const upload = !!(nebula.settings?.system?.ui_asset_upload && assetData.id && edit);
+  // spreadsheet ingest creates new assets in the current folder
+  const spreadsheetIngest = writableFolderIds.includes(assetData.id_folder as number);
+  // should we enable actions menu? Yes, if an asset is loaded (has an id)
+  // or if the user can ingest new assets (spreadsheet ingest)
+  const actions = !!assetData?.id || spreadsheetIngest;
 
   return {
-    save,
-    edit,
-    revert,
-    folderChange,
-    create,
-    clone,
     actions,
+    clone,
+    create,
+    edit,
     flag,
+    folderChange,
+    revert,
+    save,
+    spreadsheetIngest,
     upload,
-    advanced,
   };
 };
 
@@ -102,6 +113,10 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
     'metadata'
   );
   const [showJobs, setShowJobs] = useLocalStorage<boolean>('mam.editor.showJobs', true);
+  const [jobsSplitterSizes, setJobsSplitterSizes] = useLocalStorage<number[] | null>(
+    'mam.editor.jobsSplitterSizes',
+    null
+  );
   const [, setSearchParams] = useSearchParams();
 
   const assetIdRef = useRef<number | string | null>(focusedAsset);
@@ -509,6 +524,14 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
   // Render
   //
 
+  const onJobsResizeStart = () => {
+    document.body.style.userSelect = 'none';
+  };
+  const onJobsResizeEnd = (_gutter: number, size: number[]) => {
+    setJobsSplitterSizes(size);
+    document.body.style.userSelect = '';
+  };
+
   const mainComponent = () => {
     switch (editorMode) {
       case 'preview':
@@ -568,21 +591,24 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
         showJobs={showJobs}
         setShowJobs={setShowJobs}
       />
-      {Object.keys(assetData || {}).length > 0 && (
-        <>
-          {mainComponent()}
-          {assetData?.id && showJobs && (
-            <Section
-              style={{
-                minHeight: 120,
-                position: 'relative',
-              }}
+      {Object.keys(assetData || {}).length > 0 &&
+        (assetData?.id && showJobs ? (
+          <JobsSplitterContainer>
+            <Splitter
+              direction={SplitDirection.Vertical}
+              onResizeStarted={onJobsResizeStart}
+              onResizeFinished={onJobsResizeEnd}
+              initialSizes={jobsSplitterSizes || [75, 25]}
             >
-              <JobsTable assetId={assetData.id} className="contained" />
-            </Section>
-          )}
-        </>
-      )}
+              {mainComponent()}
+              <Section className="grow">
+                <JobsTable assetId={assetData.id} className="contained" />
+              </Section>
+            </Splitter>
+          </JobsSplitterContainer>
+        ) : (
+          mainComponent()
+        ))}
     </div>
   );
 };

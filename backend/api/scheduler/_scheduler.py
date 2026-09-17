@@ -100,6 +100,8 @@ async def scheduler(  # noqa: C901, PLR0913, PLR0915, PLR0912
 
                 # update the event
                 event_at_position["id_asset"] = event_data.id_asset
+                if event_data.run_mode is not None:
+                    event_at_position["run_mode"] = event_data.run_mode.value
                 for field in channel.fields:
                     if field.name in ["color", "start", "stop", "promoted"]:
                         continue
@@ -119,6 +121,8 @@ async def scheduler(  # noqa: C901, PLR0913, PLR0915, PLR0912
             # Update existing event
             event = await nebula.Event.load(event_data.id, username=username)
             event["start"] = event_data.start
+            if event_data.run_mode is not None:
+                event["run_mode"] = event_data.run_mode.value
             for field in channel.fields:
                 if event_data.meta and (field.name in event_data.meta):
                     event[field.name] = event_data.meta[field.name]

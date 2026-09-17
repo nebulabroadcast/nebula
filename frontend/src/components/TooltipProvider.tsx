@@ -21,6 +21,7 @@ export const TooltipProvider: React.FC<{ children: React.ReactNode }> = ({
   });
 
   const timerRef = useRef<number | null>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
 
   const hideTooltip = useCallback(() => {
     if (timerRef.current) {
@@ -94,22 +95,38 @@ export const TooltipProvider: React.FC<{ children: React.ReactNode }> = ({
     };
   }, [showTooltip, hideTooltip]);
 
+  // Promote the tooltip into the browser's top layer via the Popover API.
+  // A modal <dialog>'s ::backdrop also lives in the top layer and paints
+  // above every ordinary (non-top-layer) element regardless of z-index, so
+  // a plain fixed-position tooltip gets hidden behind an open dialog's
+  // shade. Showing the tooltip as a popover puts it in the top layer too,
+  // above the dialog, since it's opened after the dialog is.
+  useEffect(() => {
+    const el = tooltipRef.current;
+    if (!el || typeof el.showPopover !== 'function') return;
+    if (state.visible) {
+      if (!el.matches(':popover-open')) el.showPopover();
+    } else if (el.matches(':popover-open')) {
+      el.hidePopover();
+    }
+  }, [state.visible]);
+
   return (
     <>
       {children}
-      {state.content && (
-        <div
-          className="nb-tooltip-content"
-          style={{
-            top: state.y,
-            left: state.x,
-            opacity: state.visible ? 1 : 0,
-          }}
-          role="tooltip"
-        >
-          <ReactMarkdown>{state.content}</ReactMarkdown>
-        </div>
-      )}
+      <div
+        ref={tooltipRef}
+        popover="manual"
+        className="nb-tooltip-content"
+        style={{
+          top: state.y,
+          left: state.x,
+          opacity: state.visible ? 1 : 0,
+        }}
+        role="tooltip"
+      >
+        <ReactMarkdown>{state.content}</ReactMarkdown>
+      </div>
     </>
   );
 };

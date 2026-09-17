@@ -30,6 +30,7 @@
     "react-markdown": "^10.1.0",
     "react-router": "^7.9.3",
     "react-toastify": "^11.0.3",
+    "rrule": "^2.8.1",
     "sass": "^1.93.2",
     "styled-components": "^6.1.19",
     "uuid": "^11.0.5"

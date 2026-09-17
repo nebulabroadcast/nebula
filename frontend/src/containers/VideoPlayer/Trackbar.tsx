@@ -32,6 +32,8 @@ const Trackbar: React.FC<TrackbarProps> = ({
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const targetTimeRef = useRef<number>(0);
+  const scrubRafRef = useRef<number | null>(null);
+  const pendingScrubTimeRef = useRef<number | null>(null);
 
   const auxMarks = marks || {};
 
@@ -184,6 +186,20 @@ const Trackbar: React.FC<TrackbarProps> = ({
 
   // Dragging
 
+  // The mouse can move (and the browser can dispatch that move) far faster
+  // than a frame can be decoded and painted. Without coalescing, every one
+  // of those events drives a seek and a re-render, and a render slow enough
+  // to fall behind the incoming events makes the backlog - and the next
+  // batch of renders - even bigger. Collapsing to one scrub per animation
+  // frame keeps the two in step no matter how fast the mouse moves.
+  const cancelPendingScrub = useCallback(() => {
+    if (scrubRafRef.current !== null) {
+      cancelAnimationFrame(scrubRafRef.current);
+      scrubRafRef.current = null;
+    }
+    pendingScrubTimeRef.current = null;
+  }, []);
+
   const handleMouseMove = useCallback(
     (e: MouseEvent) => {
       const canvas = canvasRef.current;
@@ -193,17 +209,27 @@ const Trackbar: React.FC<TrackbarProps> = ({
       const newTime = (x / rect.width) * duration;
       targetTimeRef.current = newTime;
       if (!isDragging) return;
-      onScrub(newTime);
+
+      pendingScrubTimeRef.current = newTime;
+      if (scrubRafRef.current !== null) return;
+      scrubRafRef.current = requestAnimationFrame(() => {
+        scrubRafRef.current = null;
+        if (pendingScrubTimeRef.current !== null) {
+          onScrub(pendingScrubTimeRef.current);
+          pendingScrubTimeRef.current = null;
+        }
+      });
     },
     [duration, isDragging, onScrub]
   );
 
   const handleMouseUp = useCallback(() => {
+    cancelPendingScrub();
     setIsDragging(false);
     if (onScrubFinished) {
       onScrubFinished(targetTimeRef.current);
     }
-  }, [onScrubFinished]);
+  }, [cancelPendingScrub, onScrubFinished]);
 
   useEffect(() => {
     if (isDragging) {
@@ -217,8 +243,9 @@ const Trackbar: React.FC<TrackbarProps> = ({
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
+      cancelPendingScrub();
     };
-  }, [isDragging, handleMouseMove, handleMouseUp]);
+  }, [isDragging, handleMouseMove, handleMouseUp, cancelPendingScrub]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     setIsDragging(true);
