@@ -196,6 +196,59 @@ const Scheduler: React.FC<SchedulerProps> = ({ draggedObjects }) => {
       .catch(onError);
   };
 
+  const saveSeriesEvents = (seriesEvents: EventData[]) => {
+    if (currentChannelId === null || seriesEvents.length === 0) return;
+    const params = {
+      ...requestParams,
+      id_channel: currentChannelId,
+      events: seriesEvents,
+    };
+    setLoading(true);
+    nebula
+      .scheduler({ body: params, throwOnError: true })
+      .then(onResponse)
+      .catch(onError);
+  };
+
+  // CTRL+drop of a series episode: open the series scheduling dialog
+  // instead of creating a single event, unless the dropped asset doesn't
+  // belong to a series - then behave like a normal drop.
+
+  const onSeriesDrop = async (dragged: DraggedExternal, time: Date) => {
+    const start = Math.floor(time.getTime() / 1000);
+
+    // serie should be a string, but it may also be a numeric row id
+    let serieId: string | undefined;
+    try {
+      const res = await nebula.get({
+        body: { object_type: 'asset', ids: [Number(dragged.id)] },
+        throwOnError: true,
+      });
+      const serie = res.data.data?.[0]?.serie;
+      if (typeof serie === 'string' || typeof serie === 'number') {
+        serieId = String(serie);
+      }
+    } catch (e) {
+      console.error('Failed to load asset metadata', e);
+    }
+
+    if (!serieId) {
+      void saveEvent({ id_asset: dragged.id, is_empty_event: true, start });
+      return;
+    }
+
+    try {
+      const events = await showDialog('seriesSchedule', 'Schedule series', {
+        anchorAssetId: Number(dragged.id),
+        serieId,
+        anchorStart: start,
+      });
+      saveSeriesEvents(events as EventData[]);
+    } catch {
+      console.log('User cancelled series scheduling');
+    }
+  };
+
   //
   // Context menu
   //
@@ -332,6 +385,7 @@ const Scheduler: React.FC<SchedulerProps> = ({ draggedObjects }) => {
             saveEvent={saveEvent}
             copyEvent={copyEvent}
             draggedExternal={draggedExternal}
+            onSeriesDrop={onSeriesDrop}
             contextMenu={contextMenu}
           />
         )}
