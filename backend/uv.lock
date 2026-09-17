@@ -1311,7 +1311,7 @@ dev = [
 
 [[package]]
 name = "nx-framework"
-version = "0.0.10"
+version = "0.0.11"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiofiles" },
@@ -1322,9 +1322,9 @@ dependencies = [
     { name = "shortuuid" },
     { name = "unidecode" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/b9/df/aeb1a5d9a5a0f6cb96d01e563228bc738ac3f67f124a13bf9ba2fcced42a/nx_framework-0.0.10.tar.gz", hash = "sha256:167918121c36c9e6fcdc37a4ddc01eeaf8d8ab02ac2fc9858af6f0cf96b62678", size = 28943, upload-time = "2026-09-09T21:21:35.083Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/3e/cf/4485463fcbcb645baa11ab60de74f3957e8deaa6d4f0d92df9c0451632f7/nx_framework-0.0.11.tar.gz", hash = "sha256:26e02bcfeb2ca2872f1361bd9ac664d8bd1d77865cb2cc959e5bfe3e38f79000", size = 29103, upload-time = "2026-09-17T19:28:47.475Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/02/14/7774f215cb094c98b93d4f51e10d8f75274f43d0ac24aa6a4b3eb47fad9e/nx_framework-0.0.10-py3-none-any.whl", hash = "sha256:6c6c738e5dbbd63eb8462a982201a08948be0ef8363325d9700a31c0cd183295", size = 26931, upload-time = "2026-09-09T21:21:33.901Z" },
+    { url = "https://files.pythonhosted.org/packages/37/d1/2953fc06388861210dcfa0858a99e755739ec597f974b4456e0d76746d8e/nx_framework-0.0.11-py3-none-any.whl", hash = "sha256:bc861b0298c61747f676358f62bbcea3b712c2b84ba23e181dd865f8bd932a04", size = 26950, upload-time = "2026-09-17T19:28:46.298Z" },
 ]
 
 [[package]]
