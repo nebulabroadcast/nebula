@@ -100,9 +100,13 @@ const DataRow = ({
   // Row-Embedded progress bar
   //
 
-  if (rowData.progress && rowData.progress > 0 && rowData.progress < 100) {
+  const hasProgress =
+    typeof rowData.progress === 'number' &&
+    rowData.progress > 0 &&
+    rowData.progress < 100;
+
+  if (hasProgress) {
     rowStyle['--progress'] = rowData.progress + '%';
-    rowStyle['--progress-opacity'] = 0.2;
   }
 
   //
@@ -124,7 +128,7 @@ const DataRow = ({
       ref={setNodeRef}
       onClick={handleClick}
       onContextMenu={handleClick}
-      className={clsx(selected && 'selected', rowClassName)}
+      className={clsx(selected && 'selected', hasProgress && 'has-progress', rowClassName)}
       style={rowStyle}
       data-key={ident}
       data-index={index}
