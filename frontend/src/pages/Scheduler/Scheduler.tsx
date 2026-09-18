@@ -150,6 +150,13 @@ const Scheduler: React.FC<SchedulerProps> = ({ draggedObjects }) => {
           break;
         }
       }
+      // drawEvents infers each event's rendered slot height from the
+      // NEXT array element's start time, so it depends on events being
+      // sorted ascending by start. Moving an event (especially across
+      // days) breaks that order if we don't re-sort here, causing a
+      // visibly wrong slot height on the affected day until the
+      // server's response replaces this optimistic state.
+      newEvents.sort((a, b) => a.start - b.start);
       setEvents(newEvents);
     }
 
