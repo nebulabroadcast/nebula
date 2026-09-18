@@ -39,7 +39,10 @@ export const NebulaProvider: React.FC<NebulaProviderProps> = ({
   }, []);
 
   const reloadBrowser = useCallback(() => {
-    setNebulaState((prev) => ({ ...prev, browserRefresh: prev.browserRefreshId + 1 }));
+    setNebulaState((prev) => ({
+      ...prev,
+      browserRefreshId: prev.browserRefreshId + 1,
+    }));
   }, []);
 
   const setSearchQuery = useCallback((query: string) => {

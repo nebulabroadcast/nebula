@@ -25,6 +25,11 @@ export interface TableDroppable {
   }>;
 }
 
+export interface TableDropTarget {
+  id: string | number;
+  type: string;
+}
+
 export interface TableDraggableItem {
   id: string | number;
   type: string;

@@ -1,4 +1,4 @@
-import type { TableDraggableItem } from '@components/table/types';
+import type { TableDraggableItem, TableDropTarget } from '@components/table/types';
 import { useDialog } from '@features/Dialogs';
 import { useNebula } from '@features/Nebula';
 import { useWebSocket } from '@features/Websocket';
@@ -147,7 +147,11 @@ const Rundown: React.FC<RundownProps> = ({ draggedObjects }) => {
   // Rundown re-ordering
   //
 
-  const onDrop = async (items: any[], index: number) => {
+  const onDrop = async (
+    items: any[],
+    index: number,
+    dropTarget: TableDropTarget | null
+  ) => {
     if (rundownModeRef.current !== 'edit') {
       toast.error('Rundown is not in edit mode');
       return;
@@ -156,7 +160,31 @@ const Rundown: React.FC<RundownProps> = ({ draggedObjects }) => {
     if (!rundown) return;
     const id_channel = currentChannelRef.current;
     if (id_channel === null) return;
-    const dropAfterRow = rundown[index];
+
+    // Dragging a row that's part of a larger existing selection sends the
+    // whole selection, not just that row - make that visible instead of
+    // silently inserting more than the user may have intended.
+    if (items.length > 1) {
+      toast.info(`Inserting ${items.length} items`);
+    }
+
+    // Resolve the drop position by the hovered row's stable id/type
+    // rather than trusting the raw hover index, which can point at the
+    // wrong row (or nothing at all) if the rundown reloaded between the
+    // last mousemove and the drop.
+    let dropIndex = dropTarget
+      ? rundown.findIndex(
+          (row) => row.id === dropTarget.id && row.type === dropTarget.type
+        )
+      : -1;
+    if (dropIndex === -1) {
+      dropIndex = index;
+    }
+    const dropAfterRow = rundown[dropIndex];
+    if (!dropAfterRow) {
+      toast.error('Unable to determine drop position. Please try again.');
+      return;
+    }
     let i = -1;
     const newOrder: any[] = [];
 
@@ -205,13 +233,13 @@ const Rundown: React.FC<RundownProps> = ({ draggedObjects }) => {
         row.type === 'event' ||
         items.some((item) => item.id === row.id && item.type === row.type);
 
-      if (i === index && row.type === 'event') {
+      if (i === dropIndex && row.type === 'event') {
         await processItems(items, newOrder);
       }
 
       if (!skip) newOrder.push({ id: row.id, type: row.type });
 
-      if (i === index && row.type !== 'event') {
+      if (i === dropIndex && row.type !== 'event') {
         await processItems(items, newOrder);
       }
     }

@@ -1,5 +1,9 @@
 import { Table } from '@components';
-import type { TableDraggableItem, TableRowData } from '@components/table/types';
+import type {
+  TableDraggableItem,
+  TableDropTarget,
+  TableRowData,
+} from '@components/table/types';
 import { useDialog } from '@features/Dialogs';
 import { useNebula } from '@features/Nebula';
 import { formatRowHighlightColor, formatRowHighlightStyle } from '@lib/tableFormat';
@@ -17,7 +21,7 @@ import nebula from '@/nebula';
 interface RundownTableProps {
   data: RundownRow[];
   draggedObjects: TableDraggableItem[] | null;
-  onDrop: (items: any[], index: number) => void;
+  onDrop: (items: any[], index: number, dropTarget: TableDropTarget | null) => void;
   currentItem?: number | string | null;
   cuedItem?: number | string | null;
   loading: boolean;
@@ -485,8 +489,8 @@ const RundownTable: React.FC<RundownTableProps> = ({
         droppable={
           draggedObjects ? { type: 'mixed', items: draggedObjects } : undefined
         }
-        onDrop={(droppable, dropIndex) => {
-          onDrop(droppable.items, dropIndex ?? 0);
+        onDrop={(droppable, dropIndex, dropTarget) => {
+          onDrop(droppable.items, dropIndex ?? 0, dropTarget);
         }}
       />
     </RundownTableWrapper>

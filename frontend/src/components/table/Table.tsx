@@ -12,6 +12,7 @@ import type {
   TableSortDirection,
   TableDroppable,
   TableDraggableItem,
+  TableDropTarget,
 } from './types';
 
 import './Table.css';
@@ -40,7 +41,11 @@ interface TableProps {
   onLoadMore?: () => void;
   contextMenu?: () => ContextMenuOption[];
   droppable?: TableDroppable;
-  onDrop?: (droppable: TableDroppable, dropIndex: number | null) => void;
+  onDrop?: (
+    droppable: TableDroppable,
+    dropIndex: number | null,
+    dropTarget: TableDropTarget | null
+  ) => void;
   loading?: boolean;
 }
 
@@ -69,6 +74,16 @@ const Table = ({
   const tableRef = useRef<HTMLElement>(null);
   const droppableRef = useRef<TableDroppable | undefined>(undefined);
   const dropIndexRef = useRef<number | null>(null);
+  const dropTargetRef = useRef<TableDropTarget | null>(null);
+
+  // Keep the latest data in a ref: onMouseMove/onMouseUp below are
+  // registered once (see the tableRef.current effect) via native
+  // listeners, so reading `data` directly would close over a stale
+  // array whenever the table reloads mid-drag.
+  const dataRef = useRef<TableRowData[]>(data);
+  useEffect(() => {
+    dataRef.current = data;
+  }, [data]);
 
   const head = useMemo(() => {
     return (
@@ -193,6 +208,10 @@ const Table = ({
       return;
     }
     dropIndexRef.current = index;
+    const hoveredRow = dataRef.current[index];
+    dropTargetRef.current = hoveredRow
+      ? { id: hoveredRow.id, type: hoveredRow.type || 'asset' }
+      : null;
   };
 
   const onMouseUp = (event: MouseEvent) => {
@@ -206,9 +225,10 @@ const Table = ({
 
     if (!tableRef.current.contains(target)) return;
     if (onDrop) {
-      onDrop(droppableRef.current, dropIndexRef.current);
+      onDrop(droppableRef.current, dropIndexRef.current, dropTargetRef.current);
     }
     droppableRef.current = undefined;
+    dropTargetRef.current = null;
   };
 
   useEffect(() => {

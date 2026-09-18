@@ -60,6 +60,16 @@ const Calendar: React.FC<CalendarProps> = ({
     eventsRef.current = events;
   }, [events]);
 
+  // Keep the latest drop-handling props in a ref. onMouseUpHandler is
+  // registered once (per calendarRef/startTime) via a native document
+  // listener below, so reading these props directly would close over
+  // stale values.
+  const dropPropsRef = useRef({ draggedExternal, saveEvent, copyEvent, onSeriesDrop });
+
+  useEffect(() => {
+    dropPropsRef.current = { draggedExternal, saveEvent, copyEvent, onSeriesDrop };
+  }, [draggedExternal, saveEvent, copyEvent, onSeriesDrop]);
+
   // Dragging support
 
   const initialMousePos = useRef<{ x: number; y: number } | null>(null);
@@ -295,15 +305,21 @@ const Calendar: React.FC<CalendarProps> = ({
     }
   };
 
-  const onMouseUpHandler = (e: MouseEvent | React.MouseEvent) => {
+  const onMouseUpHandler = (e: MouseEvent) => {
     if (!calendarRef?.current) return;
-    if (draggedExternal && cursorTime.current) {
-      console.debug('Dropped external', draggedExternal, cursorTime.current);
-      if (e.ctrlKey && onSeriesDrop) {
-        onSeriesDrop(draggedExternal, cursorTime.current);
+    const {
+      draggedExternal: currentDraggedExternal,
+      saveEvent: currentSaveEvent,
+      copyEvent: currentCopyEvent,
+      onSeriesDrop: currentOnSeriesDrop,
+    } = dropPropsRef.current;
+    if (currentDraggedExternal && cursorTime.current) {
+      console.debug('Dropped external', currentDraggedExternal, cursorTime.current);
+      if (e.ctrlKey && currentOnSeriesDrop) {
+        currentOnSeriesDrop(currentDraggedExternal, cursorTime.current);
       } else {
-        saveEvent({
-          id_asset: draggedExternal.id,
+        currentSaveEvent({
+          id_asset: currentDraggedExternal.id,
           is_empty_event: true,
           start: Math.floor(cursorTime.current.getTime() / 1000),
         });
@@ -315,9 +331,9 @@ const Calendar: React.FC<CalendarProps> = ({
       if (e.ctrlKey) {
         console.log('Copying event', draggedEvent.current);
         const newTs = Math.floor(cursorTime.current.getTime() / 1000);
-        copyEvent(draggedEvent.current.id, newTs);
+        currentCopyEvent(draggedEvent.current.id, newTs);
       } else {
-        saveEvent({
+        currentSaveEvent({
           id: draggedEvent.current.id,
           start: Math.floor(cursorTime.current.getTime() / 1000),
         });
@@ -481,7 +497,6 @@ const Calendar: React.FC<CalendarProps> = ({
             id="calendar"
             ref={calendarRef}
             onMouseDown={onMouseDown}
-            onMouseUp={onMouseUpHandler}
             onClick={onClick}
           />
         </div>
