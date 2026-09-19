@@ -381,6 +381,12 @@ export type ClientMetaTypeModel = {
    */
   filter?: string | null;
   /**
+   * Syntax
+   *
+   * Syntax for text fields
+   */
+  syntax?: 'json' | 'md' | null;
+  /**
    * Default value
    */
   default?: unknown | null;
@@ -531,48 +537,6 @@ export const ContentType = {
 export type ContentType = (typeof ContentType)[keyof typeof ContentType];
 
 /**
- * ContextPluginResponseModel
- */
-export type ContextPluginResponseModel = {
-  /**
-   * Type
-   */
-  type?: string;
-  /**
-   * Header
-   */
-  header?: string | null;
-  /**
-   * Footer
-   */
-  footer?: string | null;
-  /**
-   * Dialog Style
-   */
-  dialog_style?: {
-    [key: string]: unknown;
-  };
-  /**
-   * Payload
-   */
-  payload?: {
-    [key: string]: unknown;
-  };
-};
-
-/**
- * ContextTestRequest
- */
-export type ContextTestRequest = {
-  /**
-   * Id Asset
-   *
-   * Asset ID
-   */
-  id_asset: number;
-};
-
-/**
  * DeleteObjectsRequest
  */
 export type DeleteObjectsRequest = {
@@ -602,6 +566,10 @@ export type EventData = {
    * Start time
    */
   start: number;
+  /**
+   * Run mode
+   */
+  run_mode?: RunMode | null;
   /**
    * Asset ID
    *
@@ -3426,28 +3394,3 @@ export type SendResponses = {
 };
 
 export type SendResponse = SendResponses[keyof SendResponses];
-
-export type AssetRunsData = {
-  body: ContextTestRequest;
-  path?: never;
-  query?: never;
-  url: '/api/asset_runs';
-};
-
-export type AssetRunsErrors = {
-  /**
-   * Validation Error
-   */
-  422: HttpValidationError;
-};
-
-export type AssetRunsError = AssetRunsErrors[keyof AssetRunsErrors];
-
-export type AssetRunsResponses = {
-  /**
-   * Successful Response
-   */
-  200: ContextPluginResponseModel;
-};
-
-export type AssetRunsResponse = AssetRunsResponses[keyof AssetRunsResponses];

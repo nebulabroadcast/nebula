@@ -38,7 +38,14 @@
 
   &[open] {
     opacity: 1;
-    scale: 1;
+    /*
+     * `none` (not `1`) on purpose: any scale value makes the dialog the
+     * containing block for its position: fixed descendants, which breaks
+     * popovers anchored to viewport coordinates (the markdown editor's
+     * link dialog, for one). Interpolating to `none` animates the same
+     * way as interpolating to 1.
+     */
+    scale: none;
 
     @starting-style {
       opacity: 0;

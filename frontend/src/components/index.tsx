@@ -14,6 +14,7 @@ export { InputPassword } from './InputPassword';
 export { InputSwitch } from './InputSwitch';
 export { InputText } from './InputText';
 export { InputTimecode } from './InputTimecode';
+export { MarkdownEditor } from './MarkdownEditor';
 export { Progress } from './Progress';
 export { RadioButton } from './RadioButton';
 export { RangeSlider } from './RangeSlider';

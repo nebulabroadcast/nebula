@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import Field
 
@@ -19,6 +19,8 @@ DEFAULT_VALUES = {
     MetaClass.LIST: [],
     MetaClass.COLOR: 0,
 }
+
+SyntaxOption = Literal["json", "md"]
 
 
 class MetaAlias(SettingsModel):
@@ -51,6 +53,7 @@ class MetaType(SettingsModel):
     format: str | None = None
     order: str | None = None
     filter: str | None = None
+    syntax: SyntaxOption | None = None
     hide_null: bool = False
 
     @classmethod
@@ -76,4 +79,5 @@ class MetaType(SettingsModel):
             order=settings.get("order"),
             filter=settings.get("filter"),
             default=settings.get("default", DEFAULT_VALUES[settings["class"]]),
+            syntax=settings.get("syntax"),
         )
