@@ -34,7 +34,7 @@ class ManageServices(APIRequest):
             if not user.can("service_control", request.stop):
                 msg = f"You do not have permission to stop service {request.stop}"
                 raise nebula.ForbiddenException(msg)
-            nebula.log.info(f"Stopping service {request.stop}", user=user.name)
+            nebula.log.info(f"Stopping service {request.stop}")
             await nebula.db.execute(
                 "UPDATE services SET state = $1  WHERE id = $2",
                 ServiceState.STOPPING,
@@ -44,7 +44,7 @@ class ManageServices(APIRequest):
             if not user.can("service_control", request.start):
                 msg = f"You do not have permission to start service {request.start}"
                 raise nebula.ForbiddenException(msg)
-            nebula.log.info(f"Starting service {request.start}", user=user.name)
+            nebula.log.info(f"Starting service {request.start}")
             await nebula.db.execute(
                 "UPDATE services SET state = $1  WHERE id = $2",
                 ServiceState.STARTING,
@@ -54,9 +54,7 @@ class ManageServices(APIRequest):
             if not user.can("service_control", request.auto):
                 msg = f"You do not have permission to toggle service {request.start}"
                 raise nebula.ForbiddenException(msg)
-            nebula.log.info(
-                f"Toggling autostart for service {request.auto}", user=user.name
-            )
+            nebula.log.info(f"Toggling autostart for service {request.auto}")
             await nebula.db.execute(
                 "UPDATE services SET autostart = NOT autostart WHERE id = $1",
                 request.auto,

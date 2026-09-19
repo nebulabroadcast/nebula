@@ -1,6 +1,6 @@
 import nebula
 from nebula.helpers.scheduling import bin_refresh
-from server.dependencies import CurrentUser, RequestInitiator
+from server.dependencies import CurrentUser
 from server.request import APIRequest
 
 from ._models import OrderRequest, OrderResponse
@@ -18,14 +18,13 @@ class OrderItems(APIRequest):
         self,
         request: OrderRequest,
         user: CurrentUser,
-        initiator: RequestInitiator,
     ) -> OrderResponse:
         if not user.can("rundown_edit", request.id_channel):
             raise nebula.ForbiddenException("You are not allowed to edit this rundown")
 
         result = await set_items_order(request, user)
-        nebula.log.info(f"Changed order in bins {result.affected_bins}", user=user.name)
+        nebula.log.info(f"Changed order in bins {result.affected_bins}")
 
         # Update bin duration
-        await bin_refresh(result.affected_bins, initiator=initiator, user=user)
+        await bin_refresh(result.affected_bins)
         return result

@@ -6,7 +6,7 @@ import fastapi
 import nebula
 from nebula.common import classes_from_module, import_module
 from nebula.plugins.library import plugin_library
-from nx.utils import slugify
+from nebula.utils import slugify
 from server.context import ScopedEndpoint, server_context
 from server.request import APIRequest
 

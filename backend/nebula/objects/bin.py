@@ -1,4 +1,5 @@
-from nebula.db import db
+from nx.db import db
+
 from nebula.objects.asset import Asset
 from nebula.objects.base import BaseObject
 from nebula.objects.item import Item

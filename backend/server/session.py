@@ -51,6 +51,9 @@ class Session:
         except KeyError:
             return None
 
+        if data is None:
+            return None
+
         session = SessionModel.model_validate(data)
         if time.time() - session.accessed > cls.ttl:
             # TODO: some logging here?
@@ -125,6 +128,9 @@ class Session:
         try:
             data = await nebula.redis.get_json(cls.ns, token)
         except KeyError:
+            return
+
+        if data is None:
             return
 
         session = SessionModel.model_validate(data)

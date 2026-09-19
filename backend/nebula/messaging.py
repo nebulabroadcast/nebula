@@ -3,12 +3,15 @@ import socket
 import time
 from typing import Any
 
+from nx.redis import redis
+
 from nebula.config import config
-from nebula.redis import Redis
+from nebula.context import current_initiator
 
 
 async def msg(topic: str, **data: Any) -> None:
-    await Redis.publish(
+    data.setdefault("initiator", current_initiator())
+    await redis.publish(
         json.dumps(
             [
                 time.time(),

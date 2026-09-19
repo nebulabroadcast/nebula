@@ -29,6 +29,7 @@ class UploadMedia(APIRequest):
         asset: AssetInPath,
         user: CurrentUser,
     ) -> None:
+        _ = user  # Required to gate this endpoint behind authentication
         assert asset["media_type"] == MediaType.FILE, "Only file assets can be uploaded"
         extension = request.headers.get("X-nebula-extension")
         assert extension, "Missing X-nebula-extension header"
@@ -55,7 +56,7 @@ class UploadMedia(APIRequest):
             bname = os.path.splitext(asset.path)[0]
             target_path = f"{bname}.{extension}"
 
-        nebula.log.debug(f"Uploading media file for {asset}", user=user.name)
+        nebula.log.debug(f"Uploading media file for {asset}")
 
         temp_dir = os.path.join(storage.local_path, ".nx", "creating")
 
@@ -74,9 +75,9 @@ class UploadMedia(APIRequest):
                 async for chunk in request.stream():
                     i += len(chunk)
                     await f.write(chunk)
-            nebula.log.debug(f"Uploaded {i} bytes", user=user.name)
+            nebula.log.debug(f"Uploaded {i} bytes")
         except ClientDisconnect:
-            nebula.log.warning(f"Upload cancelled for {asset}", user=user.name)
+            nebula.log.warning(f"Upload cancelled for {asset}")
             try:
                 os.remove(temp_path)
             except OSError:
@@ -94,4 +95,4 @@ class UploadMedia(APIRequest):
                 # TODO: remove old file?
             asset["status"] = ObjectStatus.CREATING
             await asset.save()
-        nebula.log.info(f"Uploaded media file for {asset}", user=user.name)
+        nebula.log.info(f"Uploaded media file for {asset}")
