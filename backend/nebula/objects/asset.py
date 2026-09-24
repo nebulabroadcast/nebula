@@ -130,6 +130,6 @@ class Asset(BaseObject):
         if not path:
             return None
         rel_path = os.path.relpath(path, playout_config.playout_dir)
-        if rel_path == os.curdir or rel_path.startswith(os.pardir):
+        if rel_path == os.curdir or rel_path.partition(os.sep)[0] == os.pardir:
             return None
         return rel_path
