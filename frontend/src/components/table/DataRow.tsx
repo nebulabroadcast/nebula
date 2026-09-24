@@ -37,18 +37,20 @@ const DataRow = ({
   selected = false,
   draggableItems,
 }: DataRowProps) => {
+  const rowType = rowData.type || 'asset';
   const { attributes, listeners, setNodeRef } = useDraggable({
-    id: rowData.id,
+    // dnd-kit ids must be unique across the whole DndContext. Browser (asset)
+    // rows and rundown (item/event) rows share one context and their numeric
+    // ids overlap, so the type has to be part of the id.
+    id: `${rowType}-${rowData.id}`,
     data:
       draggableItems?.length &&
-      draggableItems.filter(
-        (item) => item.id === rowData.id && (item.type === rowData.type || 'asset')
-      ).length
+      draggableItems.some((item) => item.id === rowData.id && item.type === rowType)
         ? draggableItems
         : [
             {
               id: rowData.id,
-              type: rowData.type || 'asset',
+              type: rowType,
               title: rowData.title,
               subtitle: rowData.subtitle,
               duration: rowData.duration,
@@ -128,7 +130,11 @@ const DataRow = ({
       ref={setNodeRef}
       onClick={handleClick}
       onContextMenu={handleClick}
-      className={clsx(selected && 'selected', hasProgress && 'has-progress', rowClassName)}
+      className={clsx(
+        selected && 'selected',
+        hasProgress && 'has-progress',
+        rowClassName
+      )}
       style={rowStyle}
       data-key={ident}
       data-index={index}
