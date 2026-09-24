@@ -6,9 +6,8 @@ from typing import Any
 import aiofiles
 from pydantic import ValidationError
 
+from nebula import db, log
 from nebula.common import import_module
-from nebula.db import DatabaseConnection
-from nebula.log import log
 from nebula.settings.models import SetupServerModel
 from setup.defaults.actions import ACTIONS
 from setup.defaults.channels import CHANNELS
@@ -56,8 +55,12 @@ def load_overrides() -> None:
                 log.error(f"Invalid settings override: {spath}")
 
 
-async def setup_settings(db: DatabaseConnection) -> None:  # noqa: C901, PLR0912, PLR0915
+async def setup_settings(**kwargs: Any) -> None:  # noqa: C901, PLR0912, PLR0915
     """Validate and save settings to the database"""
+    # Accepts and ignores a legacy `db`/`connection` keyword argument for
+    # backward compatibility: nebula.db tracks the current
+    # connection/transaction internally.
+    _ = kwargs
 
     log.trace("Loading settings overrides")
     load_overrides()
@@ -279,7 +282,7 @@ async def setup_settings(db: DatabaseConnection) -> None:  # noqa: C901, PLR0912
 
     # Setup metatypes
 
-    await setup_metatypes(TEMPLATE["meta_types"], db)
+    await setup_metatypes(TEMPLATE["meta_types"])
     log.trace(f"Saved {len(TEMPLATE['meta_types'])} meta types")
 
     # Setup classifications

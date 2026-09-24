@@ -45,6 +45,7 @@ class ApplySchedulingTemplate(APIRequest):
         user: CurrentUser,
         request: ApplySchedulingTemplateRequest,
     ) -> None:
+        _ = user  # Required to gate this endpoint behind authentication
         if not (channel := nebula.settings.get_playout_channel(request.id_channel)):
             raise nebula.BadRequestException(f"No such channel {request.id_channel}")
 
@@ -61,15 +62,14 @@ class ApplySchedulingTemplate(APIRequest):
         first_ts = min(edata.keys())
         last_ts = max(edata.keys())
 
-        pool = await nebula.db.pool()
-        async with pool.acquire() as conn, conn.transaction():
+        async with nebula.db.transaction():
             if request.clear:
                 # Clear mode
                 query = """
                     DELETE FROM events
                     WHERE start >= $1 AND start <= $2 AND id_channel = $3
                 """
-                await conn.execute(query, first_ts, last_ts, request.id_channel)
+                await nebula.db.execute(query, first_ts, last_ts, request.id_channel)
 
             else:
                 # Merge mode
@@ -79,7 +79,7 @@ class ApplySchedulingTemplate(APIRequest):
                 """
                 existing_times = [
                     row["start"]
-                    for row in await conn.fetch(
+                    for row in await nebula.db.fetch(
                         query, first_ts, last_ts, request.id_channel
                     )
                 ]
@@ -95,4 +95,4 @@ class ApplySchedulingTemplate(APIRequest):
                         edata.pop(new_ts)
 
             for event_data in edata.values():
-                await create_new_event(channel, event_data, user, conn)
+                await create_new_event(channel, event_data)

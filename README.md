@@ -131,5 +131,5 @@ Need help?
 
  - Join [Open Source Broadcasting](https://discord.gg/3UxJ4WKfy9) group on Discord
  - Professional support for Nebula is provided by [Nebula Broadcast](https://nebulabroadcast.com)
- - User documentation is available on [our website](https://nebulabroadcast.com/doc/nebula)
+ - User documentation is available on [docs.nebulabroadcast.com](https://docs.nebulabroadcast.com)
  - Found a bug? Please [create an issue](https://github.com/nebulabroadcast/nebula/issues)

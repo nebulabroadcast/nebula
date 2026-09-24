@@ -3,7 +3,7 @@ from nebula.common import SerializableValue, sql_list
 from nebula.enum import MetaClass
 from nebula.exceptions import NebulaException
 from nebula.metadata.normalize import normalize_meta
-from nx.utils import slugify
+from nebula.utils import slugify
 
 from ._models import BrowseAssetsRequest, ConditionModel
 

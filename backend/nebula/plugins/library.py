@@ -2,10 +2,11 @@ import os
 import tomllib
 from typing import Any
 
+from nx.logging import logger as log
+
 import nebula
 from nebula.common import classes_from_module, import_module
 from nebula.config import config
-from nebula.log import log
 from nebula.plugins.cli import CLIPlugin
 from nebula.plugins.solver import SolverPlugin
 from server.request import APIRequest
