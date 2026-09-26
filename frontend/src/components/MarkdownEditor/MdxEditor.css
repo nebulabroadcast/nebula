@@ -1,0 +1,299 @@
+.nb-markdown-editor-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 300px;
+  min-height: 0;
+}
+
+.nb-markdown-editor-notice {
+  color: var(--color-yellow);
+  font-size: 11px;
+}
+
+.nb-markdown-editor-row {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 4px;
+  min-width: 0;
+}
+
+/* Same side buttons as the select and datetime inputs use */
+
+.nb-markdown-editor-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+/*
+ * MDXEditor ships a light theme built on Radix color scales. The
+ * `dark-theme` class on the editor switches those scales to their dark
+ * variants; here we remap the semantic tokens it derives from them onto
+ * the nebula palette.
+ *
+ * The same class ends up on the popup container MDXEditor appends to the
+ * document (link dialog, block type dropdown), so both need the tokens.
+ */
+
+.nb-markdown-editor.mdxeditor,
+.nb-markdown-editor.mdxeditor-popup-container {
+  --basePageBg: var(--color-surface-03);
+  --baseBase: var(--color-surface-02);
+  --baseBgSubtle: var(--color-surface-03);
+  --baseBg: var(--color-surface-05);
+  --baseBgHover: var(--color-surface-06);
+  --baseBgActive: var(--color-surface-07);
+  --baseLine: var(--color-surface-06);
+  --baseBorder: var(--color-surface-07);
+  --baseBorderHover: var(--color-surface-08);
+  --baseSolid: var(--color-text-muted);
+  --baseSolidHover: var(--color-text-dim);
+  --baseText: var(--color-text);
+  --baseTextContrast: var(--color-text-hl);
+
+  --accentBase: var(--color-surface-03);
+  --accentBgSubtle: var(--color-surface-04);
+  --accentBg: var(--color-surface-05);
+  --accentBgHover: var(--color-surface-06);
+  --accentBgActive: var(--color-surface-07);
+  --accentLine: var(--color-surface-07);
+  --accentBorder: var(--color-surface-08);
+  --accentBorderHover: var(--color-cyan);
+  --accentSolid: var(--color-cyan);
+  --accentSolidHover: var(--color-cyan);
+  --accentText: var(--color-cyan);
+  --accentTextContrast: var(--color-text-hl);
+
+  --font-body: var(--font-family);
+  --font-mono: var(--font-family-mono);
+
+  --text-base: var(--input-font-size);
+  --text-sm: var(--input-font-size);
+  --text-xs: 11px;
+  --text-xxs: 10px;
+}
+
+/* Popups are rendered outside of the editor, so they need to clear
+   whatever they happen to be painted over (sticky table headers...) */
+
+.nb-markdown-editor.mdxeditor-popup-container {
+  z-index: 1000;
+}
+
+.nb-markdown-editor.mdxeditor {
+  flex: 1 1 auto;
+  min-width: 0;
+  border-radius: var(--input-border-radius);
+  background: var(--input-background);
+  overflow: hidden;
+
+  &:focus-within {
+    outline: 1px solid var(--color-cyan);
+  }
+
+  .mdxeditor-toolbar {
+    background: var(--color-surface-05);
+    border-radius: 0;
+    flex-shrink: 0;
+  }
+
+  &.toolbar-hidden .mdxeditor-toolbar {
+    display: none;
+  }
+
+  /* the block type select reserves 9rem for "Paragraph" by default */
+
+  .mdxeditor-toolbar button[role='combobox'] {
+    width: auto;
+    min-width: 90px;
+  }
+
+  /*
+   * The whole box has to be clickable, not just the lines that happen to
+   * contain text, so the editable area is stretched over it - clicking
+   * below the last paragraph then puts the caret in the nearest line
+   * instead of doing nothing.
+   */
+
+  .mdxeditor-diff-source-wrapper,
+  .mdxeditor-rich-text-editor,
+  .mdxeditor-root-contenteditable,
+  .mdxeditor-contenteditable-wrapper {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .mdxeditor-root-contenteditable {
+    /* roughly matches the plain textarea we use for unformatted text */
+    min-height: 120px;
+    max-height: 400px;
+    overflow-y: auto;
+    resize: vertical;
+  }
+
+  .mdxeditor-rich-text-editor,
+  .mdxeditor-contenteditable-wrapper,
+  .nb-markdown-content {
+    flex: 1 1 auto;
+  }
+}
+
+/*
+ * Content area. Nebula resets margins globally, so the block level
+ * elements the editor produces need their spacing back - otherwise
+ * paragraphs and headings are indistinguishable while editing.
+ */
+
+.nb-markdown-content {
+  font-size: var(--input-font-size);
+  line-height: 1.5;
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    margin: 0.8em 0 0.4em;
+    line-height: 1.3;
+    color: var(--color-text-hl);
+  }
+
+  h1 {
+    font-size: 1.7em;
+  }
+  h2 {
+    font-size: 1.4em;
+  }
+  h3 {
+    font-size: 1.2em;
+  }
+  h4 {
+    font-size: 1.1em;
+  }
+
+  p,
+  blockquote,
+  ul,
+  ol,
+  table {
+    margin: 0 0 0.6em;
+  }
+
+  > :first-child {
+    margin-top: 0;
+  }
+
+  > :last-child {
+    margin-bottom: 0;
+  }
+
+  ul,
+  ol {
+    padding-left: 1.6em;
+  }
+
+  ul {
+    list-style: disc;
+  }
+
+  ol {
+    list-style: decimal;
+  }
+
+  li {
+    margin: 0.2em 0;
+  }
+
+  blockquote {
+    padding-left: 0.8em;
+    border-left: 2px solid var(--color-surface-07);
+    color: var(--color-text-dim);
+  }
+
+  hr {
+    border: 0;
+    border-top: 1px solid var(--color-surface-07);
+    margin: 0.8em 0;
+  }
+
+  code {
+    font-family: var(--font-family-mono);
+    font-size: 0.92em;
+    padding: 1px 3px;
+    border-radius: 3px;
+    background: var(--color-surface-05);
+  }
+
+  a {
+    color: var(--color-violet);
+    text-decoration: underline;
+  }
+
+  table {
+    border-collapse: collapse;
+  }
+
+  th,
+  td {
+    border: 1px solid var(--color-surface-07);
+    padding: 2px 6px;
+  }
+}
+
+/*
+ * Raw markdown (source) mode. The CodeMirror instance MDXEditor creates
+ * hard-codes a light theme, so we have to out-specify it.
+ */
+
+.nb-markdown-editor .cm-sourceView {
+  /* CodeMirror sizes itself to its content, the rich text area doesn't */
+  min-height: 120px;
+  max-height: 400px;
+  overflow-y: auto;
+
+  .cm-editor {
+    min-height: 120px;
+    background-color: var(--input-background);
+    color: var(--color-text);
+  }
+
+  .cm-content {
+    font-family: var(--font-family-mono);
+    caret-color: var(--color-text-hl);
+    /* the gutter is hidden, so the text needs its own left padding */
+    padding-left: var(--spacing-3);
+  }
+
+  /*
+   * Line numbers (and the fold gutter next to them) come from the
+   * basicSetup MDXEditor hard-codes, and CodeMirror extensions can only
+   * be added, not removed - so they go away here.
+   */
+
+  .cm-gutters {
+    display: none;
+  }
+
+  .cm-activeLine {
+    background-color: var(--color-surface-05);
+  }
+
+  .cm-cursor,
+  .cm-dropCursor {
+    border-left-color: var(--color-text-hl);
+  }
+
+  .cm-editor.cm-focused .cm-selectionBackground,
+  .cm-selectionBackground,
+  .cm-content ::selection {
+    background-color: var(--color-surface-07);
+  }
+
+  .cm-foldPlaceholder {
+    background-color: var(--color-surface-05);
+    color: var(--color-text-dim);
+  }
+}

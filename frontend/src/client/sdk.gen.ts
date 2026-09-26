@@ -9,9 +9,6 @@ import type {
   ApplySchedulingTemplateData,
   ApplySchedulingTemplateErrors,
   ApplySchedulingTemplateResponses,
-  AssetRunsData,
-  AssetRunsErrors,
-  AssetRunsResponses,
   BrowseData,
   BrowseErrors,
   BrowseResponses,
@@ -884,27 +881,6 @@ export const send = <ThrowOnError extends boolean = false>(
   (options.client ?? client).post<SendResponses, SendErrors, ThrowOnError>({
     responseType: 'json',
     url: '/api/send',
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-  });
-
-/**
- * Show Runs
- *
- * Get runs list for a given asset
- *
- * This function can be invoked from the web interface by clickin "Show runs"
- * from the asset actions menu.
- */
-export const assetRuns = <ThrowOnError extends boolean = false>(
-  options: Options<AssetRunsData, ThrowOnError>
-) =>
-  (options.client ?? client).post<AssetRunsResponses, AssetRunsErrors, ThrowOnError>({
-    responseType: 'json',
-    url: '/api/asset_runs',
     ...options,
     headers: {
       'Content-Type': 'application/json',

@@ -33,7 +33,7 @@ async def setup_metatypes(meta_types: dict[str, Any], **kwargs: Any) -> None:
         meta_type["class"] = data["type"].value
         meta_type["aliases"] = {}
 
-        for opt in ["cs", "fulltext", "mode", "format", "default"]:
+        for opt in ["cs", "fulltext", "mode", "format", "default", "syntax"]:
             if opt in data:
                 meta_type[opt] = data[opt]
 
