@@ -1,5 +1,6 @@
 import Sessions from '@containers/Sessions';
 import { useNebula } from '@features/Nebula';
+import { getErrorDetail } from '@lib/utils';
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 
@@ -80,9 +81,10 @@ const ChangePasswordForm: React.FC = () => {
         setPassword('');
         setPasswordRepeat('');
       })
-      .catch((err) => {
-        const msg = err.response?.data?.detail || err.message;
-        toast.error(msg);
+      .catch((err: unknown) => {
+        toast.error(
+          getErrorDetail(err, err instanceof Error ? err.message : undefined)
+        );
       });
   };
 

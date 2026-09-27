@@ -3,12 +3,13 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "packageManager": "yarn@4.18.0",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "type-check": "tsc -b",
-    "lint": "eslint ./src/**/*.{tsx,ts} --no-warn-ignored",
+    "lint": "eslint src",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
     "generate": "openapi-ts"
@@ -38,7 +39,7 @@
   "devDependencies": {
     "@babel/core": "^7.29.0",
     "@eslint/js": "^9.39.4",
-    "@hey-api/openapi-ts": "^0.88",
+    "@hey-api/openapi-ts": "^0.99.0",
     "@rolldown/plugin-babel": "^0.2.1",
     "@types/babel__core": "^7.20.5",
     "@types/content-type": "^1.1.9",

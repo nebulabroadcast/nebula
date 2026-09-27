@@ -48,7 +48,6 @@ const useMediaUploadLogic = (): MediaUploadContextType => {
       if (uploadsInProgress) {
         const message = 'You have uploads in progress. Are you sure you want to leave?';
         event.preventDefault();
-        event.returnValue = message;
         return message;
       }
     },

@@ -102,13 +102,11 @@ const DataRow = ({
   // Row-Embedded progress bar
   //
 
-  const hasProgress =
-    typeof rowData.progress === 'number' &&
-    rowData.progress > 0 &&
-    rowData.progress < 100;
+  const progress = rowData.progress;
+  const hasProgress = typeof progress === 'number' && progress > 0 && progress < 100;
 
   if (hasProgress) {
-    rowStyle['--progress'] = rowData.progress + '%';
+    rowStyle['--progress'] = `${progress}%`;
   }
 
   //

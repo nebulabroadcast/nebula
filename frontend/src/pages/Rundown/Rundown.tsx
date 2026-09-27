@@ -4,7 +4,7 @@ import { useNebula } from '@features/Nebula';
 import { useWebSocket } from '@features/Websocket';
 import { useKeyDown } from '@lib/useKeyDown';
 import { useLocalStorage } from '@lib/useLocalStorage';
-import { dateToDateString } from '@lib/utils';
+import { dateToDateString, getErrorDetail } from '@lib/utils';
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router';
 import { toast } from 'react-toastify';
@@ -113,10 +113,11 @@ const Rundown: React.FC<RundownProps> = ({ draggedObjects }) => {
     setLoading(false);
   };
 
-  const onError = (error: any) => {
+  const onError = (error: unknown) => {
     setLoading(false);
-    const msg = error.response?.data?.detail || error.message;
-    toast.error(msg);
+    toast.error(
+      getErrorDetail(error, error instanceof Error ? error.message : undefined)
+    );
   };
 
   const loadRundown = () => {

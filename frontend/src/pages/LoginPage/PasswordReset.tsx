@@ -1,4 +1,5 @@
 import { InputText, InputPassword, Button } from '@components';
+import { getErrorDetail } from '@lib/utils';
 import axios from 'axios';
 import React from 'react';
 import { toast } from 'react-toastify';
@@ -53,8 +54,8 @@ export const PasswordReset = ({ token, onGoBack }: PasswordResetProps) => {
         toast.success('Password reset successfully');
         onGoBack();
       })
-      .catch((err) => {
-        toast.error(err.response?.data?.detail || 'Error resetting password');
+      .catch((err: unknown) => {
+        toast.error(getErrorDetail(err, 'Error resetting password'));
       });
   };
 

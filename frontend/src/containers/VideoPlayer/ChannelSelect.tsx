@@ -13,7 +13,7 @@ const GainButton: React.FC<GainButtonProps> = ({ gainNode, index }) => {
 
   const handleKeyDown = (e: KeyboardEvent) => {
     if (!e.shiftKey) return;
-    if (e.keyCode === 49 + index) {
+    if (e.code === `Digit${index + 1}`) {
       gainNode.gain.value = gainNode.gain.value === 0 ? 1 : 0;
       setActive(gainNode.gain.value === 1);
     }

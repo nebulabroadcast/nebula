@@ -14,6 +14,7 @@ import {
   formatRowHighlightStyle,
 } from '@lib/tableFormat';
 import { useLocalStorage } from '@lib/useLocalStorage';
+import { getErrorDetail } from '@lib/utils';
 import clsx from 'clsx';
 import { debounce } from 'lodash';
 import { useEffect, useState, useRef, useMemo } from 'react';
@@ -277,9 +278,9 @@ const BrowserTable = ({ isDragging }: BrowserTableProps) => {
       .then(() => {
         toast.success('Status updated');
       })
-      .catch((error) => {
+      .catch((error: unknown) => {
         console.error(error);
-        toast.error(error.response?.detail);
+        toast.error(getErrorDetail(error));
       });
   };
 
@@ -312,7 +313,7 @@ const BrowserTable = ({ isDragging }: BrowserTableProps) => {
     const options: ContextMenuOption[] = [];
 
     const cell = contextCellRef.current;
-    const cellValue = cell && cell.rowData[cell.columnName];
+    const cellValue = cell?.rowData[cell.columnName];
     if (
       cell &&
       cellValue !== null &&

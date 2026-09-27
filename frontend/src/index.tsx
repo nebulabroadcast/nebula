@@ -12,7 +12,9 @@ import 'material-symbols';
 import './index.scss';
 import './datepicker.scss';
 
-const root = createRoot(document.getElementById('root')!);
+const rootElement = document.getElementById('root');
+if (!rootElement) throw new Error('Missing #root element');
+const root = createRoot(rootElement);
 root.render(
   <React.StrictMode>
     <NebulaProvider>

@@ -2,10 +2,14 @@ import { debounce } from 'lodash';
 import React from 'react';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 
+import type { ConditionModel } from '@/client';
 import { Navbar, Button, Spacer, Dropdown, InputText } from '@/components';
 import type { DropdownOptionProps } from '@/components/Dropdown';
 import { useNebula } from '@/features/Nebula';
 import nebula from '@/nebula';
+
+const formatConditionValue = (value: ConditionModel['value']) =>
+  typeof value === 'object' && value !== null ? JSON.stringify(value) : String(value);
 
 const BrowserNav: React.FC = () => {
   const {
@@ -64,7 +68,7 @@ const BrowserNav: React.FC = () => {
         {filterConditions.map((condition) => (
           <Button
             key={condition.key}
-            label={`${nebula.metaType(condition.key).header}: ${condition.value}`}
+            label={`${nebula.metaType(condition.key).header}: ${formatConditionValue(condition.value)}`}
             icon="filter_alt_off"
             iconOnRight={true}
             onClick={() => {

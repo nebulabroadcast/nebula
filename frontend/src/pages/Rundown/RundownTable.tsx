@@ -140,9 +140,9 @@ const RundownTable: React.FC<RundownTableProps> = ({
   };
 
   const onSendTo = () => {
-    const ids = data
-      .filter((row) => row.id_asset && selectedItems.includes(row.id))
-      .map((row) => row.id_asset!);
+    const ids = data.flatMap((row) =>
+      row.id_asset && selectedItems.includes(row.id) ? [row.id_asset] : []
+    );
     if (!ids.length) return;
 
     showDialog('sendto', 'Send to...', { assets: ids })

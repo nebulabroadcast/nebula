@@ -1,6 +1,6 @@
 import { Button, Dialog, Spacer } from '@components';
 import { useNebula } from '@features/Nebula';
-import { AxiosError } from 'axios';
+import { getErrorDetail } from '@lib/utils';
 import clsx from 'clsx';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
@@ -125,14 +125,6 @@ const getIngestColumns = (folderId: number): IngestColumn[] => {
     });
   }
   return columns;
-};
-
-const getErrorDetail = (error: unknown): string => {
-  if (error instanceof AxiosError) {
-    const data = error.response?.data as { detail?: string } | undefined;
-    if (data?.detail) return data.detail;
-  }
-  return 'Unknown error';
 };
 
 const pluralize = (count: number, noun: string) =>

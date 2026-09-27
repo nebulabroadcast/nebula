@@ -117,10 +117,12 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
     ): (() => void) => {
       console.log(`Subscribing component to topic: ${topic}`);
       // Get or create the set of handlers for this topic
-      if (!subscriptions.current.has(topic)) {
-        subscriptions.current.set(topic, new Set());
+      let handlers = subscriptions.current.get(topic);
+      if (!handlers) {
+        handlers = new Set();
+        subscriptions.current.set(topic, handlers);
       }
-      subscriptions.current.get(topic)!.add(handler as WebsocketMessageHandler);
+      handlers.add(handler as WebsocketMessageHandler);
 
       // Send the subscription message to the server
 

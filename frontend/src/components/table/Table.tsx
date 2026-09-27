@@ -243,12 +243,7 @@ const Table = ({
   }, [tableRef.current]);
 
   return (
-    <div
-      className={clsx('nb-table', className)}
-      style={style}
-      onScroll={handleScroll}
-      onKeyDown={handleKeyDown}
-    >
+    <div className={clsx('nb-table', className)} style={style} onScroll={handleScroll}>
       {loading && (
         <LoaderWrapper>
           <Loader />

@@ -7,6 +7,7 @@ import { JobsTable } from '@features/JobsTable';
 import { useNebula } from '@features/Nebula';
 import { useWebSocket } from '@features/Websocket';
 import { useLocalStorage } from '@lib/useLocalStorage';
+import { getErrorDetail } from '@lib/utils';
 import { AxiosError } from 'axios';
 import clsx from 'clsx';
 import { isEqual, isEmpty } from 'lodash';
@@ -146,11 +147,11 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
             return o;
           });
         })
-        .catch((error) => {
+        .catch((error: unknown) => {
           toast.error(
             <>
               <strong>Unable to load asset</strong>
-              <p>{error.response?.data?.detail || 'Unknown error'}</p>
+              <p>{getErrorDetail(error)}</p>
             </>
           );
         })
@@ -196,7 +197,7 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
         toast.error(
           <>
             <strong>Unable to refresh asset</strong>
-            <p>{error.response?.data?.detail || 'Unknown error'}</p>
+            <p>{getErrorDetail(error)}</p>
           </>
         );
       })
@@ -378,7 +379,7 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
               toast.error(
                 <>
                   <strong>Unable to save asset</strong>
-                  <p>{error.response?.data?.detail || 'Unknown error'}</p>
+                  <p>{getErrorDetail(error)}</p>
                 </>
               );
             })
@@ -474,12 +475,12 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
           // if asset already exists, we wait for the ws message to update the data
           // Just wait for ws message to update the asset data
         })
-        .catch((error) => {
+        .catch((error: unknown) => {
           setLoading(false);
           toast.error(
             <div>
               <strong>Unable to save asset</strong>
-              <p>{error.response?.data?.detail || 'Unknown error'}</p>
+              <p>{getErrorDetail(error)}</p>
             </div>
           );
         });

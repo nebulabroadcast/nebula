@@ -108,7 +108,7 @@ const ServicesPage: React.FC = () => {
       .then((response) => {
         setServices(response.data.services || []);
       })
-      .catch((err) => {
+      .catch((err: unknown) => {
         console.error(err);
       })
       .finally(() => {
