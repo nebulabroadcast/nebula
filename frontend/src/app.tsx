@@ -3,6 +3,7 @@ import { DialogProvider } from '@features/Dialogs';
 import { MediaUploadProvider, MediaUploadMonitor } from '@features/MediaUpload';
 import { WebSocketProvider } from '@features/Websocket';
 import { useLocalStorage } from '@lib/useLocalStorage';
+import { AxiosError } from 'axios';
 import { useState, useEffect, useMemo, Suspense } from 'react';
 import { Outlet, useLocation } from 'react-router';
 
@@ -48,19 +49,20 @@ const App = () => {
           (response) => {
             return response;
           },
-          (error) => {
-            if (error.response?.status === 401) {
+          (error: unknown) => {
+            if (error instanceof AxiosError && error.response?.status === 401) {
               setAccessToken(null);
               if (window.location.pathname !== '/') {
                 window.location.href = '/';
               }
             }
-            return Promise.reject(error);
+            // rethrow so the caller's catch still sees the original error
+            throw error;
           }
         );
       })
-      .catch((err) => {
-        setErrorCode(err.response?.status);
+      .catch((err: unknown) => {
+        setErrorCode(err instanceof AxiosError ? (err.response?.status ?? null) : null);
       })
       .finally(() => {
         setLoading(false);

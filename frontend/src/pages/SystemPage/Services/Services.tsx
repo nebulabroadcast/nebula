@@ -3,19 +3,12 @@ import type { ManageServicesRequest, ServiceListItem } from '@client';
 import { Table, Button, InputSwitch, Spacer, Section, Icon } from '@components';
 import { TableColumn } from '@components/table/types';
 import { useNebula } from '@features/Nebula';
-import { useWebSocket } from '@features/Websocket';
+import { useWebSocket, type WebSocketHandler } from '@features/Websocket';
 import { Duration } from 'luxon';
 import React, { useEffect, useState, useMemo } from 'react';
 import styled, { keyframes } from 'styled-components';
 
 import nebula from '@/nebula';
-
-interface ServiceStateMessage {
-  id: number;
-  state: ServiceState;
-  last_seen_before: number;
-  autostart: boolean;
-}
 
 const blink = keyframes`
   0% { opacity: 1; transform: scale(1.2); }
@@ -108,7 +101,7 @@ const ServicesPage: React.FC = () => {
       .then((response) => {
         setServices(response.data.services || []);
       })
-      .catch((err) => {
+      .catch((err: unknown) => {
         console.error(err);
       })
       .finally(() => {
@@ -203,8 +196,7 @@ const ServicesPage: React.FC = () => {
   );
 
   useEffect(() => {
-    const handlePubSub = (topic: string, message: ServiceStateMessage) => {
-      if (topic !== 'service_state') return;
+    const handlePubSub: WebSocketHandler<'service_state'> = (_topic, message) => {
       setServices((prevData) => {
         const index = prevData.findIndex((service) => service.id === message.id);
         if (index === -1) return prevData;

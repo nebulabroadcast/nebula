@@ -275,7 +275,7 @@ const VideoPlayerControls: React.FC<VideoPlayerControlsProps> = ({
         tooltip="Selection start"
         fps={frameRate}
         onChange={(v) => {
-          setMarkIn(v!);
+          setMarkIn(v ?? null);
         }}
       />
 
@@ -355,7 +355,7 @@ const VideoPlayerControls: React.FC<VideoPlayerControlsProps> = ({
         tooltip="Selection end"
         fps={frameRate}
         onChange={(v) => {
-          setMarkOut(v!);
+          setMarkOut(v ?? null);
         }}
       />
     </Navbar>

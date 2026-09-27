@@ -127,8 +127,6 @@ const getFormatter = (key: string): TableCellFormatter => {
       return formatAuthorship;
     case 'updated_by':
       return formatAuthorship;
-    case 'rundown_difference':
-      return formatRundownDifference;
 
     default:
       return getDefaultFormatter(key);
@@ -136,6 +134,7 @@ const getFormatter = (key: string): TableCellFormatter => {
 }; // end getFormatter
 
 export {
+  formatRundownDifference,
   getColumnWidth,
   getFormatter,
   formatRowHighlightColor,

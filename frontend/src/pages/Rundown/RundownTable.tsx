@@ -16,12 +16,17 @@ import type { ObjectType, RundownRow } from '../../client';
 import RundownTableWrapper from './RundownTableWrapper';
 import { getRunModeOptions, getRundownColumns } from './utils';
 
+import type { ContextMenuOption } from '@/components/ContextMenu';
 import nebula from '@/nebula';
 
 interface RundownTableProps {
   data: RundownRow[];
   draggedObjects: TableDraggableItem[] | null;
-  onDrop: (items: any[], index: number, dropTarget: TableDropTarget | null) => void;
+  onDrop: (
+    items: TableDraggableItem[],
+    index: number,
+    dropTarget: TableDropTarget | null
+  ) => void;
   currentItem?: number | string | null;
   cuedItem?: number | string | null;
   loading: boolean;
@@ -33,7 +38,7 @@ interface RundownTableProps {
   setFocusedObject: (object: RundownRow | null) => void;
   rundownMode: string;
   loadRundown: () => void;
-  onError: (error: any) => void;
+  onError: (error: unknown) => void;
 }
 
 const RundownTable: React.FC<RundownTableProps> = ({
@@ -112,7 +117,8 @@ const RundownTable: React.FC<RundownTableProps> = ({
   // Define table columns and additional styling
   //
 
-  const columns = useMemo(() => getRundownColumns(), []);
+  const channelFps = channelConfig?.fps || 25;
+  const columns = useMemo(() => getRundownColumns(channelFps), [channelFps]);
 
   const getRundownRowClass = (rowData: TableRowData) => {
     const row = rowData as RundownRow;
@@ -140,9 +146,9 @@ const RundownTable: React.FC<RundownTableProps> = ({
   };
 
   const onSendTo = () => {
-    const ids = data
-      .filter((row) => row.id_asset && selectedItems.includes(row.id))
-      .map((row) => row.id_asset!);
+    const ids = data.flatMap((row) =>
+      row.id_asset && selectedItems.includes(row.id) ? [row.id_asset] : []
+    );
     if (!ids.length) return;
 
     showDialog('sendto', 'Send to...', { assets: ids })
@@ -216,13 +222,13 @@ const RundownTable: React.FC<RundownTableProps> = ({
   };
 
   const editObject = async (object_type: ObjectType, id: number | string) => {
-    let objectData: any = {};
+    let objectData: Record<string, unknown> = {};
     try {
       const res = await nebula.get({
         body: { object_type, ids: [Number(id)] },
         throwOnError: true,
       });
-      objectData = res.data.data?.[0];
+      objectData = res.data.data?.[0] ?? {};
     } catch (err) {
       onError(err);
       return;
@@ -230,14 +236,16 @@ const RundownTable: React.FC<RundownTableProps> = ({
 
     // Create a field list based on the object type
 
-    let fields: any[];
+    const itemRole = objectData.item_role;
+    const idAsset = objectData.id_asset as number | null | undefined;
+    let fields: Array<{ name: string }>;
     if (object_type === 'event') {
       fields = [...(channelConfig?.fields || [])];
-    } else if (['placeholder', 'live'].includes(objectData.item_role)) {
+    } else if (itemRole === 'placeholder' || itemRole === 'live') {
       fields = [{ name: 'title' }, { name: 'duration' }];
-    } else if (['lead_in', 'lead_out'].includes(objectData.item_role)) {
+    } else if (itemRole === 'lead_in' || itemRole === 'lead_out') {
       return;
-    } else if (objectData.id_asset) {
+    } else if (idAsset) {
       fields = [
         { name: 'title' },
         { name: 'subtitle' },
@@ -251,10 +259,10 @@ const RundownTable: React.FC<RundownTableProps> = ({
 
     // if the object is item with asset, we need to get the asset data
 
-    if (object_type === 'item' && objectData.id_asset) {
+    if (object_type === 'item' && idAsset) {
       try {
         const res = await nebula.get({
-          body: { object_type: 'asset', ids: [objectData.id_asset] },
+          body: { object_type: 'asset', ids: [idAsset] },
           throwOnError: true,
         });
         const assetData = res.data.data?.[0] || {};
@@ -270,8 +278,9 @@ const RundownTable: React.FC<RundownTableProps> = ({
 
     // construct the form title and initial data
 
-    const title = `Edit ${object_type}: ${objectData.title}`;
-    const initialData: Record<string, any> = {};
+    const objectTitle = typeof objectData.title === 'string' ? objectData.title : '';
+    const title = `Edit ${object_type}: ${objectTitle}`;
+    const initialData: Record<string, unknown> = {};
     for (const field of fields) {
       initialData[field.name] = objectData[field.name];
     }
@@ -399,19 +408,23 @@ const RundownTable: React.FC<RundownTableProps> = ({
   };
 
   const contextMenu = () => {
-    const res: any[] = [];
+    const res: ContextMenuOption[] = [];
     if (selectedItems.length) {
       if (selectedItems.length === 1 && focusedObject) {
         res.push({
           label: 'Edit item',
           icon: 'edit',
-          onClick: () => editObject('item', selectedItems[0]),
+          onClick: () => {
+            void editObject('item', selectedItems[0]);
+          },
         });
         if (focusedObject.id_asset) {
           res.push({
             label: 'Set as primary',
             icon: 'star',
-            onClick: onSetPrimary,
+            onClick: () => {
+              void onSetPrimary();
+            },
           });
         }
 
@@ -448,7 +461,9 @@ const RundownTable: React.FC<RundownTableProps> = ({
       res.push({
         label: 'Edit event',
         icon: 'edit',
-        onClick: () => editObject('event', selectedEvents[0]),
+        onClick: () => {
+          void editObject('event', selectedEvents[0]);
+        },
       });
       res.push(...getRunModeOptions('event', selectedEvents[0], setRunMode));
     }

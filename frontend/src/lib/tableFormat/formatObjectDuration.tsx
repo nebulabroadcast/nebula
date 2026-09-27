@@ -26,7 +26,8 @@ const formatObjectDuration = (rowData: TableRowData, key: string) => {
   const trimmed = duration < originalDuration;
   const timecode = new Timecode(duration * fps, fps);
   const title =
-    trimmed && `Original duration ${new Timecode(originalDuration * fps, fps)}`;
+    trimmed &&
+    `Original duration ${new Timecode(originalDuration * fps, fps).toString()}`;
   return (
     <td title={title || ''}>
       {timecode.toString().substring(0, 11)}

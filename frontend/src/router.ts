@@ -2,10 +2,7 @@ import { createBrowserRouter, redirect } from 'react-router';
 import type { RouteObject } from 'react-router';
 
 import App from './app';
-
-const AppErrorBoundary = () => {
-  return <div>Something went wrong. Please try refreshing the page.</div>;
-};
+import AppErrorBoundary from './AppErrorBoundary';
 
 const routes: RouteObject[] = [
   {

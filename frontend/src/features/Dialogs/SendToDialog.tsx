@@ -1,4 +1,5 @@
 import { Button, Dialog, ErrorBanner } from '@components';
+import { getErrorDetail } from '@lib/utils';
 import { useState, useEffect, useMemo } from 'react';
 import { toast } from 'react-toastify';
 
@@ -9,7 +10,7 @@ import nebula from '@/nebula';
 interface SendToDialogProps {
   assets: number[];
   handleCancel: () => void;
-  handleConfirm: (data?: any) => void;
+  handleConfirm: () => void;
   title: React.ReactNode;
   cancelLabel?: string;
 }
@@ -33,8 +34,8 @@ const SendToDialog = ({
       .then(() => {
         toast.success('Job request accepted');
       })
-      .catch((error) => {
-        toast.error(error.response?.data?.detail || 'An error occurred');
+      .catch((error: unknown) => {
+        toast.error(getErrorDetail(error, 'An error occurred'));
       })
       .finally(() => {
         handleConfirm();

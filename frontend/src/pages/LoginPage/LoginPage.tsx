@@ -1,4 +1,6 @@
 import { Button, InputText, InputPassword, ButtonLink } from '@components';
+import { getErrorDetail } from '@lib/utils';
+import { AxiosError } from 'axios';
 import { useState, useEffect, useRef, SyntheticEvent, CSSProperties } from 'react';
 import { toast } from 'react-toastify';
 
@@ -72,8 +74,8 @@ const StandardLogin = ({
       .then((response) => {
         onLogin(response.data.access_token);
       })
-      .catch((err) => {
-        if (err.response.status === 422) {
+      .catch((err: unknown) => {
+        if (err instanceof AxiosError && err.response?.status === 422) {
           toast.error(
             <div>
               <p>
@@ -88,7 +90,7 @@ const StandardLogin = ({
         toast.error(
           <div>
             <strong>Login failed</strong>
-            <p>{err.response.data?.detail || 'Unknown error'}</p>
+            <p>{getErrorDetail(err)}</p>
           </div>
         );
       });

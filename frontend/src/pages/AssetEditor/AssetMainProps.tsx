@@ -9,7 +9,7 @@ import nebula from '@/nebula';
 
 interface AssetMainPropsProps {
   assetData: Record<string, any>;
-  setMeta: (key: string, value: any, instant?: boolean) => void;
+  setMeta: (key: string, value: any) => void;
   enabledActions: EnabledActions;
 }
 

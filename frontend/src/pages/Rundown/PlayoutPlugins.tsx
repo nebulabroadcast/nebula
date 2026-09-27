@@ -61,7 +61,7 @@ const PluginSlot: React.FC<PluginSlotProps> = ({ slot, value, onChange }) => {
 
 interface PluginPanelProps {
   plugin?: PlayoutPluginManifest | null;
-  onError: (error: any) => void;
+  onError: (error: unknown) => void;
 }
 
 const PluginPanel: React.FC<PluginPanelProps> = ({ plugin, onError }) => {
@@ -142,7 +142,7 @@ const PluginPanel: React.FC<PluginPanelProps> = ({ plugin, onError }) => {
 };
 
 interface PlayoutPluginsProps {
-  onError: (error: any) => void;
+  onError: (error: unknown) => void;
 }
 
 const PlayoutPlugins: React.FC<PlayoutPluginsProps> = ({ onError }) => {

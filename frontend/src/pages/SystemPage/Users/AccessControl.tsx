@@ -179,9 +179,9 @@ const AccessControl: React.FC<AccessControlProps> = ({ userData, setValue }) => 
       </FormRow>
       <FormRow title="Services control">
         <InputSwitch
-          value={(userData as any)?.can_service_control || false}
+          value={(permissions.service_control as boolean) || false}
           onChange={(value) => {
-            setValue('can_service_control', value);
+            setPermission('service_control', value);
           }}
           disabled={isAdmin}
         />

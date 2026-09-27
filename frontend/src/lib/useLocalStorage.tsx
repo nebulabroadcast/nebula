@@ -20,23 +20,25 @@ export function useLocalStorage<T>(
     }
   });
 
+  // Stable across renders (like a useState setter), and functional updates
+  // get the latest value rather than the one from the last render.
   const setValue = useCallback(
     (value: T | ((val: T) => T)) => {
-      try {
+      setStoredValue((prev) => {
         // Allow value to be a function so we have same API as useState
-        const valueToStore = value instanceof Function ? value(storedValue) : value;
-        // Save state
-        setStoredValue(valueToStore);
-        // Save to local storage
-        if (typeof window !== 'undefined') {
-          window.localStorage.setItem(key, JSON.stringify(valueToStore));
+        const valueToStore = value instanceof Function ? value(prev) : value;
+        // Writing the same value twice is harmless if React replays this
+        try {
+          if (typeof window !== 'undefined') {
+            window.localStorage.setItem(key, JSON.stringify(valueToStore));
+          }
+        } catch (error) {
+          console.error(error);
         }
-      } catch (error) {
-        // A more advanced implementation would handle the error case
-        console.error(error);
-      }
+        return valueToStore;
+      });
     },
-    [storedValue, key]
+    [key]
   );
 
   useEffect(() => {

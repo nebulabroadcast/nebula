@@ -5,8 +5,9 @@ import Splitter, { SplitDirection } from '@devbookhq/splitter';
 import { useDialog } from '@features/Dialogs';
 import { JobsTable } from '@features/JobsTable';
 import { useNebula } from '@features/Nebula';
-import { useWebSocket } from '@features/Websocket';
+import { useWebSocket, type WebSocketHandler } from '@features/Websocket';
 import { useLocalStorage } from '@lib/useLocalStorage';
+import { getErrorDetail } from '@lib/utils';
 import { AxiosError } from 'axios';
 import clsx from 'clsx';
 import { isEqual, isEmpty } from 'lodash';
@@ -119,7 +120,7 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
   );
   const [, setSearchParams] = useSearchParams();
 
-  const assetIdRef = useRef<number | string | null>(focusedAsset);
+  const assetIdRef = useRef<number | null>(focusedAsset);
   const changedKeysRef = useRef(new Set([] as string[]));
 
   const showDialog = useDialog();
@@ -128,11 +129,11 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
   // Load asset data
 
   const loadAsset = useCallback(
-    (id_asset: number | string) => {
+    (id_asset: number) => {
       setLoading(true);
-      nebula
+      return nebula
         .get({
-          body: { object_type: 'asset', ids: [Number(id_asset)] },
+          body: { object_type: 'asset', ids: [id_asset] },
           throwOnError: true,
         })
         .then((response) => {
@@ -146,11 +147,11 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
             return o;
           });
         })
-        .catch((error) => {
+        .catch((error: unknown) => {
           toast.error(
             <>
               <strong>Unable to load asset</strong>
-              <p>{error.response?.data?.detail || 'Unknown error'}</p>
+              <p>{getErrorDetail(error)}</p>
             </>
           );
         })
@@ -168,7 +169,7 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
     setLoading(true);
     nebula
       .get({
-        body: { object_type: 'asset', ids: [Number(assetIdRef.current)] },
+        body: { object_type: 'asset', ids: [assetIdRef.current] },
         throwOnError: true,
       })
       .then((response) => {
@@ -196,7 +197,7 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
         toast.error(
           <>
             <strong>Unable to refresh asset</strong>
-            <p>{error.response?.data?.detail || 'Unknown error'}</p>
+            <p>{getErrorDetail(error)}</p>
           </>
         );
       })
@@ -208,17 +209,13 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
   // Update a single asset meta field
   // (called by EditorForm, flag buttons, etc.)
 
-  const setMeta = (key: string, value: any, instant?: boolean) => {
+  const setMeta = (key: string, value: any) => {
     if (key === 'id_folder' && isEmpty(assetData)) {
       setOriginalData({ id_folder: value });
     }
-    if (instant) {
-      onSave({ [key]: value });
-    } else {
-      setAssetData((o) => {
-        return { ...o, [key]: value };
-      });
-    }
+    setAssetData((o) => {
+      return { ...o, [key]: value };
+    });
   };
 
   // Which keys have been changed by the user
@@ -378,20 +375,20 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
               toast.error(
                 <>
                   <strong>Unable to save asset</strong>
-                  <p>{error.response?.data?.detail || 'Unknown error'}</p>
+                  <p>{getErrorDetail(error)}</p>
                 </>
               );
             })
             .finally(() => {
-              loadAsset(focusedAsset);
+              void loadAsset(focusedAsset);
             });
         })
         .catch(() => {
-          loadAsset(focusedAsset);
+          void loadAsset(focusedAsset);
         });
     } else {
       // asset unchanged
-      loadAsset(focusedAsset);
+      void loadAsset(focusedAsset);
     }
   }, [
     isChanged,
@@ -453,46 +450,53 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
     setAssetData(originalData);
   };
 
-  const onSave = useCallback(
-    (payload?: Record<string, any>) => {
-      if (!enabledActions.save && !payload) {
-        return;
-      }
-      setLoading(true);
-      nebula
-        .set({
-          body: { id: assetData.id, data: payload || savePayload },
-          throwOnError: true,
-        })
-        .then((res) => {
-          //reload browser if it's a new asset
-          if (!assetData.id) {
-            const newId = res.data.id;
-            if (newId != null) loadAsset(newId);
-            reloadBrowser();
-          }
-          // if asset already exists, we wait for the ws message to update the data
-          // Just wait for ws message to update the asset data
-        })
-        .catch((error) => {
-          setLoading(false);
-          toast.error(
-            <div>
-              <strong>Unable to save asset</strong>
-              <p>{error.response?.data?.detail || 'Unknown error'}</p>
-            </div>
-          );
-        });
-      // we don't clear the loading state here,
-      // we wait for the ws message that confirms the asset has been updated
-    },
-    [assetData.id, savePayload, enabledActions.save, loadAsset, reloadBrowser]
-  );
+  // Set while a save is in flight, so a second ctrl+s or click can't send
+  // another one (a ref, since two key presses can arrive before the
+  // loading state re-renders). For a new asset it stays set until the
+  // asset is reloaded with its id - saving before that would create it
+  // again.
+  const savingRef = useRef(false);
+
+  const onSave = useCallback(() => {
+    if (!enabledActions.save || savingRef.current) return;
+    savingRef.current = true;
+    setLoading(true);
+    nebula
+      .set({
+        body: { id: assetData.id, data: savePayload },
+        throwOnError: true,
+      })
+      .then((res) => {
+        // if asset already exists, we wait for the ws message to update the data
+        if (assetData.id) return;
+        // new asset: load it with its id and reload the browser
+        const newId = res.data.id;
+        const loaded = newId != null ? loadAsset(newId) : undefined;
+        reloadBrowser();
+        return loaded;
+      })
+      .catch((error: unknown) => {
+        setLoading(false);
+        toast.error(
+          <div>
+            <strong>Unable to save asset</strong>
+            <p>{getErrorDetail(error)}</p>
+          </div>
+        );
+      })
+      .finally(() => {
+        savingRef.current = false;
+      });
+    // we don't clear the loading state here,
+    // we wait for the ws message that confirms the asset has been updated
+  }, [assetData.id, savePayload, enabledActions.save, loadAsset, reloadBrowser]);
 
   // Keyboard shortcuts
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      // MetadataEditor handles ctrl+s itself while a field is focused
+      if (event.defaultPrevented) return;
       if (event.ctrlKey && event.key === 's') {
         event.preventDefault();
         onSave();
@@ -505,8 +509,7 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
   }, [onSave]);
 
   useEffect(() => {
-    const handlePubSub = (topic: string, message: any) => {
-      if (topic !== 'objects_changed') return;
+    const handlePubSub: WebSocketHandler<'objects_changed'> = (_topic, message) => {
       if (message.object_type !== 'asset') return;
       if (!assetIdRef.current) return;
       if (message.objects.includes(assetIdRef.current)) {

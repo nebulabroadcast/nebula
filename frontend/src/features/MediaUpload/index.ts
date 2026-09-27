@@ -1,3 +1,4 @@
 export { MediaUploadDialog } from './MediaUploadDialog';
-export { useMediaUpload, MediaUploadProvider } from './useMediaUpload';
+export { useMediaUpload } from './useMediaUpload';
+export { MediaUploadProvider } from './MediaUploadProvider';
 export { MediaUploadMonitor } from './MediaUploadMonitor';

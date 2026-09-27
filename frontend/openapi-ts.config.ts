@@ -9,8 +9,8 @@ const SERVER_URL = env.SERVER_URL || 'http://localhost:4455';
 export default defineConfig({
   input: `${SERVER_URL}/openapi.json`,
   output: {
-    format: 'prettier',
-    lint: 'eslint',
+    // src/client is in eslint's global ignores, so only prettier runs here.
+    postProcess: ['prettier'],
     path: './src/client',
   },
   plugins: [

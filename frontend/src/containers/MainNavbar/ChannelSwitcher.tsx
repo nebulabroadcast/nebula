@@ -8,8 +8,9 @@ const ChannelSwitcher = () => {
   const { setCurrentChannel, currentChannelId } = useNebula();
 
   useEffect(() => {
-    if (!currentChannelId && (nebula.settings?.playout_channels?.length ?? 0) > 0) {
-      setCurrentChannel(nebula.settings!.playout_channels![0].id);
+    const firstChannel = nebula.settings?.playout_channels?.[0];
+    if (!currentChannelId && firstChannel) {
+      setCurrentChannel(firstChannel.id);
     }
   }, [currentChannelId, setCurrentChannel]);
 

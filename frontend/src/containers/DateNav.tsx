@@ -56,9 +56,9 @@ const DateNav: React.FC<DateNavProps> = ({ onChange, skipBy = 1 }) => {
 
   const pickDate = async () => {
     try {
-      const newDate = (await showDialog('date', 'Pick a date', {
+      const newDate = await showDialog('date', 'Pick a date', {
         value: date,
-      })) as string;
+      });
       setSearchParams((o) => {
         o.set('date', newDate);
         return o;

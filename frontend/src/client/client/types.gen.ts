@@ -68,6 +68,7 @@ export interface RequestOptions<
     }>,
     Pick<
       ServerSentEventsOptions<TData>,
+      | 'onRequest'
       | 'onSseError'
       | 'onSseEvent'
       | 'sseDefaultRetryDelay'
@@ -105,7 +106,9 @@ export type RequestResult<
   : Promise<
       | (AxiosResponse<
           TData extends Record<string, unknown> ? TData[keyof TData] : TData
-        > & { error: undefined })
+        > & {
+          error: undefined;
+        })
       | (AxiosError<
           TError extends Record<string, unknown> ? TError[keyof TError] : TError
         > & {
@@ -122,9 +125,14 @@ type MethodFn = <
   options: Omit<RequestOptions<TData, ThrowOnError>, 'method'>
 ) => RequestResult<TData, TError, ThrowOnError>;
 
-type SseFn = <TData = unknown, TError = unknown, ThrowOnError extends boolean = false>(
-  options: Omit<RequestOptions<TData, ThrowOnError>, 'method'>
-) => Promise<ServerSentEventsResult<TData, TError>>;
+type SseFn = <
+  TData = unknown,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _TError = unknown,
+  ThrowOnError extends boolean = false,
+>(
+  options: Omit<RequestOptions<never, ThrowOnError>, 'method'>
+) => Promise<ServerSentEventsResult<TData>>;
 
 type RequestFn = <
   TData = unknown,
@@ -137,13 +145,16 @@ type RequestFn = <
 
 type BuildUrlFn = <
   TData extends {
-    body?: unknown;
     path?: Record<string, unknown>;
     query?: Record<string, unknown>;
     url: string;
   },
 >(
-  options: TData & Options<TData>
+  options: TData &
+    Pick<
+      RequestOptions<unknown, boolean>,
+      'axios' | 'baseURL' | 'paramsSerializer' | 'querySerializer'
+    >
 ) => string;
 
 export type Client = CoreClient<RequestFn, Config, MethodFn, BuildUrlFn, SseFn> & {

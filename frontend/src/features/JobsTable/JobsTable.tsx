@@ -1,10 +1,8 @@
 import { Table, Button } from '@components';
-import { useWebSocket } from '@features/Websocket';
+import { useWebSocket, type WebSocketHandler } from '@features/Websocket';
 import formatMetaDatetime from '@lib/tableFormat/formatMetaDatetime';
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { NavLink } from 'react-router';
-
-import type { WebSocketJobProgressMessage } from './types';
 
 import { JobState } from '@/client';
 import type { JobListItem, ManageJobsRequest } from '@/client';
@@ -282,10 +280,7 @@ export const JobsTable: React.FC<JobsTableProps> = ({
       }, RELOAD_DEBOUNCE_MS);
     };
 
-    const handlePubSub = (topic: string, messageData: unknown) => {
-      if (topic !== 'job_progress') return;
-      const message = messageData as WebSocketJobProgressMessage;
-
+    const handlePubSub: WebSocketHandler<'job_progress'> = (_topic, message) => {
       if (!jobsRef.current.some((job) => job.id === message.id)) {
         // Unknown job: reload only if it belongs to the current listing
         if (assetId !== undefined && message.id_asset !== Number(assetId)) return;

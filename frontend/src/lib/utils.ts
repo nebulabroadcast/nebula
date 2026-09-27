@@ -1,6 +1,17 @@
+import { AxiosError } from 'axios';
 import { isEmpty, isEqual, xorWith } from 'lodash';
 
 import nebula from '@/nebula';
+
+// FastAPI puts a human readable message in `detail`. For 422 validation
+// errors `detail` is a list of objects, so only strings are used.
+export const getErrorDetail = (error: unknown, fallback = 'Unknown error'): string => {
+  if (error instanceof AxiosError) {
+    const data = error.response?.data as { detail?: unknown } | undefined;
+    if (typeof data?.detail === 'string' && data.detail) return data.detail;
+  }
+  return fallback;
+};
 
 export const arrayEquals = (x: any[], y: any[]) => isEmpty(xorWith(x, y, isEqual));
 

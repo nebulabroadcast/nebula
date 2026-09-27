@@ -343,7 +343,7 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>((props, ref) =>
           tooltip="Current position"
           fps={props.frameRate}
           onChange={(v) => {
-            seekToFrame(v!);
+            if (v != null) seekToFrame(v);
           }}
         />
         <ChannelSelect gainNodes={gainNodes} />

@@ -1,5 +1,6 @@
 import { Button, Progress } from '@components';
 import { useNebula } from '@features/Nebula';
+import type { PlayoutStatusMessage } from '@features/Websocket';
 import clsx from 'clsx';
 import React, { useState, useEffect, useRef } from 'react';
 import { toast } from 'react-toastify';
@@ -65,11 +66,15 @@ const s2tc = (seconds: number, fps: number) => {
     .padStart(2, '0')}:${f.toString().padStart(2, '0')}`;
 };
 
+// playout status as last received, stamped with the local receive time so
+// the clock displays can be extrapolated between status messages
+type TimedPlayoutStatus = Partial<PlayoutStatusMessage> & { receivedAt?: number };
+
 interface PlayoutControlsProps {
-  playoutStatus: any;
+  playoutStatus: PlayoutStatusMessage | null;
   rundownMode: string;
   loadRundown: () => void;
-  onError: (error: any) => void;
+  onError: (error: unknown) => void;
 }
 
 const PlayoutControls: React.FC<PlayoutControlsProps> = ({
@@ -83,7 +88,7 @@ const PlayoutControls: React.FC<PlayoutControlsProps> = ({
   const [progress, setProgress] = useState(0);
   const [progressClassName, setProgressClassName] = useState<string | null>(null);
 
-  const statusRef = useRef<any>(playoutStatus);
+  const statusRef = useRef<TimedPlayoutStatus | null>(playoutStatus);
 
   const dispClkRef = useRef<HTMLDivElement>(null);
   const dispPosRef = useRef<HTMLDivElement>(null);
@@ -116,7 +121,8 @@ const PlayoutControls: React.FC<PlayoutControlsProps> = ({
     const { position, duration, receivedAt, current_title, cued_title } =
       statusRef.current;
     const elapsed = now - (receivedAt || now);
-    const fps = 25;
+    // frame rate of the playout channel, as reported by the controller
+    const fps = statusRef.current.fps || 25;
     const estimatedPos = Math.max(0, (position || 0) + elapsed);
     const estimatedRem = Math.max(0, (duration || 0) - estimatedPos);
 

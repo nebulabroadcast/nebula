@@ -1,18 +1,10 @@
 import axios, { AxiosProgressEvent } from 'axios';
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useRef,
-  useCallback,
-  ReactNode,
-} from 'react';
+import React, { useState, useEffect, useRef, useCallback, ReactNode } from 'react';
 import { toast } from 'react-toastify';
 
 import nebula from '../../nebula';
 
-const MediaUploadContext = createContext<MediaUploadContextType | undefined>(undefined);
+import { MediaUploadContext } from './context';
 import {
   MediaUploadTask,
   MediaUploadContextType,
@@ -20,16 +12,10 @@ import {
   UPLOAD_STATUS,
 } from './types';
 
-export const useMediaUpload = (): MediaUploadContextType => {
-  const context = useContext(MediaUploadContext);
-  if (context === undefined) {
-    throw new Error('useMediaUpload must be used within an MediaUploadProvider');
-  }
-  return context;
-};
-
 const useMediaUploadLogic = (): MediaUploadContextType => {
   const [queue, setQueue] = useState<MediaUploadTask[]>([]);
+  // bumped after each upload finishes, to re-run the queue effect
+  const [processTick, setProcessTick] = useState(0);
   const queueRef = useRef<MediaUploadTask[]>([]);
   const activeUploadRef = useRef<string | null>(null);
   const isProcessingRef = useRef(false);
@@ -48,7 +34,6 @@ const useMediaUploadLogic = (): MediaUploadContextType => {
       if (uploadsInProgress) {
         const message = 'You have uploads in progress. Are you sure you want to leave?';
         event.preventDefault();
-        event.returnValue = message;
         return message;
       }
     },
@@ -172,9 +157,9 @@ const useMediaUploadLogic = (): MediaUploadContextType => {
     } finally {
       activeUploadRef.current = null;
       isProcessingRef.current = false;
-      // Process the next task immediately
+      // Let the queue effect pick up the next task
       processQueueTimeoutRef.current = setTimeout(() => {
-        void processQueue();
+        setProcessTick((tick) => tick + 1);
       }, 500);
     }
   }, [updateTask]);
@@ -199,7 +184,7 @@ const useMediaUploadLogic = (): MediaUploadContextType => {
     if (hasQueuedItems && !isProcessingRef.current && !activeUploadRef.current) {
       void processQueue();
     }
-  }, [queue, processQueue]);
+  }, [queue, processQueue, processTick]);
 
   return {
     queue,
