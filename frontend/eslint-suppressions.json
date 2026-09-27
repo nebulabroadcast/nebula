@@ -1,0 +1,74 @@
+{
+  "src/components/table/Table.tsx": {
+    "react-hooks/refs": {
+      "count": 2
+    }
+  },
+  "src/containers/Browser/Browser.tsx": {
+    "react-hooks/immutability": {
+      "count": 1
+    },
+    "react-hooks/refs": {
+      "count": 1
+    }
+  },
+  "src/containers/Browser/BrowserNav.tsx": {
+    "react-hooks/use-memo": {
+      "count": 1
+    }
+  },
+  "src/containers/Calendar/Calendar.tsx": {
+    "react-hooks/refs": {
+      "count": 10
+    }
+  },
+  "src/containers/VideoPlayer/ChannelSelect.tsx": {
+    "react-hooks/immutability": {
+      "count": 2
+    }
+  },
+  "src/features/Dialogs/useDialog.tsx": {
+    "react-hooks/refs": {
+      "count": 1
+    },
+    "react-refresh/only-export-components": {
+      "count": 1
+    }
+  },
+  "src/features/MediaUpload/index.tsx": {
+    "react-refresh/only-export-components": {
+      "count": 1
+    }
+  },
+  "src/features/MediaUpload/useMediaUpload.tsx": {
+    "react-hooks/preserve-manual-memoization": {
+      "count": 1
+    },
+    "react-refresh/only-export-components": {
+      "count": 1
+    }
+  },
+  "src/features/Nebula/NebulaProvider.tsx": {
+    "react-refresh/only-export-components": {
+      "count": 1
+    }
+  },
+  "src/features/Websocket/WebSocketProvider.tsx": {
+    "react-refresh/only-export-components": {
+      "count": 1
+    }
+  },
+  "src/pages/AssetEditor/AssetEditor.tsx": {
+    "react-hooks/immutability": {
+      "count": 1
+    },
+    "react-hooks/preserve-manual-memoization": {
+      "count": 1
+    }
+  },
+  "src/router.tsx": {
+    "react-refresh/only-export-components": {
+      "count": 1
+    }
+  }
+}
