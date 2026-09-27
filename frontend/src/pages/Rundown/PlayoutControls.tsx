@@ -121,7 +121,8 @@ const PlayoutControls: React.FC<PlayoutControlsProps> = ({
     const { position, duration, receivedAt, current_title, cued_title } =
       statusRef.current;
     const elapsed = now - (receivedAt || now);
-    const fps = 25;
+    // frame rate of the playout channel, as reported by the controller
+    const fps = statusRef.current.fps || 25;
     const estimatedPos = Math.max(0, (position || 0) + elapsed);
     const estimatedRem = Math.max(0, (duration || 0) - estimatedPos);
 

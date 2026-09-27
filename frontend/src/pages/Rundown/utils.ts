@@ -1,6 +1,10 @@
 import type { ContextMenuOption } from '@components/ContextMenu';
 import type { TableColumn } from '@components/table/types';
-import { getColumnWidth, getFormatter } from '@lib/tableFormat';
+import {
+  formatRundownDifference,
+  getColumnWidth,
+  getFormatter,
+} from '@lib/tableFormat';
 
 import { RunMode } from '@/client';
 import nebula from '@/nebula';
@@ -90,13 +94,15 @@ const RUNDOWN_COLUMNS = [
   'mark_out',
 ];
 
-const getRundownColumns = (): TableColumn[] => {
+// fps: frame rate of the playout channel, used by the timing columns
+const getRundownColumns = (fps: number): TableColumn[] => {
   return RUNDOWN_COLUMNS.map((key) => {
     return {
       title: nebula.metaType(key).header,
       name: key,
       width: getColumnWidth(key),
-      formatter: getFormatter(key),
+      formatter:
+        key === 'rundown_difference' ? formatRundownDifference(fps) : getFormatter(key),
     };
   });
 };

@@ -117,7 +117,8 @@ const RundownTable: React.FC<RundownTableProps> = ({
   // Define table columns and additional styling
   //
 
-  const columns = useMemo(() => getRundownColumns(), []);
+  const channelFps = channelConfig?.fps || 25;
+  const columns = useMemo(() => getRundownColumns(channelFps), [channelFps]);
 
   const getRundownRowClass = (rowData: TableRowData) => {
     const row = rowData as RundownRow;
