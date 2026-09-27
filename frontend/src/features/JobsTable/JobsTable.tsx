@@ -1,7 +1,7 @@
 import { Table, Button } from '@components';
 import { useWebSocket } from '@features/Websocket';
 import formatMetaDatetime from '@lib/tableFormat/formatMetaDatetime';
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { NavLink } from 'react-router';
 
 import type { WebSocketJobProgressMessage } from './types';
@@ -28,6 +28,16 @@ const RESTARTABLE_STATES: JobState[] = [
 
 // States in which the job priority can still be changed
 const PRIORITIZABLE_STATES: JobState[] = [JobState.PENDING, JobState.RESTART];
+
+// Job states listed by each view (mirrors the backend filter).
+// Views not listed here accept any state.
+const VIEW_STATES: Record<string, JobState[]> = {
+  finished: [JobState.COMPLETED, JobState.ABORTED, JobState.SKIPPED],
+  failed: [JobState.FAILED],
+};
+
+// Coalesce bursts of job_progress messages into a single reload
+const RELOAD_DEBOUNCE_MS = 500;
 
 const formatTitle = (rowData: Record<string, any>, key: string) => {
   const row = rowData as JobListItem;
@@ -251,35 +261,59 @@ export const JobsTable: React.FC<JobsTableProps> = ({
     return allColumns.filter((col) => !activeHideColumns.includes(col.name));
   }, [allColumns, activeHideColumns]);
 
+  const jobsRef = useRef(jobs);
   useEffect(() => {
+    jobsRef.current = jobs;
+  }, [jobs]);
+
+  const reloadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    return () => {
+      if (reloadTimerRef.current) clearTimeout(reloadTimerRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    const scheduleReload = () => {
+      if (reloadTimerRef.current) return;
+      reloadTimerRef.current = setTimeout(() => {
+        reloadTimerRef.current = null;
+        loadJobs();
+      }, RELOAD_DEBOUNCE_MS);
+    };
+
     const handlePubSub = (topic: string, messageData: unknown) => {
       if (topic !== 'job_progress') return;
       const message = messageData as WebSocketJobProgressMessage;
-      setJobs((prevData) => {
-        const index = prevData.findIndex((job) => job.id === message.id);
-        if (index === -1) {
-          if (assetId === undefined || message.id_asset === Number(assetId)) {
-            loadJobs();
-          }
-          return prevData;
-        }
 
-        const newData = [...prevData];
-        newData[index] = {
-          ...newData[index],
-          status: message.status,
-          progress: message.progress,
-          message: message.message,
-        };
-        return newData;
-      });
+      if (!jobsRef.current.some((job) => job.id === message.id)) {
+        // Unknown job: reload only if it belongs to the current listing
+        if (assetId !== undefined && message.id_asset !== Number(assetId)) return;
+        const viewStates = effectiveView ? VIEW_STATES[effectiveView] : undefined;
+        if (viewStates && !viewStates.includes(message.status)) return;
+        scheduleReload();
+        return;
+      }
+
+      setJobs((prevData) =>
+        prevData.map((job) =>
+          job.id === message.id
+            ? {
+                ...job,
+                status: message.status,
+                progress: message.progress,
+                message: message.message,
+              }
+            : job
+        )
+      );
     };
 
     const unsubscribe = ws.subscribe('job_progress', handlePubSub);
     return () => {
       unsubscribe();
     };
-  }, [ws, assetId, loadJobs]);
+  }, [ws, assetId, effectiveView, loadJobs]);
 
   return (
     <Table
