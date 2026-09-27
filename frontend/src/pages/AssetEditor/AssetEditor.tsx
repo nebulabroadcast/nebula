@@ -494,6 +494,8 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      // MetadataEditor handles ctrl+s itself while a field is focused
+      if (event.defaultPrevented) return;
       if (event.ctrlKey && event.key === 's') {
         event.preventDefault();
         onSave();
