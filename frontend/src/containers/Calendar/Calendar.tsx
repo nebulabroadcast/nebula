@@ -171,7 +171,7 @@ const Calendar: React.FC<CalendarProps> = ({
     drawParams.current.time2pos = time2pos;
     drawParams.current.startTime = startTime;
     //eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [drawParams.current, dayRef.current, zoom, startTime]);
+  }, [zoom, startTime]);
 
   //
   // Draw calendar
@@ -229,12 +229,13 @@ const Calendar: React.FC<CalendarProps> = ({
     }
   };
 
-  // When to draw?
+  // When to draw? On every mouse move (the cursor time and the drag
+  // preview follow it) and when the events change.
 
   useEffect(() => {
     drawCalendar();
     //eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cursorTime.current, events]);
+  }, [mousePos, events]);
 
   // Event handlers
 
@@ -375,8 +376,7 @@ const Calendar: React.FC<CalendarProps> = ({
       canvas.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUpHandler);
     };
-    //eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [calendarRef.current, startTime]);
+  }, [startTime]);
 
   //
   // Handle calendar resizing
@@ -398,22 +398,21 @@ const Calendar: React.FC<CalendarProps> = ({
     drawCalendar();
   };
 
+  // Resize now and whenever the wrapper resizes. Re-created on zoom change,
+  // so the observer always resizes with the current zoom.
   useEffect(() => {
     resizeCanvas();
-  }, [zoom]);
-
-  useEffect(() => {
-    if (!wrapperRef.current) return;
+    const wrapper = wrapperRef.current;
+    if (!wrapper) return;
     const resizeObserver = new ResizeObserver(() => {
       resizeCanvas();
     });
-    resizeObserver.observe(wrapperRef.current);
+    resizeObserver.observe(wrapper);
     return () => {
-      if (wrapperRef.current) {
-        resizeObserver.unobserve(wrapperRef.current);
-      }
+      resizeObserver.disconnect();
     };
-  }, [wrapperRef.current]);
+    //eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [zoom]);
 
   const contextMenuItems = useCallback(() => {
     const result = [];
@@ -510,12 +509,10 @@ const Calendar: React.FC<CalendarProps> = ({
       <div className="calendar-footer">
         <ZoomControl zoom={zoom} setZoom={setZoom} />
       </div>
-      {contextMenuItems && (
-        <ContextMenu
-          target={calendarRef as React.RefObject<HTMLElement>}
-          options={contextMenuItems}
-        />
-      )}
+      <ContextMenu
+        target={calendarRef as React.RefObject<HTMLElement>}
+        options={contextMenuItems}
+      />
     </CalendarWrapper>
   );
 };

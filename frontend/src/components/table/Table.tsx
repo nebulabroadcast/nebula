@@ -81,13 +81,17 @@ const Table = ({
   const dropTargetRef = useRef<TableDropTarget | null>(null);
 
   // Keep the latest data in a ref: onMouseMove/onMouseUp below are
-  // registered once (see the tableRef.current effect) via native
+  // registered once (see the drag listeners effect) via native
   // listeners, so reading `data` directly would close over a stale
   // array whenever the table reloads mid-drag.
   const dataRef = useRef<TableRowData[]>(data);
+  const onDropRef = useRef(onDrop);
   useEffect(() => {
     dataRef.current = data;
   }, [data]);
+  useEffect(() => {
+    onDropRef.current = onDrop;
+  }, [onDrop]);
 
   const head = useMemo(() => {
     return (
@@ -177,23 +181,28 @@ const Table = ({
     }
   };
 
-  const onMouseMove = (event: MouseEvent) => {
-    const target = event.target;
-    if (!target) return;
-    if (!(target instanceof HTMLElement)) return;
-    // find the closest row
-    const row = target.closest('tr');
+  // The drag listeners are registered once, on mount: they only read refs,
+  // so they always see the current drag state, data and onDrop handler.
+  useEffect(() => {
+    const table = tableRef.current;
+    if (!table) return;
 
-    let index = null;
-    if (droppableRef.current && row instanceof HTMLElement) {
-      index = row ? parseInt(row.getAttribute('data-index') || '', 10) : null;
-    }
+    const onMouseMove = (event: MouseEvent) => {
+      const target = event.target;
+      if (!target) return;
+      if (!(target instanceof HTMLElement)) return;
+      // find the closest row
+      const row = target.closest('tr');
 
-    // iterate over all rows and find the one that matches the mouse position
-    // clean up highlight for all rows except the one we're hovering over
+      let index = null;
+      if (droppableRef.current && row instanceof HTMLElement) {
+        index = row ? parseInt(row.getAttribute('data-index') || '', 10) : null;
+      }
 
-    const rows = tableRef.current?.querySelectorAll('tbody tr');
-    if (rows) {
+      // iterate over all rows and find the one that matches the mouse position
+      // clean up highlight for all rows except the one we're hovering over
+
+      const rows = table.querySelectorAll('tbody tr');
       rows.forEach((r) => {
         const rIndex = parseInt(r.getAttribute('data-key') || '', 10);
         if (rIndex === index) {
@@ -202,49 +211,46 @@ const Table = ({
           r.classList.remove('drop-highlight');
         }
       });
-    }
 
-    if (!droppableRef.current) {
-      return;
-    }
+      if (!droppableRef.current) {
+        return;
+      }
 
-    if (index === null) {
-      return;
-    }
-    dropIndexRef.current = index;
-    const hoveredRow = dataRef.current[index];
-    dropTargetRef.current = hoveredRow
-      ? { id: hoveredRow.id, type: hoveredRow.type || 'asset' }
-      : null;
-  };
+      if (index === null) {
+        return;
+      }
+      dropIndexRef.current = index;
+      const hoveredRow = dataRef.current[index];
+      dropTargetRef.current = hoveredRow
+        ? { id: hoveredRow.id, type: hoveredRow.type || 'asset' }
+        : null;
+    };
 
-  const onMouseUp = (event: MouseEvent) => {
-    // are we dragging?
-    if (!droppableRef.current) return;
-    if (!tableRef.current) return;
-    const target = event.target;
-    if (!target) return;
-    if (!(target instanceof HTMLElement)) return;
-    // ensure mouse up event is triggered on the child element of the table
+    const onMouseUp = (event: MouseEvent) => {
+      // are we dragging?
+      if (!droppableRef.current) return;
+      const target = event.target;
+      if (!target) return;
+      if (!(target instanceof HTMLElement)) return;
+      // ensure mouse up event is triggered on the child element of the table
 
-    if (!tableRef.current.contains(target)) return;
-    if (onDrop) {
-      onDrop(droppableRef.current, dropIndexRef.current, dropTargetRef.current);
-    }
-    droppableRef.current = undefined;
-    dropTargetRef.current = null;
-  };
+      if (!table.contains(target)) return;
+      onDropRef.current?.(
+        droppableRef.current,
+        dropIndexRef.current,
+        dropTargetRef.current
+      );
+      droppableRef.current = undefined;
+      dropTargetRef.current = null;
+    };
 
-  useEffect(() => {
-    if (!tableRef.current) return;
-    tableRef.current.addEventListener('mousemove', onMouseMove);
+    table.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
     return () => {
-      if (!tableRef.current) return;
-      tableRef.current.removeEventListener('mousemove', onMouseMove);
+      table.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
     };
-  }, [tableRef.current]);
+  }, []);
 
   return (
     <div className={clsx('nb-table', className)} style={style} onScroll={handleScroll}>

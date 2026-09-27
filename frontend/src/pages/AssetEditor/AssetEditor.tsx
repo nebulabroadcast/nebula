@@ -209,17 +209,13 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
   // Update a single asset meta field
   // (called by EditorForm, flag buttons, etc.)
 
-  const setMeta = (key: string, value: any, instant?: boolean) => {
+  const setMeta = (key: string, value: any) => {
     if (key === 'id_folder' && isEmpty(assetData)) {
       setOriginalData({ id_folder: value });
     }
-    if (instant) {
-      onSave({ [key]: value });
-    } else {
-      setAssetData((o) => {
-        return { ...o, [key]: value };
-      });
-    }
+    setAssetData((o) => {
+      return { ...o, [key]: value };
+    });
   };
 
   // Which keys have been changed by the user
@@ -454,41 +450,36 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
     setAssetData(originalData);
   };
 
-  const onSave = useCallback(
-    (payload?: Record<string, any>) => {
-      if (!enabledActions.save && !payload) {
-        return;
-      }
-      setLoading(true);
-      nebula
-        .set({
-          body: { id: assetData.id, data: payload || savePayload },
-          throwOnError: true,
-        })
-        .then((res) => {
-          //reload browser if it's a new asset
-          if (!assetData.id) {
-            const newId = res.data.id;
-            if (newId != null) loadAsset(newId);
-            reloadBrowser();
-          }
-          // if asset already exists, we wait for the ws message to update the data
-          // Just wait for ws message to update the asset data
-        })
-        .catch((error: unknown) => {
-          setLoading(false);
-          toast.error(
-            <div>
-              <strong>Unable to save asset</strong>
-              <p>{getErrorDetail(error)}</p>
-            </div>
-          );
-        });
-      // we don't clear the loading state here,
-      // we wait for the ws message that confirms the asset has been updated
-    },
-    [assetData.id, savePayload, enabledActions.save, loadAsset, reloadBrowser]
-  );
+  const onSave = useCallback(() => {
+    if (!enabledActions.save) return;
+    setLoading(true);
+    nebula
+      .set({
+        body: { id: assetData.id, data: savePayload },
+        throwOnError: true,
+      })
+      .then((res) => {
+        //reload browser if it's a new asset
+        if (!assetData.id) {
+          const newId = res.data.id;
+          if (newId != null) loadAsset(newId);
+          reloadBrowser();
+        }
+        // if asset already exists, we wait for the ws message to update the data
+        // Just wait for ws message to update the asset data
+      })
+      .catch((error: unknown) => {
+        setLoading(false);
+        toast.error(
+          <div>
+            <strong>Unable to save asset</strong>
+            <p>{getErrorDetail(error)}</p>
+          </div>
+        );
+      });
+    // we don't clear the loading state here,
+    // we wait for the ws message that confirms the asset has been updated
+  }, [assetData.id, savePayload, enabledActions.save, loadAsset, reloadBrowser]);
 
   // Keyboard shortcuts
 

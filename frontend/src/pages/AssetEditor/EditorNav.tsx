@@ -25,8 +25,8 @@ interface AssetEditorNavProps {
   onNewAsset: () => void;
   onCloneAsset: () => void;
   onRevert: () => void;
-  onSave: (payload?: Record<string, any>) => void;
-  setMeta: (key: string, value: any, instant?: boolean) => void;
+  onSave: () => void;
+  setMeta: (key: string, value: any) => void;
   editorMode: 'metadata' | 'preview';
   setEditorMode: (mode: 'metadata' | 'preview') => void;
   enabledActions: EnabledActions;

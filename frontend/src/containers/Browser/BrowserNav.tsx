@@ -1,6 +1,6 @@
 import { debounce } from 'lodash';
 import React from 'react';
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 
 import type { ConditionModel } from '@/client';
 import { Navbar, Button, Spacer, Dropdown, InputText } from '@/components';
@@ -45,7 +45,10 @@ const BrowserNav: React.FC = () => {
     return result;
   }, [setCurrentView]);
 
-  const debounceSetQuery = useCallback(debounce(setSearchQuery, 200), [setSearchQuery]);
+  const debounceSetQuery = useMemo(
+    () => debounce(setSearchQuery, 200),
+    [setSearchQuery]
+  );
 
   useEffect(() => {
     debounceSetQuery(searchText);

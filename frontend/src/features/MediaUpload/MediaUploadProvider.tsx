@@ -14,6 +14,8 @@ import {
 
 const useMediaUploadLogic = (): MediaUploadContextType => {
   const [queue, setQueue] = useState<MediaUploadTask[]>([]);
+  // bumped after each upload finishes, to re-run the queue effect
+  const [processTick, setProcessTick] = useState(0);
   const queueRef = useRef<MediaUploadTask[]>([]);
   const activeUploadRef = useRef<string | null>(null);
   const isProcessingRef = useRef(false);
@@ -155,9 +157,9 @@ const useMediaUploadLogic = (): MediaUploadContextType => {
     } finally {
       activeUploadRef.current = null;
       isProcessingRef.current = false;
-      // Process the next task immediately
+      // Let the queue effect pick up the next task
       processQueueTimeoutRef.current = setTimeout(() => {
-        void processQueue();
+        setProcessTick((tick) => tick + 1);
       }, 500);
     }
   }, [updateTask]);
@@ -182,7 +184,7 @@ const useMediaUploadLogic = (): MediaUploadContextType => {
     if (hasQueuedItems && !isProcessingRef.current && !activeUploadRef.current) {
       void processQueue();
     }
-  }, [queue, processQueue]);
+  }, [queue, processQueue, processTick]);
 
   return {
     queue,
