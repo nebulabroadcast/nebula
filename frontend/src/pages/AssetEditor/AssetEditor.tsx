@@ -131,7 +131,7 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
   const loadAsset = useCallback(
     (id_asset: number) => {
       setLoading(true);
-      nebula
+      return nebula
         .get({
           body: { object_type: 'asset', ids: [id_asset] },
           throwOnError: true,
@@ -380,15 +380,15 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
               );
             })
             .finally(() => {
-              loadAsset(focusedAsset);
+              void loadAsset(focusedAsset);
             });
         })
         .catch(() => {
-          loadAsset(focusedAsset);
+          void loadAsset(focusedAsset);
         });
     } else {
       // asset unchanged
-      loadAsset(focusedAsset);
+      void loadAsset(focusedAsset);
     }
   }, [
     isChanged,
@@ -450,8 +450,16 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
     setAssetData(originalData);
   };
 
+  // Set while a save is in flight, so a second ctrl+s or click can't send
+  // another one (a ref, since two key presses can arrive before the
+  // loading state re-renders). For a new asset it stays set until the
+  // asset is reloaded with its id - saving before that would create it
+  // again.
+  const savingRef = useRef(false);
+
   const onSave = useCallback(() => {
-    if (!enabledActions.save) return;
+    if (!enabledActions.save || savingRef.current) return;
+    savingRef.current = true;
     setLoading(true);
     nebula
       .set({
@@ -459,14 +467,13 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
         throwOnError: true,
       })
       .then((res) => {
-        //reload browser if it's a new asset
-        if (!assetData.id) {
-          const newId = res.data.id;
-          if (newId != null) loadAsset(newId);
-          reloadBrowser();
-        }
         // if asset already exists, we wait for the ws message to update the data
-        // Just wait for ws message to update the asset data
+        if (assetData.id) return;
+        // new asset: load it with its id and reload the browser
+        const newId = res.data.id;
+        const loaded = newId != null ? loadAsset(newId) : undefined;
+        reloadBrowser();
+        return loaded;
       })
       .catch((error: unknown) => {
         setLoading(false);
@@ -476,6 +483,9 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
             <p>{getErrorDetail(error)}</p>
           </div>
         );
+      })
+      .finally(() => {
+        savingRef.current = false;
       });
     // we don't clear the loading state here,
     // we wait for the ws message that confirms the asset has been updated
