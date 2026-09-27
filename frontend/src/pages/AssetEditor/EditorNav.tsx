@@ -80,7 +80,7 @@ const AssetEditorNav: React.FC<AssetEditorNavProps> = ({
 }) => {
   const [contextActionResult, setContextActionResult] = useState<{
     contentType: string;
-    payload: any;
+    payload: unknown;
   } | null>(null);
   const [detailsVisible, setDetailsVisible] = useState(false);
   const [uploadVisible, setUploadVisible] = useState(false);

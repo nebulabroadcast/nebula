@@ -24,7 +24,7 @@ import BrowserNav from './BrowserNav';
 
 import type { BrowseAssetsRequest } from '@/client';
 import type { ContextMenuOption } from '@/components/ContextMenu';
-import { useWebSocket } from '@/features/Websocket';
+import { useWebSocket, type WebSocketHandler } from '@/features/Websocket';
 import nebula from '@/nebula';
 
 const ROWS_PER_PAGE = 200;
@@ -175,13 +175,12 @@ const BrowserTable = ({ isDragging }: BrowserTableProps) => {
   //
 
   useEffect(() => {
-    const handlePubSub = (topic: string, message: Record<string, any>) => {
-      if (topic !== 'objects_changed') return;
+    const handlePubSub: WebSocketHandler<'objects_changed'> = (_topic, message) => {
       if (message.object_type !== 'asset') return;
       let changed = false;
       for (const obj of message.objects) {
         const _data = dataRef.current || [];
-        if (_data.find((row: Record<string, any>) => row.id === obj)) {
+        if (_data.find((row) => row.id === obj)) {
           changed = true;
           break;
         }
@@ -201,22 +200,19 @@ const BrowserTable = ({ isDragging }: BrowserTableProps) => {
   // User interaction
   //
 
-  const onRowClick = (rowData: Record<string, any>, event: React.MouseEvent) => {
-    let newSelectedAssets = [];
+  const onRowClick = (rowData: TableRowData, event: React.MouseEvent) => {
+    const rowId = rowData.id as number;
+    let newSelectedAssets: number[] = [];
     if (event.ctrlKey) {
-      if (selectedAssets.includes(rowData.id as number)) {
-        newSelectedAssets = selectedAssets.filter((obj) => obj !== rowData.id);
+      if (selectedAssets.includes(rowId)) {
+        newSelectedAssets = selectedAssets.filter((obj) => obj !== rowId);
       } else {
-        newSelectedAssets = [...selectedAssets, rowData.id];
+        newSelectedAssets = [...selectedAssets, rowId];
       }
     } else if (event.shiftKey) {
-      const clickedIndex = data.findIndex(
-        (row: Record<string, any>) => row.id === rowData.id
-      );
-      const focusedAssetIndex = data.findIndex(
-        (row: Record<string, any>) => row.id === focusedAsset
-      );
-      const firstSelectedIndex = data.findIndex((row: Record<string, any>) =>
+      const clickedIndex = data.findIndex((row) => row.id === rowId);
+      const focusedAssetIndex = data.findIndex((row) => row.id === focusedAsset);
+      const firstSelectedIndex = data.findIndex((row) =>
         selectedAssets.includes(row.id as number)
       );
       const focusedIndex =
@@ -232,28 +228,26 @@ const BrowserTable = ({ isDragging }: BrowserTableProps) => {
       const max = Math.max(clickedIndex, focusedIndex);
 
       // Get the ids of the rows in the range
-      const rangeIds = data
-        .slice(min, max + 1)
-        .map((row: Record<string, any>) => row.id as number);
+      const rangeIds = data.slice(min, max + 1).map((row) => row.id as number);
 
       newSelectedAssets = [...new Set([...selectedAssets, ...rangeIds])];
     } else {
-      newSelectedAssets = [rowData.id];
+      newSelectedAssets = [rowId];
     }
 
     setSelectedAssets(newSelectedAssets);
-    setFocusedAsset(rowData.id);
+    setFocusedAsset(rowId);
   };
 
   const focusNext = (offset: number) => {
     if (focusedAsset === null) return;
-    const nextIndex =
-      data.findIndex((row: Record<string, any>) => row.id === focusedAsset) + offset;
+    const nextIndex = data.findIndex((row) => row.id === focusedAsset) + offset;
     if (nextIndex < data.length) {
-      const nextRow: Record<string, any> = data[nextIndex];
+      const nextRow = data[nextIndex] as TableRowData | undefined;
       if (!nextRow) return;
-      setSelectedAssets([nextRow.id]);
-      setFocusedAsset(nextRow.id);
+      const nextId = nextRow.id as number;
+      setSelectedAssets([nextId]);
+      setFocusedAsset(nextId);
     }
   };
 

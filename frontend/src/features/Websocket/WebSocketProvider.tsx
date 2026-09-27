@@ -1,8 +1,10 @@
 import React, { createContext, useState, useEffect, useRef, useCallback } from 'react';
 
-import type { WebSocketMessageData, WebSocketContextType } from './types';
+import type { WebSocketContextType, WebSocketHandler, WebSocketTopic } from './types';
 
-type WebsocketMessageHandler = (topic: string, data: any) => void;
+// Handlers are stored per topic, so the payload type is only known at
+// subscribe() time; the map itself holds them type-erased.
+type AnyWebSocketHandler = (topic: string, message: unknown) => void;
 
 export const WebSocketContext = createContext<WebSocketContextType | undefined>(
   undefined
@@ -24,7 +26,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
   // Using a ref to store subscriptions prevents unnecessary
   // re-renders when a component subscribes
 
-  const subscriptions = useRef(new Map());
+  const subscriptions = useRef(new Map<string, Set<AnyWebSocketHandler>>());
 
   const requestSubscriptions = () => {
     const topics = Array.from(subscriptions.current.keys());
@@ -63,17 +65,15 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
 
     socket.onmessage = (event: MessageEvent) => {
       try {
-        const message = JSON.parse(event.data as string) as Record<string, any>;
-        const topic = message.topic as string; // Assuming all messages have a 'topic' field
-
-        if (topic && subscriptions.current.has(topic)) {
-          // Iterate over all handlers subscribed to this topic
-          (subscriptions.current.get(topic) as WebsocketMessageHandler[])?.forEach(
-            (handler: WebsocketMessageHandler) => {
-              handler(topic, message.data); // Pass the entire message payload
-            }
-          );
-        }
+        const message = JSON.parse(event.data as string) as {
+          topic?: string;
+          data?: unknown;
+        };
+        const topic = message.topic;
+        if (!topic) return;
+        subscriptions.current.get(topic)?.forEach((handler) => {
+          handler(topic, message.data);
+        });
       } catch (error) {
         console.error('Error processing WebSocket message:', error);
       }
@@ -111,10 +111,11 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
   //
 
   const subscribe = useCallback(
-    <T = WebSocketMessageData,>(
-      topic: string,
-      handler: (topic: string, data: T) => void
+    <K extends WebSocketTopic>(
+      topic: K,
+      handler: WebSocketHandler<K>
     ): (() => void) => {
+      const storedHandler = handler as AnyWebSocketHandler;
       console.log(`Subscribing component to topic: ${topic}`);
       // Get or create the set of handlers for this topic
       let handlers = subscriptions.current.get(topic);
@@ -122,7 +123,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
         handlers = new Set();
         subscriptions.current.set(topic, handlers);
       }
-      handlers.add(handler as WebsocketMessageHandler);
+      handlers.add(storedHandler);
 
       // Send the subscription message to the server
 
@@ -131,10 +132,9 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
       // Return an unsubscribe function
       return () => {
         console.log(`Unsubscribing component from topic: ${topic}`);
-        const handlers = subscriptions.current.get(topic) as
-          Set<WebsocketMessageHandler> | undefined;
+        const handlers = subscriptions.current.get(topic);
         if (handlers) {
-          handlers.delete(handler as (topic: string, data: any) => void);
+          handlers.delete(storedHandler);
           // Clean up the topic entry if no handlers are left
           if (handlers.size === 0) {
             subscriptions.current.delete(topic);

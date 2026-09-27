@@ -5,7 +5,7 @@ import Splitter, { SplitDirection } from '@devbookhq/splitter';
 import { useDialog } from '@features/Dialogs';
 import { JobsTable } from '@features/JobsTable';
 import { useNebula } from '@features/Nebula';
-import { useWebSocket } from '@features/Websocket';
+import { useWebSocket, type WebSocketHandler } from '@features/Websocket';
 import { useLocalStorage } from '@lib/useLocalStorage';
 import { getErrorDetail } from '@lib/utils';
 import { AxiosError } from 'axios';
@@ -120,7 +120,7 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
   );
   const [, setSearchParams] = useSearchParams();
 
-  const assetIdRef = useRef<number | string | null>(focusedAsset);
+  const assetIdRef = useRef<number | null>(focusedAsset);
   const changedKeysRef = useRef(new Set([] as string[]));
 
   const showDialog = useDialog();
@@ -129,11 +129,11 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
   // Load asset data
 
   const loadAsset = useCallback(
-    (id_asset: number | string) => {
+    (id_asset: number) => {
       setLoading(true);
       nebula
         .get({
-          body: { object_type: 'asset', ids: [Number(id_asset)] },
+          body: { object_type: 'asset', ids: [id_asset] },
           throwOnError: true,
         })
         .then((response) => {
@@ -169,7 +169,7 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
     setLoading(true);
     nebula
       .get({
-        body: { object_type: 'asset', ids: [Number(assetIdRef.current)] },
+        body: { object_type: 'asset', ids: [assetIdRef.current] },
         throwOnError: true,
       })
       .then((response) => {
@@ -508,8 +508,7 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
   }, [onSave]);
 
   useEffect(() => {
-    const handlePubSub = (topic: string, message: any) => {
-      if (topic !== 'objects_changed') return;
+    const handlePubSub: WebSocketHandler<'objects_changed'> = (_topic, message) => {
       if (message.object_type !== 'asset') return;
       if (!assetIdRef.current) return;
       if (message.objects.includes(assetIdRef.current)) {

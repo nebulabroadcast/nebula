@@ -49,6 +49,10 @@ interface TableProps {
   loading?: boolean;
 }
 
+// selection holds keyField values, or row indexes when there's no keyField
+const rowKey = (row: TableRowData, idx: number, keyField?: string): string | number =>
+  keyField ? (row[keyField] as string | number) : idx;
+
 const Table = ({
   data,
   columns,
@@ -117,7 +121,7 @@ const Table = ({
     if (selection && selection.length > 0) {
       for (let i = 0; i < data.length; i++) {
         const row = data[i];
-        if (selection.includes(keyField ? row[keyField] : i)) {
+        if (selection.includes(rowKey(row, i, keyField))) {
           draggableItems.push({
             id: row.id,
             type: row.type || 'asset',
@@ -143,7 +147,7 @@ const Table = ({
             rowHighlightColor={rowHighlightColor}
             rowHighlightStyle={rowHighlightStyle}
             rowClass={rowClass}
-            selected={selection?.includes(keyField ? rowData[keyField] : idx)}
+            selected={selection?.includes(rowKey(rowData, idx, keyField))}
             key={keyField ? rowData[keyField] : idx}
             ident={keyField ? rowData[keyField] : idx}
             index={idx}

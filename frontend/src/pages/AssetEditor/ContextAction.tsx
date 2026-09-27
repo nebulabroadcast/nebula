@@ -72,6 +72,19 @@ interface TablePayload {
   data: TableRowData[];
 }
 
+// application/json result of a scoped plugin endpoint rendered as a table
+interface TableResult {
+  type: 'table';
+  header?: string;
+  dialog_style?: React.CSSProperties;
+  payload: TablePayload;
+}
+
+const isTableResult = (payload: unknown): payload is TableResult =>
+  typeof payload === 'object' &&
+  payload !== null &&
+  (payload as { type?: unknown }).type === 'table';
+
 interface TableDialogProps {
   onHide: () => void;
   dialogStyle?: React.CSSProperties;
@@ -97,7 +110,7 @@ const TableDialog: React.FC<TableDialogProps> = ({
       const newRow: TableRowData = {};
       payload.columns.forEach((column) => {
         if (column.type === 'datetime') {
-          newRow[column.name] = formatTimeString(row[column.name]);
+          newRow[column.name] = formatTimeString(row[column.name] as number);
         } else {
           newRow[column.name] = row[column.name];
         }
@@ -111,7 +124,7 @@ const TableDialog: React.FC<TableDialogProps> = ({
       .map((row) => {
         return payload.columns
           .map((column) => {
-            return row[column.name];
+            return String(row[column.name] ?? '');
           })
           .join('\t');
       })
@@ -149,7 +162,7 @@ const TableDialog: React.FC<TableDialogProps> = ({
 
 interface ContextActionResultProps {
   mime: string;
-  payload: any;
+  payload: unknown;
   onHide: () => void;
 }
 
@@ -158,7 +171,7 @@ const ContextActionResult: React.FC<ContextActionResultProps> = ({
   payload,
   onHide,
 }) => {
-  if (mime === 'text/markdown') {
+  if (mime === 'text/markdown' && typeof payload === 'string') {
     const components = {
       a: UriComponent as any,
     };
@@ -172,7 +185,7 @@ const ContextActionResult: React.FC<ContextActionResultProps> = ({
   } // End of text/markdown
 
   if (mime === 'application/json') {
-    if (payload.type === 'table') {
+    if (isTableResult(payload)) {
       return (
         <TableDialog
           onHide={onHide}

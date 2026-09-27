@@ -8,7 +8,13 @@ import styled from 'styled-components';
 import CalendarWrapper from './CalendarWrapper';
 import drawEvents from './drawEvents';
 import drawMarks from './drawMarks';
-import { CalendarEvent, DrawParams, DraggedExternal, ContextMenuItem } from './types';
+import {
+  CalendarEvent,
+  DrawParams,
+  DraggedExternal,
+  ContextMenuItem,
+  SchedulerEventInput,
+} from './types';
 import ZoomControl from './ZoomControl';
 
 import nebula from '@/nebula';
@@ -24,7 +30,7 @@ interface CalendarProps {
   startTime: Date;
   draggedExternal: DraggedExternal | null;
   events: CalendarEvent[];
-  saveEvent: (event: any) => void;
+  saveEvent: (event: SchedulerEventInput) => void;
   copyEvent: (id: string | number, newTs: number) => void;
   onSeriesDrop?: (dragged: DraggedExternal, time: Date) => void;
   contextMenu: ContextMenuItem[];

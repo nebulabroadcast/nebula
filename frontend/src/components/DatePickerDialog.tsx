@@ -14,7 +14,7 @@ const WRAPPER_STYLE: React.CSSProperties = {
 
 interface DatePickerDialogProps {
   title: string;
-  value: string;
+  value?: string;
   handleCancel: () => void;
   handleConfirm: (value: string) => void;
   cancelLabel?: string;
@@ -38,7 +38,10 @@ const DatePickerDialog = (props: DatePickerDialogProps) => {
   };
 
   useEffect(() => {
-    const date = DateTime.fromFormat(props.value, 'yyyy-MM-dd');
+    // no date yet (e.g. no date in the URL): start from today
+    const date = props.value
+      ? DateTime.fromFormat(props.value, 'yyyy-MM-dd')
+      : DateTime.now();
     setValue(date);
   }, [props.value]);
 

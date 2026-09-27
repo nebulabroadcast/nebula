@@ -10,7 +10,7 @@ import nebula from '@/nebula';
 interface SendToDialogProps {
   assets: number[];
   handleCancel: () => void;
-  handleConfirm: (data?: any) => void;
+  handleConfirm: () => void;
   title: React.ReactNode;
   cancelLabel?: string;
 }

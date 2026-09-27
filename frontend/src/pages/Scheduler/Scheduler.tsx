@@ -5,16 +5,17 @@ import {
   CalendarEvent,
   ContextMenuItem,
   DraggedExternal,
+  SchedulerEventInput,
 } from '@containers/Calendar/types';
 import { useDialog } from '@features/Dialogs';
-import { useWebSocket } from '@features/Websocket';
+import { useWebSocket, type WebSocketHandler } from '@features/Websocket';
 import { DateTime } from 'luxon';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { toast } from 'react-toastify';
 
 import SchedulerNav from './SchedulerNav';
 
-import type { EventData } from '@/client';
+import type { EventData, SchedulerResponse } from '@/client';
 import { useNebula } from '@/features/Nebula';
 import nebula from '@/nebula';
 
@@ -45,7 +46,7 @@ const Scheduler: React.FC<SchedulerProps> = ({ draggedObjects }) => {
       return null;
     }
     const obj = draggedObjects[0];
-    if (!['asset', 'event'].includes(obj.type)) return null;
+    if (obj.id === undefined || !['asset', 'event'].includes(obj.type)) return null;
     console.log('Dragged external object', obj);
     return {
       id: obj.id,
@@ -67,15 +68,16 @@ const Scheduler: React.FC<SchedulerProps> = ({ draggedObjects }) => {
     [currentChannelId, startTime]
   );
 
-  const onResponse = (response: any) => {
-    const fetchedEvents = response.data.events as CalendarEvent[];
+  const onResponse = (response: { data: SchedulerResponse }) => {
+    // the schema types event rows as plain objects
+    const fetchedEvents = (response.data.events ?? []) as unknown as CalendarEvent[];
     const startTs = startTime ? startTime.getTime() / 1000 : 0;
     eventIdsRef.current = new Set(fetchedEvents.map((e) => e.id));
     setEvents(fetchedEvents.filter((e) => e.start >= startTs));
     setLoading(false);
   };
 
-  const onError = (error: any) => {
+  const onError = (error: unknown) => {
     setLoading(false);
     toast.error('Scheduler API error');
     console.log('Scheduler API error', error);
@@ -100,8 +102,8 @@ const Scheduler: React.FC<SchedulerProps> = ({ draggedObjects }) => {
   const copyEvent = async (id: string | number, newTs: number) => {
     if (!channelConfig) return;
     const fields = [{ name: 'start' }, ...(channelConfig.fields || [])];
-    const initialData: Record<string, any> = {};
-    const finalData: Record<string, any> = {};
+    const initialData: Record<string, unknown> = {};
+    const finalData: Record<string, unknown> = {};
 
     try {
       const res = await nebula.get({
@@ -120,29 +122,29 @@ const Scheduler: React.FC<SchedulerProps> = ({ draggedObjects }) => {
     initialData.start = newTs;
 
     try {
-      const title = `Copy event: ${initialData.title || 'Untitled'}`;
+      const eventTitle = typeof initialData.title === 'string' ? initialData.title : '';
+      const title = `Copy event: ${eventTitle || 'Untitled'}`;
       const res = await showDialog('metadata', title, { fields, initialData });
       for (const field of fields) {
         finalData[field.name] = res[field.name] || null;
       }
-      void saveEvent(finalData);
+      void saveEvent({ ...finalData, start: finalData.start as number });
     } catch {
       console.log('User cancelled event copy');
     }
   };
 
-  const saveEvent = async (event: any) => {
+  const saveEvent = async (event: SchedulerEventInput) => {
     if (currentChannelId === null) return;
-    const payload: Record<string, any> = {
-      start: event.start,
-      meta: {},
-    };
+    const payload: EventData = { start: event.start };
+    // metadata dialog values are plain scalars (or lists of strings)
+    let meta: Record<string, unknown> = {};
 
-    if (event.id_asset) payload.id_asset = event.id_asset;
+    if (event.id_asset) payload.id_asset = Number(event.id_asset);
 
     // Prevent jumping during server-side update
     if (event.id) {
-      payload.id = event.id;
+      payload.id = Number(event.id);
       const newEvents = [...events];
       for (let i = 0; i < newEvents.length; i++) {
         if (newEvents[i].id === event.id) {
@@ -166,7 +168,7 @@ const Scheduler: React.FC<SchedulerProps> = ({ draggedObjects }) => {
       // and trigger a dialog to fill in the metadata
       const title = `Edit event: ${event.title || 'Untitled'}`;
       const fields = [{ name: 'start' }, ...(channelConfig?.fields || [])];
-      const initialData: Record<string, any> = {};
+      const initialData: Record<string, unknown> = {};
       for (const field of fields) {
         const key = field.name;
         if (event[key] !== undefined) initialData[key] = event[key];
@@ -176,8 +178,8 @@ const Scheduler: React.FC<SchedulerProps> = ({ draggedObjects }) => {
           fields,
           initialData,
         });
-        payload.meta = r;
-        if (r.start) payload.start = r.start;
+        meta = r;
+        if (r.start) payload.start = r.start as number;
       } catch {
         return;
       }
@@ -187,14 +189,15 @@ const Scheduler: React.FC<SchedulerProps> = ({ draggedObjects }) => {
       for (const field of channelConfig?.fields || []) {
         const key = field.name;
         if (event[key] === undefined) continue;
-        payload.meta[key] = event[key];
+        meta[key] = event[key];
       }
     }
+    payload.meta = meta as EventData['meta'];
 
     const params = {
       ...requestParams,
       id_channel: currentChannelId,
-      events: [payload] as EventData[],
+      events: [payload],
     };
     setLoading(true);
     nebula
@@ -250,7 +253,7 @@ const Scheduler: React.FC<SchedulerProps> = ({ draggedObjects }) => {
         serieId,
         anchorStart: start,
       });
-      saveSeriesEvents(events as EventData[]);
+      saveSeriesEvents(events);
     } catch {
       console.log('User cancelled series scheduling');
     }
@@ -265,7 +268,7 @@ const Scheduler: React.FC<SchedulerProps> = ({ draggedObjects }) => {
     const title = `Edit event: ${event.title || 'Untitled'}`;
     const fields = [{ name: 'start' }, ...(channelConfig.fields || [])];
 
-    const initialData: Record<string, any> = {};
+    const initialData: Record<string, unknown> = {};
     if (event.id) {
       try {
         const res = await nebula.get({
@@ -283,7 +286,7 @@ const Scheduler: React.FC<SchedulerProps> = ({ draggedObjects }) => {
 
     try {
       const r = await showDialog('metadata', title, { fields, initialData });
-      void saveEvent({ ...r, id: event.id });
+      void saveEvent({ ...r, start: r.start as number, id: event.id });
     } catch {
       //
     }
@@ -358,9 +361,8 @@ const Scheduler: React.FC<SchedulerProps> = ({ draggedObjects }) => {
   }, [startTime, currentChannelId]);
 
   useEffect(() => {
-    const handlePubSub = (topic: string, message: any) => {
+    const handlePubSub: WebSocketHandler<'objects_changed'> = (_topic, message) => {
       if (message.initiator === nebula.senderId) return;
-      if (topic !== 'objects_changed') return;
       const { object_type, objects } = message;
       if (object_type !== 'event') return;
       const shouldReload = (objects as Array<string | number>).some((id) =>

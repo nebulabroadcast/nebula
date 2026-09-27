@@ -4,8 +4,8 @@ import {
   useState,
   useRef,
   useContext,
-  useMemo,
   ReactNode,
+  ComponentProps,
   ComponentType,
 } from 'react';
 
@@ -16,22 +16,54 @@ import SeriesScheduleDialog from './SeriesScheduleDialog';
 import SpreadsheetIngestDialog from './SpreadsheetIngestDialog';
 import SubclipsDialog from './SubclipsDialog';
 
+// Every dialog gets title, handleConfirm and handleCancel from the provider.
+// The rest of its props are passed to showDialog(), and the value it hands
+// to handleConfirm is what the returned promise resolves with.
+const dialogs = {
+  confirm: ConfirmDialog,
+  metadata: MetadataDialog,
+  sendto: SendToDialog,
+  date: DatePickerDialog,
+  subclips: SubclipsDialog,
+  seriesSchedule: SeriesScheduleDialog,
+  spreadsheet: SpreadsheetIngestDialog,
+};
+
+export type DialogType = keyof typeof dialogs;
+
+type PropsOf<K extends DialogType> = ComponentProps<(typeof dialogs)[K]>;
+
+export type DialogProps<K extends DialogType> = Omit<
+  PropsOf<K>,
+  'title' | 'handleConfirm' | 'handleCancel'
+>;
+
+export type DialogResult<K extends DialogType> = Parameters<
+  PropsOf<K>['handleConfirm']
+>[0];
+
+type ShowDialog = <K extends DialogType>(
+  dialogType: K,
+  title: string,
+  props: DialogProps<K>
+) => Promise<DialogResult<K>>;
+
 interface DialogContextType {
-  execute: (dialogType: string, title: string, props: any) => Promise<any>;
+  execute: ShowDialog;
 }
 
 const DialogContext = createContext<DialogContextType | undefined>(undefined);
 
 export const DialogProvider = ({ children }: { children: ReactNode }) => {
   const promiseRef = useRef<{
-    resolve: (data: any) => void;
-    reject: (reason: any) => void;
+    resolve: (data: unknown) => void;
+    reject: (reason: Error) => void;
   } | null>(null);
-  const dialogProps = useRef<any>({});
-  const [dialogType, setDialogType] = useState<string | null>(null);
+  const dialogProps = useRef<Record<string, unknown>>({});
+  const [dialogType, setDialogType] = useState<DialogType | null>(null);
   const [visible, setVisible] = useState(false);
 
-  const handleConfirm = (data: any) => {
+  const handleConfirm = (data: unknown) => {
     console.log('Dialog confirmed with data', data);
     promiseRef.current?.resolve(data);
     cleanup();
@@ -49,7 +81,7 @@ export const DialogProvider = ({ children }: { children: ReactNode }) => {
     promiseRef.current = null;
   };
 
-  const execute = (dialogType: string, title: string, props: any) =>
+  const execute: ShowDialog = (dialogType, title, props) =>
     new Promise((resolve, reject) => {
       dialogProps.current = {
         title,
@@ -58,31 +90,19 @@ export const DialogProvider = ({ children }: { children: ReactNode }) => {
         ...props,
       };
 
-      promiseRef.current = { resolve, reject };
+      promiseRef.current = {
+        resolve: resolve as (data: unknown) => void,
+        reject,
+      };
       setDialogType(dialogType);
       setVisible(true);
     });
 
-  const DialogComponent = useMemo(() => {
-    switch (dialogType) {
-      case 'confirm':
-        return ConfirmDialog as ComponentType<any>;
-      case 'metadata':
-        return MetadataDialog as ComponentType<any>;
-      case 'sendto':
-        return SendToDialog as ComponentType<any>;
-      case 'date':
-        return DatePickerDialog as ComponentType<any>;
-      case 'subclips':
-        return SubclipsDialog as ComponentType<any>;
-      case 'seriesSchedule':
-        return SeriesScheduleDialog as ComponentType<any>;
-      case 'spreadsheet':
-        return SpreadsheetIngestDialog as ComponentType<any>;
-      default:
-        return null;
-    }
-  }, [dialogType]);
+  // props are matched to the dialog type in execute(), so the component
+  // can be rendered with the stored props as-is
+  const DialogComponent = dialogType
+    ? (dialogs[dialogType] as unknown as ComponentType<Record<string, unknown>>)
+    : null;
 
   return (
     <DialogContext.Provider value={{ execute }}>
