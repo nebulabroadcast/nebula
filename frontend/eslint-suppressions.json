@@ -27,34 +27,8 @@
       "count": 2
     }
   },
-  "src/features/Dialogs/useDialog.tsx": {
-    "react-hooks/refs": {
-      "count": 1
-    },
-    "react-refresh/only-export-components": {
-      "count": 1
-    }
-  },
-  "src/features/MediaUpload/index.tsx": {
-    "react-refresh/only-export-components": {
-      "count": 1
-    }
-  },
-  "src/features/MediaUpload/useMediaUpload.tsx": {
+  "src/features/MediaUpload/MediaUploadProvider.tsx": {
     "react-hooks/preserve-manual-memoization": {
-      "count": 1
-    },
-    "react-refresh/only-export-components": {
-      "count": 1
-    }
-  },
-  "src/features/Nebula/NebulaProvider.tsx": {
-    "react-refresh/only-export-components": {
-      "count": 1
-    }
-  },
-  "src/features/Websocket/WebSocketProvider.tsx": {
-    "react-refresh/only-export-components": {
       "count": 1
     }
   },
@@ -63,11 +37,6 @@
       "count": 1
     },
     "react-hooks/preserve-manual-memoization": {
-      "count": 1
-    }
-  },
-  "src/router.tsx": {
-    "react-refresh/only-export-components": {
       "count": 1
     }
   }

@@ -1,14 +1,11 @@
-import React, { createContext, useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 
+import { WebSocketContext } from './context';
 import type { WebSocketContextType, WebSocketHandler, WebSocketTopic } from './types';
 
 // Handlers are stored per topic, so the payload type is only known at
 // subscribe() time; the map itself holds them type-erased.
 type AnyWebSocketHandler = (topic: string, message: unknown) => void;
-
-export const WebSocketContext = createContext<WebSocketContextType | undefined>(
-  undefined
-);
 
 interface WebSocketProviderProps {
   children: React.ReactNode;

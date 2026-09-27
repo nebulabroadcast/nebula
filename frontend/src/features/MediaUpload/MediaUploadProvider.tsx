@@ -1,32 +1,16 @@
 import axios, { AxiosProgressEvent } from 'axios';
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useRef,
-  useCallback,
-  ReactNode,
-} from 'react';
+import React, { useState, useEffect, useRef, useCallback, ReactNode } from 'react';
 import { toast } from 'react-toastify';
 
 import nebula from '../../nebula';
 
-const MediaUploadContext = createContext<MediaUploadContextType | undefined>(undefined);
+import { MediaUploadContext } from './context';
 import {
   MediaUploadTask,
   MediaUploadContextType,
   MediaUploadStatus,
   UPLOAD_STATUS,
 } from './types';
-
-export const useMediaUpload = (): MediaUploadContextType => {
-  const context = useContext(MediaUploadContext);
-  if (context === undefined) {
-    throw new Error('useMediaUpload must be used within an MediaUploadProvider');
-  }
-  return context;
-};
 
 const useMediaUploadLogic = (): MediaUploadContextType => {
   const [queue, setQueue] = useState<MediaUploadTask[]>([]);
