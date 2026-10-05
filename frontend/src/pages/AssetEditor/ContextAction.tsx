@@ -124,7 +124,13 @@ const TableDialog: React.FC<TableDialogProps> = ({
       .map((row) => {
         return payload.columns
           .map((column) => {
-            return String(row[column.name] ?? '');
+            const value = row[column.name];
+            if (typeof value === 'string') return value;
+            if (typeof value === 'number' || typeof value === 'boolean') {
+              return String(value);
+            }
+            if (value === null || value === undefined) return '';
+            return JSON.stringify(value);
           })
           .join('\t');
       })

@@ -6,6 +6,7 @@ import { Loader, LoaderWrapper } from '../Loader';
 
 import DataRow from './DataRow';
 import HeaderCell from './HeaderCell';
+import { rowId, rowType, toDraggableItem } from './rowFields';
 import type {
   TableRowData,
   TableColumn,
@@ -126,16 +127,7 @@ const Table = ({
       for (let i = 0; i < data.length; i++) {
         const row = data[i];
         if (selection.includes(rowKey(row, i, keyField))) {
-          draggableItems.push({
-            id: row.id,
-            type: row.type || 'asset',
-            title: row.title,
-            subtitle: row.subtitle,
-            duration: row.duration,
-            mark_in: row.mark_in,
-            mark_out: row.mark_out,
-            subclips: row.subclips,
-          });
+          draggableItems.push(toDraggableItem(row));
         }
       }
     }
@@ -152,8 +144,8 @@ const Table = ({
             rowHighlightStyle={rowHighlightStyle}
             rowClass={rowClass}
             selected={selection?.includes(rowKey(rowData, idx, keyField))}
-            key={keyField ? rowData[keyField] : idx}
-            ident={keyField ? rowData[keyField] : idx}
+            key={rowKey(rowData, idx, keyField)}
+            ident={rowKey(rowData, idx, keyField)}
             index={idx}
             draggableItems={draggableItems}
           />
@@ -222,7 +214,7 @@ const Table = ({
       dropIndexRef.current = index;
       const hoveredRow = dataRef.current[index];
       dropTargetRef.current = hoveredRow
-        ? { id: hoveredRow.id, type: hoveredRow.type || 'asset' }
+        ? { id: rowId(hoveredRow), type: rowType(hoveredRow) }
         : null;
     };
 

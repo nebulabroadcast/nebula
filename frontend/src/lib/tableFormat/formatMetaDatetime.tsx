@@ -15,7 +15,7 @@ const formatMetaDatetime = (
     );
   return (
     <td>
-      <Timestamp timestamp={rowData[key]} mode={mode} />
+      <Timestamp timestamp={timestamp as number} mode={mode} />
     </td>
   );
 };

@@ -1,7 +1,7 @@
 import type { ItemRole } from '@/client';
 
 export type TableSortDirection = 'asc' | 'desc';
-export type TableRowData = Record<string, any>;
+export type TableRowData = Record<string, unknown>;
 export type TableCellFormatter = (
   rowData: TableRowData,
   columnName: string

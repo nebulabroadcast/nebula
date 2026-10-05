@@ -80,9 +80,10 @@ const formatLastSeen = (rowData: ExtendedServiceItem) => {
   );
 };
 
-interface ExtendedServiceItem extends ServiceListItem {
+// a type alias (not an interface), so rows can be passed as TableRowData
+type ExtendedServiceItem = ServiceListItem & {
   last_updated?: number;
-}
+};
 
 const ServicesPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
