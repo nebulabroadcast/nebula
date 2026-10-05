@@ -79,7 +79,7 @@ const UsersPage: React.FC = () => {
         loadUsers();
         toast.success('User saved');
       })
-      .catch((err) => {
+      .catch((err: unknown) => {
         toast.error('Error saving user');
         console.error(err);
       })

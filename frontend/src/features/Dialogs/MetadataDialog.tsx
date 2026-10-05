@@ -2,14 +2,14 @@ import { Button, Dialog } from '@components';
 import MetadataEditor from '@containers/MetadataEditor';
 import { useState } from 'react';
 
-import type { ClientMetaTypeModel } from '../../client';
+import type { FolderField } from '../../client';
 
 interface MetadataDialogProps {
-  initialData: Record<string, any>;
+  initialData: Record<string, unknown>;
   handleCancel: () => void;
-  handleConfirm: (data: Record<string, any>) => void;
+  handleConfirm: (data: Record<string, unknown>) => void;
   title: React.ReactNode;
-  fields: Array<ClientMetaTypeModel & { name: string }>;
+  fields: FolderField[];
 }
 
 const MetadataDialog = ({

@@ -27,3 +27,14 @@ export interface ContextMenuItem {
   hlColor?: string;
   onClick: (event: CalendarEvent) => void;
 }
+
+// Event handed to saveEvent. Keys besides the known ones are event metadata.
+export interface SchedulerEventInput {
+  start: number;
+  id?: string | number;
+  id_asset?: string | number;
+  // asset dropped on an empty slot: ask for the event metadata first
+  is_empty_event?: boolean;
+  title?: string;
+  [key: string]: unknown;
+}

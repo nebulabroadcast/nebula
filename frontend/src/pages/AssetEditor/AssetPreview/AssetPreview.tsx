@@ -1,6 +1,6 @@
 import VideoPlayer from '@containers/VideoPlayer';
 import { VideoPlayerRef } from '@containers/VideoPlayer/types';
-import type { WebSocketJobProgressMessage } from '@features/JobsTable';
+import type { WebSocketHandler } from '@features/Websocket';
 import { useWebSocket } from '@features/Websocket';
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 
@@ -96,17 +96,16 @@ export const AssetPreview: React.FC<PreviewProps> = ({ assetData, setAssetData }
   useEffect(() => {
     if (!assetData.id) return;
 
-    const handleJobProgress = (
-      topic: string,
-      messageData: WebSocketJobProgressMessage
+    const handleJobProgress: WebSocketHandler<'job_progress'> = (
+      _topic,
+      messageData
     ) => {
-      if (topic !== 'job_progress') return;
       if (messageData.status !== JobState.COMPLETED) return;
       if (messageData.id_asset !== assetData.id) return;
       loadProxyInfo(true);
     };
 
-    return subscribe<WebSocketJobProgressMessage>('job_progress', handleJobProgress);
+    return subscribe('job_progress', handleJobProgress);
   }, [subscribe, assetData.id, loadProxyInfo]);
 
   const warning = useMemo(() => {

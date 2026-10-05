@@ -1,7 +1,7 @@
 import { useContext } from 'react';
 
 import type { WebSocketContextType } from './types';
-import { WebSocketContext } from './WebSocketProvider';
+import { WebSocketContext } from './context';
 
 export const useWebSocket = (): WebSocketContextType => {
   const context = useContext(WebSocketContext);

@@ -3,6 +3,7 @@ import clsx from 'clsx';
 import React, { useMemo } from 'react';
 
 import BodyCell from './BodyCell';
+import { rowId, rowType, toDraggableItem } from './rowFields';
 import { TableRowData, TableColumn, TableDraggableItem } from './types';
 
 interface DataRowProps {
@@ -37,27 +38,18 @@ const DataRow = ({
   selected = false,
   draggableItems,
 }: DataRowProps) => {
-  const rowType = rowData.type || 'asset';
+  const type = rowType(rowData);
+  const id = rowId(rowData);
   const { attributes, listeners, setNodeRef } = useDraggable({
     // dnd-kit ids must be unique across the whole DndContext. Browser (asset)
     // rows and rundown (item/event) rows share one context and their numeric
     // ids overlap, so the type has to be part of the id.
-    id: `${rowType}-${rowData.id}`,
+    id: `${type}-${id}`,
     data:
       draggableItems?.length &&
-      draggableItems.some((item) => item.id === rowData.id && item.type === rowType)
+      draggableItems.some((item) => item.id === id && item.type === type)
         ? draggableItems
-        : [
-            {
-              id: rowData.id,
-              type: rowType,
-              title: rowData.title,
-              subtitle: rowData.subtitle,
-              duration: rowData.duration,
-              mark_in: rowData.mark_in,
-              mark_out: rowData.mark_out,
-            },
-          ],
+        : [toDraggableItem(rowData)],
   });
 
   const handleClick = (event: React.MouseEvent<HTMLTableRowElement>) => {
@@ -102,13 +94,11 @@ const DataRow = ({
   // Row-Embedded progress bar
   //
 
-  const hasProgress =
-    typeof rowData.progress === 'number' &&
-    rowData.progress > 0 &&
-    rowData.progress < 100;
+  const progress = rowData.progress;
+  const hasProgress = typeof progress === 'number' && progress > 0 && progress < 100;
 
   if (hasProgress) {
-    rowStyle['--progress'] = rowData.progress + '%';
+    rowStyle['--progress'] = `${progress}%`;
   }
 
   //

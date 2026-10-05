@@ -1,15 +1,19 @@
 import type { TableDraggableItem, TableDropTarget } from '@components/table/types';
 import { useDialog } from '@features/Dialogs';
 import { useNebula } from '@features/Nebula';
-import { useWebSocket } from '@features/Websocket';
+import {
+  useWebSocket,
+  type PlayoutStatusMessage,
+  type WebSocketHandler,
+} from '@features/Websocket';
 import { useKeyDown } from '@lib/useKeyDown';
 import { useLocalStorage } from '@lib/useLocalStorage';
-import { dateToDateString } from '@lib/utils';
+import { dateToDateString, getErrorDetail } from '@lib/utils';
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router';
 import { toast } from 'react-toastify';
 
-import type { RundownRow } from '../../client';
+import type { OrderItem, RundownResponse, RundownRow } from '../../client';
 
 import PlayoutControls from './PlayoutControls';
 import RundownEditTools from './RundownEditTools';
@@ -38,7 +42,7 @@ const Rundown: React.FC<RundownProps> = ({ draggedObjects }) => {
   const [rundown, setRundown] = useState<RundownRow[] | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const [playoutStatus, setPlayoutStatus] = useState<any>(null);
+  const [playoutStatus, setPlayoutStatus] = useState<PlayoutStatusMessage | null>(null);
   const [selectedItems, setSelectedItems] = useState<Array<number | string>>([]);
   const [selectedEvents, setSelectedEvents] = useState<Array<number | string>>([]);
   const [focusedObject, setFocusedObject] = useState<RundownRow | null>(null);
@@ -52,7 +56,7 @@ const Rundown: React.FC<RundownProps> = ({ draggedObjects }) => {
   const currentChannelRef = useRef<number | null>(currentChannelId);
   const rundownModeRef = useRef<string>(rundownMode);
   const eventIdsRef = useRef<Set<number>>(new Set());
-  const playoutStatusRef = useRef<any>(playoutStatus);
+  const playoutStatusRef = useRef<PlayoutStatusMessage | null>(playoutStatus);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -87,7 +91,8 @@ const Rundown: React.FC<RundownProps> = ({ draggedObjects }) => {
 
     const currentPath = window.location.pathname;
     const query = new URLSearchParams(window.location.search);
-    query.set('item', currentItem);
+    if (currentItem != null) query.set('item', currentItem.toString());
+    else query.delete('item');
     query.set('rqts', Math.floor(Date.now() / 1000).toString());
 
     if (currentEvent) {
@@ -101,8 +106,9 @@ const Rundown: React.FC<RundownProps> = ({ draggedObjects }) => {
   // Load rundown
   //
 
-  const onResponse = (response: any) => {
-    const rows = response.data.rows.map(({ meta, ...rest }: any) => ({
+  const onResponse = (data: RundownResponse) => {
+    // the table works with flat rows: lift meta fields to the top level
+    const rows = (data.rows ?? []).map(({ meta, ...rest }) => ({
       ...rest,
       ...meta,
     })) as RundownRow[];
@@ -113,10 +119,11 @@ const Rundown: React.FC<RundownProps> = ({ draggedObjects }) => {
     setLoading(false);
   };
 
-  const onError = (error: any) => {
+  const onError = (error: unknown) => {
     setLoading(false);
-    const msg = error.response?.data?.detail || error.message;
-    toast.error(msg);
+    toast.error(
+      getErrorDetail(error, error instanceof Error ? error.message : undefined)
+    );
   };
 
   const loadRundown = () => {
@@ -130,7 +137,9 @@ const Rundown: React.FC<RundownProps> = ({ draggedObjects }) => {
     };
     nebula
       .rundown({ body: requestParams, throwOnError: true })
-      .then(onResponse)
+      .then((response) => {
+        onResponse(response.data);
+      })
       .catch(onError);
   };
 
@@ -148,7 +157,7 @@ const Rundown: React.FC<RundownProps> = ({ draggedObjects }) => {
   //
 
   const onDrop = async (
-    items: any[],
+    items: TableDraggableItem[],
     index: number,
     dropTarget: TableDropTarget | null
   ) => {
@@ -186,21 +195,29 @@ const Rundown: React.FC<RundownProps> = ({ draggedObjects }) => {
       return;
     }
     let i = -1;
-    const newOrder: any[] = [];
+    const newOrder: OrderItem[] = [];
 
     const id_bin = dropAfterRow.id_bin;
 
-    const processItems = async (items: any[], targetOrder: any[]) => {
+    const processItems = async (
+      items: TableDraggableItem[],
+      targetOrder: OrderItem[]
+    ) => {
       for (const item of items) {
-        if (item.type === 'asset' && item.subclips?.length) {
+        const { type } = item;
+        // only assets and items can be placed in a rundown
+        if (type !== 'asset' && type !== 'item') continue;
+        const id = item.id === undefined ? undefined : Number(item.id);
+
+        if (type === 'asset' && item.subclips?.length) {
           try {
             const res = await showDialog('subclips', '', { asset: item });
             for (const region of res) {
-              const smeta: any = {};
+              const smeta: Record<string, unknown> = {};
               if (region.title) smeta.note = region.title;
               if (region.mark_in) smeta.mark_in = region.mark_in;
               if (region.mark_out) smeta.mark_out = region.mark_out;
-              targetOrder.push({ id: item.id, type: 'asset', meta: smeta });
+              targetOrder.push({ id, type: 'asset', meta: smeta });
             }
             continue;
           } catch (err) {
@@ -209,19 +226,21 @@ const Rundown: React.FC<RundownProps> = ({ draggedObjects }) => {
           }
         }
 
-        const meta: any = {};
+        const fields: Record<string, unknown> = { ...item };
+        const meta: Record<string, unknown> = {};
         let keys: string[] = [];
-        if (item.type === 'item') {
-          if (item.item_role) keys = Object.keys(item);
+        if (type === 'item') {
+          if (item.item_role) keys = Object.keys(fields);
           else keys = ['mark_in', 'mark_out', 'title', 'subtitle'];
         } else {
           keys = ['mark_in', 'mark_out'];
         }
 
         for (const key of keys) {
-          if (item[key] !== undefined && item[key] !== null) meta[key] = item[key];
+          if (fields[key] !== undefined && fields[key] !== null)
+            meta[key] = fields[key];
         }
-        targetOrder.push({ id: item.id, type: item.type, meta });
+        targetOrder.push({ id, type, meta });
       }
     };
 
@@ -237,7 +256,8 @@ const Rundown: React.FC<RundownProps> = ({ draggedObjects }) => {
         await processItems(items, newOrder);
       }
 
-      if (!skip) newOrder.push({ id: row.id, type: row.type });
+      // events are always skipped, so only items get here
+      if (!skip && row.type === 'item') newOrder.push({ id: row.id, type: row.type });
 
       if (i === dropIndex && row.type !== 'event') {
         await processItems(items, newOrder);
@@ -270,11 +290,9 @@ const Rundown: React.FC<RundownProps> = ({ draggedObjects }) => {
   //
 
   useEffect(() => {
-    const handlePubSub = (topic: string, message: any) => {
-      if (topic === 'playout_status') {
-        if (message.id_channel === currentChannelRef.current) {
-          setPlayoutStatus(message);
-        }
+    const handlePubSub: WebSocketHandler<'playout_status'> = (_topic, message) => {
+      if (message.id_channel === currentChannelRef.current) {
+        setPlayoutStatus(message);
       }
     };
 
@@ -285,9 +303,8 @@ const Rundown: React.FC<RundownProps> = ({ draggedObjects }) => {
   }, [ws]);
 
   useEffect(() => {
-    const handlePubSub = (topic: string, message: any) => {
+    const handlePubSub: WebSocketHandler<'objects_changed'> = (_topic, message) => {
       if (message.initiator === nebula.senderId) return;
-      if (topic !== 'objects_changed') return;
       const { object_type, objects } = message;
       if (object_type !== 'event') return;
       const shouldReload = objects.some((id: number) => eventIdsRef.current.has(id));

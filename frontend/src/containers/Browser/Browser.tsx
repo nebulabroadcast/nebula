@@ -14,16 +14,17 @@ import {
   formatRowHighlightStyle,
 } from '@lib/tableFormat';
 import { useLocalStorage } from '@lib/useLocalStorage';
+import { getErrorDetail } from '@lib/utils';
 import clsx from 'clsx';
 import { debounce } from 'lodash';
-import { useEffect, useState, useRef, useMemo } from 'react';
+import { useCallback, useEffect, useState, useRef, useMemo } from 'react';
 import { toast } from 'react-toastify';
 
 import BrowserNav from './BrowserNav';
 
 import type { BrowseAssetsRequest } from '@/client';
 import type { ContextMenuOption } from '@/components/ContextMenu';
-import { useWebSocket } from '@/features/Websocket';
+import { useWebSocket, type WebSocketHandler } from '@/features/Websocket';
 import nebula from '@/nebula';
 
 const ROWS_PER_PAGE = 200;
@@ -79,6 +80,42 @@ const BrowserTable = ({ isDragging }: BrowserTableProps) => {
   );
 
   //
+  // Data loading
+  //
+
+  const loadData = useCallback(() => {
+    // Use current value of requestParamsRef to avoid stale data
+    const params = requestParamsRef.current;
+    if (!params) return;
+    void nebula
+      .browse({ body: params, throwOnError: true })
+      .then((response) => {
+        const hasMore = response.data.data.length > ROWS_PER_PAGE;
+        const rows = response.data.data.slice(0, ROWS_PER_PAGE);
+        setData(rows);
+        // the server may fall back to a different sort order
+        setSortBy(response.data.order_by);
+        setSortDirection(response.data.order_dir);
+
+        const cols = [];
+        for (const colName of response.data.columns) {
+          if (colName == 'subtitle') continue; // added automatically
+          cols.push({
+            name: colName,
+            title: nebula.metaType(colName).header,
+            formatter: getFormatter(colName),
+            width: getColumnWidth(colName),
+          });
+        }
+        setColumns(cols);
+        setHasMore(hasMore);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [setSortBy, setSortDirection]);
+
+  //
   // References
   //
 
@@ -122,6 +159,7 @@ const BrowserTable = ({ isDragging }: BrowserTableProps) => {
     sortDirection,
     page,
     browserRefreshId,
+    loadData,
   ]);
 
   useEffect(() => {
@@ -130,57 +168,20 @@ const BrowserTable = ({ isDragging }: BrowserTableProps) => {
   }, [currentView, searchQuery, filterConditions, sortBy, sortDirection]);
 
   //
-  // Data loading
-  //
-
-  const loadData = () => {
-    // Use current value of requestParamsRef to avoid stale data
-    const params = requestParamsRef.current;
-    if (!params) return;
-    void nebula
-      .browse({ body: params, throwOnError: true })
-      .then((response) => {
-        const hasMore = response.data.data.length > ROWS_PER_PAGE;
-        const rows = response.data.data.slice(0, ROWS_PER_PAGE);
-        setData(rows);
-        if (response.data.order_by !== sortBy) setSortBy(response.data.order_by);
-        if (response.data.order_dir !== sortDirection)
-          setSortDirection(response.data.order_dir);
-
-        const cols = [];
-        for (const colName of response.data.columns) {
-          if (colName == 'subtitle') continue; // added automatically
-          cols.push({
-            name: colName,
-            title: nebula.metaType(colName).header,
-            formatter: getFormatter(colName),
-            width: getColumnWidth(colName),
-          });
-        }
-        setColumns(cols);
-        setHasMore(hasMore);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  };
-
-  // Debounce the loadData function to avoid multiple requests
-  // when multiple objects are changed at the same time
-  const debouncingLoadData = debounce(loadData, 100);
-
-  //
   // Subscribe to objects_changed pubsub event
   //
 
   useEffect(() => {
-    const handlePubSub = (topic: string, message: Record<string, any>) => {
-      if (topic !== 'objects_changed') return;
+    // Debounce the loadData function to avoid multiple requests
+    // when multiple objects are changed at the same time
+    const debouncingLoadData = debounce(loadData, 100);
+
+    const handlePubSub: WebSocketHandler<'objects_changed'> = (_topic, message) => {
       if (message.object_type !== 'asset') return;
       let changed = false;
       for (const obj of message.objects) {
         const _data = dataRef.current || [];
-        if (_data.find((row: Record<string, any>) => row.id === obj)) {
+        if (_data.find((row) => row.id === obj)) {
           changed = true;
           break;
         }
@@ -193,29 +194,27 @@ const BrowserTable = ({ isDragging }: BrowserTableProps) => {
     const unsubscribe = ws.subscribe('objects_changed', handlePubSub);
     return () => {
       unsubscribe();
+      debouncingLoadData.cancel();
     };
-  }, [ws]);
+  }, [ws, loadData]);
 
   //
   // User interaction
   //
 
-  const onRowClick = (rowData: Record<string, any>, event: React.MouseEvent) => {
-    let newSelectedAssets = [];
+  const onRowClick = (rowData: TableRowData, event: React.MouseEvent) => {
+    const rowId = rowData.id as number;
+    let newSelectedAssets: number[] = [];
     if (event.ctrlKey) {
-      if (selectedAssets.includes(rowData.id as number)) {
-        newSelectedAssets = selectedAssets.filter((obj) => obj !== rowData.id);
+      if (selectedAssets.includes(rowId)) {
+        newSelectedAssets = selectedAssets.filter((obj) => obj !== rowId);
       } else {
-        newSelectedAssets = [...selectedAssets, rowData.id];
+        newSelectedAssets = [...selectedAssets, rowId];
       }
     } else if (event.shiftKey) {
-      const clickedIndex = data.findIndex(
-        (row: Record<string, any>) => row.id === rowData.id
-      );
-      const focusedAssetIndex = data.findIndex(
-        (row: Record<string, any>) => row.id === focusedAsset
-      );
-      const firstSelectedIndex = data.findIndex((row: Record<string, any>) =>
+      const clickedIndex = data.findIndex((row) => row.id === rowId);
+      const focusedAssetIndex = data.findIndex((row) => row.id === focusedAsset);
+      const firstSelectedIndex = data.findIndex((row) =>
         selectedAssets.includes(row.id as number)
       );
       const focusedIndex =
@@ -231,28 +230,26 @@ const BrowserTable = ({ isDragging }: BrowserTableProps) => {
       const max = Math.max(clickedIndex, focusedIndex);
 
       // Get the ids of the rows in the range
-      const rangeIds = data
-        .slice(min, max + 1)
-        .map((row: Record<string, any>) => row.id as number);
+      const rangeIds = data.slice(min, max + 1).map((row) => row.id as number);
 
       newSelectedAssets = [...new Set([...selectedAssets, ...rangeIds])];
     } else {
-      newSelectedAssets = [rowData.id];
+      newSelectedAssets = [rowId];
     }
 
     setSelectedAssets(newSelectedAssets);
-    setFocusedAsset(rowData.id);
+    setFocusedAsset(rowId);
   };
 
   const focusNext = (offset: number) => {
     if (focusedAsset === null) return;
-    const nextIndex =
-      data.findIndex((row: Record<string, any>) => row.id === focusedAsset) + offset;
+    const nextIndex = data.findIndex((row) => row.id === focusedAsset) + offset;
     if (nextIndex < data.length) {
-      const nextRow: Record<string, any> = data[nextIndex];
+      const nextRow = data[nextIndex] as TableRowData | undefined;
       if (!nextRow) return;
-      setSelectedAssets([nextRow.id]);
-      setFocusedAsset(nextRow.id);
+      const nextId = nextRow.id as number;
+      setSelectedAssets([nextId]);
+      setFocusedAsset(nextId);
     }
   };
 
@@ -277,9 +274,9 @@ const BrowserTable = ({ isDragging }: BrowserTableProps) => {
       .then(() => {
         toast.success('Status updated');
       })
-      .catch((error) => {
+      .catch((error: unknown) => {
         console.error(error);
-        toast.error(error.response?.detail);
+        toast.error(getErrorDetail(error));
       });
   };
 
@@ -312,7 +309,7 @@ const BrowserTable = ({ isDragging }: BrowserTableProps) => {
     const options: ContextMenuOption[] = [];
 
     const cell = contextCellRef.current;
-    const cellValue = cell && cell.rowData[cell.columnName];
+    const cellValue = cell?.rowData[cell.columnName];
     if (
       cell &&
       cellValue !== null &&

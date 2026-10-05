@@ -1,5 +1,6 @@
-import React, { createContext, useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 
+import { NebulaContext } from './context';
 import type { NebulaContextType, NebulaState } from './types';
 
 import type { ConditionModel } from '@/client';
@@ -18,8 +19,6 @@ const DEFAULT_NEBULA_CONTEXT: NebulaState = {
   focusedAsset: null,
   selectedAssets: [],
 };
-
-export const NebulaContext = createContext<NebulaContextType | undefined>(undefined);
 
 interface NebulaProviderProps {
   children: React.ReactNode;

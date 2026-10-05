@@ -1,7 +1,7 @@
 import { Button, Dialog } from '@components';
 import { useMemo } from 'react';
 
-interface Subclip {
+export interface Subclip {
   title?: string;
   name?: string;
   mark_in?: number | null;
@@ -18,7 +18,7 @@ interface Asset {
 interface SubclipsDialogProps {
   asset: Asset;
   handleCancel: () => void;
-  handleConfirm: (options: Subclip[] | undefined) => void;
+  handleConfirm: (options: Subclip[]) => void;
 }
 
 const SubclipsDialog = ({

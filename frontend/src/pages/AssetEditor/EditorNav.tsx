@@ -25,8 +25,8 @@ interface AssetEditorNavProps {
   onNewAsset: () => void;
   onCloneAsset: () => void;
   onRevert: () => void;
-  onSave: (payload?: Record<string, any>) => void;
-  setMeta: (key: string, value: any, instant?: boolean) => void;
+  onSave: () => void;
+  setMeta: (key: string, value: any) => void;
   editorMode: 'metadata' | 'preview';
   setEditorMode: (mode: 'metadata' | 'preview') => void;
   enabledActions: EnabledActions;
@@ -80,7 +80,7 @@ const AssetEditorNav: React.FC<AssetEditorNavProps> = ({
 }) => {
   const [contextActionResult, setContextActionResult] = useState<{
     contentType: string;
-    payload: any;
+    payload: unknown;
   } | null>(null);
   const [detailsVisible, setDetailsVisible] = useState(false);
   const [uploadVisible, setUploadVisible] = useState(false);

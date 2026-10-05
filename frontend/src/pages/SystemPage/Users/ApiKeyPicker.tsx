@@ -109,7 +109,6 @@ const ApiKeyPicker: React.FC<ApiKeyPickerProps> = ({ setApiKey, apiKeyPreview })
       <InputText
         value={apiKeyPreview}
         readOnly
-        onChange={() => {}}
         style={{
           flexGrow: 1,
           fontFamily: 'monospace',

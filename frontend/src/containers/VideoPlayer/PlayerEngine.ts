@@ -56,7 +56,9 @@ const fetchWithTimeout: typeof fetch = async (input, init) => {
     } else {
       outerSignal.addEventListener(
         'abort',
-        () => controller.abort(outerSignal.reason),
+        () => {
+          controller.abort(outerSignal.reason);
+        },
         {
           once: true,
         }
@@ -562,7 +564,7 @@ export class PlayerEngine {
    */
   private displayScale() {
     const canvas = this.canvas;
-    if (!canvas || !canvas.clientWidth || !canvas.clientHeight) return 1;
+    if (!canvas?.clientWidth || !canvas.clientHeight) return 1;
     const frameAspect = canvas.width / canvas.height;
     const boxAspect = canvas.clientWidth / canvas.clientHeight;
     const displayedWidth =
@@ -581,7 +583,7 @@ export class PlayerEngine {
     this.stopPlayback();
 
     const audioContext = this.audioContext;
-    if (audioContext && audioContext.state === 'suspended') {
+    if (audioContext?.state === 'suspended') {
       try {
         await audioContext.resume();
       } catch {

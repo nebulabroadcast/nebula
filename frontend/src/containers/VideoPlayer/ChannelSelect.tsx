@@ -11,27 +11,27 @@ interface GainButtonProps {
 const GainButton: React.FC<GainButtonProps> = ({ gainNode, index }) => {
   const [active, setActive] = useState(gainNode.gain.value === 1);
 
-  const handleKeyDown = (e: KeyboardEvent) => {
-    if (!e.shiftKey) return;
-    if (e.keyCode === 49 + index) {
-      gainNode.gain.value = gainNode.gain.value === 0 ? 1 : 0;
-      setActive(gainNode.gain.value === 1);
-    }
-  };
-
+  // shift+1..9 toggles the matching channel, same as clicking the button
   useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!e.shiftKey) return;
+      if (e.code === `Digit${index + 1}`) {
+        setActive((a) => !a);
+      }
+    };
     window.addEventListener('keydown', handleKeyDown);
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [index, gainNode]);
+  }, [index]);
 
+  // active is the source of truth, the gain node follows it
   useEffect(() => {
-    gainNode.gain.value = active ? 1 : 0;
+    gainNode.gain.setValueAtTime(active ? 1 : 0, gainNode.context.currentTime);
   }, [active, gainNode]);
 
   const handleToggle = () => {
-    setActive(!active);
+    setActive((a) => !a);
   };
 
   return (

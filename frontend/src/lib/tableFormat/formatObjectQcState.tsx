@@ -7,7 +7,7 @@ const formatObjectQcState = (
   rowData: Record<string, any>,
   key: string
 ): JSX.Element => {
-  const qcState = QC_STATES[rowData[key]];
+  const qcState = QC_STATES[rowData[key] as number];
   return (
     <td className={clsx('qc-state', qcState)}>
       <div />

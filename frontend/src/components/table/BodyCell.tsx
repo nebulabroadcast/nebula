@@ -9,7 +9,11 @@ const BodyCell = ({ rowData, column }: BodyCellProps) => {
   if (column.formatter) {
     return column.formatter(rowData, column.name);
   }
-  return <td>{rowData[column.name]}</td>;
+  // plain values only, anything else needs a formatter
+  const value = rowData[column.name];
+  return (
+    <td>{typeof value === 'string' || typeof value === 'number' ? value : null}</td>
+  );
 };
 
 export default BodyCell;
