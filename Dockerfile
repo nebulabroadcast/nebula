@@ -6,6 +6,10 @@ FROM node:25 AS build
 
 WORKDIR /frontend
 
+RUN rm -f /usr/local/bin/yarn /usr/local/bin/yarnpkg \
+  && npm install -g corepack \
+  && corepack enable
+
 COPY ./frontend/index.html .
 COPY ./frontend/package.json .
 COPY ./frontend/vite.config.ts .
@@ -13,9 +17,10 @@ COPY ./frontend/tsconfig.json .
 COPY ./frontend/tsconfig.app.json .
 COPY ./frontend/tsconfig.node.json .
 COPY ./frontend/yarn.lock .
+COPY ./frontend/.yarnrc.yml .
 COPY ./frontend/public /frontend/public
 
-RUN yarn install
+RUN yarn install --immutable
 COPY ./frontend/src /frontend/src
 RUN yarn build
 
