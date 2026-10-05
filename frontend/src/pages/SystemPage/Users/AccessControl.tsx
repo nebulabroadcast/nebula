@@ -1,6 +1,6 @@
 import type { UserModel, UserPermissionsModel } from '@client';
 import { Select, InputSwitch, Form, FormRow } from '@components';
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import nebula from '@/nebula';
 
@@ -71,6 +71,27 @@ const AccessControl: React.FC<AccessControlProps> = ({ userData, setValue }) => 
       title: channel.name,
       value: channel.id,
     }));
+  }, []);
+
+  // services aren't part of settings, they have to be loaded
+  const [serviceOptions, setServiceOptions] = useState<
+    Array<{ title: string; value: number }>
+  >([]);
+
+  useEffect(() => {
+    nebula
+      .services({ body: {}, throwOnError: true })
+      .then((response) => {
+        setServiceOptions(
+          (response.data.services || []).map((service) => ({
+            title: service.name,
+            value: service.id,
+          }))
+        );
+      })
+      .catch((err: unknown) => {
+        console.error(err);
+      });
   }, []);
 
   const setPermission = (key: keyof UserPermissionsModel, value: any) => {
@@ -168,20 +189,21 @@ const AccessControl: React.FC<AccessControlProps> = ({ userData, setValue }) => 
           disabled={isAdmin}
         />
       </FormRow>
+      <FormRow title="Services control">
+        <AllOrList
+          value={permissions.service_control || false}
+          setValue={(value) => {
+            setPermission('service_control', value);
+          }}
+          options={serviceOptions}
+          disabled={isAdmin}
+        />
+      </FormRow>
       <FormRow title="Jobs control">
         <InputSwitch
           value={(permissions.job_control as boolean) || false}
           onChange={(value) => {
             setPermission('job_control', value);
-          }}
-          disabled={isAdmin}
-        />
-      </FormRow>
-      <FormRow title="Services control">
-        <InputSwitch
-          value={(permissions.service_control as boolean) || false}
-          onChange={(value) => {
-            setPermission('service_control', value);
           }}
           disabled={isAdmin}
         />
