@@ -13,8 +13,13 @@
     }
 
     tr {
-      border-left: 2px solid var(--color-surface-02);
       outline: none !important;
+    }
+
+    tbody {
+      tr {
+        border-left: 2px solid var(--color-surface-02);
+      }
     }
 
     td,
@@ -56,7 +61,6 @@
     thead {
       tr {
         background-color: var(--color-surface-03);
-        z-index: 999;
       }
 
       th {
@@ -64,12 +68,15 @@
         background-color: var(--color-surface-03);
         position: sticky;
         top: 0;
+        /* body rows are position: relative, keep the header above them */
+        z-index: 2;
         outline: 2px solid var(--color-surface-02);
       }
 
-      :first-child {
-        border-top-left-radius: 4px;
-      }
+      /* if this is used, left colored border is visible in the corner of the table header, which looks bad */
+      /* :first-child { */
+      /*   border-top-left-radius: 4px; */
+      /* } */
 
       :last-child {
         border-top-right-radius: 4px;
