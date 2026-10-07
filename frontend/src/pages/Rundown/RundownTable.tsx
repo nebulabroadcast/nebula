@@ -9,6 +9,7 @@ import { useNebula } from '@features/Nebula';
 import { formatRowHighlightColor, formatRowHighlightStyle } from '@lib/tableFormat';
 import React, { useMemo, useRef, useEffect } from 'react';
 import { useSearchParams, useLocation } from 'react-router';
+import styled from 'styled-components';
 
 import { RunMode } from '../../client';
 import type { ObjectType, RundownRow } from '../../client';
@@ -18,6 +19,21 @@ import { getRunModeOptions, getRundownColumns } from './utils';
 
 import type { ContextMenuOption } from '@/components/ContextMenu';
 import nebula from '@/nebula';
+
+const EmptyRundown = styled.div`
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--color-text-dim);
+  text-align: center;
+
+  p {
+    margin: 4px 0;
+  }
+`;
 
 interface RundownTableProps {
   data: RundownRow[];
@@ -486,6 +502,20 @@ const RundownTable: React.FC<RundownTableProps> = ({
     }
     return indices;
   }, [selectedItems, selectedEvents, data]);
+
+  if (!loading && !data?.length) {
+    return (
+      <RundownTableWrapper className="grow nopad" ref={tableRef}>
+        <EmptyRundown>
+          <p>There are no events scheduled for this day.</p>
+          <p>
+            Create one or more events in the scheduler first, then add items to them
+            here.
+          </p>
+        </EmptyRundown>
+      </RundownTableWrapper>
+    );
+  }
 
   return (
     <RundownTableWrapper className="grow nopad" ref={tableRef}>
