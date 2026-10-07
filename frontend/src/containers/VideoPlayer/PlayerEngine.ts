@@ -305,6 +305,10 @@ export class PlayerEngine {
     this.generation += 1;
     this.sourceGeneration += 1;
     this.stopPlayback();
+    if (this.playingValue) {
+      this.playingValue = false;
+      this.callbacks.onPlayingChange(false);
+    }
     this.input?.dispose();
     this.input = null;
     this.videoSink = null;
