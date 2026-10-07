@@ -56,7 +56,6 @@
     thead {
       tr {
         background-color: var(--color-surface-03);
-        z-index: 999;
       }
 
       th {
@@ -64,6 +63,8 @@
         background-color: var(--color-surface-03);
         position: sticky;
         top: 0;
+        /* body rows are position: relative, keep the header above them */
+        z-index: 2;
         outline: 2px solid var(--color-surface-02);
       }
 
