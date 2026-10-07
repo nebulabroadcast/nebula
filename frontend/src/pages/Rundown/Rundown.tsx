@@ -340,6 +340,7 @@ const Rundown: React.FC<RundownProps> = ({ draggedObjects }) => {
       )}
       <RundownTable
         data={rundown || []}
+        startTime={startTime}
         loading={loading}
         draggedObjects={draggedObjects || null}
         onDrop={onDrop}

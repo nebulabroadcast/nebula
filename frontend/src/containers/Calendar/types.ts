@@ -15,7 +15,8 @@ export interface DrawParams {
 }
 
 export interface DraggedExternal {
-  id: string | number;
+  // undefined for the "empty event" drag icon
+  id?: string | number;
   type: 'asset' | 'event';
   duration?: number;
   title?: string;
