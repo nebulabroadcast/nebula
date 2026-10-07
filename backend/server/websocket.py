@@ -54,7 +54,13 @@ class Client:
             nebula.log.trace("WS: Error sending message", e)
 
     async def receive(self) -> dict[str, Any] | None:
-        data = await self.sock.receive_text()
+        try:
+            data = await self.sock.receive_text()
+        except RuntimeError as e:
+            # Starlette raises RuntimeError (e.g. "ASGI flow error") when
+            # the connection is already closed. Treat it as a disconnect.
+            self.disconnected = True
+            raise WebSocketDisconnect(code=1006) from e
         try:
             message = json_loads(data)
             assert isinstance(message, dict)
