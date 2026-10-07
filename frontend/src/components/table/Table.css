@@ -13,8 +13,13 @@
     }
 
     tr {
-      border-left: 2px solid var(--color-surface-02);
       outline: none !important;
+    }
+
+    tbody {
+      tr {
+        border-left: 2px solid var(--color-surface-02);
+      }
     }
 
     td,
@@ -68,9 +73,10 @@
         outline: 2px solid var(--color-surface-02);
       }
 
-      :first-child {
-        border-top-left-radius: 4px;
-      }
+      /* if this is used, left colored border is visible in the corner of the table header, which looks bad */
+      /* :first-child { */
+      /*   border-top-left-radius: 4px; */
+      /* } */
 
       :last-child {
         border-top-right-radius: 4px;
