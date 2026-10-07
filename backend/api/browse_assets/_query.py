@@ -62,6 +62,12 @@ def build_order(order_by: str) -> str:
     # Ensure the key is in the columns list
     # This effectively prevents SQL injections
 
+    if order_by == "duration":
+        # Effective duration (mark_in / mark_out applied), same as
+        # Asset.duration. Defined in schema.sql and indexed there,
+        # so the expression must stay exactly the same.
+        return "asset_duration(a.meta)"
+
     cast_order_by = None
     if order_by_type := nebula.settings.metatypes.get(order_by):
         match order_by_type.metaclass:
