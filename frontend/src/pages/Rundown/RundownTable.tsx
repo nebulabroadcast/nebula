@@ -513,7 +513,9 @@ const RundownTable: React.FC<RundownTableProps> = ({
   // to the scheduler does: ask for the metadata first
 
   const canCreateEvent =
-    currentChannelId !== null && nebula.can('scheduler_edit', currentChannelId);
+    currentChannelId !== null &&
+    nebula.can('scheduler_view', currentChannelId) &&
+    nebula.can('scheduler_edit', currentChannelId);
 
   const createEvent = async () => {
     if (currentChannelId === null || !startTime) return;
