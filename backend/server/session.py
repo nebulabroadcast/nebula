@@ -6,9 +6,10 @@ from collections.abc import AsyncGenerator
 from typing import Any
 
 from fastapi import Request
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationError
 
 import nebula
+from nebula.common import json_loads
 from nebula.exceptions import LoginFailedException
 from server.clientinfo import ClientInfo, get_client_info, get_real_ip
 from server.utils import is_internal_ip
@@ -32,6 +33,33 @@ class Session:
         return time.time() - session.accessed > cls.ttl
 
     @classmethod
+    def _parse(cls, data: Any) -> SessionModel | None:
+        """Validate stored session data. Return None if it's unusable."""
+        if data is None:
+            return None
+        try:
+            return SessionModel.model_validate(data)
+        except ValidationError:
+            nebula.log.warning("Invalid session data in redis, ignoring it")
+            return None
+
+    @classmethod
+    async def _load(cls, token: str) -> SessionModel | None:
+        """Load a session from redis.
+
+        Corrupted or incompatible sessions (e.g. stored by an older version)
+        are treated as missing and removed, so the client can log in again.
+        """
+        try:
+            data = await nebula.redis.get_json(cls.ns, token)
+        except ValueError:
+            data = {}  # invalid JSON
+        session = cls._parse(data)
+        if session is None and data is not None:
+            await nebula.redis.delete(cls.ns, token)
+        return session
+
+    @classmethod
     async def check(
         cls,
         token: str,
@@ -46,15 +74,10 @@ class Session:
         its lifetime.
         """
 
-        try:
-            data = await nebula.redis.get_json(cls.ns, token)
-        except KeyError:
+        session = await cls._load(token)
+        if session is None:
             return None
 
-        if data is None:
-            return None
-
-        session = SessionModel.model_validate(data)
         if time.time() - session.accessed > cls.ttl:
             # TODO: some logging here?
             await nebula.redis.delete(cls.ns, token)
@@ -125,15 +148,10 @@ class Session:
         client_info: ClientInfo | None = None,
     ) -> None:
         """Update a session with new user data."""
-        try:
-            data = await nebula.redis.get_json(cls.ns, token)
-        except KeyError:
+        session = await cls._load(token)
+        if session is None:
             return
 
-        if data is None:
-            return
-
-        session = SessionModel.model_validate(data)
         session.user = user.meta
         session.accessed = time.time()
         if client_info is not None:
@@ -151,8 +169,16 @@ class Session:
         Additionally, this function also removes expired sessions
         from the database.
         """
-        async for _, data in nebula.redis.iterate_json(cls.ns):
-            session = SessionModel.model_validate(data)
+        # iterate_json would raise on the first invalid JSON payload
+        async for key, payload in nebula.redis.iterate(cls.ns):
+            try:
+                data = json_loads(payload) if payload else None
+            except ValueError:
+                data = {}
+            session = cls._parse(data)
+            if session is None:
+                await nebula.redis.delete(cls.ns, key)
+                continue
             if cls.is_expired(session):
                 nebula.log.info(
                     f"Removing expired session for user"

@@ -149,8 +149,13 @@ async def load_rundown(  # noqa: C901, PLR0915, PLR0912
             istatus = ObjectStatus.OFFLINE
         elif asset and asset.get_colocated_playout_path(id_channel):
             # asset already lives in the channel's playout dir
-            # (channel in a box) - no playout_status/{id_channel} needed
-            istatus = airstatus if airstatus is not None else ObjectStatus.ONLINE
+            # (channel in a box) - no playout_status/{id_channel} needed,
+            # the item inherits the asset status (e.g. CREATING, CORRUPTED)
+            astatus = ObjectStatus(ameta.get("status", ObjectStatus.UNKNOWN))
+            if astatus == ObjectStatus.ONLINE and airstatus is not None:
+                istatus = airstatus
+            else:
+                istatus = astatus
         elif pskey not in ameta or ameta[pskey]["status"] == ObjectStatus.OFFLINE:
             # media is not on the playout storage
             istatus = ObjectStatus.REMOTE

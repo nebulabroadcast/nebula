@@ -75,6 +75,9 @@ const BrowserTable = ({ isDragging }: BrowserTableProps) => {
 
   const dataRef = useRef(data);
   const requestParamsRef = useRef<RequestParams | null>(null);
+  // Incremented on every load. Responses of superseded requests are ignored,
+  // so a slow response can't overwrite newer data or the selected sort order
+  const requestSeqRef = useRef(0);
   const contextCellRef = useRef<{ rowData: TableRowData; columnName: string } | null>(
     null
   );
@@ -87,9 +90,11 @@ const BrowserTable = ({ isDragging }: BrowserTableProps) => {
     // Use current value of requestParamsRef to avoid stale data
     const params = requestParamsRef.current;
     if (!params) return;
+    const seq = ++requestSeqRef.current;
     void nebula
       .browse({ body: params, throwOnError: true })
       .then((response) => {
+        if (seq !== requestSeqRef.current) return;
         const hasMore = response.data.data.length > ROWS_PER_PAGE;
         const rows = response.data.data.slice(0, ROWS_PER_PAGE);
         setData(rows);
@@ -111,7 +116,7 @@ const BrowserTable = ({ isDragging }: BrowserTableProps) => {
         setHasMore(hasMore);
       })
       .finally(() => {
-        setLoading(false);
+        if (seq === requestSeqRef.current) setLoading(false);
       });
   }, [setSortBy, setSortDirection]);
 

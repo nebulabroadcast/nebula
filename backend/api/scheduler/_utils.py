@@ -39,26 +39,33 @@ async def delete_events(ids: list[int], **kwargs: Any) -> list[int]:
     _ = kwargs
 
     deleted_event_ids = []
-    async with nebula.db.transaction():
+    async with nebula.db.transaction() as conn:
         for id_event in ids:
             event = await nebula.Event.load(id_event)
             id_bin = event["id_magic"]
 
+            # Each event is deleted in its own savepoint (nested asyncpg
+            # transaction), so a failure only rolls back that event instead
+            # of aborting the whole transaction.
+            # TODO: use nx savepoint support instead of the raw connection
+            # once available (https://github.com/martastain/nx/issues/3)
             try:
-                await nebula.db.execute(
-                    "DELETE FROM items WHERE id_bin = $1",
-                    id_bin,
-                )
+                async with conn.transaction():
+                    await nebula.db.execute(
+                        "DELETE FROM items WHERE id_bin = $1",
+                        id_bin,
+                    )
+                    await nebula.db.execute("DELETE FROM bins WHERE id = $1", id_bin)
+                    await nebula.db.execute(
+                        "DELETE FROM events WHERE id = $1", id_event
+                    )
             except asyncpg.exceptions.ForeignKeyViolationError as e:
                 raise nebula.ConflictException(
                     "Cannot delete event containing aired items"
                 ) from e
             except Exception:
-                nebula.log.traceback(f"Failed to delete items of {event}")
+                nebula.log.traceback(f"Failed to delete {event}")
                 continue
-
-            await nebula.db.execute("DELETE FROM bins WHERE id = $1", id_bin)
-            await nebula.db.execute("DELETE FROM events WHERE id = $1", id_event)
 
             deleted_event_ids.append(id_event)
     return deleted_event_ids

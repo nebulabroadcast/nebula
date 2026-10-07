@@ -1,3 +1,5 @@
+from nx.db import db
+
 from nebula.objects.base import BaseObject
 
 
@@ -17,7 +19,7 @@ class Event(BaseObject):
     }
 
     async def delete_children(self) -> None:
-        assert self.connection is not None
-        assert hasattr(self.connection, "execute")
-        assert self.id
-        await self.connection.execute("DELETE FROM bins WHERE id_magic = $1", self.id)
+        # Delete the event's bin. Its items are removed by ON DELETE CASCADE,
+        # aired items (referenced from asrun) make this fail on purpose.
+        if id_bin := self["id_magic"]:
+            await db.execute("DELETE FROM bins WHERE id = $1", id_bin)
