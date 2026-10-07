@@ -62,6 +62,18 @@ def build_order(order_by: str) -> str:
     # Ensure the key is in the columns list
     # This effectively prevents SQL injections
 
+    if order_by == "duration":
+        # Match Asset.duration: take mark_in and mark_out in account
+        duration = "COALESCE(CAST(a.meta->>'duration' AS NUMERIC), 0)"
+        mark_in = "COALESCE(CAST(a.meta->>'mark_in' AS NUMERIC), 0)"
+        mark_out = "COALESCE(CAST(a.meta->>'mark_out' AS NUMERIC), 0)"
+        return f"""(
+            CASE WHEN {mark_out} > 0
+            THEN LEAST({duration}, {mark_out})
+            ELSE {duration} END
+            - CASE WHEN {duration} > 0 THEN {mark_in} ELSE 0 END
+        )"""
+
     cast_order_by = None
     if order_by_type := nebula.settings.metatypes.get(order_by):
         match order_by_type.metaclass:
