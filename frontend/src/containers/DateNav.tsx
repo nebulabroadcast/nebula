@@ -68,13 +68,15 @@ const DateNav: React.FC<DateNavProps> = ({ onChange, skipBy = 1 }) => {
     }
   };
 
+  const stepUnit = skipBy === 7 ? 'week' : skipBy === 1 ? 'day' : `${skipBy} days`;
+
   // Render
   return (
     <>
-      <Button icon="chevron_left" onClick={prevDay} tooltip="Previous day" />
+      <Button icon="chevron_left" onClick={prevDay} tooltip={`Previous ${stepUnit}`} />
       <Button icon="calendar_month" onClick={pickDate} tooltip="Pick a date" />
       <Button icon="today" onClick={today} tooltip="Today" />
-      <Button icon="chevron_right" onClick={nextDay} tooltip="Next day" />
+      <Button icon="chevron_right" onClick={nextDay} tooltip={`Next ${stepUnit}`} />
     </>
   );
 };
