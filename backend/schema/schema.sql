@@ -84,9 +84,30 @@ CREATE TABLE IF NOT EXISTS public.assets (
 CREATE INDEX IF NOT EXISTS idx_folder ON assets(id_folder);
 CREATE INDEX IF NOT EXISTS idx_content_type ON assets(content_type);
 CREATE INDEX IF NOT EXISTS idx_media_type ON assets(media_type);
-CREATE INDEX IF NOT EXISTS idx_status ON assets(id_folder);
+-- idx_status used to be created on id_folder by mistake (duplicate of idx_folder)
+DROP INDEX IF EXISTS idx_status;
+CREATE INDEX IF NOT EXISTS idx_asset_status ON assets(status);
 CREATE INDEX IF NOT EXISTS idx_ctime ON assets(ctime);
 CREATE INDEX IF NOT EXISTS idx_mtime ON assets(mtime);
+
+-- Effective duration of an asset (mark_in and mark_out applied),
+-- matches Asset.duration. Used for sorting assets by duration.
+-- If the function body changes, idx_asset_duration must be rebuilt
+-- (REINDEX INDEX idx_asset_duration).
+
+CREATE OR REPLACE FUNCTION asset_duration(meta JSONB) RETURNS NUMERIC
+LANGUAGE SQL IMMUTABLE PARALLEL SAFE AS $$
+  SELECT CASE WHEN dur <= 0 THEN 0
+    ELSE CASE WHEN mark_out > 0 THEN LEAST(dur, mark_out) ELSE dur END - mark_in
+  END
+  FROM (SELECT
+    COALESCE(CAST(meta->>'duration' AS NUMERIC), 0) AS dur,
+    COALESCE(CAST(meta->>'mark_in' AS NUMERIC), 0) AS mark_in,
+    COALESCE(CAST(meta->>'mark_out' AS NUMERIC), 0) AS mark_out
+  ) AS m
+$$;
+
+CREATE INDEX IF NOT EXISTS idx_asset_duration ON assets(asset_duration(meta));
 
 -- BINS
 
