@@ -46,7 +46,7 @@ const Scheduler: React.FC<SchedulerProps> = ({ draggedObjects }) => {
       return null;
     }
     const obj = draggedObjects[0];
-    if (obj.id === undefined || !['asset', 'event'].includes(obj.type)) return null;
+    if (!['asset', 'event'].includes(obj.type)) return null;
     console.log('Dragged external object', obj);
     return {
       id: obj.id,
@@ -226,6 +226,12 @@ const Scheduler: React.FC<SchedulerProps> = ({ draggedObjects }) => {
 
   const onSeriesDrop = async (dragged: DraggedExternal, time: Date) => {
     const start = Math.floor(time.getTime() / 1000);
+
+    // empty event, nothing to look up
+    if (dragged.id === undefined) {
+      void saveEvent({ is_empty_event: true, start });
+      return;
+    }
 
     // serie should be a string, but it may also be a numeric row id
     let serieId: string | undefined;

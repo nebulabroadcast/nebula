@@ -1,4 +1,4 @@
-import { Table } from '@components';
+import { Button, Table } from '@components';
 import type {
   TableDraggableItem,
   TableDropTarget,
@@ -9,9 +9,10 @@ import { useNebula } from '@features/Nebula';
 import { formatRowHighlightColor, formatRowHighlightStyle } from '@lib/tableFormat';
 import React, { useMemo, useRef, useEffect } from 'react';
 import { useSearchParams, useLocation } from 'react-router';
+import styled from 'styled-components';
 
 import { RunMode } from '../../client';
-import type { ObjectType, RundownRow } from '../../client';
+import type { EventData, ObjectType, RundownRow } from '../../client';
 
 import RundownTableWrapper from './RundownTableWrapper';
 import { getRunModeOptions, getRundownColumns } from './utils';
@@ -19,8 +20,28 @@ import { getRunModeOptions, getRundownColumns } from './utils';
 import type { ContextMenuOption } from '@/components/ContextMenu';
 import nebula from '@/nebula';
 
+const EmptyRundown = styled.div`
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--color-text-dim);
+  text-align: center;
+
+  p {
+    margin: 4px 0;
+  }
+
+  button {
+    margin-top: 12px;
+  }
+`;
+
 interface RundownTableProps {
   data: RundownRow[];
+  startTime: Date | null;
   draggedObjects: TableDraggableItem[] | null;
   onDrop: (
     items: TableDraggableItem[],
@@ -43,6 +64,7 @@ interface RundownTableProps {
 
 const RundownTable: React.FC<RundownTableProps> = ({
   data,
+  startTime,
   draggedObjects,
   onDrop,
   currentItem,
@@ -486,6 +508,63 @@ const RundownTable: React.FC<RundownTableProps> = ({
     }
     return indices;
   }, [selectedItems, selectedEvents, data]);
+
+  // Create a new event, the same way an empty event dropped
+  // to the scheduler does: ask for the metadata first
+
+  const canCreateEvent =
+    currentChannelId !== null &&
+    nebula.can('scheduler_view', currentChannelId) &&
+    nebula.can('scheduler_edit', currentChannelId);
+
+  const createEvent = async () => {
+    if (currentChannelId === null || !startTime) return;
+    const fields = [{ name: 'start' }, ...(channelConfig?.fields || [])];
+    const initialData: Record<string, unknown> = {
+      start: Math.floor(startTime.getTime() / 1000),
+    };
+
+    let meta: Record<string, unknown>;
+    try {
+      meta = await showDialog('metadata', 'New event', { fields, initialData });
+    } catch {
+      return; // dialog was cancelled
+    }
+
+    const { start, ...eventMeta } = meta;
+    const payload: EventData = {
+      start: (start as number) || (initialData.start as number),
+      meta: eventMeta as EventData['meta'],
+    };
+
+    try {
+      await nebula.scheduler({
+        body: { id_channel: currentChannelId, events: [payload] },
+        throwOnError: true,
+      });
+      loadRundown();
+    } catch (err) {
+      onError(err);
+    }
+  };
+
+  if (!loading && !data?.length) {
+    return (
+      <RundownTableWrapper className="grow nopad" ref={tableRef}>
+        <EmptyRundown>
+          <p>There are no events scheduled for this day.</p>
+          <p>Create an event first, then add items to it here.</p>
+          {canCreateEvent && (
+            <Button
+              icon="calendar_add_on"
+              label="Create event"
+              onClick={() => void createEvent()}
+            />
+          )}
+        </EmptyRundown>
+      </RundownTableWrapper>
+    );
+  }
 
   return (
     <RundownTableWrapper className="grow nopad" ref={tableRef}>
