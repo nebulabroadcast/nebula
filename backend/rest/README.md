@@ -484,12 +484,15 @@ Status codes:
 ## 11. Deprecating RPC endpoints
 
 1. The REST equivalent exists and is documented.
-2. Set `deprecated = True` on the `APIRequest` class. It shows up as
-   deprecated in OpenAPI, and the server adds a `Deprecation` response
-   header (RFC 9745).
-3. The frontend and Firefly move to the REST endpoint.
+2. The frontend and Firefly move to the REST endpoint.
+3. Set `deprecated = True` on the `APIRequest` class and name the
+   replacement in its docstring. It shows up as deprecated in OpenAPI,
+   and every call logs a warning, so remaining callers (plugins, scripts)
+   show up in the server log.
 4. The RPC endpoint is removed in a later minor release, which is noted in
    the release notes.
+
+Deprecated so far: `list-users`, `save-user` (replaced by `/api/v2/users`).
 
 Optimized endpoints listed in §1 are never deprecated by this process.
 

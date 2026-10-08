@@ -4,13 +4,13 @@ See rest/README.md §7 for the contract.
 """
 
 __all__ = [
-    "AndGroup",
-    "Condition",
     "FieldKind",
+    "FilterAnd",
+    "FilterCondition",
     "FilterNode",
+    "FilterNot",
+    "FilterOr",
     "FulltextSearch",
-    "NotGroup",
-    "OrGroup",
     "Params",
     "QueryField",
     "QueryRequest",
@@ -27,11 +27,11 @@ __all__ = [
 
 from server.query.compiler import Params, QueryResult, compile_query, run_query
 from server.query.models import (
-    AndGroup,
-    Condition,
+    FilterAnd,
+    FilterCondition,
     FilterNode,
-    NotGroup,
-    OrGroup,
+    FilterNot,
+    FilterOr,
     QueryRequest,
     QueryResponse,
 )

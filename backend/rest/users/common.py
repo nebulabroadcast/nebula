@@ -5,7 +5,7 @@ from fastapi import Path
 from rest.users.models import (
     CORE_FIELDS,
     DEFAULT_FIELDS,
-    UserModel,
+    User,
     user_metatype_keys,
 )
 from server.models.user_models import UserPermissionsModel
@@ -63,10 +63,10 @@ def field_value(meta: dict[str, Any], key: str) -> Any:
     return meta.get(key)
 
 
-def serialize_user(meta: dict[str, Any], fields: set[str] | None = None) -> UserModel:
+def serialize_user(meta: dict[str, Any], fields: set[str] | None = None) -> User:
     """Build the API representation of a user from its stored meta."""
     if fields is None:
         # Default: all core fields, plus user metatypes that have a value
         extra = {key for key in user_metatype_keys() if meta.get(key) is not None}
         fields = DEFAULT_FIELDS | extra
-    return UserModel.model_validate({key: field_value(meta, key) for key in fields})
+    return User.model_validate({key: field_value(meta, key) for key in fields})

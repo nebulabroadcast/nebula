@@ -118,6 +118,36 @@ import type {
   UploadData,
   UploadErrors,
   UploadResponses,
+  UsersAvatarDeleteData,
+  UsersAvatarDeleteErrors,
+  UsersAvatarDeleteResponses,
+  UsersAvatarGetData,
+  UsersAvatarGetErrors,
+  UsersAvatarGetResponses,
+  UsersAvatarUploadData,
+  UsersAvatarUploadErrors,
+  UsersAvatarUploadResponses,
+  UsersCreateData,
+  UsersCreateErrors,
+  UsersCreateResponses,
+  UsersGetData,
+  UsersGetErrors,
+  UsersGetResponses,
+  UsersListData,
+  UsersListErrors,
+  UsersListResponses,
+  UsersQueryPostData,
+  UsersQueryPostErrors,
+  UsersQueryPostResponses,
+  UsersRegenerateApiKeyData,
+  UsersRegenerateApiKeyErrors,
+  UsersRegenerateApiKeyResponses,
+  UsersSetPasswordData,
+  UsersSetPasswordErrors,
+  UsersSetPasswordResponses,
+  UsersUpdateData,
+  UsersUpdateErrors,
+  UsersUpdateResponses,
 } from './types.gen';
 
 export type Options<
@@ -520,6 +550,10 @@ export const set = <ThrowOnError extends boolean = false>(
  * Get User List
  *
  * Get a list of users
+ *
+ * Deprecated: use `GET /api/v2/users`.
+ *
+ * @deprecated
  */
 export const listUsers = <ThrowOnError extends boolean = false>(
   options?: Options<ListUsersData, ThrowOnError>
@@ -534,6 +568,10 @@ export const listUsers = <ThrowOnError extends boolean = false>(
  * Save User
  *
  * Save user data
+ *
+ * Deprecated: use `POST /api/v2/users` and `PATCH /api/v2/users/{user_id}`.
+ *
+ * @deprecated
  */
 export const saveUser = <ThrowOnError extends boolean = false>(
   options: Options<SaveUserData, ThrowOnError>
@@ -634,7 +672,8 @@ export const login = <ThrowOnError extends boolean = false>(
  *
  * Log out the current user.
  *
- * This request will invalidate the access token used in the Authorization header.
+ * This request will invalidate the access token used in the Authorization
+ * header and/or the auth cookie, and remove the cookie from the client.
  */
 export const logout = <ThrowOnError extends boolean = false>(
   options?: Options<LogoutData, ThrowOnError>
@@ -901,4 +940,210 @@ export const upload = <ThrowOnError extends boolean = false>(
     responseType: 'json',
     url: '/upload/{id_asset}',
     ...options,
+  });
+
+/**
+ * List users
+ *
+ * List users. Query parameters other than the options are equality
+ * filters (`?is_admin=true`); repeat one to match any of the values.
+ *
+ * Admins only.
+ */
+export const usersList = <ThrowOnError extends boolean = false>(
+  options?: Options<UsersListData, ThrowOnError>
+): RequestResult<UsersListResponses, UsersListErrors, ThrowOnError> =>
+  (options?.client ?? client).get<UsersListResponses, UsersListErrors, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/v2/users',
+    ...options,
+  });
+
+/**
+ * Create a user
+ *
+ * Create a user. Set the password and API key with their actions.
+ *
+ * Admins only.
+ */
+export const usersCreate = <ThrowOnError extends boolean = false>(
+  options: Options<UsersCreateData, ThrowOnError>
+): RequestResult<UsersCreateResponses, UsersCreateErrors, ThrowOnError> =>
+  (options.client ?? client).post<
+    UsersCreateResponses,
+    UsersCreateErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    url: '/api/v2/users',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+/**
+ * Query users (POST)
+ *
+ * Same as `QUERY /users`, for clients that can't send the QUERY method.
+ */
+export const usersQueryPost = <ThrowOnError extends boolean = false>(
+  options: Options<UsersQueryPostData, ThrowOnError>
+): RequestResult<UsersQueryPostResponses, UsersQueryPostErrors, ThrowOnError> =>
+  (options.client ?? client).post<
+    UsersQueryPostResponses,
+    UsersQueryPostErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    url: '/api/v2/users/query',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+/**
+ * Get a user
+ *
+ * Admins can get any user, users can get themselves.
+ */
+export const usersGet = <ThrowOnError extends boolean = false>(
+  options: Options<UsersGetData, ThrowOnError>
+): RequestResult<UsersGetResponses, UsersGetErrors, ThrowOnError> =>
+  (options.client ?? client).get<UsersGetResponses, UsersGetErrors, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/v2/users/{user_id}',
+    ...options,
+  });
+
+/**
+ * Update a user
+ *
+ * Change some of the user's fields. Omitted fields stay as they are,
+ * null removes a value.
+ *
+ * Users can change their own email, full name, language and editable
+ * user metatypes. Everything else needs an admin.
+ */
+export const usersUpdate = <ThrowOnError extends boolean = false>(
+  options: Options<UsersUpdateData, ThrowOnError>
+): RequestResult<UsersUpdateResponses, UsersUpdateErrors, ThrowOnError> =>
+  (options.client ?? client).patch<
+    UsersUpdateResponses,
+    UsersUpdateErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    url: '/api/v2/users/{user_id}',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+/**
+ * Set a user's password
+ *
+ * Admins can set any user's password, users can set their own.
+ */
+export const usersSetPassword = <ThrowOnError extends boolean = false>(
+  options: Options<UsersSetPasswordData, ThrowOnError>
+): RequestResult<UsersSetPasswordResponses, UsersSetPasswordErrors, ThrowOnError> =>
+  (options.client ?? client).post<
+    UsersSetPasswordResponses,
+    UsersSetPasswordErrors,
+    ThrowOnError
+  >({
+    url: '/api/v2/users/{user_id}/password',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+/**
+ * Generate a new API key
+ *
+ * Replace the user's API key with a new one. The key is returned only
+ * in this response; afterwards only `api_key_preview` is available.
+ *
+ * Admins can do this for any user, users for themselves.
+ */
+export const usersRegenerateApiKey = <ThrowOnError extends boolean = false>(
+  options: Options<UsersRegenerateApiKeyData, ThrowOnError>
+): RequestResult<
+  UsersRegenerateApiKeyResponses,
+  UsersRegenerateApiKeyErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    UsersRegenerateApiKeyResponses,
+    UsersRegenerateApiKeyErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    url: '/api/v2/users/{user_id}/api-key',
+    ...options,
+  });
+
+/**
+ * Delete a user's avatar
+ *
+ * Admins can delete any avatar, users their own.
+ */
+export const usersAvatarDelete = <ThrowOnError extends boolean = false>(
+  options: Options<UsersAvatarDeleteData, ThrowOnError>
+): RequestResult<UsersAvatarDeleteResponses, UsersAvatarDeleteErrors, ThrowOnError> =>
+  (options.client ?? client).delete<
+    UsersAvatarDeleteResponses,
+    UsersAvatarDeleteErrors,
+    ThrowOnError
+  >({ url: '/api/v2/users/{user_id}/avatar', ...options });
+
+/**
+ * Get a user's avatar
+ *
+ * Any logged-in user can see avatars. 404 when the user has none.
+ */
+export const usersAvatarGet = <ThrowOnError extends boolean = false>(
+  options: Options<UsersAvatarGetData, ThrowOnError>
+): RequestResult<UsersAvatarGetResponses, UsersAvatarGetErrors, ThrowOnError> =>
+  (options.client ?? client).get<
+    UsersAvatarGetResponses,
+    UsersAvatarGetErrors,
+    ThrowOnError
+  >({
+    responseType: 'blob',
+    url: '/api/v2/users/{user_id}/avatar',
+    ...options,
+  });
+
+/**
+ * Upload a user's avatar
+ *
+ * Upload an image as the request body (PNG, JPEG or WebP, max 10 MB).
+ * It is cropped to a square and converted to WebP.
+ *
+ * Admins can change any avatar, users their own.
+ */
+export const usersAvatarUpload = <ThrowOnError extends boolean = false>(
+  options: Options<UsersAvatarUploadData, ThrowOnError>
+): RequestResult<UsersAvatarUploadResponses, UsersAvatarUploadErrors, ThrowOnError> =>
+  (options.client ?? client).post<
+    UsersAvatarUploadResponses,
+    UsersAvatarUploadErrors,
+    ThrowOnError
+  >({
+    bodySerializer: null,
+    url: '/api/v2/users/{user_id}/avatar',
+    ...options,
+    headers: {
+      'Content-Type': 'image/png',
+      ...options.headers,
+    },
   });

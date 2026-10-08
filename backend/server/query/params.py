@@ -14,7 +14,7 @@ from fastapi.exceptions import RequestValidationError
 from pydantic import ValidationError
 from starlette.datastructures import QueryParams
 
-from server.query.models import AndGroup, Condition, QueryRequest
+from server.query.models import FilterAnd, FilterCondition, QueryRequest
 from server.query.schema import FieldKind, QueryField, QuerySchema, QueryValidationError
 
 QUERY_OPTIONS = {"fields", "sort", "q", "limit", "cursor", "include_total"}
@@ -66,9 +66,9 @@ def query_from_params(params: QueryParams, schema: QuerySchema) -> QueryRequest:
         field = schema.get(key)
         values = [parse_value(field, raw) for raw in params.getlist(key)]
         if len(values) == 1:
-            conditions.append(Condition(key=key, op="eq", value=values[0]))
+            conditions.append(FilterCondition(key=key, op="eq", value=values[0]))
         else:
-            conditions.append(Condition(key=key, op="in", value=values))
+            conditions.append(FilterCondition(key=key, op="in", value=values))
 
     data: dict[str, Any] = {
         "fields": split_list(params.get("fields")),
@@ -81,7 +81,7 @@ def query_from_params(params: QueryParams, schema: QuerySchema) -> QueryRequest:
     if (include_total := params.get("include_total")) is not None:
         data["include_total"] = include_total
     if conditions:
-        data["filter"] = AndGroup(and_=conditions)
+        data["filter"] = FilterAnd(and_=conditions)
 
     try:
         return QueryRequest.model_validate(data)

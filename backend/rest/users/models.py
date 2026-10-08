@@ -14,6 +14,7 @@ from nebula.metadata.normalize import normalize_meta
 from nebula.settings.common import LanguageCode
 from server.models import APIModel
 from server.models.user_models import PermissionValue, UserPermissionsModel
+from server.query import QueryResponse
 
 USER_NAMESPACE = "u"
 
@@ -68,7 +69,7 @@ class UserExtraFieldsModel(APIModel):
         return self
 
 
-class UserModel(UserExtraFieldsModel):
+class User(UserExtraFieldsModel):
     """A user. With `fields`, only the requested fields are present."""
 
     id: Annotated[int, Field(description="User ID", examples=[1])]
@@ -92,7 +93,11 @@ class UserModel(UserExtraFieldsModel):
     ] = None
 
 
-class UserPermissionsPatchModel(APIModel):
+class UserList(QueryResponse[User]):
+    """A page of users."""
+
+
+class UserPermissionsPatch(APIModel):
     """Permissions to change. Omitted ones stay, null removes one."""
 
     model_config = ConfigDict(extra="forbid")
@@ -108,7 +113,7 @@ class UserPermissionsPatchModel(APIModel):
     job_control: PermissionValue | None = None
 
 
-class UserPatchModel(UserExtraFieldsModel):
+class UserPatch(UserExtraFieldsModel):
     """Fields to change. Omitted fields stay as they are, null removes one."""
 
     login: Annotated[str | None, Field(min_length=1)] = None
@@ -118,7 +123,7 @@ class UserPatchModel(UserExtraFieldsModel):
     is_admin: bool | None = None
     is_limited: bool | None = None
     local_network_only: bool | None = None
-    permissions: UserPermissionsPatchModel | None = None
+    permissions: UserPermissionsPatch | None = None
 
     @model_validator(mode="after")
     def login_cant_be_removed(self) -> Self:
@@ -141,18 +146,18 @@ class UserPatchModel(UserExtraFieldsModel):
         return self
 
 
-class UserCreateModel(UserPatchModel):
+class UserCreate(UserPatch):
     """A new user. Set the password and API key with their actions afterwards."""
 
     login: Annotated[str, Field(min_length=1, examples=["jdoe"])]
 
 
-class ApiKeyModel(APIModel):
+class ApiKey(APIModel):
     api_key: Annotated[
         str,
         Field(description="The new API key. It is shown only once"),
     ]
 
 
-class PasswordModel(APIModel):
+class NewPassword(APIModel):
     password: Annotated[str, Field(description="New password")]

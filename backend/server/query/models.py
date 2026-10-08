@@ -25,25 +25,25 @@ class FilterModel(BaseModel):
     model_config = ConfigDict(extra="forbid", populate_by_name=True)
 
 
-class Condition(FilterModel):
+class FilterCondition(FilterModel):
     key: Annotated[str, Field(description="Field to compare", examples=["title"])]
     op: Annotated[FilterOperator, Field(description="Comparison operator")] = "eq"
     value: Annotated[Any, Field(description="Value to compare with")] = None
 
 
-class AndGroup(FilterModel):
+class FilterAnd(FilterModel):
     and_: Annotated[list["FilterNode"], Field(alias="and", min_length=1)]
 
 
-class OrGroup(FilterModel):
+class FilterOr(FilterModel):
     or_: Annotated[list["FilterNode"], Field(alias="or", min_length=1)]
 
 
-class NotGroup(FilterModel):
+class FilterNot(FilterModel):
     not_: Annotated["FilterNode", Field(alias="not")]
 
 
-FilterNode = Condition | AndGroup | OrGroup | NotGroup
+FilterNode = FilterCondition | FilterAnd | FilterOr | FilterNot
 
 
 class QueryRequest(BaseModel):

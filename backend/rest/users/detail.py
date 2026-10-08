@@ -5,11 +5,11 @@ from fastapi import APIRouter, Query, Response
 import nebula
 from rest.users.common import PREFIX, UserId, resolve_fields, serialize_user
 from rest.users.models import (
-    ApiKeyModel,
-    PasswordModel,
-    UserCreateModel,
-    UserModel,
-    UserPatchModel,
+    ApiKey,
+    NewPassword,
+    User,
+    UserCreate,
+    UserPatch,
 )
 from server.errors import REST_PREFIX
 from server.session import Session
@@ -24,7 +24,7 @@ router = APIRouter(prefix=PREFIX)
     summary="Create a user",
     response_model_exclude_unset=True,
 )
-async def create_user(payload: UserCreateModel, response: Response) -> UserModel:
+async def create_user(payload: UserCreate, response: Response) -> User:
     """Create a user. Set the password and API key with their actions.
 
     Admins only.
@@ -49,7 +49,7 @@ async def get_user(
     fields: Annotated[
         str | None, Query(description="Comma-separated fields to return")
     ] = None,
-) -> UserModel:
+) -> User:
     """Admins can get any user, users can get themselves."""
     user = await nebula.User.load(user_id)
     user.ensure_can_view()
@@ -63,7 +63,7 @@ async def get_user(
     summary="Update a user",
     response_model_exclude_unset=True,
 )
-async def update_user(user_id: UserId, payload: UserPatchModel) -> UserModel:
+async def update_user(user_id: UserId, payload: UserPatch) -> User:
     """Change some of the user's fields. Omitted fields stay as they are,
     null removes a value.
 
@@ -83,7 +83,7 @@ async def update_user(user_id: UserId, payload: UserPatchModel) -> UserModel:
     operation_id="users_set_password",
     summary="Set a user's password",
 )
-async def set_password(user_id: UserId, payload: PasswordModel) -> None:
+async def set_password(user_id: UserId, payload: NewPassword) -> None:
     """Admins can set any user's password, users can set their own."""
     user = await nebula.User.load(user_id)
     user.change_password(payload.password)
@@ -96,7 +96,7 @@ async def set_password(user_id: UserId, payload: PasswordModel) -> None:
     operation_id="users_regenerate_api_key",
     summary="Generate a new API key",
 )
-async def regenerate_api_key(user_id: UserId) -> ApiKeyModel:
+async def regenerate_api_key(user_id: UserId) -> ApiKey:
     """Replace the user's API key with a new one. The key is returned only
     in this response; afterwards only `api_key_preview` is available.
 
@@ -106,4 +106,4 @@ async def regenerate_api_key(user_id: UserId) -> ApiKeyModel:
     api_key = user.regenerate_api_key()
     await user.save()
     await Session.refresh_user(user)
-    return ApiKeyModel(api_key=api_key)
+    return ApiKey(api_key=api_key)

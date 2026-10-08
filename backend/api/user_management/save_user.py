@@ -5,9 +5,13 @@ from server.session import Session
 
 
 class SaveUser(APIRequest):
-    """Save user data"""
+    """Save user data
+
+    Deprecated: use `POST /api/v2/users` and `PATCH /api/v2/users/{user_id}`.
+    """
 
     name = "save-user"
+    deprecated = True
     title = "Save user"
     category = "User management"
 

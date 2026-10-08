@@ -12,11 +12,11 @@ import nebula
 from nebula.utils import slugify
 from server.query.cursor import decode_cursor, encode_cursor, query_hash
 from server.query.models import (
-    AndGroup,
-    Condition,
+    FilterAnd,
+    FilterCondition,
     FilterNode,
-    NotGroup,
-    OrGroup,
+    FilterNot,
+    FilterOr,
     QueryRequest,
 )
 from server.query.schema import (
@@ -140,7 +140,9 @@ OPERATORS: dict[str, Callable[[str, QueryField, Any, Params], str]] = {
 }
 
 
-def compile_condition(schema: QuerySchema, condition: Condition, params: Params) -> str:
+def compile_condition(
+    schema: QuerySchema, condition: FilterCondition, params: Params
+) -> str:
     field = schema.get(condition.key)
     op = condition.op
     value = condition.value
@@ -168,15 +170,15 @@ def compile_filter(
             f"Filter is nested too deep (max {MAX_FILTER_DEPTH} levels)"
         )
 
-    if isinstance(node, Condition):
+    if isinstance(node, FilterCondition):
         return compile_condition(schema, node, params)
-    if isinstance(node, NotGroup):
+    if isinstance(node, FilterNot):
         return f"NOT ({compile_filter(schema, node.not_, params, depth + 1)})"
 
-    if isinstance(node, AndGroup):
+    if isinstance(node, FilterAnd):
         children, joiner = node.and_, " AND "
     else:
-        assert isinstance(node, OrGroup)
+        assert isinstance(node, FilterOr)
         children, joiner = node.or_, " OR "
     compiled = [compile_filter(schema, child, params, depth + 1) for child in children]
     return "(" + joiner.join(compiled) + ")"

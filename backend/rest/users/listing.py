@@ -4,10 +4,9 @@ from fastapi import APIRouter, Depends
 
 import nebula
 from rest.users.common import PREFIX, resolve_fields, serialize_user, users_query_schema
-from rest.users.models import UserModel
+from rest.users.models import UserList
 from server.query import (
     QueryRequest,
-    QueryResponse,
     compile_query,
     query_params_dependency,
     run_query,
@@ -16,7 +15,7 @@ from server.query import (
 router = APIRouter(prefix=PREFIX)
 
 
-async def query_users(query: QueryRequest) -> QueryResponse[UserModel]:
+async def query_users(query: QueryRequest) -> UserList:
     nebula.User.ensure_can_list()
     fields = resolve_fields(query.fields)
     compiled = compile_query(users_query_schema(), query, select="u.meta")
@@ -29,7 +28,7 @@ async def query_users(query: QueryRequest) -> QueryResponse[UserModel]:
     }
     if result.total is not None:
         response["total"] = result.total
-    return QueryResponse[UserModel].model_validate(response)
+    return UserList.model_validate(response)
 
 
 @router.get(
@@ -42,7 +41,7 @@ async def list_users(
     query: Annotated[
         QueryRequest, Depends(query_params_dependency(users_query_schema))
     ],
-) -> QueryResponse[UserModel]:
+) -> UserList:
     """List users. Query parameters other than the options are equality
     filters (`?is_admin=true`); repeat one to match any of the values.
 
@@ -58,7 +57,7 @@ async def list_users(
     summary="Query users",
     response_model_exclude_unset=True,
 )
-async def query_users_query(query: QueryRequest) -> QueryResponse[UserModel]:
+async def query_users_query(query: QueryRequest) -> UserList:
     """Query users with the full query model (filter tree, search, sort).
 
     Admins only.
@@ -72,6 +71,6 @@ async def query_users_query(query: QueryRequest) -> QueryResponse[UserModel]:
     summary="Query users (POST)",
     response_model_exclude_unset=True,
 )
-async def query_users_post(query: QueryRequest) -> QueryResponse[UserModel]:
+async def query_users_post(query: QueryRequest) -> UserList:
     """Same as `QUERY /users`, for clients that can't send the QUERY method."""
     return await query_users(query)
