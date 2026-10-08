@@ -336,9 +336,17 @@ Translation rules (implemented once in `server/query/`):
 
 ### 7.3 Fulltext
 
-`q` uses the existing `ft` token index (the same one browse uses). Each
-whitespace-separated token must match. When `q` is set and `sort` is not,
-results are ordered by relevance (summed token weights).
+Each resource picks one search strategy:
+
+- **Fulltext** (assets and other objects with fulltext metatypes): uses
+  the existing `ft` token index, like browse. `q` is slugified into
+  words of at least 3 characters, and every word must prefix-match. When
+  `q` is set and `sort` is not, results are ordered by relevance (summed
+  token weights). Relevance is also available as the sort key
+  `_relevance`.
+- **Substring** (resources with few rows, e.g. users): every
+  whitespace-separated word must appear (ILIKE) in at least one of the
+  resource's search keys. There's no relevance ordering.
 
 ### 7.4 Sorting
 
