@@ -21,15 +21,20 @@ from server.middleware.session import SessionMiddleware
 from server.storage_monitor import storage_monitor
 from server.websocket import messaging
 
+# Code reaching the server without a request context (websockets, plugin
+# hooks...) is untrusted. Background jobs opt in with system_context().
+nebula.context.set_default_system(False)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     _ = app
-    async with aiofiles.open("/var/run/nebula.pid", "w") as f:
-        await f.write(str(os.getpid()))
-    await load_settings()
-    messaging.start()
-    storage_monitor.start()
+    with nebula.context.system_context():
+        async with aiofiles.open("/var/run/nebula.pid", "w") as f:
+            await f.write(str(os.getpid()))
+        await load_settings()
+        messaging.start()
+        storage_monitor.start()
     nebula.log.success("Server started")
 
     yield

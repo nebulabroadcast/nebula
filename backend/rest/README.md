@@ -65,7 +65,7 @@ backend/
   from . import avatar, detail, listing
 
   router = APIRouter(prefix="/users", tags=["Users"])
-  router.include_router(listing.router)   # /query must come before /{id}
+  router.include_router(listing.router)  # /query must come before /{id}
   router.include_router(detail.router)
   router.include_router(avatar.router)
   ```
@@ -172,6 +172,8 @@ dependency. Credentials, in order of precedence:
 If an explicit credential (1–3) is present, it decides the outcome. An
 invalid explicit credential is a 401 even when a valid cookie is also sent,
 so a broken integration never silently acts as the browser's logged-in user.
+A malformed `Authorization` header (e.g. `Bearer null`) isn't a credential
+and is ignored, as it always has been.
 
 ### Cookie
 
@@ -188,9 +190,11 @@ so a broken integration never silently acts as the browser's logged-in user.
 
 ### CSRF
 
-The cookie is sent automatically, so cookie-authenticated requests with
-unsafe methods (`POST`, `PUT`, `PATCH`, `DELETE`) are rejected with 403
-when `Sec-Fetch-Site` is `cross-site`. `SameSite=Lax` covers browsers that
+The cookie is sent automatically, so on requests with unsafe methods
+(`POST`, `PUT`, `PATCH`, `DELETE`) and `Sec-Fetch-Site: cross-site` the
+cookie is ignored. The request is then anonymous: endpoints that require
+a user return 401, and anonymous endpoints run as anonymous. Logout
+rejects such requests without clearing anything. `SameSite=Lax` covers browsers that
 don't send `Sec-Fetch-Site`. `QUERY` is safe: forms can't send it, and
 cross-origin `fetch` with it requires a preflight.
 

@@ -2,8 +2,6 @@ import axios, { AxiosProgressEvent } from 'axios';
 import React, { useState, useEffect, useRef, useCallback, ReactNode } from 'react';
 import { toast } from 'react-toastify';
 
-import nebula from '../../nebula';
-
 import { MediaUploadContext } from './context';
 import {
   MediaUploadTask,
@@ -133,7 +131,6 @@ const useMediaUploadLogic = (): MediaUploadContextType => {
         headers: {
           'Content-Type': 'application/octet-stream',
           'X-nebula-extension': extension,
-          Authorization: `Bearer ${nebula.getAccessToken()}`,
         },
       });
 
