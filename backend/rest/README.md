@@ -55,20 +55,28 @@ backend/
 
 - Every package in `rest/` that exports `router` is discovered at startup and
   mounted under `/api/v2`. Discovery stops at the package level. Inside a
-  package, each module defines its own `APIRouter()` and `__init__.py`
-  combines them explicitly, so route order is visible in one place and no
-  module is imported only for its side effects:
+  package, each module defines its own `APIRouter(prefix=...)` and
+  `__init__.py` combines them explicitly, so route order is visible in one
+  place and no module is imported only for its side effects. The prefix
+  goes on each module's router because FastAPI doesn't allow an empty
+  path (`""`, the collection itself) in a router included without one:
 
   ```python
-  # rest/users/__init__.py
-  from fastapi import APIRouter
-  from . import avatar, detail, listing
+  # rest/users/listing.py
+  router = APIRouter(prefix="/users")
 
-  router = APIRouter(prefix="/users", tags=["Users"])
-  router.include_router(listing.router)  # /query must come before /{id}
+  @router.get("")
+  async def list_users(...): ...
+
+  # rest/users/__init__.py
+  router = APIRouter(tags=["Users"], dependencies=[Depends(current_user)])
+  router.include_router(listing.router)  # /query must come before /{user_id}
   router.include_router(detail.router)
   router.include_router(avatar.router)
   ```
+
+- Avoid `rest/<name>/__init__.py` doing more than combining routers.
+  Shared helpers of a resource go to `common.py`, models to `models.py`.
 
 - **Handlers are thin.** A handler parses input, calls domain code and
   shapes the response. No business logic and no permission checks (see
@@ -135,7 +143,8 @@ POST    /api/v2/users/{id}/avatar      upload binary sub-resource
   `/assets`, `/scheduling-templates`. The package in `rest/` keeps a
   Python name (`rest/scheduling_templates/`), and its router declares
   the kebab-case prefix.
-- Path parameters are `{id}` for the resource's own id. Nested resources
+- Path parameters are named `{<singular>_id}` (`{user_id}`), so handler
+  arguments don't shadow `id`. Examples here write `{id}` for short. Nested resources
   are allowed one level deep (`/users/{id}/avatar`). Deeper relations
   are expressed with filters (`QUERY /items` with `id_bin`), not URLs.
 - Actions that aren't CRUD use a verb sub-path with `POST`:
@@ -411,14 +420,15 @@ until there's a concrete need.
 
 Avatars, and later thumbnails or attachments, follow the proxy pattern:
 
-- Storage and directory are configured in settings. For avatars the
-  default is storage 1, `.nx/avatars`.
-- `GET` streams the file with `ETag` and `Cache-Control: private, max-age=...`,
-  and honours `If-None-Match` (304).
+- Storage and path are configured in system settings. For avatars:
+  `avatar_storage` (default 1) and `avatar_path`
+  (default `.nx/avatars/{id}.webp`).
+- `GET` streams the file with `ETag` and `Cache-Control: private, no-cache`
+  (browsers keep it but revalidate), and honours `If-None-Match` (304).
 - `POST` takes the raw file as the request body with a matching
   `Content-Type` (`image/png`, `image/jpeg`, `image/webp`), like `/upload`.
   No multipart. The server validates type and size, normalizes the image
-  (format, max dimensions) and returns **204**. Normalization uses ffmpeg,
+  (avatars: cropped to 256×256 WebP) and returns **204**. Normalization uses ffmpeg,
   which is already in the server image, so there is no new Python dependency.
 - `DELETE` removes the file and returns **204**.
 - A missing file is a 404 (the frontend shows a placeholder).

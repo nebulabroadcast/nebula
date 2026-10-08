@@ -5,16 +5,19 @@ __all__ = [
     "get_request_context",
     "is_system",
     "request_context",
+    "require_access",
     "set_default_system",
     "system_context",
 ]
 
 import contextlib
 import dataclasses
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from contextvars import ContextVar
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
+
+from nebula.exceptions import ForbiddenException, UnauthorizedException
 
 if TYPE_CHECKING:
     from nebula.objects.user import User
@@ -90,3 +93,18 @@ def system_context() -> Iterator[None]:
     context = dataclasses.replace(get_request_context(), system=True)
     with request_context(context):
         yield
+
+
+def require_access(allowed: "Callable[[User], bool]", detail: str) -> None:
+    """Raise unless the acting user passes the check.
+
+    Trusted (system) code always passes. Without a user, raises 401;
+    when the check fails, raises 403 with the given detail.
+    """
+    context = get_request_context()
+    if context.system:
+        return
+    if context.user is None:
+        raise UnauthorizedException("Authentication required")
+    if not allowed(context.user):
+        raise ForbiddenException(detail)
