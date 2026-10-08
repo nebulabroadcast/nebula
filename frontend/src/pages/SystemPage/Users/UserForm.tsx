@@ -10,12 +10,12 @@ import {
   ScrollBox,
   Section,
 } from '@components';
+import { ApiKeyPicker } from '@features/ApiKeyPicker';
+import { UserAvatar } from '@features/UserAvatar';
 import React from 'react';
 import { toast } from 'react-toastify';
 
 import AccessControl from './AccessControl';
-import ApiKeyPicker from './ApiKeyPicker';
-import UserAvatar from './UserAvatar';
 import type { UserDraft } from './Users';
 
 import nebula from '@/nebula';

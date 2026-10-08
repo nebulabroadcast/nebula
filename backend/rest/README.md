@@ -492,7 +492,8 @@ Status codes:
 4. The RPC endpoint is removed in a later minor release, which is noted in
    the release notes.
 
-Deprecated so far: `list-users`, `save-user` (replaced by `/api/v2/users`).
+Deprecated so far: `list-users`, `save-user`, `password` (replaced by
+`/api/v2/users`).
 
 Optimized endpoints listed in §1 are never deprecated by this process.
 

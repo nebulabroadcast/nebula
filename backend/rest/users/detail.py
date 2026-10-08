@@ -106,4 +106,4 @@ async def regenerate_api_key(user_id: UserId) -> ApiKey:
     api_key = user.regenerate_api_key()
     await user.save()
     await Session.refresh_user(user)
-    return ApiKey(api_key=api_key)
+    return ApiKey(api_key=api_key, api_key_preview=user["api_key_preview"])

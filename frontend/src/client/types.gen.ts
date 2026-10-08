@@ -70,6 +70,12 @@ export type ApiKey = {
    * The new API key. It is shown only once
    */
   api_key: string;
+  /**
+   * Api Key Preview
+   *
+   * Masked key, as returned with the user from now on
+   */
+  api_key_preview: string;
 };
 
 /**

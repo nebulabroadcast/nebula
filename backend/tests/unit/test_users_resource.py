@@ -332,6 +332,7 @@ def test_regenerate_api_key(client: TestClient, users: FakeUsers) -> None:
 
     body = client.get(f"{USERS}/2", headers=ALICE).json()
     assert body["api_key_preview"] == f"{api_key[:4]}*******{api_key[-4:]}"
+    assert response.json()["api_key_preview"] == body["api_key_preview"]
 
     assert client.post(f"{USERS}/1/api-key", headers=ALICE).status_code == 403
 

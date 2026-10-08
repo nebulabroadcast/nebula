@@ -157,6 +157,10 @@ class ApiKey(APIModel):
         str,
         Field(description="The new API key. It is shown only once"),
     ]
+    api_key_preview: Annotated[
+        str,
+        Field(description="Masked key, as returned with the user from now on"),
+    ]
 
 
 class NewPassword(APIModel):
