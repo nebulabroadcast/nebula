@@ -131,12 +131,15 @@ GET     /api/v2/users/{id}/avatar      binary sub-resource
 POST    /api/v2/users/{id}/avatar      upload binary sub-resource
 ```
 
-- Resource names are plural nouns in `snake_case`: `/assets`, `/scheduling_templates`.
+- Path segments are `kebab-case`. Resource names are plural nouns:
+  `/assets`, `/scheduling-templates`. The package in `rest/` keeps a
+  Python name (`rest/scheduling_templates/`), and its router declares
+  the kebab-case prefix.
 - Path parameters are `{id}` for the resource's own id. Nested resources
   are allowed one level deep (`/users/{id}/avatar`). Deeper relations
   are expressed with filters (`QUERY /items` with `id_bin`), not URLs.
 - Actions that aren't CRUD use a verb sub-path with `POST`:
-  `POST /api/v2/users/{id}/send_invitation`. Use these sparingly. If
+  `POST /api/v2/users/{id}/send-invitation`. Use these sparingly. If
   something is really a state change, prefer `PATCH`.
 - `PUT` is not used. Full replacement of a Nebula object is never what
   the client actually wants.
@@ -144,18 +147,40 @@ POST    /api/v2/users/{id}/avatar      upload binary sub-resource
 
 ## 4. Naming and payloads
 
-- All JSON field names, query parameters and path segments are
-  `snake_case`. No alias generators and no camelCase conversion in either
-  direction.
+- All JSON field names and query parameters are `snake_case`. No alias
+  generators and no camelCase conversion in either direction. Paths are
+  the only exception and use `kebab-case` (§3).
 - Nebula metadata keys are used verbatim, including namespaced keys
   (`video/fps`, `qc/state`). They are the canonical identifiers, and the
   same strings are used in `fields`, `filter` and `sort`.
-- _Open:_ resources with a curated model (users) may group namespaced
-  keys into objects, e.g. `can/*` as `permissions: {...}`. Decide per
-  resource and document it in that resource's `models.py`.
+- Resources with a curated model may group namespaced keys into objects,
+  e.g. users expose `can/*` as `permissions: {...}`. The storage format
+  stays an internal detail. Document the grouping in the resource's
+  `models.py`.
 - Timestamps are Unix epoch seconds (float), matching existing metadata.
 - Ids are integers. `id` is always present in responses.
 - Responses for a single object are the object itself, without an envelope.
+
+### 4.1 Partially typed models
+
+Nebula objects are open-ended metadata, but every resource has fields it
+can't work without. Models are therefore partially typed:
+
+- **Core fields** are declared on the model. They're always present in
+  responses and fully typed in OpenAPI.
+- **Extra fields** are allowed (`extra="allow"`, so `additionalProperties`
+  in OpenAPI) only when the key is a metatype in the resource's namespace
+  (`ns`, e.g. `u` for users). Values go through `normalize_meta`. An
+  unknown key is a 422, so typos never end up stored.
+- Adding a metatype to the namespace makes the key readable and writable
+  with no code change. Clients learn which keys exist from the metatypes
+  in `init`.
+- Read-only fields (`id`, `ctime`, `mtime`) and fields managed by actions
+  are rejected in create/patch bodies with 422.
+- Secrets are never plain fields. They're set through actions
+  (`POST /users/{id}/password`, `POST /users/{id}/api-key`, which generates
+  the key and returns it once), and read models expose only harmless
+  derived values (`api_key_preview`, `has_password`).
 
 
 ## 5. Authentication and permissions

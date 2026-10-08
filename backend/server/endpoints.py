@@ -1,3 +1,4 @@
+import importlib
 import inspect
 import os
 
@@ -8,6 +9,7 @@ from nebula.common import classes_from_module, import_module
 from nebula.plugins.library import plugin_library
 from nebula.utils import slugify
 from server.context import ScopedEndpoint, server_context
+from server.errors import REST_PREFIX
 from server.request import APIRequest
 
 
@@ -113,3 +115,31 @@ def install_endpoints(app: fastapi.FastAPI) -> None:
             tags=[endpoint.category] if endpoint.category else ["Plugins"],
             **additional_params,
         )
+
+
+def find_rest_routers() -> list[tuple[str, fastapi.APIRouter]]:
+    """Find the routers of all REST resources (packages in rest/)."""
+    result = []
+    for name in sorted(os.listdir("rest")):
+        if not os.path.isfile(os.path.join("rest", name, "__init__.py")):
+            continue
+
+        try:
+            module = importlib.import_module(f"rest.{name}")
+        except ImportError:
+            nebula.log.traceback(f"Failed to load REST resource {name}")
+            continue
+
+        router = getattr(module, "router", None)
+        if not isinstance(router, fastapi.APIRouter):
+            nebula.log.error(f"REST resource {name} doesn't export a router")
+            continue
+        result.append((name, router))
+    return result
+
+
+def install_rest_routers(app: fastapi.FastAPI) -> None:
+    """Mount all REST resources under REST_PREFIX."""
+    for name, router in find_rest_routers():
+        nebula.log.trace("Adding REST resource", name)
+        app.include_router(router, prefix=REST_PREFIX)
