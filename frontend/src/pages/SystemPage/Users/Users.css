@@ -1,0 +1,23 @@
+/*
+ * User list on the left spans both rows, the editor navbar spans
+ * the form and sessions columns below it.
+ */
+.users-page {
+  display: grid;
+  grid-template-columns: minmax(300px, 400px) minmax(600px, 1fr) minmax(400px, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: var(--section-gap);
+
+  > .user-list {
+    grid-row: span 2;
+  }
+
+  > .editor-nav {
+    grid-column: span 2;
+  }
+
+  /* Sections are .column (min-height: 0), keep them from shrinking in the scroll box */
+  .nb-scroll-content > .nb-section {
+    flex-shrink: 0;
+  }
+}

@@ -45,13 +45,14 @@ const UserForm: React.FC<UserFormProps> = ({ userData, setUserData, onChanged })
   };
 
   return (
-    <ScrollBox style={{ minWidth: 600 }}>
+    <ScrollBox>
       <Section className="column">
         <PanelHeader>
           <Icon icon="person" />
           {userData?.id ? 'User profile' : 'New user'}
         </PanelHeader>
         <div className="row" style={{ gap: 16, alignItems: 'flex-start' }}>
+          <UserAvatar userId={userData?.id ?? undefined} />
           <Form style={{ flexGrow: 1 }}>
             <FormRow title="Login">
               <InputText
@@ -88,7 +89,6 @@ const UserForm: React.FC<UserFormProps> = ({ userData, setUserData, onChanged })
               />
             </FormRow>
           </Form>
-          <UserAvatar userId={userData?.id ?? undefined} />
         </div>
       </Section>
 

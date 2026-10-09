@@ -12,6 +12,8 @@ import UserList from './UserList';
 
 import nebula from '@/nebula';
 
+import './Users.css';
+
 // The user being edited. The password is set with its own request on save.
 export type UserDraft = Partial<User> & { password?: string };
 
@@ -138,8 +140,8 @@ const UsersPage: React.FC = () => {
   };
 
   return (
-    <main className="row">
-      <section className="transparent column">
+    <main className="users-page">
+      <section className="transparent column user-list">
         <Navbar>
           <Button
             icon="person_add"
@@ -166,25 +168,16 @@ const UsersPage: React.FC = () => {
         />
       </section>
 
-      <section className="transparent column grow">
-        <Navbar>
-          <div className="left"></div>
+      <Navbar className="editor-nav">
+        <Spacer />
+        <NavbarTitle>{userData.login || 'New User'}</NavbarTitle>
+        <Spacer />
+        <Button icon="check" label="Delete user" onClick={onSave} disabled={true} />
+        <Button icon="check" label="Save user" onClick={onSave} />
+      </Navbar>
 
-          <div className="center">
-            <NavbarTitle>{userData.login || 'New User'}</NavbarTitle>
-          </div>
-
-          <div className="right">
-            <Button icon="check" label="Delete user" onClick={onSave} disabled={true} />
-            <Button icon="check" label="Save user" onClick={onSave} />
-          </div>
-        </Navbar>
-        <UserForm userData={userData} setUserData={setUserData} onChanged={loadUsers} />
-      </section>
-
-      <section className="transparent column grow">
-        <Sessions userId={userData?.id ?? undefined} />
-      </section>
+      <UserForm userData={userData} setUserData={setUserData} onChanged={loadUsers} />
+      <Sessions userId={userData?.id ?? undefined} />
     </main>
   );
 };
