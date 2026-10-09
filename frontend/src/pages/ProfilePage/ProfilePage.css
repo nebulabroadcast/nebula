@@ -1,0 +1,29 @@
+.profile-page {
+  display: grid;
+  grid-template-columns: 460px minmax(400px, 680px);
+  justify-content: center;
+  align-content: start;
+  gap: 12px;
+  padding-top: 12px;
+
+  > .column {
+    gap: 12px;
+  }
+
+  .section-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 6px;
+  }
+
+  .section-hint {
+    color: var(--color-text-dim);
+    margin-top: 4px;
+  }
+}
+
+@media (max-width: 900px) {
+  .profile-page {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

@@ -3,6 +3,7 @@ import { ApiKeyPicker } from '@features/ApiKeyPicker';
 import { useNebula } from '@features/Nebula';
 import { UserAvatar } from '@features/UserAvatar';
 import { getErrorDetail } from '@lib/utils';
+import clsx from 'clsx';
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 
@@ -17,6 +18,8 @@ import {
   Section,
 } from '@/components';
 import nebula from '@/nebula';
+
+import './ProfilePage.css';
 
 const ProfileForm: React.FC = () => {
   const user = nebula.user;
@@ -56,12 +59,13 @@ const ProfileForm: React.FC = () => {
   };
 
   return (
-    <Section className="column">
+    <Section className={clsx('column', changed && 'section-changed')}>
       <PanelHeader>
         <Icon icon="person" />
         {user.full_name || user.login}
       </PanelHeader>
       <div className="row" style={{ gap: 16, alignItems: 'flex-start' }}>
+        <UserAvatar userId={user.id ?? undefined} />
         <Form style={{ flexGrow: 1 }}>
           <FormRow title="Login">
             <InputText
@@ -78,16 +82,15 @@ const ProfileForm: React.FC = () => {
           <FormRow title="Email">
             <InputText value={email} onChange={setEmail} />
           </FormRow>
-          <FormRow title="">
-            <Button
-              label="Save"
-              icon="check"
-              disabled={!changed || saving}
-              onClick={saveProfile}
-            />
-          </FormRow>
         </Form>
-        <UserAvatar userId={user.id ?? undefined} />
+      </div>
+      <div className="section-actions">
+        <Button
+          label="Save"
+          icon="check"
+          disabled={!changed || saving}
+          onClick={saveProfile}
+        />
       </div>
     </Section>
   );
@@ -136,13 +139,22 @@ const ChangePasswordForm: React.FC = () => {
             autoComplete="new-password"
           />
         </FormRow>
-        <FormRow title="Repeat new password">
-          <InputPassword value={passwordRepeat} onChange={setPasswordRepeat} />
-        </FormRow>
-        <FormRow title="">
-          <Button label="Change password" icon="check" onClick={changePassword} />
+        <FormRow title="Confirm password">
+          <InputPassword
+            value={passwordRepeat}
+            onChange={setPasswordRepeat}
+            autoComplete="new-password"
+          />
         </FormRow>
       </Form>
+      <div className="section-actions">
+        <Button
+          label="Change password"
+          icon="check"
+          disabled={!password}
+          onClick={changePassword}
+        />
+      </div>
     </Section>
   );
 };
@@ -173,11 +185,10 @@ const ApiKeyForm: React.FC = () => {
         <Icon icon="key" />
         API key
       </PanelHeader>
-      <Form>
-        <FormRow title="API key">
-          <ApiKeyPicker userId={userId ?? undefined} apiKeyPreview={preview} />
-        </FormRow>
-      </Form>
+      <div className="row">
+        <ApiKeyPicker userId={userId ?? undefined} apiKeyPreview={preview} />
+      </div>
+      <div className="section-hint">Creating a new key revokes the current one.</div>
     </Section>
   );
 };
@@ -191,8 +202,8 @@ const ProfilePage: React.FC = () => {
   if (!nebula.user) return null;
 
   return (
-    <main>
-      <div className="column" style={{ minWidth: 400 }}>
+    <main className="profile-page">
+      <div className="column">
         <ProfileForm />
         <ChangePasswordForm />
         <ApiKeyForm />
