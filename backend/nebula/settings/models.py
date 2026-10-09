@@ -205,6 +205,22 @@ class SystemSettings(BaseSystemSettings):
         ),
     ] = ".nx/proxy/{id1000:04d}/{id}.mp4"
 
+    avatar_storage: Annotated[
+        int,
+        Field(
+            title="Avatar storage",
+            examples=[1],
+        ),
+    ] = 1
+
+    avatar_path: Annotated[
+        str,
+        Field(
+            title="Avatar path",
+            description="Path of user avatars within the avatar storage",
+        ),
+    ] = ".nx/avatars/{id}.webp"
+
     worker_plugin_storage: Annotated[
         int,
         Field(

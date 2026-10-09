@@ -12,11 +12,15 @@ class ListUsersResponse(APIModel):
 
 
 class ListUsers(APIRequest):
-    """Get a list of users"""
+    """Get a list of users
+
+    Deprecated: use `GET /api/v2/users`.
+    """
 
     name = "list-users"
     title = "Get user list"
     category = "User management"
+    deprecated = True
 
     async def handle(self, user: CurrentUser) -> ListUsersResponse:
         if not user.is_admin:

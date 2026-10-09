@@ -1,22 +1,37 @@
+import type { User, UserPatch } from '@client';
 import { Navbar, NavbarTitle, Button, Spacer } from '@components';
 import Sessions from '@containers/Sessions';
 import { useNebula } from '@features/Nebula';
-import React, { useState, useEffect, useMemo } from 'react';
+import { getErrorDetail } from '@lib/utils';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { toast } from 'react-toastify';
-
-import type { UserModel } from '../../../client';
 
 import UserForm from './UserForm';
 import UserList from './UserList';
 
 import nebula from '@/nebula';
 
+import './Users.css';
+
+// The user being edited. The password is set with its own request on save.
+export type UserDraft = Partial<User> & { password?: string };
+
+// Fields this page edits. Other fields (e.g. user metatypes) stay untouched.
+const userChanges = (draft: UserDraft): UserPatch => ({
+  full_name: draft.full_name || null,
+  email: draft.email || null,
+  is_admin: draft.is_admin ?? false,
+  is_limited: draft.is_limited ?? false,
+  local_network_only: draft.local_network_only ?? false,
+  permissions: draft.permissions ?? undefined,
+});
+
 const UsersPage: React.FC = () => {
   const [searchParams] = useSearchParams();
-  const [users, setUsers] = useState<UserModel[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const navigate = useNavigate();
-  const [userData, setUserData] = useState<Partial<UserModel>>({});
+  const [userData, setUserData] = useState<UserDraft>({});
   const [loading, setLoading] = useState(false);
 
   const { setPageTitle } = useNebula();
@@ -33,28 +48,24 @@ const UsersPage: React.FC = () => {
     return null;
   }, [searchParams]);
 
-  const loadUsers = () => {
+  const loadUsers = useCallback(() => {
     setLoading(true);
-    void nebula
-      .listUsers({ throwOnError: true })
+    nebula
+      .usersList({ query: { sort: 'login', limit: 1000 }, throwOnError: true })
       .then((res) => {
-        setUsers(
-          res.data.users.map((user) => ({
-            ...user,
-            password: undefined,
-            api_key: undefined,
-            api_key_preview: user.api_key,
-          }))
-        );
+        setUsers(res.data.items);
+      })
+      .catch((err: unknown) => {
+        toast.error(`Unable to load users: ${getErrorDetail(err)}`);
       })
       .finally(() => {
         setLoading(false);
       });
-  };
+  }, []);
 
   useEffect(() => {
     loadUsers();
-  }, []);
+  }, [loadUsers]);
 
   useEffect(() => {
     if (currentId) {
@@ -72,35 +83,54 @@ const UsersPage: React.FC = () => {
     void navigate(`/system/users?id=${userId}`);
   };
 
+  const saveUser = async (): Promise<User> => {
+    const changes = userChanges(userData);
+    const { data: user } = userData.id
+      ? await nebula.usersUpdate({
+          path: { user_id: userData.id },
+          body: changes,
+          throwOnError: true,
+        })
+      : await nebula.usersCreate({
+          body: { ...changes, login: userData.login || '' },
+          throwOnError: true,
+        });
+
+    if (userData.password) {
+      await nebula.usersSetPassword({
+        path: { user_id: user.id },
+        body: { password: userData.password },
+        throwOnError: true,
+      });
+    }
+    return user;
+  };
+
   const onSave = () => {
-    nebula
-      .saveUser({ body: userData as UserModel, throwOnError: true })
-      .then(() => {
-        loadUsers();
+    saveUser()
+      .then((user) => {
         toast.success('User saved');
+        loadUsers();
+        if (user.id !== userData.id) void navigate(`/system/users?id=${user.id}`);
       })
       .catch((err: unknown) => {
-        toast.error('Error saving user');
-        console.error(err);
+        toast.error(`Error saving user: ${getErrorDetail(err)}`);
       })
       .finally(() => {
-        setUserData((data) => ({
-          ...data,
-          password: undefined,
-          api_key: undefined,
-        }));
+        setUserData((data) => ({ ...data, password: undefined }));
       });
   };
 
   const copyUser = () => {
     const copy = { ...userData };
-    const keysToRemove: Array<keyof UserModel> = [
+    const keysToRemove: Array<keyof UserDraft> = [
       'id',
       'login',
       'password',
-      'api_key',
       'full_name',
       'email',
+      'api_key_preview',
+      'has_password',
     ];
     for (const key of keysToRemove) {
       Reflect.deleteProperty(copy, key);
@@ -110,8 +140,8 @@ const UsersPage: React.FC = () => {
   };
 
   return (
-    <main className="row">
-      <section className="transparent column">
+    <main className="users-page">
+      <section className="transparent column user-list">
         <Navbar>
           <Button
             icon="person_add"
@@ -138,25 +168,16 @@ const UsersPage: React.FC = () => {
         />
       </section>
 
-      <section className="transparent column grow">
-        <Navbar>
-          <div className="left"></div>
+      <Navbar className="editor-nav">
+        <Spacer />
+        <NavbarTitle>{userData.login || 'New User'}</NavbarTitle>
+        <Spacer />
+        <Button icon="check" label="Delete user" onClick={onSave} disabled={true} />
+        <Button icon="check" label="Save user" onClick={onSave} />
+      </Navbar>
 
-          <div className="center">
-            <NavbarTitle>{userData.login || 'New User'}</NavbarTitle>
-          </div>
-
-          <div className="right">
-            <Button icon="check" label="Delete user" onClick={onSave} disabled={true} />
-            <Button icon="check" label="Save user" onClick={onSave} />
-          </div>
-        </Navbar>
-        <UserForm userData={userData} setUserData={setUserData} />
-      </section>
-
-      <section className="transparent column grow">
-        <Sessions userId={userData?.id ?? undefined} />
-      </section>
+      <UserForm userData={userData} setUserData={setUserData} onChanged={loadUsers} />
+      <Sessions userId={userData?.id ?? undefined} />
     </main>
   );
 };

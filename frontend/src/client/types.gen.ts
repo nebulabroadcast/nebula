@@ -61,6 +61,24 @@ export type AgentInfo = {
 };
 
 /**
+ * ApiKey
+ */
+export type ApiKey = {
+  /**
+   * Api Key
+   *
+   * The new API key. It is shown only once
+   */
+  api_key: string;
+  /**
+   * Api Key Preview
+   *
+   * Masked key, as returned with the user from now on
+   */
+  api_key_preview: string;
+};
+
+/**
  * ApplySchedulingTemplateRequest
  */
 export type ApplySchedulingTemplateRequest = {
@@ -584,6 +602,72 @@ export type EventData = {
   meta?: {
     [key: string]: number | string | number | Array<string> | boolean | null;
   } | null;
+};
+
+/**
+ * FilterAnd
+ */
+export type FilterAnd = {
+  /**
+   * And
+   */
+  and: Array<FilterCondition | FilterAnd | FilterOr | FilterNot>;
+};
+
+/**
+ * FilterCondition
+ */
+export type FilterCondition = {
+  /**
+   * Key
+   *
+   * Field to compare
+   */
+  key: string;
+  /**
+   * Op
+   *
+   * Comparison operator
+   */
+  op?:
+    | 'eq'
+    | 'ne'
+    | 'lt'
+    | 'lte'
+    | 'gt'
+    | 'gte'
+    | 'in'
+    | 'nin'
+    | 'like'
+    | 'ilike'
+    | 'exists'
+    | 'contains';
+  /**
+   * Value
+   *
+   * Value to compare with
+   */
+  value?: unknown;
+};
+
+/**
+ * FilterNot
+ */
+export type FilterNot = {
+  /**
+   * Not
+   */
+  not: FilterCondition | FilterAnd | FilterOr | FilterNot;
+};
+
+/**
+ * FilterOr
+ */
+export type FilterOr = {
+  /**
+   * Or
+   */
+  or: Array<FilterCondition | FilterAnd | FilterOr | FilterNot>;
 };
 
 /**
@@ -1170,6 +1254,18 @@ export type NebulaStoragesUsage = {
 };
 
 /**
+ * NewPassword
+ */
+export type NewPassword = {
+  /**
+   * Password
+   *
+   * New password
+   */
+  password: string;
+};
+
+/**
  * ObjectStatus
  *
  * Object status enumeration.
@@ -1632,6 +1728,54 @@ export type ProxyInfo = {
    * Timestamp
    */
   timestamp: number | null;
+};
+
+/**
+ * QueryRequest
+ *
+ * Query for a list of objects (QUERY /{resource}, POST /{resource}/query).
+ */
+export type QueryRequest = {
+  /**
+   * Fields
+   *
+   * Fields to return. Resource default when omitted
+   */
+  fields?: Array<string> | null;
+  /**
+   * Filter
+   *
+   * Filter tree
+   */
+  filter?: FilterCondition | FilterAnd | FilterOr | FilterNot | null;
+  /**
+   * Q
+   *
+   * Fulltext search
+   */
+  q?: string | null;
+  /**
+   * Sort
+   *
+   * Sort keys, '-' prefix for descending. Defaults to relevance when searching, '-id' otherwise
+   */
+  sort?: Array<string> | null;
+  /**
+   * Limit
+   */
+  limit?: number;
+  /**
+   * Cursor
+   *
+   * Value of `next_cursor` from the previous page
+   */
+  cursor?: string | null;
+  /**
+   * Include Total
+   *
+   * Count all matching objects (costs an extra query)
+   */
+  include_total?: boolean;
 };
 
 /**
@@ -2240,6 +2384,112 @@ export type TranscriptionSegment = {
 };
 
 /**
+ * User
+ *
+ * A user. With `fields`, only the requested fields are present.
+ */
+export type User = {
+  /**
+   * Id
+   *
+   * User ID
+   */
+  id: number;
+  /**
+   * Login
+   */
+  login?: string | null;
+  /**
+   * Ctime
+   *
+   * Creation time
+   */
+  ctime?: number | null;
+  /**
+   * Mtime
+   *
+   * Last modification time
+   */
+  mtime?: number | null;
+  /**
+   * Email
+   */
+  email?: string | null;
+  /**
+   * Full Name
+   */
+  full_name?: string | null;
+  /**
+   * Language
+   */
+  language?: 'en' | 'cs' | null;
+  /**
+   * Is Admin
+   */
+  is_admin?: boolean | null;
+  /**
+   * Is Limited
+   */
+  is_limited?: boolean | null;
+  /**
+   * Local Network Only
+   */
+  local_network_only?: boolean | null;
+  permissions?: UserPermissionsModel | null;
+  /**
+   * Api Key Preview
+   *
+   * Masked API key, if the user has one
+   */
+  api_key_preview?: string | null;
+  /**
+   * Has Password
+   *
+   * Whether the user can log in with a password
+   */
+  has_password?: boolean | null;
+  [key: string]: unknown;
+};
+
+/**
+ * UserCreate
+ *
+ * A new user. Set the password and API key with their actions afterwards.
+ */
+export type UserCreate = {
+  /**
+   * Login
+   */
+  login: string;
+  /**
+   * Email
+   */
+  email?: string | null;
+  /**
+   * Full Name
+   */
+  full_name?: string | null;
+  /**
+   * Language
+   */
+  language?: 'en' | 'cs' | null;
+  /**
+   * Is Admin
+   */
+  is_admin?: boolean | null;
+  /**
+   * Is Limited
+   */
+  is_limited?: boolean | null;
+  /**
+   * Local Network Only
+   */
+  local_network_only?: boolean | null;
+  permissions?: UserPermissionsPatch | null;
+  [key: string]: unknown;
+};
+
+/**
  * UserInfo
  */
 export type UserInfo = {
@@ -2255,6 +2505,34 @@ export type UserInfo = {
    * Full Name
    */
   full_name?: string | null;
+};
+
+/**
+ * UserList
+ *
+ * A page of users.
+ */
+export type UserList = {
+  /**
+   * Items
+   */
+  items: Array<User>;
+  /**
+   * Next Cursor
+   *
+   * Pass as `cursor` to get the next page
+   */
+  next_cursor?: string | null;
+  /**
+   * Has More
+   */
+  has_more?: boolean;
+  /**
+   * Total
+   *
+   * Number of matching objects, if requested
+   */
+  total?: number | null;
 };
 
 /**
@@ -2306,6 +2584,44 @@ export type UserModel = {
    * Api Key
    */
   api_key?: string | null;
+};
+
+/**
+ * UserPatch
+ *
+ * Fields to change. Omitted fields stay as they are, null removes one.
+ */
+export type UserPatch = {
+  /**
+   * Login
+   */
+  login?: string | null;
+  /**
+   * Email
+   */
+  email?: string | null;
+  /**
+   * Full Name
+   */
+  full_name?: string | null;
+  /**
+   * Language
+   */
+  language?: 'en' | 'cs' | null;
+  /**
+   * Is Admin
+   */
+  is_admin?: boolean | null;
+  /**
+   * Is Limited
+   */
+  is_limited?: boolean | null;
+  /**
+   * Local Network Only
+   */
+  local_network_only?: boolean | null;
+  permissions?: UserPermissionsPatch | null;
+  [key: string]: unknown;
 };
 
 /**
@@ -2368,6 +2684,50 @@ export type UserPermissionsModel = {
    * Use list of action IDs to grant access to specific actions
    */
   job_control?: boolean | Array<number>;
+};
+
+/**
+ * UserPermissionsPatch
+ *
+ * Permissions to change. Omitted ones stay, null removes one.
+ */
+export type UserPermissionsPatch = {
+  /**
+   * Asset View
+   */
+  asset_view?: boolean | Array<number> | null;
+  /**
+   * Asset Edit
+   */
+  asset_edit?: boolean | Array<number> | null;
+  /**
+   * Rundown View
+   */
+  rundown_view?: boolean | Array<number> | null;
+  /**
+   * Rundown Edit
+   */
+  rundown_edit?: boolean | Array<number> | null;
+  /**
+   * Scheduler View
+   */
+  scheduler_view?: boolean | Array<number> | null;
+  /**
+   * Scheduler Edit
+   */
+  scheduler_edit?: boolean | Array<number> | null;
+  /**
+   * Service Control
+   */
+  service_control?: boolean | Array<number> | null;
+  /**
+   * Mcr
+   */
+  mcr?: boolean | Array<number> | null;
+  /**
+   * Job Control
+   */
+  job_control?: boolean | Array<number> | null;
 };
 
 /**
@@ -3351,3 +3711,351 @@ export type UploadResponses = {
    */
   200: unknown;
 };
+
+export type UsersListData = {
+  body?: never;
+  path?: never;
+  query?: {
+    /**
+     * Fields
+     *
+     * Comma-separated fields to return
+     */
+    fields?: string | null;
+    /**
+     * Sort
+     *
+     * Comma-separated sort keys, '-' for descending
+     */
+    sort?: string | null;
+    /**
+     * Q
+     *
+     * Search
+     */
+    q?: string | null;
+    /**
+     * Limit
+     */
+    limit?: number;
+    /**
+     * Cursor
+     *
+     * `next_cursor` of the previous page
+     */
+    cursor?: string | null;
+    /**
+     * Include Total
+     *
+     * Count all matching objects
+     */
+    include_total?: boolean;
+  };
+  url: '/api/v2/users';
+};
+
+export type UsersListErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type UsersListError = UsersListErrors[keyof UsersListErrors];
+
+export type UsersListResponses = {
+  /**
+   * Successful Response
+   */
+  200: UserList;
+};
+
+export type UsersListResponse = UsersListResponses[keyof UsersListResponses];
+
+export type UsersCreateData = {
+  body: UserCreate;
+  path?: never;
+  query?: never;
+  url: '/api/v2/users';
+};
+
+export type UsersCreateErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type UsersCreateError = UsersCreateErrors[keyof UsersCreateErrors];
+
+export type UsersCreateResponses = {
+  /**
+   * Successful Response
+   */
+  201: User;
+};
+
+export type UsersCreateResponse = UsersCreateResponses[keyof UsersCreateResponses];
+
+export type UsersQueryPostData = {
+  body: QueryRequest;
+  path?: never;
+  query?: never;
+  url: '/api/v2/users/query';
+};
+
+export type UsersQueryPostErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type UsersQueryPostError = UsersQueryPostErrors[keyof UsersQueryPostErrors];
+
+export type UsersQueryPostResponses = {
+  /**
+   * Successful Response
+   */
+  200: UserList;
+};
+
+export type UsersQueryPostResponse =
+  UsersQueryPostResponses[keyof UsersQueryPostResponses];
+
+export type UsersGetData = {
+  body?: never;
+  path: {
+    /**
+     * User Id
+     *
+     * User ID
+     */
+    user_id: number;
+  };
+  query?: {
+    /**
+     * Fields
+     *
+     * Comma-separated fields to return
+     */
+    fields?: string | null;
+  };
+  url: '/api/v2/users/{user_id}';
+};
+
+export type UsersGetErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type UsersGetError = UsersGetErrors[keyof UsersGetErrors];
+
+export type UsersGetResponses = {
+  /**
+   * Successful Response
+   */
+  200: User;
+};
+
+export type UsersGetResponse = UsersGetResponses[keyof UsersGetResponses];
+
+export type UsersUpdateData = {
+  body: UserPatch;
+  path: {
+    /**
+     * User Id
+     *
+     * User ID
+     */
+    user_id: number;
+  };
+  query?: never;
+  url: '/api/v2/users/{user_id}';
+};
+
+export type UsersUpdateErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type UsersUpdateError = UsersUpdateErrors[keyof UsersUpdateErrors];
+
+export type UsersUpdateResponses = {
+  /**
+   * Successful Response
+   */
+  200: User;
+};
+
+export type UsersUpdateResponse = UsersUpdateResponses[keyof UsersUpdateResponses];
+
+export type UsersSetPasswordData = {
+  body: NewPassword;
+  path: {
+    /**
+     * User Id
+     *
+     * User ID
+     */
+    user_id: number;
+  };
+  query?: never;
+  url: '/api/v2/users/{user_id}/password';
+};
+
+export type UsersSetPasswordErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type UsersSetPasswordError =
+  UsersSetPasswordErrors[keyof UsersSetPasswordErrors];
+
+export type UsersSetPasswordResponses = {
+  /**
+   * Successful Response
+   */
+  204: void;
+};
+
+export type UsersSetPasswordResponse =
+  UsersSetPasswordResponses[keyof UsersSetPasswordResponses];
+
+export type UsersRegenerateApiKeyData = {
+  body?: never;
+  path: {
+    /**
+     * User Id
+     *
+     * User ID
+     */
+    user_id: number;
+  };
+  query?: never;
+  url: '/api/v2/users/{user_id}/api-key';
+};
+
+export type UsersRegenerateApiKeyErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type UsersRegenerateApiKeyError =
+  UsersRegenerateApiKeyErrors[keyof UsersRegenerateApiKeyErrors];
+
+export type UsersRegenerateApiKeyResponses = {
+  /**
+   * Successful Response
+   */
+  200: ApiKey;
+};
+
+export type UsersRegenerateApiKeyResponse =
+  UsersRegenerateApiKeyResponses[keyof UsersRegenerateApiKeyResponses];
+
+export type UsersAvatarDeleteData = {
+  body?: never;
+  path: {
+    /**
+     * User Id
+     *
+     * User ID
+     */
+    user_id: number;
+  };
+  query?: never;
+  url: '/api/v2/users/{user_id}/avatar';
+};
+
+export type UsersAvatarDeleteErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type UsersAvatarDeleteError =
+  UsersAvatarDeleteErrors[keyof UsersAvatarDeleteErrors];
+
+export type UsersAvatarDeleteResponses = {
+  /**
+   * Successful Response
+   */
+  204: void;
+};
+
+export type UsersAvatarDeleteResponse =
+  UsersAvatarDeleteResponses[keyof UsersAvatarDeleteResponses];
+
+export type UsersAvatarGetData = {
+  body?: never;
+  path: {
+    /**
+     * User Id
+     *
+     * User ID
+     */
+    user_id: number;
+  };
+  query?: never;
+  url: '/api/v2/users/{user_id}/avatar';
+};
+
+export type UsersAvatarGetErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type UsersAvatarGetError = UsersAvatarGetErrors[keyof UsersAvatarGetErrors];
+
+export type UsersAvatarGetResponses = {
+  /**
+   * Successful Response
+   */
+  200: unknown;
+};
+
+export type UsersAvatarUploadData = {
+  body: Blob | File;
+  path: {
+    /**
+     * User Id
+     *
+     * User ID
+     */
+    user_id: number;
+  };
+  query?: never;
+  url: '/api/v2/users/{user_id}/avatar';
+};
+
+export type UsersAvatarUploadErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type UsersAvatarUploadError =
+  UsersAvatarUploadErrors[keyof UsersAvatarUploadErrors];
+
+export type UsersAvatarUploadResponses = {
+  /**
+   * Successful Response
+   */
+  204: void;
+};
+
+export type UsersAvatarUploadResponse =
+  UsersAvatarUploadResponses[keyof UsersAvatarUploadResponses];

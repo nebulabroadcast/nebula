@@ -1,25 +1,61 @@
 import hashlib
+import secrets
+import string
 from typing import Any, cast
 
 import asyncpg
 from nx.db import db
 
 from nebula.config import config
+from nebula.context import require_access
 from nebula.exceptions import (
+    ConflictException,
     LoginFailedException,
     NebulaException,
     NotFoundException,
     NotImplementedException,
+    ValidationException,
 )
 from nebula.objects.base import BaseObject
 from nebula.settings import settings
 from nebula.settings.common import LanguageCode
+
+MIN_PASSWORD_LENGTH = 8
+
+API_KEY_ALPHABET = string.ascii_letters + string.digits + "_"
+
+# Keys that can't be changed through User.apply_changes
+READ_ONLY_KEYS = {"id", "ctime", "mtime"}
+SECRET_KEYS = {"password", "api_key", "api_key_preview"}
+
+# Keys users may change on their own account. So may any editable
+# metatype in the user namespace ("u"), except the admin-only keys
+# (some of them, like is_admin, are "u" metatypes too).
+SELF_EDITABLE_KEYS = {"email", "full_name", "language"}
+ADMIN_ONLY_KEYS = {"login", "is_admin", "is_limited", "local_network_only"}
 
 
 def hash_password(password: str) -> str:
     if config.password_hashing == "legacy":  # noqa: S105
         return hashlib.sha256(password.encode("ascii")).hexdigest()
     raise NotImplementedException("Hashing method not available")
+
+
+def generate_api_key() -> str:
+    """Return a new random API key (nb.xxxxxxxxxxxx.xxxxxxxxxxxx...)."""
+    segments = [
+        "".join(secrets.choice(API_KEY_ALPHABET) for _ in range(12)) for _ in range(4)
+    ]
+    return "nb." + ".".join(segments)
+
+
+def is_self_editable(key: str) -> bool:
+    if key in ADMIN_ONLY_KEYS or key.startswith("can/"):
+        return False
+    if key in SELF_EDITABLE_KEYS:
+        return True
+    meta_type = settings.metatypes.get(key)
+    return meta_type is not None and meta_type.ns == "u" and meta_type.editable
 
 
 class User(BaseObject):
@@ -117,6 +153,96 @@ class User(BaseObject):
     def set_api_key(self, api_key: str) -> None:
         self.meta["api_key"] = hash_password(api_key)
         self.meta["api_key_preview"] = api_key[:4] + "*******" + api_key[-4:]
+
+    @property
+    def has_password(self) -> bool:
+        return bool(self.meta.get("password"))
+
+    @property
+    def permissions(self) -> dict[str, Any]:
+        """Permissions (`can/*` keys) without the prefix."""
+        return {
+            key.removeprefix("can/"): value
+            for key, value in self.meta.items()
+            if key.startswith("can/")
+        }
+
+    def set_permissions(self, permissions: dict[str, Any]) -> None:
+        """Set permissions (without the `can/` prefix). None removes one."""
+        for key, value in permissions.items():
+            self[f"can/{key}"] = value
+
+    async def save(self, notify: bool = True, **kwargs: Any) -> None:
+        try:
+            await super().save(notify=notify, **kwargs)
+        except asyncpg.exceptions.UniqueViolationError as e:
+            raise ConflictException(f"Login '{self.meta.get('login')}' is taken") from e
+
+    #
+    # Access controlled operations
+    # (trusted code in system context always passes the checks)
+    #
+
+    def _is_acting_user(self, user: "User") -> bool:
+        return self.id is not None and user.id == self.id
+
+    @classmethod
+    def ensure_can_list(cls) -> None:
+        require_access(lambda u: u.is_admin, "You are not allowed to list users")
+
+    @classmethod
+    def ensure_can_create(cls) -> None:
+        require_access(lambda u: u.is_admin, "You are not allowed to create users")
+
+    def ensure_can_view(self) -> None:
+        require_access(
+            lambda u: u.is_admin or self._is_acting_user(u),
+            "You are not allowed to view this user",
+        )
+
+    def ensure_can_edit(self) -> None:
+        """Admins can edit any user, users can edit themselves."""
+        require_access(
+            lambda u: u.is_admin or self._is_acting_user(u),
+            "You are not allowed to edit this user",
+        )
+
+    def apply_changes(self, changes: dict[str, Any]) -> None:
+        """Apply a partial update of the user's metadata.
+
+        Keys are meta keys (permissions as `can/*`). None removes a key.
+        Users may change some keys on their own account (see
+        SELF_EDITABLE_KEYS), everything else needs an admin.
+        """
+        for key in changes:
+            if key in READ_ONLY_KEYS:
+                raise ValidationException(f"'{key}' is read-only")
+            if key in SECRET_KEYS:
+                raise ValidationException(f"'{key}' can't be set directly")
+
+        if admin_only := sorted(key for key in changes if not is_self_editable(key)):
+            require_access(
+                lambda u: u.is_admin,
+                f"Only admins can change {', '.join(admin_only)}",
+            )
+        else:
+            self.ensure_can_edit()
+        self.update(changes)
+
+    def change_password(self, password: str) -> None:
+        self.ensure_can_edit()
+        if len(password) < MIN_PASSWORD_LENGTH:
+            raise ValidationException(
+                f"Password must have at least {MIN_PASSWORD_LENGTH} characters"
+            )
+        self.set_password(password)
+
+    def regenerate_api_key(self) -> str:
+        """Replace the API key with a new one and return it (shown only once)."""
+        self.ensure_can_edit()
+        api_key = generate_api_key()
+        self.set_api_key(api_key)
+        return api_key
 
     def can(
         self,

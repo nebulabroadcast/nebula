@@ -5,9 +5,13 @@ from server.session import Session
 
 
 class SaveUser(APIRequest):
-    """Save user data"""
+    """Save user data
+
+    Deprecated: use `POST /api/v2/users` and `PATCH /api/v2/users/{user_id}`.
+    """
 
     name = "save-user"
+    deprecated = True
     title = "Save user"
     category = "User management"
 
@@ -24,15 +28,13 @@ class SaveUser(APIRequest):
         api_key = meta.pop("api_key", None)
         permissions = meta.pop("permissions", {})
 
-        for key, value in permissions.items():
-            meta[f"can/{key}"] = value
-
         if new_user:
             user = nebula.User.from_meta(meta)
         else:
             assert payload.id is not None, "This shoudn't happen"
             user = await nebula.User.load(payload.id)
             user.update(meta)
+        user.set_permissions(permissions)
 
         if password:
             user.set_password(password)
@@ -42,5 +44,4 @@ class SaveUser(APIRequest):
 
         await user.save()
 
-        async for session in Session.list(user_name=user.name):
-            await Session.update(session.token, user)
+        await Session.refresh_user(user)

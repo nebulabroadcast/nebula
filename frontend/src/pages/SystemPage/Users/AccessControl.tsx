@@ -1,6 +1,8 @@
-import type { UserModel, UserPermissionsModel } from '@client';
+import type { UserPermissionsModel } from '@client';
 import { Select, InputSwitch, Form, FormRow } from '@components';
 import React, { useEffect, useMemo, useState } from 'react';
+
+import type { UserDraft } from './Users';
 
 import nebula from '@/nebula';
 
@@ -52,7 +54,7 @@ const AllOrList: React.FC<AllOrListProps> = ({
 };
 
 interface AccessControlProps {
-  userData: Partial<UserModel>;
+  userData: UserDraft;
   setValue: (key: string, value: any) => void;
 }
 
