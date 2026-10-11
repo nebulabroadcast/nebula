@@ -46,13 +46,14 @@ import type {
   ListSessionsData,
   ListSessionsErrors,
   ListSessionsResponses,
+  ListUsersData,
+  ListUsersResponses,
   LoginBackgroundApiLoginBackgroundJpgGetData,
   LoginBackgroundApiLoginBackgroundJpgGetResponses,
   LoginData,
   LoginErrors,
   LoginResponses,
   LogoutData,
-  LogoutErrors,
   LogoutResponses,
   OpsData,
   OpsErrors,
@@ -60,12 +61,15 @@ import type {
   OrderData,
   OrderErrors,
   OrderResponses,
+  PasswordData,
+  PasswordErrors,
   PasswordResetCallbackData,
   PasswordResetCallbackErrors,
   PasswordResetCallbackResponses,
   PasswordResetData,
   PasswordResetErrors,
   PasswordResetResponses,
+  PasswordResponses,
   PlayoutData,
   PlayoutErrors,
   PlayoutResponses,
@@ -78,11 +82,17 @@ import type {
   SaveTranscriptionData,
   SaveTranscriptionErrors,
   SaveTranscriptionResponses,
+  SaveUserData,
+  SaveUserErrors,
+  SaveUserResponses,
   SchedulerData,
   SchedulerErrors,
   SchedulerResponses,
   SendData,
   SendErrors,
+  SendInvitationEmailData,
+  SendInvitationEmailErrors,
+  SendInvitationEmailResponses,
   SendResponses,
   ServicesData,
   ServicesErrors,
@@ -539,6 +549,76 @@ export const set = <ThrowOnError extends boolean = false>(
   });
 
 /**
+ * Get User List
+ *
+ * Get a list of users
+ *
+ * Deprecated: use `GET /api/v2/users`.
+ *
+ * @deprecated
+ */
+export const listUsers = <ThrowOnError extends boolean = false>(
+  options?: Options<ListUsersData, ThrowOnError>
+): RequestResult<ListUsersResponses, unknown, ThrowOnError> =>
+  (options?.client ?? client).post<ListUsersResponses, unknown, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/list-users',
+    ...options,
+  });
+
+/**
+ * Save User
+ *
+ * Save user data
+ *
+ * Deprecated: use `POST /api/v2/users` and `PATCH /api/v2/users/{user_id}`.
+ *
+ * @deprecated
+ */
+export const saveUser = <ThrowOnError extends boolean = false>(
+  options: Options<SaveUserData, ThrowOnError>
+): RequestResult<SaveUserResponses, SaveUserErrors, ThrowOnError> =>
+  (options.client ?? client).post<SaveUserResponses, SaveUserErrors, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/save-user',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+/**
+ * Send Invitation Email
+ *
+ * Handle sending an invitation email to the specified user.
+ *
+ * Deprecated: use `POST /api/v2/users/{user_id}/send-invitation`.
+ *
+ * @deprecated
+ */
+export const sendInvitationEmail = <ThrowOnError extends boolean = false>(
+  options: Options<SendInvitationEmailData, ThrowOnError>
+): RequestResult<
+  SendInvitationEmailResponses,
+  SendInvitationEmailErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    SendInvitationEmailResponses,
+    SendInvitationEmailErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    url: '/api/send-invitation-email',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+/**
  * Get Rundown
  *
  * Retrieve the rundown for a specified channel and date.
@@ -598,13 +678,15 @@ export const login = <ThrowOnError extends boolean = false>(
  *
  * Log out the current user.
  *
- * This request will invalidate the access token used in the Authorization
- * header and/or the auth cookie, and remove the cookie from the client.
+ * Invalidates the access token (Authorization header or `token` query
+ * parameter) and the session of the auth cookie, and removes the cookie
+ * from the client.
+ * The cookie's session is kept when the request comes from another site.
  */
 export const logout = <ThrowOnError extends boolean = false>(
   options?: Options<LogoutData, ThrowOnError>
-): RequestResult<LogoutResponses, LogoutErrors, ThrowOnError> =>
-  (options?.client ?? client).post<LogoutResponses, LogoutErrors, ThrowOnError>({
+): RequestResult<LogoutResponses, unknown, ThrowOnError> =>
+  (options?.client ?? client).post<LogoutResponses, unknown, ThrowOnError>({
     responseType: 'json',
     url: '/api/logout',
     ...options,
@@ -687,6 +769,33 @@ export const ssoCallback = <ThrowOnError extends boolean = false>(
       ...options,
     }
   );
+
+/**
+ * Set Password
+ *
+ * Set a new password for the current (or a given) user.
+ *
+ * Normal users can only change their own password.
+ *
+ * In order to set a password for another user,
+ * the current user must be an admin, otherwise a 403 error is returned.
+ *
+ * Deprecated: use `POST /api/v2/users/{user_id}/password`.
+ *
+ * @deprecated
+ */
+export const password = <ThrowOnError extends boolean = false>(
+  options: Options<PasswordData, ThrowOnError>
+): RequestResult<PasswordResponses, PasswordErrors, ThrowOnError> =>
+  (options.client ?? client).post<PasswordResponses, PasswordErrors, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/password',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
 
 /**
  * Token Exchange

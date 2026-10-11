@@ -1049,6 +1049,18 @@ export type ListSessionsRequest = {
 };
 
 /**
+ * ListUsersResponse
+ *
+ * Response model for listing users
+ */
+export type ListUsersResponse = {
+  /**
+   * List of users
+   */
+  users: Array<UserModel>;
+};
+
+/**
  * LocationInfo
  */
 export type LocationInfo = {
@@ -2047,6 +2059,18 @@ export type ScopedEndpoint = {
 };
 
 /**
+ * SendInvitationEmailRequest
+ *
+ * Request model for sending an invitation email to a user.
+ */
+export type SendInvitationEmailRequest = {
+  /**
+   * User ID
+   */
+  id: number;
+};
+
+/**
  * SendToRequest
  */
 export type SendToRequest = {
@@ -2258,6 +2282,20 @@ export type SessionModel = {
 };
 
 /**
+ * SetPasswordRequest
+ */
+export type SetPasswordRequest = {
+  /**
+   * Login
+   */
+  login?: string | null;
+  /**
+   * Password
+   */
+  password: string;
+};
+
+/**
  * SolveRequest
  */
 export type SolveRequest = {
@@ -2384,7 +2422,7 @@ export type User = {
   /**
    * Language
    */
-  language?: 'en' | 'cs' | null;
+  language?: string | null;
   /**
    * Is Admin
    */
@@ -3210,6 +3248,69 @@ export type SetResponses = {
 
 export type SetResponse = SetResponses[keyof SetResponses];
 
+export type ListUsersData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: '/api/list-users';
+};
+
+export type ListUsersResponses = {
+  /**
+   * Successful Response
+   */
+  200: ListUsersResponse;
+};
+
+export type ListUsersResponse2 = ListUsersResponses[keyof ListUsersResponses];
+
+export type SaveUserData = {
+  body: UserModel;
+  path?: never;
+  query?: never;
+  url: '/api/save-user';
+};
+
+export type SaveUserErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type SaveUserError = SaveUserErrors[keyof SaveUserErrors];
+
+export type SaveUserResponses = {
+  /**
+   * Successful Response
+   */
+  200: unknown;
+};
+
+export type SendInvitationEmailData = {
+  body: SendInvitationEmailRequest;
+  path?: never;
+  query?: never;
+  url: '/api/send-invitation-email';
+};
+
+export type SendInvitationEmailErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type SendInvitationEmailError =
+  SendInvitationEmailErrors[keyof SendInvitationEmailErrors];
+
+export type SendInvitationEmailResponses = {
+  /**
+   * Successful Response
+   */
+  200: unknown;
+};
+
 export type RundownData = {
   body: RundownRequest;
   path?: never;
@@ -3262,25 +3363,10 @@ export type LoginResponse2 = LoginResponses[keyof LoginResponses];
 
 export type LogoutData = {
   body?: never;
-  headers?: {
-    /**
-     * Authorization
-     */
-    authorization?: string | null;
-  };
   path?: never;
   query?: never;
   url: '/api/logout';
 };
-
-export type LogoutErrors = {
-  /**
-   * Validation Error
-   */
-  422: HttpValidationError;
-};
-
-export type LogoutError = LogoutErrors[keyof LogoutErrors];
 
 export type LogoutResponses = {
   /**
@@ -3386,6 +3472,29 @@ export type SsoCallbackErrors = {
 export type SsoCallbackError = SsoCallbackErrors[keyof SsoCallbackErrors];
 
 export type SsoCallbackResponses = {
+  /**
+   * Successful Response
+   */
+  200: unknown;
+};
+
+export type PasswordData = {
+  body: SetPasswordRequest;
+  path?: never;
+  query?: never;
+  url: '/api/password';
+};
+
+export type PasswordErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type PasswordError = PasswordErrors[keyof PasswordErrors];
+
+export type PasswordResponses = {
   /**
    * Successful Response
    */

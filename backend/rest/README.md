@@ -558,9 +558,9 @@ Status codes:
 4. The RPC endpoint is removed in a later minor release, which is noted in
    the release notes.
 
-Removed without a deprecation period, because only the frontend called
-them: the "User management" endpoints `list-users`, `save-user` and
-`send-invitation-email`, and `password` (replaced by `/api/v2/users`).
+Deprecated so far: the "User management" endpoints `list-users`,
+`save-user` and `send-invitation-email`, and `password` (replaced by
+`/api/v2/users`).
 
 Optimized endpoints listed in §1 are never deprecated by this process.
 
