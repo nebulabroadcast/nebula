@@ -208,6 +208,15 @@ def test_cross_site_logout_with_token_keeps_cookie_session(
     assert "set-cookie" not in response.headers
 
 
+def test_logout_with_query_token(
+    client: TestClient, deleted_sessions: list[str]
+) -> None:
+    headers = {"Sec-Fetch-Site": "cross-site"}
+    response = client.post(f"/logout?token={BEARER_TOKEN}", headers=headers)
+    assert response.json() == {"detail": "Logged out"}
+    assert deleted_sessions == [BEARER_TOKEN]
+
+
 def test_logout_with_invalid_token_keeps_cookie_session(
     client: TestClient, deleted_sessions: list[str]
 ) -> None:

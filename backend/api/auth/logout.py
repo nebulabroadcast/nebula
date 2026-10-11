@@ -1,17 +1,18 @@
-from fastapi import Header, Request
+from fastapi import Request
 
 import nebula
 from server.auth_cookie import clear_auth_cookie, token_from_cookie
+from server.middleware.context import access_token_from_request
 from server.request import APIRequest
 from server.session import Session
-from server.utils import parse_access_token
 
 
 class Logout(APIRequest):
     """Log out the current user.
 
-    Invalidates the access token from the Authorization header and the
-    session of the auth cookie, and removes the cookie from the client.
+    Invalidates the access token (Authorization header or `token` query
+    parameter) and the session of the auth cookie, and removes the cookie
+    from the client.
     The cookie's session is kept when the request comes from another site.
     """
 
@@ -19,14 +20,10 @@ class Logout(APIRequest):
     title = "Logout"
     category = "Authentication"
 
-    async def handle(
-        self,
-        request: Request,
-        authorization: str | None = Header(None),
-    ) -> None:
+    async def handle(self, request: Request) -> None:
         # As for any request, an explicit token decides: an invalid one is
         # rejected without touching the cookie's session
-        token = parse_access_token(authorization) if authorization else None
+        token = access_token_from_request(request)
         if token and await Session.check(token, request, transient=True) is None:
             raise nebula.UnauthorizedException("Invalid access token")
 
