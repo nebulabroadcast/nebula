@@ -62,6 +62,11 @@ def build_order(order_by: str) -> str:
     # Ensure the key is in the columns list
     # This effectively prevents SQL injections
 
+    # Database columns are already typed. Casting them would prevent
+    # using their index (idx_ctime...).
+    if order_by in nebula.Asset.db_columns:
+        return order_by
+
     cast_order_by = None
     if order_by_type := nebula.settings.metatypes.get(order_by):
         match order_by_type.metaclass:
