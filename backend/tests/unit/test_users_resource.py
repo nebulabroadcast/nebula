@@ -357,6 +357,8 @@ def test_send_invitation(client: TestClient, monkeypatch: pytest.MonkeyPatch) ->
 
     url = f"{USERS}/2/send-invitation"
     assert client.post(url, headers=ALICE).status_code == 403
+    # Non-admins can't tell which user ids exist
+    assert client.post(f"{USERS}/99/send-invitation", headers=ALICE).status_code == 403
     assert client.post(url, headers=ADMIN).status_code == 204
     assert [(to, subject) for to, subject, _ in sent] == [
         ("alice@example.com", f"Invitation to {nebula.config.site_name.upper()}")

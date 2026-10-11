@@ -106,9 +106,11 @@ async def send_mail(
     await asyncio.to_thread(_send_mail, to, subject, body, reply_address)
 
 
-async def send_invitation_email(user: nebula.User, server_url: str) -> None:
+async def send_invitation_email(user_id: int, server_url: str) -> None:
     """Email the user an invitation to log in at server_url. Admins only."""
+    # Before loading, so non-admins can't tell which user ids exist
     require_access(lambda u: u.is_admin, "Only admins can send invitation emails")
+    user = await nebula.User.load(user_id)
     if not user.get("email"):
         raise nebula.BadRequestException("User does not have an email address")
 
