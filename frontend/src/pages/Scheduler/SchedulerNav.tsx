@@ -60,7 +60,9 @@ const SchedulerNav: React.FC<SchedulerNavProps> = ({
     setPageTitle(pageTitle);
 
     setStartTime(weekStart);
-    setDate(new Date(newDateVal));
+    // Use the local week start. new Date('YYYY-MM-DD') is UTC midnight,
+    // which is the previous day (and possibly week) west of UTC.
+    setDate(weekStart);
   };
 
   return (
