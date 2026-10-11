@@ -14,8 +14,8 @@ from fastapi.exceptions import RequestValidationError
 from pydantic import ValidationError
 from starlette.datastructures import QueryParams
 
+from server.query.fields import Field, FieldKind, QueryValidationError
 from server.query.models import FilterAnd, FilterCondition, QueryRequest
-from server.query.schema import FieldKind, QueryField, QuerySchema, QueryValidationError
 
 QUERY_OPTIONS = {"fields", "sort", "q", "limit", "cursor", "include_total"}
 
@@ -26,7 +26,7 @@ TRUE_VALUES = {"true", "1"}
 FALSE_VALUES = {"false", "0"}
 
 
-def parse_value(field: QueryField, raw: str) -> Any:
+def parse_value(field: Field, raw: str) -> Any:
     try:
         if field.kind == FieldKind.INTEGER:
             return int(raw)
@@ -58,12 +58,16 @@ def split_list(value: str | None) -> list[str] | None:
     return [item.strip() for item in value.split(",") if item.strip()]
 
 
-def query_from_params(params: QueryParams, schema: QuerySchema) -> QueryRequest:
+def query_from_params(params: QueryParams, fields: list[Field]) -> QueryRequest:
+    by_key: dict[str, Field] = {}
+    for f in fields:
+        by_key.setdefault(f.key, f)
     conditions = []
     for key in dict.fromkeys(params.keys()):
         if key in QUERY_OPTIONS or key in AUTH_PARAMS:
             continue
-        field = schema.get(key)
+        if (field := by_key.get(key)) is None:
+            raise QueryValidationError(f"Unknown field '{key}'")
         values = [parse_value(field, raw) for raw in params.getlist(key)]
         if len(values) == 1:
             conditions.append(FilterCondition(key=key, op="eq", value=values[0]))
@@ -92,7 +96,7 @@ def query_from_params(params: QueryParams, schema: QuerySchema) -> QueryRequest:
 
 
 def query_params_dependency(
-    schema_factory: Callable[[], QuerySchema],
+    get_fields: Callable[[], list[Field]],
 ) -> Callable[..., QueryRequest]:
     """FastAPI dependency parsing a GET list query for one resource.
 
@@ -119,6 +123,6 @@ def query_params_dependency(
         ] = False,
     ) -> QueryRequest:
         del fields, sort, q, limit, cursor, include_total
-        return query_from_params(request.query_params, schema_factory())
+        return query_from_params(request.query_params, get_fields())
 
     return dependency

@@ -18,36 +18,10 @@ from server.query import QueryResponse
 
 USER_NAMESPACE = "u"
 
-CORE_FIELDS = {
-    "id",
-    "login",
-    "ctime",
-    "mtime",
-    "email",
-    "full_name",
-    "language",
-    "is_admin",
-    "is_limited",
-    "local_network_only",
-    "permissions",
-    "api_key_preview",
-    "has_password",
-}
-
-DEFAULT_FIELDS = CORE_FIELDS
-
 
 def is_user_metatype(key: str) -> bool:
     meta_type = nebula.settings.metatypes.get(key)
     return meta_type is not None and meta_type.ns == USER_NAMESPACE
-
-
-def user_metatype_keys() -> list[str]:
-    return [
-        key
-        for key, meta_type in nebula.settings.metatypes.items()
-        if meta_type.ns == USER_NAMESPACE and key not in CORE_FIELDS
-    ]
 
 
 class UserExtraFieldsModel(APIModel):

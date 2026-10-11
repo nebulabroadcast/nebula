@@ -42,11 +42,12 @@ backend/
     users/
       __init__.py          # combines the sub-routers, exports `router`
       models.py            # request/response models for this resource
+      fields.py            # what lists filter and sort by, and the response (§7.6)
       listing.py           # each handler module has its own `router`
       detail.py
       avatar.py
   server/
-    query/                 # filter language, sorting, cursors (shared by all list endpoints)
+    query/                 # list queries: fields and SQL (shared by all list endpoints)
     errors.py              # problem+json model and exception handlers
   nebula/
     objects/               # domain objects and their behaviour
@@ -331,13 +332,12 @@ Operators:
 
 Translation rules (implemented once in `server/query/`):
 
-- Keys are validated against the metatypes in settings. An unknown key is
-  a 422. Key names are never interpolated into SQL as raw strings.
+- Keys are validated against the resource's fields (§7.6). An unknown key
+  is a 422. Key names are never interpolated into SQL as raw strings.
 - Values are always bound parameters.
-- Casts follow the metatype. Numeric types compare numerically
-  (`(meta->>'duration')::float`), integers use `= ANY($n::int[])` for
-  `in`, strings compare as text. Comparing a numeric key with a string
-  value is a 422.
+- Casts follow the field's kind. Numbers compare numerically, integers use
+  `= ANY($n::bigint[])` for `in`, strings compare as text. Comparing a
+  numeric key with a string value is a 422.
 - `ne` and `nin` do not match rows where the key is missing. Use
   `exists` explicitly when that matters.
 - Columns that exist outside `meta` (`id`, `ctime`, `mtime`, `id_folder`,
@@ -361,8 +361,13 @@ Each resource picks one search strategy:
 
 `sort` is a list of keys. A `-` prefix means descending. `id` is always
 appended as the final tie-breaker, so the order is total and cursors are
-stable. Sorting by a key that isn't a column needs an index to stay fast,
-which is something to check before a resource advertises a sortable key.
+stable. Missing values come last when ascending and first when
+descending (Postgres' default, so that indexes work in both directions).
+
+Each resource decides which keys are sortable. Sorting by a key without
+an index sorts every matching row on every page, so meta keys aren't
+sortable unless the resource says so (users allow all: there are few).
+Sorting by a key that isn't sortable is a 422.
 
 ### 7.5 Pagination
 
@@ -384,6 +389,61 @@ Keyset (cursor) pagination, following Google AIP-158 in spirit.
 - No total count by default. `include_total: true` (or
   `?include_total=true`) adds `"total"`. It costs a separate count query.
 - No offset pagination.
+
+
+### 7.6 Implementing a list endpoint
+
+A list endpoint is a base query, the fields it can be filtered and sorted
+by, and three routes. SQL is written as template strings; `SQL.render`
+(`nebula/sql.py`) turns their values into bound parameters.
+
+```python
+# rest/users/listing.py
+def users_base() -> Template:
+    return t"SELECT id, login, meta FROM users"
+
+
+async def query_users(request: QueryRequest) -> UserList:
+    nebula.User.ensure_can_list()
+    keys = response_keys(request.fields)
+    page = await fetch_page(request, user_query_fields(), users_base(), SEARCH)
+    items = [user_response(nebula.User.from_row(row), keys) for row in page.rows]
+    return UserList.model_validate(page.response(items))
+```
+
+`fetch_page` (`server/query/`) wraps the base query as `b` and adds
+filters, search, sorting and paging around it. It returns the base query's
+rows; turning them into the response is up to the resource.
+
+The base query is plain SQL with whatever CTEs, joins and access
+conditions the resource needs. Postgres merges it into the outer query, so
+filters still use the tables' indexes, provided that:
+
+- it has no `LIMIT` or `OFFSET` (they stop filters from being pushed in);
+- a CTE in it is used once (Postgres inlines it; one used twice is
+  computed in full first);
+- aggregates (`count(...)`) are joined fields rather than columns of the
+  base query: a filter on an aggregate column runs after the aggregation.
+
+Fields (`server/query/fields.py`) are `column(...)`, `meta(...)`,
+`meta_namespace(...)` for every metatype of a namespace, or a `Field` with
+its own SQL. A field can bring a `join`, which is added only when the
+request filters, sorts or asks for the field:
+
+```python
+Field(
+    "aired",
+    FieldKind.BOOLEAN,
+    t"COALESCE(aired.value, FALSE)",
+    join=t"""LEFT JOIN LATERAL (
+        SELECT TRUE AS value FROM items i JOIN asrun r ON r.id_item = i.id
+        WHERE i.id_asset = b.id LIMIT 1
+    ) AS aired ON TRUE""",
+)
+```
+
+Write such a join as a lookup for one row, not as `EXISTS (...)`: Postgres
+hashes the whole subquery for an `EXISTS` used as a filter.
 
 
 ## 8. Writing

@@ -3,7 +3,8 @@ from typing import Annotated
 from fastapi import APIRouter, Query, Response
 
 import nebula
-from rest.users.common import PREFIX, UserId, resolve_fields, serialize_user
+from rest.users.common import PREFIX, UserId
+from rest.users.fields import response_keys, user_response
 from rest.users.models import (
     ApiKey,
     NewPassword,
@@ -35,7 +36,7 @@ async def create_user(payload: UserCreate, response: Response) -> User:
     await user.save()
 
     response.headers["Location"] = f"{REST_PREFIX}/users/{user.id}"
-    return serialize_user(user.meta)
+    return user_response(user)
 
 
 @router.get(
@@ -54,7 +55,7 @@ async def get_user(
     user = await nebula.User.load(user_id)
     user.ensure_can_view()
     field_list = fields.split(",") if fields else None
-    return serialize_user(user.meta, resolve_fields(field_list))
+    return user_response(user, response_keys(field_list))
 
 
 @router.patch(
@@ -74,7 +75,7 @@ async def update_user(user_id: UserId, payload: UserPatch) -> User:
     user.apply_changes(payload.to_meta_changes())
     await user.save()
     await Session.refresh_user(user)
-    return serialize_user(user.meta)
+    return user_response(user)
 
 
 @router.post(

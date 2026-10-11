@@ -1,46 +1,38 @@
 """Filtering, sorting, search and pagination for REST list endpoints.
 
-See rest/README.md §7 for the contract.
+See rest/README.md §7. A resource lists the fields it can be filtered and
+sorted by (fields.py) and writes its base query; fetch_page (query.py)
+builds the SQL around the base query and runs it.
 """
 
 __all__ = [
+    "Field",
     "FieldKind",
-    "FilterAnd",
-    "FilterCondition",
-    "FilterNode",
-    "FilterNot",
-    "FilterOr",
     "FulltextSearch",
-    "Params",
-    "QueryField",
+    "ListQuery",
+    "Page",
     "QueryRequest",
     "QueryResponse",
-    "QueryResult",
-    "QuerySchema",
     "QueryValidationError",
     "SubstringSearch",
-    "compile_query",
+    "column",
+    "fetch_page",
+    "meta",
+    "meta_namespace",
     "query_from_params",
     "query_params_dependency",
-    "run_query",
 ]
 
-from server.query.compiler import Params, QueryResult, compile_query, run_query
-from server.query.models import (
-    FilterAnd,
-    FilterCondition,
-    FilterNode,
-    FilterNot,
-    FilterOr,
-    QueryRequest,
-    QueryResponse,
-)
-from server.query.params import query_from_params, query_params_dependency
-from server.query.schema import (
+from server.query.fields import (
+    Field,
     FieldKind,
     FulltextSearch,
-    QueryField,
-    QuerySchema,
     QueryValidationError,
     SubstringSearch,
+    column,
+    meta,
+    meta_namespace,
 )
+from server.query.models import QueryRequest, QueryResponse
+from server.query.params import query_from_params, query_params_dependency
+from server.query.query import ListQuery, Page, fetch_page

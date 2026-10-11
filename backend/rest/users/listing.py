@@ -1,34 +1,35 @@
-from typing import Annotated, Any
+from string.templatelib import Template
+from typing import Annotated
 
 from fastapi import APIRouter, Depends
 
 import nebula
-from rest.users.common import PREFIX, resolve_fields, serialize_user, users_query_schema
+from rest.users.common import PREFIX
+from rest.users.fields import response_keys, user_query_fields, user_response
 from rest.users.models import UserList
 from server.query import (
     QueryRequest,
-    compile_query,
+    SubstringSearch,
+    fetch_page,
     query_params_dependency,
-    run_query,
 )
 
 router = APIRouter(prefix=PREFIX)
 
+SEARCH = SubstringSearch(("login", "full_name", "email"))
 
-async def query_users(query: QueryRequest) -> UserList:
+
+def users_base() -> Template:
+    """Every user. fetch_page adds filters, search, sorting and paging."""
+    return t"SELECT id, login, meta FROM users"
+
+
+async def query_users(request: QueryRequest) -> UserList:
     nebula.User.ensure_can_list()
-    fields = resolve_fields(query.fields)
-    compiled = compile_query(users_query_schema(), query, select="u.meta")
-    result = await run_query(compiled)
-
-    response: dict[str, Any] = {
-        "items": [serialize_user(row["meta"], fields) for row in result.rows],
-        "next_cursor": result.next_cursor,
-        "has_more": result.has_more,
-    }
-    if result.total is not None:
-        response["total"] = result.total
-    return UserList.model_validate(response)
+    keys = response_keys(request.fields)
+    page = await fetch_page(request, user_query_fields(), users_base(), SEARCH)
+    items = [user_response(nebula.User.from_row(row), keys) for row in page.rows]
+    return UserList.model_validate(page.response(items))
 
 
 @router.get(
@@ -38,9 +39,7 @@ async def query_users(query: QueryRequest) -> UserList:
     response_model_exclude_unset=True,
 )
 async def list_users(
-    query: Annotated[
-        QueryRequest, Depends(query_params_dependency(users_query_schema))
-    ],
+    query: Annotated[QueryRequest, Depends(query_params_dependency(user_query_fields))],
 ) -> UserList:
     """List users. Query parameters other than the options are equality
     filters (`?is_admin=true`); repeat one to match any of the values.
