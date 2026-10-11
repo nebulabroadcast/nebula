@@ -10,8 +10,9 @@ from server.utils import parse_access_token
 class Logout(APIRequest):
     """Log out the current user.
 
-    This request will invalidate the access token used in the Authorization
-    header and/or the auth cookie, and remove the cookie from the client.
+    Invalidates the access token from the Authorization header and the
+    session of the auth cookie, and removes the cookie from the client.
+    The cookie's session is kept when the request comes from another site.
     """
 
     name = "logout"
@@ -23,18 +24,24 @@ class Logout(APIRequest):
         request: Request,
         authorization: str | None = Header(None),
     ) -> None:
-        # token_from_cookie rejects cross-site requests before anything is cleared
-        candidates = [
-            parse_access_token(authorization) if authorization else None,
-            token_from_cookie(request),
-        ]
-        tokens = {token for token in candidates if token}
+        # As for any request, an explicit token decides: an invalid one is
+        # rejected without touching the cookie's session
+        token = parse_access_token(authorization) if authorization else None
+        if token and await Session.check(token, request, transient=True) is None:
+            raise nebula.UnauthorizedException("Invalid access token")
 
-        clear_auth_cookie(request)
-        if not tokens:
+        try:
+            cookie_token = token_from_cookie(request)
+        except nebula.UnauthorizedException:
+            if not token:
+                raise  # another site, cookie only: nothing to log out
+            cookie_token = None  # another site: log out the token only
+
+        if not token and not cookie_token:
             raise nebula.UnauthorizedException("No access token provided")
-
-        for access_token in tokens:
-            await Session.delete(access_token)
-
+        if token:
+            await Session.delete(token)
+        if cookie_token:
+            await Session.delete(cookie_token)
+            clear_auth_cookie(request)
         raise nebula.UnauthorizedException("Logged out")

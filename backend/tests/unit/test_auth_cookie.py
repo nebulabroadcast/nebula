@@ -36,7 +36,7 @@ pytestmark = pytest.mark.usefixtures("deleted_sessions")
 def deleted_sessions(monkeypatch: pytest.MonkeyPatch) -> list[str]:
     deleted: list[str] = []
 
-    async def check(token: str, _request: Any, _transient: bool = False) -> Any:
+    async def check(token: str, _request: Any, **_: Any) -> Any:
         if token in SESSIONS:
             return SimpleNamespace(user=SESSIONS[token])
         return None
@@ -192,6 +192,31 @@ def test_logout_deletes_sessions_and_clears_cookie(
     set_cookie = response.headers["set-cookie"]
     assert set_cookie.startswith(f'{AUTH_COOKIE_NAME}="";')
     assert "Max-Age=0" in set_cookie
+
+
+def test_cross_site_logout_with_token_keeps_cookie_session(
+    client: TestClient, deleted_sessions: list[str]
+) -> None:
+    client.cookies.set(AUTH_COOKIE_NAME, COOKIE_TOKEN)
+    headers = {
+        "Sec-Fetch-Site": "cross-site",
+        "Authorization": f"Bearer {BEARER_TOKEN}",
+    }
+    response = client.post("/logout", headers=headers)
+    assert response.json() == {"detail": "Logged out"}
+    assert deleted_sessions == [BEARER_TOKEN]
+    assert "set-cookie" not in response.headers
+
+
+def test_logout_with_invalid_token_keeps_cookie_session(
+    client: TestClient, deleted_sessions: list[str]
+) -> None:
+    client.cookies.set(AUTH_COOKIE_NAME, COOKIE_TOKEN)
+    headers = {"Authorization": f"Bearer {INVALID_TOKEN}"}
+    response = client.post("/logout", headers=headers)
+    assert response.json() == {"detail": "Invalid access token"}
+    assert deleted_sessions == []
+    assert "set-cookie" not in response.headers
 
 
 def test_cross_site_logout_is_rejected(
