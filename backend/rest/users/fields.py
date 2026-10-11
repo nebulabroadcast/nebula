@@ -5,6 +5,7 @@ Permissions are stored as `can/*` meta keys and returned grouped as
 `api_key_preview`.
 """
 
+from dataclasses import dataclass
 from typing import Any
 
 import nebula
@@ -19,6 +20,8 @@ from server.query import (
     meta_namespace,
 )
 
+FLAGS = ("is_admin", "is_limited", "local_network_only")
+
 
 def user_query_fields() -> list[Field]:
     # There are few users, so every field can be sorted by without an index
@@ -30,42 +33,59 @@ def user_query_fields() -> list[Field]:
         meta("email", FieldKind.STRING, sortable=True),
         meta("full_name", FieldKind.STRING, sortable=True),
         meta("language", FieldKind.STRING, sortable=True),
-        meta("is_admin", FieldKind.BOOLEAN, sortable=True),
-        meta("is_limited", FieldKind.BOOLEAN, sortable=True),
-        meta("local_network_only", FieldKind.BOOLEAN, sortable=True),
+        # A missing flag is false, as in the response
+        *(
+            Field(
+                key,
+                FieldKind.BOOLEAN,
+                t"COALESCE((b.meta->>{key:literal})::boolean, FALSE)",
+                sortable=True,
+            )
+            for key in FLAGS
+        ),
         *meta_namespace(USER_NAMESPACE, sortable=True),
     ]
 
 
-def user_metatype_keys() -> list[str]:
-    """User metatypes that aren't core fields of the User model."""
-    return [
+@dataclass(frozen=True)
+class ResponseKeys:
+    """Keys a user response has: `always`, and `when_set` if they have a value."""
+
+    always: list[str]
+    when_set: list[str]
+
+
+def response_keys(fields: list[str] | None) -> ResponseKeys:
+    """Keys for the requested `fields` (checked), or the default ones.
+
+    By default, every core field, and user metatypes that have a value.
+    """
+    metatype_keys = [
         key
         for key, meta_type in nebula.settings.metatypes.items()
         if meta_type.ns == USER_NAMESPACE and key not in User.model_fields
     ]
-
-
-def response_keys(fields: list[str] | None) -> list[str] | None:
-    """The requested `fields`, checked. None means the default fields."""
     if fields is None:
-        return None
-    allowed = {*User.model_fields, *user_metatype_keys()}
+        return ResponseKeys(list(User.model_fields), metatype_keys)
+    allowed = {*User.model_fields, *metatype_keys}
     for key in fields:
         if key not in allowed:
             raise QueryValidationError(f"Unknown field '{key}'")
-    return list(dict.fromkeys(["id", *fields]))
+    return ResponseKeys(list(dict.fromkeys(["id", *fields])), [])
 
 
-def user_response(user: nebula.User, keys: list[str] | None = None) -> User:
-    if keys is None:
-        # Every core field, and user metatypes that have a value
-        extra = [key for key in user_metatype_keys() if user.meta.get(key) is not None]
-        keys = [*User.model_fields, *extra]
-    return User.model_validate({key: user_value(user, key) for key in keys})
+def user_response(user: nebula.User, keys: ResponseKeys | None = None) -> User:
+    keys = keys or response_keys(None)
+    values = {key: user_value(user, key) for key in keys.always}
+    for key in keys.when_set:
+        if user.meta.get(key) is not None:
+            values[key] = user.meta[key]
+    return User.model_validate(values)
 
 
 def user_value(user: nebula.User, key: str) -> Any:
+    if key in FLAGS:
+        return bool(user.meta.get(key))
     match key:
         case "permissions":
             # Every permission explicitly, unset ones as false
@@ -76,6 +96,4 @@ def user_value(user: nebula.User, key: str) -> Any:
             return (
                 user.meta.get("api_key_preview") if user.meta.get("api_key") else None
             )
-        case "is_admin" | "is_limited" | "local_network_only":
-            return bool(user.meta.get(key))
     return user.meta.get(key)

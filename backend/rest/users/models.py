@@ -52,7 +52,8 @@ class User(UserExtraFieldsModel):
     mtime: Annotated[float | None, Field(description="Last modification time")] = None
     email: str | None = None
     full_name: str | None = None
-    language: LanguageCode | None = None
+    # Any ISO 639-1 code can be stored; only en/cs can be set (UserPatch)
+    language: str | None = None
     is_admin: bool | None = None
     is_limited: bool | None = None
     local_network_only: bool | None = None

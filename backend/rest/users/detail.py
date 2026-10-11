@@ -14,6 +14,7 @@ from rest.users.models import (
     UserPatch,
 )
 from server.errors import REST_PREFIX
+from server.query.params import split_list
 from server.session import Session
 from server.utils import server_url_from_request
 
@@ -56,8 +57,7 @@ async def get_user(
     """Admins can get any user, users can get themselves."""
     user = await nebula.User.load(user_id)
     user.ensure_can_view()
-    field_list = fields.split(",") if fields else None
-    return user_response(user, response_keys(field_list))
+    return user_response(user, response_keys(split_list(fields)))
 
 
 @router.patch(

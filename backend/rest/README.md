@@ -229,8 +229,10 @@ and is ignored, as it always has been.
 ### CSRF
 
 The cookie is sent automatically, so on requests with unsafe methods
-(`POST`, `PUT`, `PATCH`, `DELETE`) and `Sec-Fetch-Site: cross-site` the
-cookie is ignored. The request is then anonymous: endpoints that require
+(`POST`, `PUT`, `PATCH`, `DELETE`) the cookie is ignored unless
+`Sec-Fetch-Site` is `same-origin` or `none` (or missing). `same-site` is
+rejected too: it includes sibling subdomains, which `SameSite=Lax` lets
+through. The request is then anonymous: endpoints that require
 a user return 401, and anonymous endpoints run as anonymous. Logout
 rejects such requests without clearing anything. `SameSite=Lax` covers browsers that
 don't send `Sec-Fetch-Site`. `QUERY` is safe: forms can't send it, and

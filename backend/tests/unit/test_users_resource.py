@@ -173,6 +173,13 @@ def test_get_user(client: TestClient, users: FakeUsers) -> None:
     }
 
 
+def test_any_stored_language_is_returned(client: TestClient, users: FakeUsers) -> None:
+    # Only en/cs can be set, but other codes may be stored (e.g. via /api/ops)
+    users.rows[2]["language"] = "de"
+    response = client.get(f"{USERS}/2?fields=language", headers=ADMIN)
+    assert response.json() == {"id": 2, "language": "de"}
+
+
 def test_secrets_never_returned(client: TestClient) -> None:
     body = client.get(f"{USERS}/1", headers=ADMIN).json()
     assert "password" not in body

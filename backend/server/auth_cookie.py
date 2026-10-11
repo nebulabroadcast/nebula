@@ -21,20 +21,24 @@ AUTH_COOKIE_MAX_AGE = 30 * 24 * 3600
 # QUERY is safe: HTML forms can't send it and cross-origin fetch preflights it
 SAFE_METHODS = {"GET", "HEAD", "OPTIONS", "QUERY"}
 
+# Sec-Fetch-Site values for which unsafe methods may use the cookie. "none" is
+# a request the user started (address bar, bookmark). Not "same-site": that
+# includes sibling subdomains, which SameSite=Lax doesn't protect against.
+TRUSTED_SITES = {"same-origin", "none"}
+
 
 def token_from_cookie(request: Request) -> str | None:
     """Return the session token from the auth cookie, if any.
 
-    Raises UnauthorizedException for cross-site requests with unsafe methods,
-    since browsers attach the cookie to those automatically (CSRF).
+    Raises UnauthorizedException for unsafe methods from another site
+    (including sibling subdomains), since browsers attach the cookie to
+    those automatically (CSRF).
     """
     token = request.cookies.get(AUTH_COOKIE_NAME)
     if not token:
         return None
-    if (
-        request.method not in SAFE_METHODS
-        and request.headers.get("sec-fetch-site") == "cross-site"
-    ):
+    site = request.headers.get("sec-fetch-site")
+    if request.method not in SAFE_METHODS and site and site not in TRUSTED_SITES:
         raise nebula.UnauthorizedException("Cross-site request rejected")
     return token
 

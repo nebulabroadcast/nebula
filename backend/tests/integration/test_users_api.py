@@ -85,6 +85,13 @@ async def test_list_filters_and_fields(client: httpx.AsyncClient) -> None:
     assert body["total"] == len(admins)
 
 
+async def test_missing_flags_count_as_false(client: httpx.AsyncClient) -> None:
+    users = await all_users()
+    expected = sorted(u["id"] for u in users if not u.get("is_limited"))
+    response = await client.get(USERS, params={"is_limited": "false"})
+    assert sorted(item["id"] for item in response.json()["items"]) == expected
+
+
 @pytest.mark.parametrize("method", ["QUERY", "POST"])
 async def test_query(client: httpx.AsyncClient, method: str) -> None:
     users = await all_users()

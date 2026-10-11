@@ -129,8 +129,8 @@ def test_malformed_authorization_header_is_ignored(client: TestClient) -> None:
     assert whoami(client, headers=headers)["user"] == "cookie_user"
 
 
-@pytest.mark.parametrize("site", ["same-origin", "same-site", "none", None])
-def test_unsafe_method_allowed_unless_cross_site(
+@pytest.mark.parametrize("site", ["same-origin", "none", None])
+def test_unsafe_method_allowed_from_same_origin(
     client: TestClient, site: str | None
 ) -> None:
     client.cookies.set(AUTH_COOKIE_NAME, COOKIE_TOKEN)
@@ -138,9 +138,11 @@ def test_unsafe_method_allowed_unless_cross_site(
     assert whoami(client, "POST", headers=headers)["user"] == "cookie_user"
 
 
-def test_cross_site_unsafe_method_rejected(client: TestClient) -> None:
+@pytest.mark.parametrize("site", ["cross-site", "same-site"])
+def test_other_site_unsafe_method_rejected(client: TestClient, site: str) -> None:
+    # same-site: a sibling subdomain, which SameSite=Lax lets through
     client.cookies.set(AUTH_COOKIE_NAME, COOKIE_TOKEN)
-    result = whoami(client, "POST", headers={"Sec-Fetch-Site": "cross-site"})
+    result = whoami(client, "POST", headers={"Sec-Fetch-Site": site})
     assert result == {"user": None, "reason": "Cross-site request rejected"}
 
 
