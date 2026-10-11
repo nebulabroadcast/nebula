@@ -9,6 +9,7 @@ from typing import Any
 import jinja2
 
 import nebula
+from nebula.context import require_access
 
 try:
     import mistune
@@ -131,3 +132,21 @@ async def send_mail(
     reply_address: str | None = None,
 ) -> None:
     await asyncio.to_thread(_send_mail, to, subject, body, reply_address)
+
+
+async def send_invitation_email(user: nebula.User, server_url: str) -> None:
+    """Email the user an invitation to log in at server_url. Admins only."""
+    require_access(lambda u: u.is_admin, "Only admins can send invitation emails")
+    if not user.get("email"):
+        raise nebula.BadRequestException("User does not have an email address")
+
+    body = await render_email_template(
+        "user-invite",
+        email=user["email"],
+        login_name=user.name,
+        full_name=user.display_name,
+        site_name=nebula.config.site_name,
+        url=server_url,
+    )
+    subject = f"Invitation to {nebula.config.site_name.upper()}"
+    await send_mail(user["email"], subject, body)

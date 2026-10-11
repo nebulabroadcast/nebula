@@ -1,8 +1,9 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Query, Response
+from fastapi import APIRouter, Query, Request, Response
 
 import nebula
+from nebula.helpers.email import send_invitation_email
 from rest.users.common import PREFIX, UserId
 from rest.users.fields import response_keys, user_response
 from rest.users.models import (
@@ -14,6 +15,7 @@ from rest.users.models import (
 )
 from server.errors import REST_PREFIX
 from server.session import Session
+from server.utils import server_url_from_request
 
 router = APIRouter(prefix=PREFIX)
 
@@ -108,3 +110,18 @@ async def regenerate_api_key(user_id: UserId) -> ApiKey:
     await user.save()
     await Session.refresh_user(user)
     return ApiKey(api_key=api_key, api_key_preview=user["api_key_preview"])
+
+
+@router.post(
+    "/{user_id}/send-invitation",
+    status_code=204,
+    operation_id="users_send_invitation",
+    summary="Send an invitation email",
+)
+async def send_invitation(user_id: UserId, request: Request) -> None:
+    """Email the user a link to this server. The user needs an email address.
+
+    Admins only.
+    """
+    user = await nebula.User.load(user_id)
+    await send_invitation_email(user, server_url_from_request(request))

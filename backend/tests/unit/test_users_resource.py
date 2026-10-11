@@ -15,6 +15,7 @@ from fastapi.testclient import TestClient
 
 import nebula
 import nebula.helpers.avatars
+import nebula.helpers.email
 import rest.users.avatar
 from nebula.context import is_system, set_default_system
 from nebula.enum import MetaClass
@@ -127,6 +128,7 @@ def test_discovery_mounts_users(client: TestClient) -> None:
         "/api/v2/users/{user_id}",
         "/api/v2/users/{user_id}/password",
         "/api/v2/users/{user_id}/api-key",
+        "/api/v2/users/{user_id}/send-invitation",
         "/api/v2/users/{user_id}/avatar",
     } <= set(paths)
     assert set(paths["/api/v2/users"]) == {"get", "post", "query"}
@@ -335,6 +337,28 @@ def test_regenerate_api_key(client: TestClient, users: FakeUsers) -> None:
     assert response.json()["api_key_preview"] == body["api_key_preview"]
 
     assert client.post(f"{USERS}/1/api-key", headers=ALICE).status_code == 403
+
+
+def test_send_invitation(client: TestClient, monkeypatch: pytest.MonkeyPatch) -> None:
+    sent: list[tuple[str, str, str]] = []
+
+    async def send_mail(to: str, subject: str, body: Any) -> None:
+        plain = body.get_payload()[0].get_payload(decode=True).decode()
+        sent.append((to, subject, plain))
+
+    monkeypatch.setattr(nebula.helpers.email, "send_mail", send_mail)
+
+    url = f"{USERS}/2/send-invitation"
+    assert client.post(url, headers=ALICE).status_code == 403
+    assert client.post(url, headers=ADMIN).status_code == 204
+    assert [(to, subject) for to, subject, _ in sent] == [
+        ("alice@example.com", f"Invitation to {nebula.config.site_name.upper()}")
+    ]
+    assert "alice" in sent[0][2]
+
+    # The admin has no email address
+    response = client.post(f"{USERS}/1/send-invitation", headers=ADMIN)
+    assert response.status_code == 400
 
 
 #
