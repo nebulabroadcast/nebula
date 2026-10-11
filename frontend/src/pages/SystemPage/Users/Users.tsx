@@ -76,13 +76,13 @@ const UsersPage: React.FC = () => {
     void loadUsers();
   }, [loadUsers]);
 
+  // Show the selected user. A draft of that user is kept when the list
+  // changes (reloads, a new API key), so unsaved edits stay.
   useEffect(() => {
     if (currentId) {
       const user = users.find((u) => u.id === currentId);
-      if (user) {
-        setUserData(user);
-        return;
-      }
+      setUserData((draft) => (draft.id === currentId ? draft : (user ?? {})));
+      return;
     }
     const doCopy = new URLSearchParams(window.location.search).get('copy');
     if (!doCopy) setUserData({});
@@ -118,9 +118,9 @@ const UsersPage: React.FC = () => {
       return;
     }
 
-    // The user is saved: show it even if setting the password fails, so
-    // saving again updates it instead of creating it a second time
-    setUserData((data) => ({ ...data, password: undefined }));
+    // The user is saved: show it (with its id) even if setting the password
+    // fails or the list reloads slowly, so saving again updates it
+    setUserData(user);
     void loadUsers();
     if (user.id !== userData.id) void navigate(`/system/users?id=${user.id}`);
 
@@ -138,6 +138,14 @@ const UsersPage: React.FC = () => {
     } catch (err: unknown) {
       toast.error(`User saved, but the password wasn't set: ${getErrorDetail(err)}`);
     }
+  };
+
+  const onApiKeyCreated = (apiKeyPreview: string) => {
+    const id = userData.id;
+    setUserData((draft) => ({ ...draft, api_key_preview: apiKeyPreview }));
+    setUsers((list) =>
+      list.map((u) => (u.id === id ? { ...u, api_key_preview: apiKeyPreview } : u))
+    );
   };
 
   const copyUser = () => {
@@ -195,7 +203,11 @@ const UsersPage: React.FC = () => {
         <Button icon="check" label="Save user" onClick={() => void onSave()} />
       </Navbar>
 
-      <UserForm userData={userData} setUserData={setUserData} />
+      <UserForm
+        userData={userData}
+        setUserData={setUserData}
+        onApiKeyCreated={onApiKeyCreated}
+      />
       <Sessions userId={userData?.id ?? undefined} />
     </main>
   );

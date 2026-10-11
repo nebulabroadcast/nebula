@@ -24,9 +24,14 @@ import nebula from '@/nebula';
 interface UserFormProps {
   userData: UserDraft;
   setUserData: React.Dispatch<React.SetStateAction<UserDraft>>;
+  onApiKeyCreated: (apiKeyPreview: string) => void;
 }
 
-const UserForm: React.FC<UserFormProps> = ({ userData, setUserData }) => {
+const UserForm: React.FC<UserFormProps> = ({
+  userData,
+  setUserData,
+  onApiKeyCreated,
+}) => {
   const setValue = (key: string, value: any) => {
     setUserData((prev) => ({ ...prev, [key]: value }));
   };
@@ -114,6 +119,7 @@ const UserForm: React.FC<UserFormProps> = ({ userData, setUserData }) => {
             <ApiKeyPicker
               userId={userData?.id ?? undefined}
               apiKeyPreview={userData?.api_key_preview ?? undefined}
+              onCreated={onApiKeyCreated}
             />
           </FormRow>
           <FormRow title="Local network only">
