@@ -17,6 +17,9 @@ import './Users.css';
 // The user being edited. The password is set with its own request on save.
 export type UserDraft = Partial<User> & { password?: string };
 
+// Same as the server's minimum, checked before anything is saved
+const MIN_PASSWORD_LENGTH = 8;
+
 // Fields this page edits. Other fields (e.g. user metatypes) stay untouched.
 const userChanges = (draft: UserDraft): UserPatch => ({
   full_name: draft.full_name || null,
@@ -48,23 +51,29 @@ const UsersPage: React.FC = () => {
     return null;
   }, [searchParams]);
 
-  const loadUsers = useCallback(() => {
+  const loadUsers = useCallback(async () => {
     setLoading(true);
-    nebula
-      .usersList({ query: { sort: 'login', limit: 1000 }, throwOnError: true })
-      .then((res) => {
-        setUsers(res.data.items);
-      })
-      .catch((err: unknown) => {
-        toast.error(`Unable to load users: ${getErrorDetail(err)}`);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+    try {
+      const all: User[] = [];
+      let cursor: string | undefined;
+      do {
+        const { data } = await nebula.usersList({
+          query: { sort: 'login', limit: 1000, cursor },
+          throwOnError: true,
+        });
+        all.push(...data.items);
+        cursor = data.next_cursor ?? undefined;
+      } while (cursor);
+      setUsers(all);
+    } catch (err: unknown) {
+      toast.error(`Unable to load users: ${getErrorDetail(err)}`);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
-    loadUsers();
+    void loadUsers();
   }, [loadUsers]);
 
   useEffect(() => {
@@ -83,42 +92,52 @@ const UsersPage: React.FC = () => {
     void navigate(`/system/users?id=${userId}`);
   };
 
-  const saveUser = async (): Promise<User> => {
-    const changes = userChanges(userData);
-    const { data: user } = userData.id
-      ? await nebula.usersUpdate({
-          path: { user_id: userData.id },
-          body: changes,
-          throwOnError: true,
-        })
-      : await nebula.usersCreate({
-          body: { ...changes, login: userData.login || '' },
-          throwOnError: true,
-        });
+  const onSave = async () => {
+    const { password } = userData;
+    if (password && password.length < MIN_PASSWORD_LENGTH) {
+      toast.error(`Password must have at least ${MIN_PASSWORD_LENGTH} characters`);
+      return;
+    }
 
-    if (userData.password) {
+    let user: User;
+    try {
+      const changes = userChanges(userData);
+      const response = userData.id
+        ? await nebula.usersUpdate({
+            path: { user_id: userData.id },
+            body: changes,
+            throwOnError: true,
+          })
+        : await nebula.usersCreate({
+            body: { ...changes, login: userData.login || '' },
+            throwOnError: true,
+          });
+      user = response.data;
+    } catch (err: unknown) {
+      toast.error(`Error saving user: ${getErrorDetail(err)}`);
+      return;
+    }
+
+    // The user is saved: show it even if setting the password fails, so
+    // saving again updates it instead of creating it a second time
+    setUserData((data) => ({ ...data, password: undefined }));
+    void loadUsers();
+    if (user.id !== userData.id) void navigate(`/system/users?id=${user.id}`);
+
+    if (!password) {
+      toast.success('User saved');
+      return;
+    }
+    try {
       await nebula.usersSetPassword({
         path: { user_id: user.id },
-        body: { password: userData.password },
+        body: { password },
         throwOnError: true,
       });
+      toast.success('User saved');
+    } catch (err: unknown) {
+      toast.error(`User saved, but the password wasn't set: ${getErrorDetail(err)}`);
     }
-    return user;
-  };
-
-  const onSave = () => {
-    saveUser()
-      .then((user) => {
-        toast.success('User saved');
-        loadUsers();
-        if (user.id !== userData.id) void navigate(`/system/users?id=${user.id}`);
-      })
-      .catch((err: unknown) => {
-        toast.error(`Error saving user: ${getErrorDetail(err)}`);
-      })
-      .finally(() => {
-        setUserData((data) => ({ ...data, password: undefined }));
-      });
   };
 
   const copyUser = () => {
@@ -172,11 +191,11 @@ const UsersPage: React.FC = () => {
         <Spacer />
         <NavbarTitle>{userData.login || 'New User'}</NavbarTitle>
         <Spacer />
-        <Button icon="check" label="Delete user" onClick={onSave} disabled={true} />
-        <Button icon="check" label="Save user" onClick={onSave} />
+        <Button icon="check" label="Delete user" disabled={true} />
+        <Button icon="check" label="Save user" onClick={() => void onSave()} />
       </Navbar>
 
-      <UserForm userData={userData} setUserData={setUserData} onChanged={loadUsers} />
+      <UserForm userData={userData} setUserData={setUserData} />
       <Sessions userId={userData?.id ?? undefined} />
     </main>
   );
