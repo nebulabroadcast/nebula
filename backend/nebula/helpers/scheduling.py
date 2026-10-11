@@ -109,7 +109,7 @@ def parse_durations(
 
 def parse_rundown_date(
     date: str | None,
-    channel_config: "PlayoutChannelSettings",
+    channel_config: PlayoutChannelSettings,
 ) -> int:
     """Parse the date from the request and return a datetime object"""
     if not date:
@@ -118,7 +118,7 @@ def parse_rundown_date(
     return datestr2ts(date, hh=hh, mm=mm)
 
 
-def can_append(asset: nebula.Asset, conditions: "AcceptModel") -> bool:
+def can_append(asset: nebula.Asset, conditions: AcceptModel) -> bool:
     # TODO: raise an exception instead of returning False?
     if conditions.folders and asset["id_folder"] not in conditions.folders:
         nebula.log.warn(f"Folder {asset['id_folder']} not in {conditions.folders}")

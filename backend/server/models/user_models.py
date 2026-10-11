@@ -92,7 +92,7 @@ class UserModel(BaseModel):
     api_key: str | None = None
 
     @classmethod
-    def from_meta(cls, meta: dict[str, Any]) -> "UserModel":
+    def from_meta(cls, meta: dict[str, Any]) -> UserModel:
         udata: dict[str, Any] = {"permissions": {}}
         for key, value in meta.items():
             if key == "api_key_preview":

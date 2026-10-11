@@ -91,7 +91,7 @@ class User(BaseObject):
         return self.meta.get("full_name") or self.name
 
     @classmethod
-    async def by_login(cls, login: str) -> "User":
+    async def by_login(cls, login: str) -> User:
         """Return the user with the given login."""
         row = await db.fetch("SELECT meta FROM users WHERE login = $1", login)
         if not row:
@@ -99,7 +99,7 @@ class User(BaseObject):
         return cls.from_row(row[0])
 
     @classmethod
-    async def by_api_key(cls, api_key: str) -> "User":
+    async def by_api_key(cls, api_key: str) -> User:
         api_key_hash = hash_password(api_key)
         row = await db.fetch(
             "SELECT meta FROM users WHERE meta->>'api_key' = $1",
@@ -110,7 +110,7 @@ class User(BaseObject):
         return cls.from_row(row[0])
 
     @classmethod
-    async def by_email(cls, email: str) -> "User":
+    async def by_email(cls, email: str) -> User:
         """Return the user with the given email."""
         row = await db.fetch(
             """
@@ -123,7 +123,7 @@ class User(BaseObject):
         return cls.from_row(row[0])
 
     @classmethod
-    async def login(cls, username: str, password: str) -> "User":
+    async def login(cls, username: str, password: str) -> User:
         """Return a User instance based on username and password."""
         if not password:
             raise LoginFailedException("Password cannot be empty")
@@ -183,7 +183,7 @@ class User(BaseObject):
     # (trusted code in system context always passes the checks)
     #
 
-    def _is_acting_user(self, user: "User") -> bool:
+    def _is_acting_user(self, user: User) -> bool:
         return self.id is not None and user.id == self.id
 
     @classmethod

@@ -76,11 +76,11 @@ class QueryField:
     sortable: bool = True
 
     @classmethod
-    def column(cls, key: str, kind: FieldKind, column: str) -> "QueryField":
+    def column(cls, key: str, kind: FieldKind, column: str) -> QueryField:
         return cls(key, kind, column, f"{column} IS NOT NULL", not kind.is_json)
 
     @classmethod
-    def meta(cls, key: str, kind: FieldKind, alias: str) -> "QueryField":
+    def meta(cls, key: str, kind: FieldKind, alias: str) -> QueryField:
         literal = sql_literal(key)
         if kind.is_json:
             sql = f"{alias}.meta->{literal}"

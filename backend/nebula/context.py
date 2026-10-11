@@ -36,12 +36,12 @@ class RequestContext:
     leave it False.
     """
 
-    user: "User | None" = None
+    user: User | None = None
     initiator: str | None = None
     system: bool = False
 
 
-_request_context: ContextVar["RequestContext | None"] = ContextVar(
+_request_context: ContextVar[RequestContext | None] = ContextVar(
     "_request_context", default=None
 )
 
@@ -67,7 +67,7 @@ def is_system() -> bool:
     return get_request_context().system
 
 
-def current_user() -> "User | None":
+def current_user() -> User | None:
     """Return the user behind the code currently executing, if any."""
     return get_request_context().user
 
@@ -95,7 +95,7 @@ def system_context() -> Iterator[None]:
         yield
 
 
-def require_access(allowed: "Callable[[User], bool]", detail: str) -> None:
+def require_access(allowed: Callable[[User], bool], detail: str) -> None:
     """Raise unless the acting user passes the check.
 
     Trusted (system) code always passes. Without a user, raises 401;

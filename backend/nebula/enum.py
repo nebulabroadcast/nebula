@@ -141,7 +141,7 @@ class RunMode(IntEnum):
     RUN_SKIP = 4
 
     @classmethod
-    def from_str(cls, mode_str: str) -> "RunMode":
+    def from_str(cls, mode_str: str) -> RunMode:
         """Convert a string to a RunMode enum member."""
         mapping = {
             "auto": cls.RUN_AUTO,

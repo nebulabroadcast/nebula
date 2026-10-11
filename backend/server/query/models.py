@@ -32,15 +32,15 @@ class FilterCondition(FilterModel):
 
 
 class FilterAnd(FilterModel):
-    and_: Annotated[list["FilterNode"], Field(alias="and", min_length=1)]
+    and_: Annotated[list[FilterNode], Field(alias="and", min_length=1)]
 
 
 class FilterOr(FilterModel):
-    or_: Annotated[list["FilterNode"], Field(alias="or", min_length=1)]
+    or_: Annotated[list[FilterNode], Field(alias="or", min_length=1)]
 
 
 class FilterNot(FilterModel):
-    not_: Annotated["FilterNode", Field(alias="not")]
+    not_: Annotated[FilterNode, Field(alias="not")]
 
 
 FilterNode = FilterCondition | FilterAnd | FilterOr | FilterNot

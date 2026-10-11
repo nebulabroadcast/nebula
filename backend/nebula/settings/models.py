@@ -42,7 +42,7 @@ class CSItemModel(SettingsModel):
     ]
 
     @classmethod
-    def from_settings(cls, value: str, settings: dict[str, Any]) -> "CSItemModel":
+    def from_settings(cls, value: str, settings: dict[str, Any]) -> CSItemModel:
         aliases = {}
         adef: dict[str, str] = settings.get("aliases", {})
         ddef: dict[str, str] = settings.get("description", {})
