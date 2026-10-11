@@ -28,6 +28,9 @@ Rules:
   sake. `/api/browse`, `/api/order`, `/api/scheduler`, `/api/rundown` stay
   as they are until a REST replacement is proven at least as fast on a real
   database.
+- Authentication stays RPC for good: `login`, `logout`, `token-exchange`,
+  `sso-login`, `sso-callback`, `password-reset`, `password-reset-callback`.
+  Existing clients depend on them, and they aren't resources.
 - `v2` is a version of the REST API's contract. A breaking change to
   resource shapes means `/api/v3`, not editing `v2` in place.
 
