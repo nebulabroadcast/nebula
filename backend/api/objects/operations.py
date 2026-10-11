@@ -113,11 +113,23 @@ class Operations(APIRequest):
     title = "Operations"
     category = "Asset management"
 
-    async def handle(  # noqa: C901, PLR0912, PLR0915
+    async def handle(
         self,
         request: OperationsRequest,
         user: CurrentUser,
     ) -> OperationsResponse:
+        return await self.run(request, user)
+
+    async def run(  # noqa: C901, PLR0912, PLR0915
+        self,
+        request: OperationsRequest,
+        user: nebula.User,
+        *,
+        raise_errors: bool = False,
+    ) -> OperationsResponse:
+        """Apply the operations. A failed operation is reported in its result,
+        unless raise_errors is set: then its exception propagates, so the
+        caller gets its status (403, 404...)."""
         result = []
         reload_settings = False
         affected_bins: list[int] = []
@@ -225,6 +237,8 @@ class Operations(APIRequest):
                         affected_bins.append(obj["id_bin"])
                     op_id = obj.id
             except Exception as e:
+                if raise_errors:
+                    raise
                 error = str(e)
                 success = False
 
