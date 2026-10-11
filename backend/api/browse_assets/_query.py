@@ -122,23 +122,22 @@ def build_query(  # noqa: C901, PLR0912
 
     ft_cte = ft_join = ""
     if request.query and (ranges := fulltext_ranges(request.query)):
-        # Assets with a token matching every word. Each word is looked up
-        # separately, as an index range (see fulltext_ranges). Words are
-        # slugified (letters and digits only), so they can be inlined.
-        lows = ",".join(f"'{lo}'" for lo, _ in ranges)
-        highs = ",".join(f"'{hi}'" for _, hi in ranges)
+        # Assets with a token matching every word. Each word is a separate
+        # index range lookup (see fulltext_ranges). Words are slugified
+        # (letters and digits only), so they can be inlined, and as
+        # constants they give the planner real row estimates.
+        lookups = "\nUNION ALL\n".join(
+            f"""
+            SELECT {n} AS n, id FROM ft
+            WHERE object_type = 0 AND value ~>=~ '{lo}' AND value ~<~ '{hi}'
+            """
+            for n, (lo, hi) in enumerate(ranges)
+        )
         ft_cte = f"""
             WITH ft_cte AS (
-                SELECT ft.id
-                FROM unnest(ARRAY[{lows}], ARRAY[{highs}])
-                    WITH ORDINALITY AS q(lo, hi, n)
-                JOIN LATERAL (
-                    SELECT id FROM ft
-                    WHERE ft.object_type = 0
-                    AND ft.value ~>=~ q.lo AND ft.value ~<~ q.hi
-                ) ft ON TRUE
-                GROUP BY ft.id
-                HAVING COUNT(DISTINCT q.n) = {len(ranges)}
+                SELECT id FROM ({lookups}) AS matches
+                GROUP BY id
+                HAVING COUNT(DISTINCT n) = {len(ranges)}
             )
         """
         ft_join = """JOIN ft_cte ON ft_cte.id = a.id"""
