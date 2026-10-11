@@ -6,7 +6,9 @@ WebP image with ffmpeg, so the server never serves a client's file as is.
 """
 
 import asyncio
+import contextlib
 import os
+import secrets
 
 import aiofiles
 import aiofiles.os
@@ -72,10 +74,15 @@ async def save_avatar(user: nebula.User, data: bytes, content_type: str) -> None
     image = await normalize_image(data)
     path = avatar_path(user, writable=True)
     await aiofiles.os.makedirs(os.path.dirname(path), exist_ok=True)
-    temp_path = f"{path}.uploading"
-    async with aiofiles.open(temp_path, "wb") as f:
-        await f.write(image)
-    await aiofiles.os.replace(temp_path, path)
+    # Own temporary file per upload, so concurrent uploads can't mix
+    temp_path = f"{path}.{secrets.token_hex(8)}.uploading"
+    try:
+        async with aiofiles.open(temp_path, "wb") as f:
+            await f.write(image)
+        await aiofiles.os.replace(temp_path, path)
+    finally:
+        with contextlib.suppress(FileNotFoundError):
+            await aiofiles.os.remove(temp_path)
 
 
 async def delete_avatar(user: nebula.User) -> None:
