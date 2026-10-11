@@ -15,3 +15,6 @@ class APIRequest:
     exclude_unset: bool = False
     scopes: list[str] | None = None
     category: str | None = None
+    # Superseded by a REST endpoint (see rest/README.md §11). Shown in
+    # OpenAPI, and every call is logged so remaining callers can be found.
+    deprecated: bool = False

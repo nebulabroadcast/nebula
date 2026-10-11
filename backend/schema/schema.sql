@@ -81,10 +81,13 @@ CREATE TABLE IF NOT EXISTS public.assets (
   CONSTRAINT assets_pkey PRIMARY KEY (id)
 );
 
-CREATE INDEX IF NOT EXISTS idx_folder ON assets(id_folder);
+-- idx_status used to be on id_folder, idx_folder is covered by idx_assets_folder_id
+DROP INDEX IF EXISTS idx_status;
+DROP INDEX IF EXISTS idx_folder;
+CREATE INDEX IF NOT EXISTS idx_assets_folder_id ON assets(id_folder, id);
+CREATE INDEX IF NOT EXISTS idx_assets_status ON assets(status);
 CREATE INDEX IF NOT EXISTS idx_content_type ON assets(content_type);
 CREATE INDEX IF NOT EXISTS idx_media_type ON assets(media_type);
-CREATE INDEX IF NOT EXISTS idx_status ON assets(id_folder);
 CREATE INDEX IF NOT EXISTS idx_ctime ON assets(ctime);
 CREATE INDEX IF NOT EXISTS idx_mtime ON assets(mtime);
 

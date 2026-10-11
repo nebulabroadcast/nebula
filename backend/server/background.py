@@ -36,6 +36,17 @@ class BackgroundTask:
         return bool(self.task and not self.task.done())
 
     async def _run(self) -> None:
+        with nebula.context.system_context():
+            await self._run_task()
+
+        if not self.shutting_down:
+            nebula.log.info(
+                "Restarting",
+                self.__class__.__name__,
+            )
+            self.start()
+
+    async def _run_task(self) -> None:
         try:
             await self.run()
         except asyncio.CancelledError:
@@ -45,13 +56,6 @@ class BackgroundTask:
         finally:
             await self.finalize()
             self.task = None
-
-        if not self.shutting_down:
-            nebula.log.info(
-                "Restarting",
-                self.__class__.__name__,
-            )
-            self.start()
 
     async def run(self) -> None:
         pass

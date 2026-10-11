@@ -34,9 +34,12 @@ class SetPassword(APIRequest):
 
     In order to set a password for another user,
     the current user must be an admin, otherwise a 403 error is returned.
+
+    Deprecated: use `POST /api/v2/users/{user_id}/password`.
     """
 
     name = "password"
+    deprecated = True
     title = "Set password"
     category = "Authentication"
 

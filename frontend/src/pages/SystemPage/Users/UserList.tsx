@@ -1,11 +1,10 @@
+import type { User } from '@client';
 import { Table, Section } from '@components';
 import React from 'react';
 
-import type { UserModel } from '../../../client';
-
 interface UserListProps {
   onSelect: (userId: number | string) => void;
-  users: UserModel[];
+  users: User[];
   currentId: number | null;
   loading: boolean;
 }

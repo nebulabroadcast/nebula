@@ -1,5 +1,8 @@
+import functools
 import inspect
 import os
+from collections.abc import Callable
+from typing import Any
 
 import fastapi
 
@@ -48,6 +51,20 @@ def find_api_endpoints() -> list[APIRequest]:
             else:
                 result.append(endpoint())
     return result
+
+
+def log_deprecated_calls(name: str, handle: Callable[..., Any]) -> Callable[..., Any]:
+    """Wrap a handler to log a warning on every call.
+
+    functools.wraps keeps the signature, which FastAPI reads for parameters.
+    """
+
+    @functools.wraps(handle)
+    async def wrapper(*args: Any, **kwargs: Any) -> Any:
+        nebula.log.warning(f"Deprecated endpoint '{name}' called")
+        return await handle(*args, **kwargs)
+
+    return wrapper
 
 
 def install_endpoints(app: fastapi.FastAPI) -> None:
@@ -103,13 +120,18 @@ def install_endpoints(app: fastapi.FastAPI) -> None:
                 )
             )
 
+        handle = endpoint.handle
+        if endpoint.deprecated:
+            handle = log_deprecated_calls(endpoint.name, handle)
+
         app.router.add_api_route(
             route,
-            endpoint.handle,
+            handle,
             name=endpoint.title or endpoint.name,
             operation_id=slugify(endpoint.name, separator="_"),
             methods=endpoint.methods,
             description=docstring,
             tags=[endpoint.category] if endpoint.category else ["Plugins"],
+            deprecated=endpoint.deprecated or None,
             **additional_params,
         )

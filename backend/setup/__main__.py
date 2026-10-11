@@ -36,6 +36,19 @@ async def create_schema() -> None:
         await db.execute(schema)
 
 
+async def configure_database() -> None:
+    # Nebula's queries are short index lookups. JIT compilation only pays off
+    # for long analytical queries, and it adds ~100 ms to queries whose cost
+    # Postgres overestimates. Applies to new connections.
+    row = await db.fetchrow("SELECT quote_ident(current_database()) AS name")
+    assert row is not None
+    name = row["name"]
+    try:
+        await db.execute(f"ALTER DATABASE {name} SET jit = off")
+    except asyncpg.exceptions.InsufficientPrivilegeError:
+        log.warning(f"Unable to disable JIT: database user doesn't own {name}")
+
+
 async def create_default_user() -> None:
     has_user = False
     try:
@@ -72,6 +85,7 @@ async def main() -> None:
         return
 
     await create_schema()
+    await configure_database()
     await create_default_user()
 
     async with db.transaction():

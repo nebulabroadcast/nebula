@@ -189,3 +189,13 @@ class Session:
 
             if user_name is None or session.user.get("login") == user_name:
                 yield session
+
+    @classmethod
+    async def refresh_user(cls, user: nebula.User) -> None:
+        """Update the user data in all sessions of the user.
+
+        Sessions are matched by user id, so a renamed user is found too.
+        """
+        async for session in cls.list():
+            if session.user.get("id") == user.id:
+                await cls.update(session.token, user)

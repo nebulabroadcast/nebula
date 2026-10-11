@@ -1,6 +1,7 @@
 from fastapi import Request
 
 import nebula
+from server.auth_cookie import set_auth_cookie
 from server.models.login import LoginResponse, TokenExchangeRequest
 from server.request import APIRequest
 from server.session import Session
@@ -30,4 +31,5 @@ class TokenExchange(APIRequest):
         session = await Session.create(user, request)
         nebula.log.debug(f"{user} token exchanged")
         await Session.delete(payload.access_token)
+        set_auth_cookie(request, session.token)
         return LoginResponse(access_token=session.token)

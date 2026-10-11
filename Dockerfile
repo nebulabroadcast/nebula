@@ -24,7 +24,7 @@ RUN yarn install --immutable
 COPY ./frontend/src /frontend/src
 RUN yarn build
 
-FROM python:3.13-slim-trixie
+FROM python:3.14-slim-trixie
 ENV PYTHONUNBUFFERED=1
 
 #

@@ -3,6 +3,7 @@ import time
 from fastapi import Request
 
 import nebula
+from server.auth_cookie import set_auth_cookie
 from server.clientinfo import get_real_ip
 from server.models.login import LoginRequest, LoginResponse
 from server.request import APIRequest
@@ -76,4 +77,5 @@ class Login(APIRequest):
             await clear_failed_login(get_real_ip(request))
 
         session = await Session.create(user, request)
+        set_auth_cookie(request, session.token)
         return LoginResponse(access_token=session.token)

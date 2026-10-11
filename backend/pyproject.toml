@@ -6,7 +6,7 @@ authors = [
   {name = "Nebula Broadcast", email = "info@nebulabroadcast.com"},
 ]
 
-requires-python = ">=3.13"
+requires-python = ">=3.14"
 dependencies = [
     "aiocache>=0.12.3",
     "aiofiles >=25.1.0",
@@ -74,7 +74,6 @@ ignore = [
   "S101",    # OK: I like asserts. They make mypy happy
   "S104",    # OK: bind to all interfaces (We need this)
   "S110",    # OK: except: pass 
-  "S608",    # sql injections. let's wait for template strings
   "SIM105",  # OK: contextlib.suppress is ugly
   "TD002",   # Author name in TODOs
   "TD003",   # Issue link in TODOs
@@ -84,7 +83,20 @@ ignore = [
   "RUF012",  # ClassVar
   "CPY001",  # Copyright header
   "PLR0917", # Too many positional arguments in function call
+  "TC001",   # Imports used only in annotations: pydantic and FastAPI read
+  "TC002",   # annotations at runtime, so they can't move under
+  "TC003",   # TYPE_CHECKING even with deferred annotations (3.14)
 ]
+
+[tool.ruff.lint.per-file-ignores]
+# SQL built with f-strings, written before t-strings. New SQL uses
+# t-strings (nebula/sql.py); remove a file here once it's converted.
+"api/browse_assets/_query.py" = ["S608"]
+"api/jobs/manage_jobs.py" = ["S608"]
+"api/jobs/send_to.py" = ["S608"]
+"api/objects/get_objects.py" = ["S608"]
+"nebula/objects/base.py" = ["S608"]
+"setup/settings.py" = ["S608"]
 
 [tool.mypy]
 plugins = ["pydantic.mypy"]

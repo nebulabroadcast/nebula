@@ -41,11 +41,6 @@ const nebula = {
     return client.instance.post(`/api/${endpoint}`, data);
   },
 
-  getAccessToken(): string {
-    const header = client.instance.defaults.headers.common.Authorization;
-    return typeof header === 'string' ? header.replace('Bearer ', '') : '';
-  },
-
   // Metadata
   metaType(key: string): ClientMetaTypeModel {
     return (

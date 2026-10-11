@@ -12,13 +12,13 @@ if TYPE_CHECKING:
     from nebula.settings.metatypes import MetaType
 
 
-def format_cs_values(meta_type: "MetaType", values: list[str]) -> str:
+def format_cs_values(meta_type: MetaType, values: list[str]) -> str:
     if meta_type.cs is None:
         return ",".join(values)
     return ", ".join(get_cs_titles(meta_type.cs, tuple(values)))
 
 
-def format_meta(obj: "BaseObject", key: str, **kwargs: dict[str, Any]) -> str:  # noqa: C901, PLR0912, PLR0911
+def format_meta(obj: BaseObject, key: str, **kwargs: dict[str, Any]) -> str:  # noqa: C901, PLR0912, PLR0911
     _ = kwargs  # Unused for now, but may be useful for custom formatting in the future
     """Return a human-readable string representation of a metadata value."""
     if not (value := obj.get(key)):

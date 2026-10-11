@@ -54,7 +54,7 @@ class MetaType(SettingsModel):
     hide_null: bool = False
 
     @classmethod
-    def from_settings(cls, settings: dict[str, Any]) -> "MetaType":
+    def from_settings(cls, settings: dict[str, Any]) -> MetaType:
         aliases = {}
         for lang, items in settings["aliases"].items():
             t, h, d = items

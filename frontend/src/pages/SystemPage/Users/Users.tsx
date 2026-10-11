@@ -1,22 +1,40 @@
+import type { User, UserPatch } from '@client';
 import { Navbar, NavbarTitle, Button, Spacer } from '@components';
 import Sessions from '@containers/Sessions';
 import { useNebula } from '@features/Nebula';
-import React, { useState, useEffect, useMemo } from 'react';
+import { getErrorDetail } from '@lib/utils';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { toast } from 'react-toastify';
-
-import type { UserModel } from '../../../client';
 
 import UserForm from './UserForm';
 import UserList from './UserList';
 
 import nebula from '@/nebula';
 
+import './Users.css';
+
+// The user being edited. The password is set with its own request on save.
+export type UserDraft = Partial<User> & { password?: string };
+
+// Same as the server's minimum, checked before anything is saved
+const MIN_PASSWORD_LENGTH = 8;
+
+// Fields this page edits. Other fields (e.g. user metatypes) stay untouched.
+const userChanges = (draft: UserDraft): UserPatch => ({
+  full_name: draft.full_name || null,
+  email: draft.email || null,
+  is_admin: draft.is_admin ?? false,
+  is_limited: draft.is_limited ?? false,
+  local_network_only: draft.local_network_only ?? false,
+  permissions: draft.permissions ?? undefined,
+});
+
 const UsersPage: React.FC = () => {
   const [searchParams] = useSearchParams();
-  const [users, setUsers] = useState<UserModel[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const navigate = useNavigate();
-  const [userData, setUserData] = useState<Partial<UserModel>>({});
+  const [userData, setUserData] = useState<UserDraft>({});
   const [loading, setLoading] = useState(false);
 
   const { setPageTitle } = useNebula();
@@ -33,36 +51,38 @@ const UsersPage: React.FC = () => {
     return null;
   }, [searchParams]);
 
-  const loadUsers = () => {
+  const loadUsers = useCallback(async () => {
     setLoading(true);
-    void nebula
-      .listUsers({ throwOnError: true })
-      .then((res) => {
-        setUsers(
-          res.data.users.map((user) => ({
-            ...user,
-            password: undefined,
-            api_key: undefined,
-            api_key_preview: user.api_key,
-          }))
-        );
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  };
-
-  useEffect(() => {
-    loadUsers();
+    try {
+      const all: User[] = [];
+      let cursor: string | undefined;
+      do {
+        const { data } = await nebula.usersList({
+          query: { sort: 'login', limit: 1000, cursor },
+          throwOnError: true,
+        });
+        all.push(...data.items);
+        cursor = data.next_cursor ?? undefined;
+      } while (cursor);
+      setUsers(all);
+    } catch (err: unknown) {
+      toast.error(`Unable to load users: ${getErrorDetail(err)}`);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
+    void loadUsers();
+  }, [loadUsers]);
+
+  // Show the selected user. A draft of that user is kept when the list
+  // changes (reloads, a new API key), so unsaved edits stay.
+  useEffect(() => {
     if (currentId) {
       const user = users.find((u) => u.id === currentId);
-      if (user) {
-        setUserData(user);
-        return;
-      }
+      setUserData((draft) => (draft.id === currentId ? draft : (user ?? {})));
+      return;
     }
     const doCopy = new URLSearchParams(window.location.search).get('copy');
     if (!doCopy) setUserData({});
@@ -72,35 +92,72 @@ const UsersPage: React.FC = () => {
     void navigate(`/system/users?id=${userId}`);
   };
 
-  const onSave = () => {
-    nebula
-      .saveUser({ body: userData as UserModel, throwOnError: true })
-      .then(() => {
-        loadUsers();
-        toast.success('User saved');
-      })
-      .catch((err: unknown) => {
-        toast.error('Error saving user');
-        console.error(err);
-      })
-      .finally(() => {
-        setUserData((data) => ({
-          ...data,
-          password: undefined,
-          api_key: undefined,
-        }));
+  const onSave = async () => {
+    const { password } = userData;
+    if (password && password.length < MIN_PASSWORD_LENGTH) {
+      toast.error(`Password must have at least ${MIN_PASSWORD_LENGTH} characters`);
+      return;
+    }
+
+    let user: User;
+    try {
+      const changes = userChanges(userData);
+      const response = userData.id
+        ? await nebula.usersUpdate({
+            path: { user_id: userData.id },
+            body: changes,
+            throwOnError: true,
+          })
+        : await nebula.usersCreate({
+            body: { ...changes, login: userData.login || '' },
+            throwOnError: true,
+          });
+      user = response.data;
+    } catch (err: unknown) {
+      toast.error(`Error saving user: ${getErrorDetail(err)}`);
+      return;
+    }
+
+    // The user is saved: show it (with its id) even if setting the password
+    // fails or the list reloads slowly, so saving again updates it
+    setUserData(user);
+    void loadUsers();
+    if (user.id !== userData.id) void navigate(`/system/users?id=${user.id}`);
+
+    if (!password) {
+      toast.success('User saved');
+      return;
+    }
+    try {
+      await nebula.usersSetPassword({
+        path: { user_id: user.id },
+        body: { password },
+        throwOnError: true,
       });
+      toast.success('User saved');
+    } catch (err: unknown) {
+      toast.error(`User saved, but the password wasn't set: ${getErrorDetail(err)}`);
+    }
+  };
+
+  const onApiKeyCreated = (apiKeyPreview: string) => {
+    const id = userData.id;
+    setUserData((draft) => ({ ...draft, api_key_preview: apiKeyPreview }));
+    setUsers((list) =>
+      list.map((u) => (u.id === id ? { ...u, api_key_preview: apiKeyPreview } : u))
+    );
   };
 
   const copyUser = () => {
     const copy = { ...userData };
-    const keysToRemove: Array<keyof UserModel> = [
+    const keysToRemove: Array<keyof UserDraft> = [
       'id',
       'login',
       'password',
-      'api_key',
       'full_name',
       'email',
+      'api_key_preview',
+      'has_password',
     ];
     for (const key of keysToRemove) {
       Reflect.deleteProperty(copy, key);
@@ -110,8 +167,8 @@ const UsersPage: React.FC = () => {
   };
 
   return (
-    <main className="row">
-      <section className="transparent column">
+    <main className="users-page">
+      <section className="transparent column user-list">
         <Navbar>
           <Button
             icon="person_add"
@@ -138,25 +195,20 @@ const UsersPage: React.FC = () => {
         />
       </section>
 
-      <section className="transparent column grow">
-        <Navbar>
-          <div className="left"></div>
+      <Navbar className="editor-nav">
+        <Spacer />
+        <NavbarTitle>{userData.login || 'New User'}</NavbarTitle>
+        <Spacer />
+        <Button icon="check" label="Delete user" disabled={true} />
+        <Button icon="check" label="Save user" onClick={() => void onSave()} />
+      </Navbar>
 
-          <div className="center">
-            <NavbarTitle>{userData.login || 'New User'}</NavbarTitle>
-          </div>
-
-          <div className="right">
-            <Button icon="check" label="Delete user" onClick={onSave} disabled={true} />
-            <Button icon="check" label="Save user" onClick={onSave} />
-          </div>
-        </Navbar>
-        <UserForm userData={userData} setUserData={setUserData} />
-      </section>
-
-      <section className="transparent column grow">
-        <Sessions userId={userData?.id ?? undefined} />
-      </section>
+      <UserForm
+        userData={userData}
+        setUserData={setUserData}
+        onApiKeyCreated={onApiKeyCreated}
+      />
+      <Sessions userId={userData?.id ?? undefined} />
     </main>
   );
 };

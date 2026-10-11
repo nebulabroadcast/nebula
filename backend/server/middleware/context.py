@@ -4,11 +4,12 @@ from starlette.responses import Response
 
 import nebula
 from nebula.context import RequestContext, request_context
+from server.auth_cookie import apply_auth_cookie, token_from_cookie
 from server.session import Session
 from server.utils import parse_access_token
 
 
-def _access_token_from_request(request: Request) -> str | None:
+def access_token_from_request(request: Request) -> str | None:
     if token := request.query_params.get("token"):
         return token
     if authorization := request.headers.get("Authorization"):
@@ -22,8 +23,13 @@ def _api_key_from_request(request: Request) -> str | None:
 
 async def _resolve_user(request: Request) -> nebula.User:
     """Resolve the user for the given request, or raise UnauthorizedException."""
-    access_token = _access_token_from_request(request)
+    access_token = access_token_from_request(request)
     api_key = _api_key_from_request(request)
+
+    # The cookie is used only when there is no explicit credential, so an
+    # invalid explicit credential never falls back to the browser's session
+    if access_token is None and api_key is None:
+        access_token = token_from_cookie(request)
 
     if access_token is None:
         if api_key is None:
@@ -68,4 +74,7 @@ class RequestContextMiddleware(BaseHTTPMiddleware):
             request_context(context),
             nebula.log.contextualize(user=user.name if user else None),
         ):
-            return await call_next(request)
+            response = await call_next(request)
+
+        apply_auth_cookie(request, response)
+        return response

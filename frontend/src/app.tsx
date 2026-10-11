@@ -14,6 +14,9 @@ import LoginPage from './pages/LoginPage/LoginPage';
 import nebula, { client } from '@/nebula';
 
 const App = () => {
+  // API requests authenticate with the HttpOnly session cookie set by the
+  // server on login. The token is kept only for the websocket (and tool
+  // plugins), and changing it re-runs init after login/logout.
   const [accessToken, setAccessToken] = useLocalStorage<string | null>(
     'accessToken',
     null
@@ -32,7 +35,6 @@ const App = () => {
   // Ensure server connection
 
   useEffect(() => {
-    client.instance.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
     client.instance.defaults.headers.common['X-Client-Id'] = nebula.senderId;
     nebula
       .init({ throwOnError: true })

@@ -54,7 +54,7 @@ def fract2float(fract: str) -> float:
         if len(nd) == 1 or nd[1] == "1":
             return float(nd[0])
         return float(nd[0]) / float(nd[1])
-    except (IndexError, ValueError):
+    except IndexError, ValueError:
         return 1
 
 

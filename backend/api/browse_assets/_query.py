@@ -2,8 +2,8 @@ import nebula
 from nebula.common import SerializableValue, sql_list
 from nebula.enum import MetaClass
 from nebula.exceptions import NebulaException
+from nebula.helpers.fulltext import fulltext_ranges
 from nebula.metadata.normalize import normalize_meta
-from nebula.utils import slugify
 
 from ._models import BrowseAssetsRequest, ConditionModel
 
@@ -61,6 +61,11 @@ def build_order(order_by: str) -> str:
     # Select the key to order by
     # Ensure the key is in the columns list
     # This effectively prevents SQL injections
+
+    # Database columns are already typed. Casting them would prevent
+    # using their index (idx_ctime...).
+    if order_by in nebula.Asset.db_columns:
+        return order_by
 
     cast_order_by = None
     if order_by_type := nebula.settings.metatypes.get(order_by):
@@ -121,32 +126,26 @@ def build_query(  # noqa: C901, PLR0912
     # Process full text
 
     ft_cte = ft_join = ""
-    if request.query:
-        # use slugify to generate search terms
-        like_tokens = [
-            f"'{f}%'"
-            for f in slugify(
-                request.query,
-                make_set=True,
-                min_length=3,
-            )
-        ]
-
-        if like_tokens:
-            ft_cte = f"""
-
-            WITH ft_cte AS (
-                SELECT ft.id
-                FROM ft
-                CROSS JOIN unnest(ARRAY[{",".join(like_tokens)}]) AS q(token)
-                WHERE ft.object_type = 0
-                AND ft.value LIKE q.token
-                GROUP BY ft.id
-                HAVING COUNT(DISTINCT q.token) = {len(like_tokens)}
-            )
-
+    if request.query and (ranges := fulltext_ranges(request.query)):
+        # Assets with a token matching every word. Each word is a separate
+        # index range lookup (see fulltext_ranges). Words are slugified
+        # (letters and digits only), so they can be inlined, and as
+        # constants they give the planner real row estimates.
+        lookups = "\nUNION ALL\n".join(
+            f"""
+            SELECT {n} AS n, id FROM ft
+            WHERE object_type = 0 AND value ~>=~ '{lo}' AND value ~<~ '{hi}'
             """
-            ft_join = """JOIN ft_cte ON ft_cte.id = a.id"""
+            for n, (lo, hi) in enumerate(ranges)
+        )
+        ft_cte = f"""
+            WITH ft_cte AS (
+                SELECT id FROM ({lookups}) AS matches
+                GROUP BY id
+                HAVING COUNT(DISTINCT n) = {len(ranges)}
+            )
+        """
+        ft_join = """JOIN ft_cte ON ft_cte.id = a.id"""
 
     # Access control
 

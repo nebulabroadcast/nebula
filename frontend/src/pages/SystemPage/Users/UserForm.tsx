@@ -10,28 +10,28 @@ import {
   ScrollBox,
   Section,
 } from '@components';
+import { ApiKeyPicker } from '@features/ApiKeyPicker';
+import { UserAvatar } from '@features/UserAvatar';
+import { getErrorDetail } from '@lib/utils';
 import React from 'react';
 import { toast } from 'react-toastify';
 
-import type { UserModel } from '../../../client';
-
 import AccessControl from './AccessControl';
-import ApiKeyPicker from './ApiKeyPicker';
+import type { UserDraft } from './Users';
 
 import nebula from '@/nebula';
 
-const apiKeyPreview = (apiKey: string) => {
-  const start = apiKey.substring(0, 4);
-  const end = apiKey.substring(apiKey.length - 4);
-  return start + '*******' + end;
-};
-
 interface UserFormProps {
-  userData: Partial<UserModel> & { api_key_preview?: string };
-  setUserData: React.Dispatch<React.SetStateAction<Partial<UserModel>>>;
+  userData: UserDraft;
+  setUserData: React.Dispatch<React.SetStateAction<UserDraft>>;
+  onApiKeyCreated: (apiKeyPreview: string) => void;
 }
 
-const UserForm: React.FC<UserFormProps> = ({ userData, setUserData }) => {
+const UserForm: React.FC<UserFormProps> = ({
+  userData,
+  setUserData,
+  onApiKeyCreated,
+}) => {
   const setValue = (key: string, value: any) => {
     setUserData((prev) => ({ ...prev, [key]: value }));
   };
@@ -39,58 +39,61 @@ const UserForm: React.FC<UserFormProps> = ({ userData, setUserData }) => {
   const sendInviteEmail = () => {
     if (!userData?.email || !userData?.id) return;
     nebula
-      .sendInvitationEmail({ body: { id: userData.id }, throwOnError: true })
+      .usersSendInvitation({ path: { user_id: userData.id }, throwOnError: true })
       .then(() => {
         toast.success('Invite email sent');
       })
-      .catch(() => {
-        toast.error('Failed to send invite email');
+      .catch((err: unknown) => {
+        toast.error(`Failed to send invite email: ${getErrorDetail(err)}`);
       });
   };
 
   return (
-    <ScrollBox style={{ minWidth: 600 }}>
+    <ScrollBox>
       <Section className="column">
         <PanelHeader>
           <Icon icon="person" />
           {userData?.id ? 'User profile' : 'New user'}
         </PanelHeader>
-        <Form>
-          <FormRow title="Login">
-            <InputText
-              value={userData?.login || ''}
-              disabled={!!userData?.id}
-              onChange={(value) => {
-                setValue('login', value);
-              }}
-            />
-          </FormRow>
-          <FormRow title="Full name">
-            <InputText
-              value={userData?.full_name || ''}
-              onChange={(value) => {
-                setValue('full_name', value);
-              }}
-            />
-          </FormRow>
-          <FormRow title="Email">
-            <InputText
-              value={userData?.email || ''}
-              onChange={(value) => {
-                setValue('email', value);
-              }}
-            />
-            <Button
-              label="Send invite email"
-              icon="email"
-              disabled={!userData?.email || !userData?.id}
-              style={{ maxWidth: 150 }}
-              onClick={() => {
-                sendInviteEmail();
-              }}
-            />
-          </FormRow>
-        </Form>
+        <div className="row" style={{ gap: 16, alignItems: 'flex-start' }}>
+          <UserAvatar userId={userData?.id ?? undefined} />
+          <Form style={{ flexGrow: 1 }}>
+            <FormRow title="Login">
+              <InputText
+                value={userData?.login || ''}
+                disabled={!!userData?.id}
+                onChange={(value) => {
+                  setValue('login', value);
+                }}
+              />
+            </FormRow>
+            <FormRow title="Full name">
+              <InputText
+                value={userData?.full_name || ''}
+                onChange={(value) => {
+                  setValue('full_name', value);
+                }}
+              />
+            </FormRow>
+            <FormRow title="Email">
+              <InputText
+                value={userData?.email || ''}
+                onChange={(value) => {
+                  setValue('email', value);
+                }}
+              />
+              <Button
+                label="Send invite email"
+                icon="email"
+                disabled={!userData?.email || !userData?.id}
+                style={{ maxWidth: 150 }}
+                onClick={() => {
+                  sendInviteEmail();
+                }}
+              />
+            </FormRow>
+          </Form>
+        </div>
       </Section>
 
       <Section className="column">
@@ -107,16 +110,16 @@ const UserForm: React.FC<UserFormProps> = ({ userData, setUserData }) => {
                 setValue('password', value);
               }}
               autoComplete="new-password"
-              placeholder="Change current password"
+              placeholder={
+                userData?.has_password ? 'Change current password' : 'Set a password'
+              }
             />
           </FormRow>
           <FormRow title="API Key">
             <ApiKeyPicker
-              setApiKey={(value) => {
-                setValue('api_key', value);
-                setValue('api_key_preview', apiKeyPreview(value));
-              }}
-              apiKeyPreview={userData?.api_key_preview}
+              userId={userData?.id ?? undefined}
+              apiKeyPreview={userData?.api_key_preview ?? undefined}
+              onCreated={onApiKeyCreated}
             />
           </FormRow>
           <FormRow title="Local network only">

@@ -1,6 +1,7 @@
 __all__ = [
     "DB",
     "Asset",
+    "BadGatewayException",
     "BadRequestException",
     "Bin",
     "CLIPlugin",
@@ -48,6 +49,7 @@ from nx.redis import redis
 from . import context
 from .config import config
 from .exceptions import (
+    BadGatewayException,
     BadRequestException,
     ConflictException,
     ForbiddenException,

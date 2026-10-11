@@ -16,7 +16,6 @@ interface PreviewProps {
 }
 
 export const AssetPreview: React.FC<PreviewProps> = ({ assetData, setAssetData }) => {
-  const accessToken = nebula.getAccessToken();
   const videoPlayerRef = useRef<VideoPlayerRef>(null);
 
   // Current active selection
@@ -127,13 +126,12 @@ export const AssetPreview: React.FC<PreviewProps> = ({ assetData, setAssetData }
 
   const videoSrc = useMemo(
     () =>
-      (accessToken &&
-        assetData.id &&
+      (assetData.id &&
         proxyInfo?.id === assetData.id &&
         proxyInfo?.timestamp &&
-        `/proxy/${assetData.id}?token=${accessToken}&ts=${proxyInfo.timestamp}`) ||
+        `/proxy/${assetData.id}?ts=${proxyInfo.timestamp}`) ||
       undefined,
-    [assetData.id, accessToken, proxyInfo]
+    [assetData.id, proxyInfo]
   );
 
   return (
