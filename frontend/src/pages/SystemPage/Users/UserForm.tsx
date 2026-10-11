@@ -12,6 +12,7 @@ import {
 } from '@components';
 import { ApiKeyPicker } from '@features/ApiKeyPicker';
 import { UserAvatar } from '@features/UserAvatar';
+import { getErrorDetail } from '@lib/utils';
 import React from 'react';
 import { toast } from 'react-toastify';
 
@@ -39,8 +40,8 @@ const UserForm: React.FC<UserFormProps> = ({ userData, setUserData, onChanged })
       .then(() => {
         toast.success('Invite email sent');
       })
-      .catch(() => {
-        toast.error('Failed to send invite email');
+      .catch((err: unknown) => {
+        toast.error(`Failed to send invite email: ${getErrorDetail(err)}`);
       });
   };
 

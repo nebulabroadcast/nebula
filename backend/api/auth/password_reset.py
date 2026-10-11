@@ -103,12 +103,11 @@ class PasswordReset(APIRequest):
                 full_name=user.display_name,
                 reset_link=reset_link,
             )
+            nebula.log.trace(f"Sending password reset email to {email}")
+            await send_mail(email, "Nebula Password Reset Request", email_body)
         except Exception as e:
+            # Logged only: the client must not learn whether the email exists
             nebula.log.error(f"Error requesting password reset for {email}: {e}")
-            return
-
-        nebula.log.trace(f"Sending password reset email to {email}")
-        await send_mail(email, "Nebula Password Reset Request", email_body)
 
 
 class PasswordResetCallback(APIRequest):

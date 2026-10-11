@@ -1,5 +1,4 @@
 import asyncio
-import contextlib
 import smtplib
 import ssl
 from email.mime.multipart import MIMEMultipart
@@ -67,62 +66,34 @@ def _send_mail(
     body: str | MIMEText | MIMEMultipart,
     reply_address: str | None = None,
 ) -> None:
+    system = nebula.settings.system
+    if not (system.smtp_host and system.smtp_port):
+        raise nebula.BadGatewayException("Email is not configured (no SMTP host)")
+
+    addresses = [to] if isinstance(to, str) else list(to)
+    sender = reply_address or system.mail_from or "nebula@localhost"
+    msg = MIMEText(body) if isinstance(body, str) else body
+    msg["Subject"] = subject
+    msg["From"] = sender
+    msg["To"] = ",".join(addresses)
+
+    context = ssl.create_default_context() if system.smtp_tls else None
+    implicit_tls = system.smtp_tls and system.smtp_port == 465
+    smtp: smtplib.SMTP
     try:
-        addresses: list[str] = []
-        if isinstance(to, str):
-            addresses.append(to)
+        if implicit_tls:
+            smtp = smtplib.SMTP_SSL(system.smtp_host, system.smtp_port, context=context)
         else:
-            addresses.extend(to)
-
-        if reply_address is None:
-            reply_address = nebula.settings.system.mail_from or "nebula@localhost"
-
-        smtp_host = nebula.settings.system.smtp_host
-        smtp_port = nebula.settings.system.smtp_port
-        smtp_user = nebula.settings.system.smtp_user
-        smtp_pass = nebula.settings.system.smtp_pass
-        smtp_tls = nebula.settings.system.smtp_tls
-
-        if not (smtp_host and smtp_port):
-            nebula.log.error("SMTP host is not configured, cannot send email")
-            return
-
-        msg: MIMEText | MIMEMultipart
-        msg = MIMEText(body) if isinstance(body, str) else body
-
-        msg["Subject"] = subject
-        msg["From"] = reply_address
-        msg["To"] = ",".join(addresses)
-
-        nebula.log.trace(f"Connecting to SMTP server {smtp_host}:{smtp_port}")
-
-        smtp: smtplib.SMTP | smtplib.SMTP_SSL
-        context: ssl.SSLContext | None = None
-
-        if smtp_tls:
-            context = ssl.create_default_context()
-
-        try:
-            if smtp_tls and smtp_port == 465:
-                smtp = smtplib.SMTP_SSL(smtp_host, smtp_port, context=context)
-            else:
-                smtp = smtplib.SMTP(smtp_host, smtp_port)
-                if smtp_tls:
-                    smtp.starttls(context=context)
-
-            if smtp_user and smtp_pass:
-                nebula.log.trace("Logging in to SMTP server")
-                smtp.login(smtp_user, smtp_pass)
-
+            smtp = smtplib.SMTP(system.smtp_host, system.smtp_port)
+        with smtp:
+            if system.smtp_tls and not implicit_tls:
+                smtp.starttls(context=context)
+            if system.smtp_user and system.smtp_pass:
+                smtp.login(system.smtp_user, system.smtp_pass)
             nebula.log.debug(f"Sending email to {addresses}")
-            smtp.sendmail(reply_address, addresses, msg.as_string())
-
-        finally:
-            with contextlib.suppress(Exception):
-                smtp.quit()
-
-    except Exception as e:
-        nebula.log.error(f"Error sending email to {to}: {e}")
+            smtp.sendmail(sender, addresses, msg.as_string())
+    except OSError as e:  # smtplib errors are OSErrors too
+        raise nebula.BadGatewayException(f"Unable to send email: {e}") from e
 
 
 async def send_mail(
@@ -131,6 +102,7 @@ async def send_mail(
     body: str | MIMEText | MIMEMultipart,
     reply_address: str | None = None,
 ) -> None:
+    """Send an email. Raises BadGatewayException (502) if it can't be sent."""
     await asyncio.to_thread(_send_mail, to, subject, body, reply_address)
 
 

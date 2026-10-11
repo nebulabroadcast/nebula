@@ -361,6 +361,18 @@ def test_send_invitation(client: TestClient, monkeypatch: pytest.MonkeyPatch) ->
     assert response.status_code == 400
 
 
+def test_send_invitation_failure(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    async def send_mail(*_: Any) -> None:
+        raise nebula.BadGatewayException("Unable to send email: refused")
+
+    monkeypatch.setattr(nebula.helpers.email, "send_mail", send_mail)
+    response = client.post(f"{USERS}/2/send-invitation", headers=ADMIN)
+    assert response.status_code == 502
+    assert response.json()["detail"] == "Unable to send email: refused"
+
+
 #
 # Avatar
 #

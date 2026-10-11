@@ -80,3 +80,11 @@ class ValidationException(NebulaException):
     detail = "Validation failed"
     status = 422
     log = True
+
+
+class BadGatewayException(NebulaException):
+    """A service Nebula depends on (e.g. the mail server) failed."""
+
+    detail = "Bad gateway"
+    status = 502
+    log = True
