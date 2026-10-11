@@ -60,15 +60,12 @@ import type {
   OrderData,
   OrderErrors,
   OrderResponses,
-  PasswordData,
-  PasswordErrors,
   PasswordResetCallbackData,
   PasswordResetCallbackErrors,
   PasswordResetCallbackResponses,
   PasswordResetData,
   PasswordResetErrors,
   PasswordResetResponses,
-  PasswordResponses,
   PlayoutData,
   PlayoutErrors,
   PlayoutResponses,
@@ -692,33 +689,6 @@ export const ssoCallback = <ThrowOnError extends boolean = false>(
   );
 
 /**
- * Set Password
- *
- * Set a new password for the current (or a given) user.
- *
- * Normal users can only change their own password.
- *
- * In order to set a password for another user,
- * the current user must be an admin, otherwise a 403 error is returned.
- *
- * Deprecated: use `POST /api/v2/users/{user_id}/password`.
- *
- * @deprecated
- */
-export const password = <ThrowOnError extends boolean = false>(
-  options: Options<PasswordData, ThrowOnError>
-): RequestResult<PasswordResponses, PasswordErrors, ThrowOnError> =>
-  (options.client ?? client).post<PasswordResponses, PasswordErrors, ThrowOnError>({
-    responseType: 'json',
-    url: '/api/password',
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-  });
-
-/**
  * Token Exchange
  *
  * Exchange a transient access token for a normal one
@@ -1029,7 +999,7 @@ export const usersRegenerateApiKey = <ThrowOnError extends boolean = false>(
  *
  * Email the user a link to this server. The user needs an email address.
  *
- * Admins only.
+ * Admins only. 502 when the email can't be sent.
  */
 export const usersSendInvitation = <ThrowOnError extends boolean = false>(
   options: Options<UsersSendInvitationData, ThrowOnError>

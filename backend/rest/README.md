@@ -538,6 +538,7 @@ Status codes:
 | 404 | resource doesn't exist | `NotFoundException` |
 | 409 | conflict (duplicate login, stale state) | `ConflictException` |
 | 422 | schema or semantic validation failed | `ValidationException` / pydantic |
+| 502 | a service Nebula depends on failed (mail server) | `BadGatewayException` |
 | 500 | bug | anything else |
 
 
@@ -552,12 +553,9 @@ Status codes:
 4. The RPC endpoint is removed in a later minor release, which is noted in
    the release notes.
 
-Deprecated so far: `password` (replaced by
-`POST /api/v2/users/{user_id}/password`).
-
 Removed without a deprecation period, because only the frontend called
 them: the "User management" endpoints `list-users`, `save-user` and
-`send-invitation-email` (replaced by `/api/v2/users`).
+`send-invitation-email`, and `password` (replaced by `/api/v2/users`).
 
 Optimized endpoints listed in §1 are never deprecated by this process.
 

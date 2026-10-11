@@ -2258,20 +2258,6 @@ export type SessionModel = {
 };
 
 /**
- * SetPasswordRequest
- */
-export type SetPasswordRequest = {
-  /**
-   * Login
-   */
-  login?: string | null;
-  /**
-   * Password
-   */
-  password: string;
-};
-
-/**
  * SolveRequest
  */
 export type SolveRequest = {
@@ -3400,29 +3386,6 @@ export type SsoCallbackErrors = {
 export type SsoCallbackError = SsoCallbackErrors[keyof SsoCallbackErrors];
 
 export type SsoCallbackResponses = {
-  /**
-   * Successful Response
-   */
-  200: unknown;
-};
-
-export type PasswordData = {
-  body: SetPasswordRequest;
-  path?: never;
-  query?: never;
-  url: '/api/password';
-};
-
-export type PasswordErrors = {
-  /**
-   * Validation Error
-   */
-  422: HttpValidationError;
-};
-
-export type PasswordError = PasswordErrors[keyof PasswordErrors];
-
-export type PasswordResponses = {
   /**
    * Successful Response
    */
