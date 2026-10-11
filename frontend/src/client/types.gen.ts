@@ -1049,18 +1049,6 @@ export type ListSessionsRequest = {
 };
 
 /**
- * ListUsersResponse
- *
- * Response model for listing users
- */
-export type ListUsersResponse = {
-  /**
-   * List of users
-   */
-  users: Array<UserModel>;
-};
-
-/**
  * LocationInfo
  */
 export type LocationInfo = {
@@ -2056,18 +2044,6 @@ export type ScopedEndpoint = {
    * Scopes
    */
   scopes: Array<string>;
-};
-
-/**
- * SendInvitationEmailRequest
- *
- * Request model for sending an invitation email to a user.
- */
-export type SendInvitationEmailRequest = {
-  /**
-   * User ID
-   */
-  id: number;
 };
 
 /**
@@ -3248,69 +3224,6 @@ export type SetResponses = {
 
 export type SetResponse = SetResponses[keyof SetResponses];
 
-export type ListUsersData = {
-  body?: never;
-  path?: never;
-  query?: never;
-  url: '/api/list-users';
-};
-
-export type ListUsersResponses = {
-  /**
-   * Successful Response
-   */
-  200: ListUsersResponse;
-};
-
-export type ListUsersResponse2 = ListUsersResponses[keyof ListUsersResponses];
-
-export type SaveUserData = {
-  body: UserModel;
-  path?: never;
-  query?: never;
-  url: '/api/save-user';
-};
-
-export type SaveUserErrors = {
-  /**
-   * Validation Error
-   */
-  422: HttpValidationError;
-};
-
-export type SaveUserError = SaveUserErrors[keyof SaveUserErrors];
-
-export type SaveUserResponses = {
-  /**
-   * Successful Response
-   */
-  200: unknown;
-};
-
-export type SendInvitationEmailData = {
-  body: SendInvitationEmailRequest;
-  path?: never;
-  query?: never;
-  url: '/api/send-invitation-email';
-};
-
-export type SendInvitationEmailErrors = {
-  /**
-   * Validation Error
-   */
-  422: HttpValidationError;
-};
-
-export type SendInvitationEmailError =
-  SendInvitationEmailErrors[keyof SendInvitationEmailErrors];
-
-export type SendInvitationEmailResponses = {
-  /**
-   * Successful Response
-   */
-  200: unknown;
-};
-
 export type RundownData = {
   body: RundownRequest;
   path?: never;
@@ -3961,6 +3874,40 @@ export type UsersRegenerateApiKeyResponses = {
 
 export type UsersRegenerateApiKeyResponse =
   UsersRegenerateApiKeyResponses[keyof UsersRegenerateApiKeyResponses];
+
+export type UsersSendInvitationData = {
+  body?: never;
+  path: {
+    /**
+     * User Id
+     *
+     * User ID
+     */
+    user_id: number;
+  };
+  query?: never;
+  url: '/api/v2/users/{user_id}/send-invitation';
+};
+
+export type UsersSendInvitationErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type UsersSendInvitationError =
+  UsersSendInvitationErrors[keyof UsersSendInvitationErrors];
+
+export type UsersSendInvitationResponses = {
+  /**
+   * Successful Response
+   */
+  204: void;
+};
+
+export type UsersSendInvitationResponse =
+  UsersSendInvitationResponses[keyof UsersSendInvitationResponses];
 
 export type UsersAvatarDeleteData = {
   body?: never;

@@ -46,8 +46,6 @@ import type {
   ListSessionsData,
   ListSessionsErrors,
   ListSessionsResponses,
-  ListUsersData,
-  ListUsersResponses,
   LoginBackgroundApiLoginBackgroundJpgGetData,
   LoginBackgroundApiLoginBackgroundJpgGetResponses,
   LoginData,
@@ -83,17 +81,11 @@ import type {
   SaveTranscriptionData,
   SaveTranscriptionErrors,
   SaveTranscriptionResponses,
-  SaveUserData,
-  SaveUserErrors,
-  SaveUserResponses,
   SchedulerData,
   SchedulerErrors,
   SchedulerResponses,
   SendData,
   SendErrors,
-  SendInvitationEmailData,
-  SendInvitationEmailErrors,
-  SendInvitationEmailResponses,
   SendResponses,
   ServicesData,
   ServicesErrors,
@@ -142,6 +134,9 @@ import type {
   UsersRegenerateApiKeyData,
   UsersRegenerateApiKeyErrors,
   UsersRegenerateApiKeyResponses,
+  UsersSendInvitationData,
+  UsersSendInvitationErrors,
+  UsersSendInvitationResponses,
   UsersSetPasswordData,
   UsersSetPasswordErrors,
   UsersSetPasswordResponses,
@@ -539,72 +534,6 @@ export const set = <ThrowOnError extends boolean = false>(
   (options.client ?? client).post<SetResponses, SetErrors, ThrowOnError>({
     responseType: 'json',
     url: '/api/set',
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-  });
-
-/**
- * Get User List
- *
- * Get a list of users
- *
- * Deprecated: use `GET /api/v2/users`.
- *
- * @deprecated
- */
-export const listUsers = <ThrowOnError extends boolean = false>(
-  options?: Options<ListUsersData, ThrowOnError>
-): RequestResult<ListUsersResponses, unknown, ThrowOnError> =>
-  (options?.client ?? client).post<ListUsersResponses, unknown, ThrowOnError>({
-    responseType: 'json',
-    url: '/api/list-users',
-    ...options,
-  });
-
-/**
- * Save User
- *
- * Save user data
- *
- * Deprecated: use `POST /api/v2/users` and `PATCH /api/v2/users/{user_id}`.
- *
- * @deprecated
- */
-export const saveUser = <ThrowOnError extends boolean = false>(
-  options: Options<SaveUserData, ThrowOnError>
-): RequestResult<SaveUserResponses, SaveUserErrors, ThrowOnError> =>
-  (options.client ?? client).post<SaveUserResponses, SaveUserErrors, ThrowOnError>({
-    responseType: 'json',
-    url: '/api/save-user',
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-  });
-
-/**
- * Send Invitation Email
- *
- * Handle sending an invitation email to the specified user.
- */
-export const sendInvitationEmail = <ThrowOnError extends boolean = false>(
-  options: Options<SendInvitationEmailData, ThrowOnError>
-): RequestResult<
-  SendInvitationEmailResponses,
-  SendInvitationEmailErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).post<
-    SendInvitationEmailResponses,
-    SendInvitationEmailErrors,
-    ThrowOnError
-  >({
-    responseType: 'json',
-    url: '/api/send-invitation-email',
     ...options,
     headers: {
       'Content-Type': 'application/json',
@@ -1094,6 +1023,26 @@ export const usersRegenerateApiKey = <ThrowOnError extends boolean = false>(
     url: '/api/v2/users/{user_id}/api-key',
     ...options,
   });
+
+/**
+ * Send an invitation email
+ *
+ * Email the user a link to this server. The user needs an email address.
+ *
+ * Admins only.
+ */
+export const usersSendInvitation = <ThrowOnError extends boolean = false>(
+  options: Options<UsersSendInvitationData, ThrowOnError>
+): RequestResult<
+  UsersSendInvitationResponses,
+  UsersSendInvitationErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    UsersSendInvitationResponses,
+    UsersSendInvitationErrors,
+    ThrowOnError
+  >({ url: '/api/v2/users/{user_id}/send-invitation', ...options });
 
 /**
  * Delete a user's avatar

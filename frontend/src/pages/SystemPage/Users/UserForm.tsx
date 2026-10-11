@@ -35,7 +35,7 @@ const UserForm: React.FC<UserFormProps> = ({ userData, setUserData, onChanged })
   const sendInviteEmail = () => {
     if (!userData?.email || !userData?.id) return;
     nebula
-      .sendInvitationEmail({ body: { id: userData.id }, throwOnError: true })
+      .usersSendInvitation({ path: { user_id: userData.id }, throwOnError: true })
       .then(() => {
         toast.success('Invite email sent');
       })
