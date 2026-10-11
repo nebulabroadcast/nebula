@@ -77,10 +77,6 @@ async def upload_avatar(user_id: UserId, request: Request) -> None:
     user = await nebula.User.load(user_id)
     user.ensure_can_edit()
 
-    content_length = request.headers.get("content-length")
-    if content_length and int(content_length) > MAX_AVATAR_BYTES:
-        raise nebula.ValidationException("Avatar file is too large")
-
     data = bytearray()
     async for chunk in request.stream():
         data.extend(chunk)
