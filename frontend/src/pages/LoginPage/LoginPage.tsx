@@ -44,7 +44,7 @@ const SSOOptions = ({ ssoOptions }: SSOOptionsProps) => {
 };
 
 interface StandardLoginProps {
-  onLogin: (token: string) => void;
+  onLogin: () => void;
   onPasswordReset?: () => void;
   ssoOptions?: SsoOption[];
 }
@@ -71,8 +71,8 @@ const StandardLogin = ({
     event.preventDefault();
     nebula
       .login({ body: { username, password }, throwOnError: true })
-      .then((response) => {
-        onLogin(response.data.access_token);
+      .then(() => {
+        onLogin();
       })
       .catch((err: unknown) => {
         if (err instanceof AxiosError && err.response?.status === 422) {
@@ -124,7 +124,7 @@ const StandardLogin = ({
 
 interface LoginPageProps {
   motd?: string;
-  onLogin: (token: string) => void;
+  onLogin: () => void;
   ssoOptions?: SsoOption[];
 }
 
@@ -153,8 +153,8 @@ const LoginPage = ({ motd, onLogin, ssoOptions }: LoginPageProps) => {
       // exchange tokens
       void nebula
         .tokenExchange({ body: { access_token }, throwOnError: true })
-        .then((response) => {
-          onLogin(response.data.access_token);
+        .then(() => {
+          onLogin();
         });
     } else if (error) {
       toast.error(error);

@@ -7,7 +7,10 @@ and RequestContextMiddleware applies the change to whatever response is
 sent, including error responses (e.g. logout's 401).
 """
 
+from urllib.parse import urlsplit
+
 from fastapi import Request
+from starlette.requests import HTTPConnection
 from starlette.responses import Response
 
 import nebula
@@ -40,6 +43,29 @@ def token_from_cookie(request: Request) -> str | None:
     site = request.headers.get("sec-fetch-site")
     if request.method not in SAFE_METHODS and site and site not in TRUSTED_SITES:
         raise nebula.UnauthorizedException("Cross-site request rejected")
+    return token
+
+
+def token_from_websocket_cookie(connection: HTTPConnection) -> str | None:
+    """Return the session token from the auth cookie of a websocket handshake.
+
+    Browsers send cookies with cross-site websocket handshakes too, and
+    SameSite=Lax doesn't stop them, so the cookie counts only for a
+    handshake from this site: Sec-Fetch-Site same-origin (or none) when the
+    browser sends it, otherwise an Origin with the same host.
+    """
+    token = connection.cookies.get(AUTH_COOKIE_NAME)
+    if not token:
+        return None
+    site = connection.headers.get("sec-fetch-site")
+    if site is not None:
+        return token if site in TRUSTED_SITES else None
+    origin = connection.headers.get("origin")
+    if origin is not None:
+        host = connection.headers.get(
+            "x-forwarded-host", connection.headers.get("host")
+        )
+        return token if urlsplit(origin).netloc == host else None
     return token
 
 

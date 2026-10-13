@@ -22,7 +22,10 @@ def _api_key_from_request(request: Request) -> str | None:
 
 
 async def _resolve_user(request: Request) -> nebula.User:
-    """Resolve the user for the given request, or raise UnauthorizedException."""
+    """Resolve the user for the given request, or raise UnauthorizedException.
+
+    Sets `request.state.session_token` to the token of the session used.
+    """
     access_token = access_token_from_request(request)
     api_key = _api_key_from_request(request)
 
@@ -42,6 +45,7 @@ async def _resolve_user(request: Request) -> nebula.User:
     session = await Session.check(access_token, request)
     if session is None:
         raise nebula.UnauthorizedException("Invalid access token")
+    request.state.session_token = access_token
     return nebula.User(meta=session.user)
 
 
@@ -58,6 +62,7 @@ class RequestContextMiddleware(BaseHTTPMiddleware):
     async def dispatch(
         self, request: Request, call_next: RequestResponseEndpoint
     ) -> Response:
+        request.state.session_token = None
         try:
             user = await _resolve_user(request)
             request.state.user = user

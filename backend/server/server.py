@@ -14,6 +14,7 @@ import nebula
 from nebula.exceptions import NotFoundException
 from nebula.plugins.frontend import get_frontend_plugins
 from nebula.settings import load_settings
+from server.auth_cookie import token_from_websocket_cookie
 from server.endpoints import install_endpoints
 from server.errors import install_error_handlers
 from server.middleware.context import RequestContextMiddleware
@@ -87,10 +88,15 @@ async def ws_endpoint(websocket: WebSocket) -> None:
                 continue
 
             if message["topic"] == "auth":
-                token = message.get("token")
                 subscribe = message.get("subscribe", [])
-                if token:
-                    await client.authorize(token, subscribe)
+                # The token the client sends, else the session cookie
+                # (browsers authenticate their HTTP requests with it)
+                for token in (
+                    message.get("token"),
+                    token_from_websocket_cookie(websocket),
+                ):
+                    if token and await client.authorize(token, subscribe):
+                        break
             await asyncio.sleep(0.01)
     except WebSocketDisconnect:
         with contextlib.suppress(KeyError):
