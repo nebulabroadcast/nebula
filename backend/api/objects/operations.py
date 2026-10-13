@@ -3,15 +3,16 @@ from typing import TYPE_CHECKING, Annotated, Any
 from pydantic import Field
 
 import nebula
-from nebula.enum import ObjectType, get_object_type_id
+from nebula.enum import ObjectType, ObjectTypeId, get_object_type_id
+from nebula.helpers.aux import put_aux
 from nebula.helpers.scheduling import bin_refresh
+from nebula.helpers.validators import Validator
 from nebula.objects.utils import get_object_class_by_name
 from nebula.settings import load_settings
 from server import APIModel, APIRequest
 from server.dependencies import CurrentUser
 
 from ._utils import can_modify_object
-from ._validator import Validator
 
 if TYPE_CHECKING:
     from nebula.objects.base import BaseObject
@@ -203,19 +204,12 @@ class Operations(APIRequest):
                         obj.update(operation.data)
                     await obj.save()
 
+                    object_type_id = ObjectTypeId(
+                        get_object_type_id(operation.object_type)
+                    )
                     for key, value in aux_data.items():
-                        await nebula.db.execute(
-                            """
-                            INSERT INTO aux (key, object_type, id_object, data)
-                            VALUES ($1, $2, $3, $4)
-                            ON CONFLICT (key, object_type, id_object) DO UPDATE
-                            SET data = EXCLUDED.data
-                            """,
-                            key,
-                            get_object_type_id(operation.object_type),
-                            obj.id,
-                            value,
-                        )
+                        assert obj.id is not None
+                        await put_aux(object_type_id, obj.id, key, value)
 
                     if (
                         isinstance(obj, nebula.Item)

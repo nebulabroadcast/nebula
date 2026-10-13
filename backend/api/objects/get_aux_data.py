@@ -3,7 +3,8 @@ from typing import Annotated, Any
 from pydantic import Field
 
 import nebula
-from nebula.enum import ObjectType, get_object_type_id
+from nebula.enum import ObjectType, ObjectTypeId, get_object_type_id
+from nebula.helpers.aux import get_aux
 from server.dependencies import CurrentUser
 from server.models import APIModel
 from server.request import APIRequest
@@ -47,26 +48,14 @@ class GetAuxData(APIRequest):
 
         _ = user  # TODO: check permissions
 
-        query = """
-            SELECT data FROM aux
-            WHERE
-                key = $1
-            AND id_object = $2
-            AND object_type = $3
-        """
+        object_type_id = ObjectTypeId(get_object_type_id(payload.object_type))
+        data = None
+        if payload.key is not None:
+            data = await get_aux(object_type_id, payload.object_id, payload.key)
 
-        object_type_id = get_object_type_id(payload.object_type)
-
-        res = await nebula.db.fetchrow(
-            query,
-            payload.key,
-            payload.object_id,
-            object_type_id,
-        )
-
-        if not res:
+        if data is None:
             if payload.can_fail:
                 return None
             raise nebula.NotFoundException("Aux data not found")
 
-        return res["data"]
+        return data

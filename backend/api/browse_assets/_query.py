@@ -1,9 +1,13 @@
+from typing import Any
+
 import nebula
 from nebula.common import SerializableValue, sql_list
 from nebula.enum import MetaClass
 from nebula.exceptions import NebulaException
+from nebula.helpers.assets import asset_acl
 from nebula.helpers.fulltext import fulltext_ranges
 from nebula.metadata.normalize import normalize_meta
+from nebula.sql import SQL
 
 from ._models import BrowseAssetsRequest, ConditionModel
 
@@ -91,12 +95,14 @@ def build_order(order_by: str) -> str:
     return order_by
 
 
-def build_query(  # noqa: C901, PLR0912
+def build_query(  # noqa: C901
     request: BrowseAssetsRequest,
     columns: set[str],
     user: nebula.User,
-) -> str:
+) -> tuple[str, list[Any]]:
+    """The browse query, with the values to bind to its $n placeholders."""
     cond_list: list[str] = []
+    params: list[Any] = []
 
     if request.view is None:
         try:
@@ -149,13 +155,10 @@ def build_query(  # noqa: C901, PLR0912
 
     # Access control
 
-    if user.is_limited:
-        c1 = f"a.meta->>'created_by' = '{user.id}'"
-        c2 = f"a.meta->'assignees' @> '[{user.id}]'::JSONB"
-        cond_list.append(f"({c1} OR {c2})")
-
-    if (can_view := user["can/asset_view"]) and isinstance(can_view, list):
-        cond_list.append(f"a.id_folder IN {sql_list(can_view)}")
+    # The only bound parameters: everything else is inlined
+    if (acl := asset_acl(user, "a")) is not None:
+        acl_sql, params = SQL.render(acl)
+        cond_list.append(acl_sql)
 
     # Build conditions
 
@@ -172,7 +175,7 @@ def build_query(  # noqa: C901, PLR0912
 
     # Build query
 
-    return f"""
+    query = f"""
         {ft_cte}
         SELECT meta FROM assets a
         {ft_join}
@@ -181,3 +184,4 @@ def build_query(  # noqa: C901, PLR0912
         LIMIT {request.limit}
         OFFSET {request.offset}
     """
+    return query, params

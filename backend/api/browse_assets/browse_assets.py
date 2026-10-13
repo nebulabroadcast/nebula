@@ -49,10 +49,10 @@ class BrowseAssets(APIRequest):
             all_columns.add("mark_in")
             all_columns.add("mark_out")
 
-        query = build_query(request, all_columns, user)
+        query, params = build_query(request, all_columns, user)
 
         records = []
-        async for record in nebula.db.iterate(query):
+        async for record in nebula.db.iterate(query, *params):
             row = {}
             for column in all_columns:
                 if column in record["meta"]:

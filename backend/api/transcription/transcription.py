@@ -3,6 +3,8 @@ from typing import Annotated, Any
 from pydantic import Field
 
 import nebula
+from nebula.enum import ObjectTypeId
+from nebula.helpers.aux import get_aux, put_aux
 from server.dependencies import CurrentUser
 from server.models import RequestModel
 from server.request import APIRequest
@@ -49,29 +51,17 @@ def parse_transcription(transcription_data: dict[str, Any]) -> GetTranscriptionR
 
 
 async def get_fallback_transcription(id_asset: int) -> GetTranscriptionResponse:
-    query = """
-            SELECT data FROM aux
-            WHERE
-                key = 'openai:transcription'
-            AND id_object = $1
-        """
-
-    res = await nebula.db.fetchrow(query, id_asset)
-    if not res:
+    data = await get_aux(ObjectTypeId.ASSET, id_asset, "openai:transcription")
+    if data is None:
         raise nebula.NotFoundException("Transcription not found")
-    return parse_transcription(res["data"])
+    return parse_transcription(data)
 
 
 async def get_primary_transcription(id_asset: int) -> GetTranscriptionResponse:
-    query = """
-        SELECT data FROM aux
-        WHERE key = 'nebula:transcription'
-        AND id_object = $1
-    """
-    res = await nebula.db.fetchrow(query, id_asset)
-    if not res:
+    data = await get_aux(ObjectTypeId.ASSET, id_asset, "nebula:transcription")
+    if data is None:
         raise nebula.NotFoundException("Transcription not found")
-    return parse_transcription(res["data"])
+    return parse_transcription(data)
 
 
 class GetTranscription(APIRequest):
@@ -163,11 +153,6 @@ class SaveTranscription(APIRequest):
             ],
         }
 
-        query = """
-            INSERT INTO aux (key, object_type, id_object, data)
-            VALUES ('nebula:transcription', 0, $1, $2)
-            ON CONFLICT (key, object_type, id_object) DO UPDATE
-            SET data = EXCLUDED.data
-        """
-
-        await nebula.db.execute(query, payload.id_asset, data)
+        await put_aux(
+            ObjectTypeId.ASSET, payload.id_asset, "nebula:transcription", data
+        )
