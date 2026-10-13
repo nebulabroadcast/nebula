@@ -10,10 +10,15 @@ import pytest
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.testclient import TestClient
+from starlette.requests import HTTPConnection
 
 import nebula
 from api.auth.logout import Logout
-from server.auth_cookie import AUTH_COOKIE_NAME, set_auth_cookie
+from server.auth_cookie import (
+    AUTH_COOKIE_NAME,
+    set_auth_cookie,
+    token_from_websocket_cookie,
+)
 from server.dependencies import CurrentUserOptional
 from server.middleware.context import RequestContextMiddleware
 from server.session import Session
@@ -236,3 +241,52 @@ def test_cross_site_logout_is_rejected(
     assert response.status_code == 401
     assert deleted_sessions == []
     assert "set-cookie" not in response.headers
+
+
+#
+# Websocket handshake
+#
+
+
+def handshake(headers: dict[str, str]) -> HTTPConnection:
+    raw = [(k.lower().encode(), v.encode()) for k, v in headers.items()]
+    return HTTPConnection({"type": "websocket", "headers": raw})
+
+
+COOKIE = {"Cookie": f"{AUTH_COOKIE_NAME}={COOKIE_TOKEN}", "Host": "nebula.example"}
+
+
+@pytest.mark.parametrize(
+    ("headers", "accepted"),
+    [
+        # Chrome sends no Sec-Fetch-Site with websockets: Origin decides
+        ({"Origin": "https://nebula.example"}, True),
+        ({"Origin": "https://evil.example"}, False),
+        ({"Origin": "https://sub.nebula.example"}, False),
+        # Behind a proxy that rewrites Host
+        (
+            {
+                "Origin": "https://nebula.example",
+                "Host": "backend:4455",
+                "X-Forwarded-Host": "nebula.example",
+            },
+            True,
+        ),
+        ({"Sec-Fetch-Site": "same-origin", "Origin": "https://nebula.example"}, True),
+        ({"Sec-Fetch-Site": "cross-site", "Origin": "https://nebula.example"}, False),
+        ({"Sec-Fetch-Site": "same-site"}, False),
+        # No browser headers at all: not a browser, so no CSRF
+        ({}, True),
+    ],
+)
+def test_websocket_cookie(headers: dict[str, str], accepted: bool) -> None:
+    connection = handshake({**COOKIE, **headers})
+    expected = COOKIE_TOKEN if accepted else None
+    assert token_from_websocket_cookie(connection) == expected
+
+
+def test_websocket_without_cookie() -> None:
+    connection = handshake(
+        {"Origin": "https://nebula.example", "Host": "nebula.example"}
+    )
+    assert token_from_websocket_cookie(connection) is None
