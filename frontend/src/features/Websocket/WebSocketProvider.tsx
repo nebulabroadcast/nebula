@@ -7,6 +7,9 @@ import type { WebSocketContextType, WebSocketHandler, WebSocketTopic } from './t
 // subscribe() time; the map itself holds them type-erased.
 type AnyWebSocketHandler = (topic: string, message: unknown) => void;
 
+const RECONNECT_MIN_DELAY = 1000;
+const RECONNECT_MAX_DELAY = 10000;
+
 interface WebSocketProviderProps {
   children: React.ReactNode;
   url: string;
@@ -18,6 +21,12 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
 }) => {
   const [isConnected, setIsConnected] = useState(false);
   const ws = useRef<WebSocket | null>(null);
+  // Reconnecting after the connection drops (e.g. a server restart)
+  const reconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const reconnectDelay = useRef(RECONNECT_MIN_DELAY);
+  const unmounted = useRef(false);
+  // connect() schedules itself through this ref (set below)
+  const connectRef = useRef<() => void>(() => undefined);
 
   // subscriptions map: topic -> set of handler functions
   // Using a ref to store subscriptions prevents unnecessary
@@ -56,6 +65,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
     const socket = new WebSocket(url);
     socket.onopen = () => {
       console.log('WebSocket Connected');
+      reconnectDelay.current = RECONNECT_MIN_DELAY;
       requestSubscriptions();
       setIsConnected(true);
     };
@@ -79,6 +89,13 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
     socket.onclose = () => {
       console.log('WebSocket Disconnected');
       setIsConnected(false);
+      if (unmounted.current) return;
+      // Try again, waiting longer after each failed attempt
+      const delay = reconnectDelay.current;
+      reconnectDelay.current = Math.min(delay * 2, RECONNECT_MAX_DELAY);
+      reconnectTimer.current = setTimeout(() => {
+        connectRef.current();
+      }, delay);
     };
 
     socket.onerror = (error) => {
@@ -95,8 +112,12 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
   //
 
   useEffect(() => {
+    connectRef.current = connect;
+    unmounted.current = false;
     connect();
     return () => {
+      unmounted.current = true;
+      if (reconnectTimer.current) clearTimeout(reconnectTimer.current);
       if (ws.current?.readyState === WebSocket.OPEN) {
         ws.current.close();
       }
