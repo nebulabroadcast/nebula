@@ -23,6 +23,7 @@
   ["content_alert"          , "Nevhodný obsah"         , null                , "Upozornění na nevhodnost obsahu"],
   ["video/fps_f"            , "FPS"                    , null                , "Snímkovací frekvence videosouboru vyjádřená reálným číslem"],
   ["aired"                  , "Odvysíláno"             , null                , "Označuje pořady, které již byly odvysílány"],
+  ["has_aired"              , "Odvysíláno"             , null                , "Některá položka pořadu už byla odvysílána"],
   ["qc/report"              , "QC report"              , "Report"            , "Výstupní záznam z technické kontroly kvality"],
   ["path"                   , "Cesta"                  , null                , "Relativní cesta k souboru"],
   ["stop"                   , "Stop"                   , null                , ""],

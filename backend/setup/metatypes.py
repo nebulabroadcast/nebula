@@ -27,6 +27,9 @@ async def setup_metatypes(meta_types: dict[str, Any], **kwargs: Any) -> None:
             aliases[lang][key] = [alias, _header, description]
 
     for key, data in meta_types.items():
+        if key.startswith("__"):
+            # `__` keys in responses are server data that isn't a field
+            raise ValueError(f"Metatype '{key}' can't start with '__'")
         meta_type = {}
         meta_type["ns"] = data["ns"]
         meta_type["editable"] = True
