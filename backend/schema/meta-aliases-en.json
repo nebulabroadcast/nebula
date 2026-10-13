@@ -23,6 +23,8 @@
   ["content_alert"          , "Content alert"          , null                , ""],
   ["video/fps_f"            , "FPS"                    , null                , ""],
   ["aired"                  , "Aired"                  , null                , ""],
+  ["assignees"              , "Assignees"              , null                , "Users the asset is assigned to"],
+  ["poster_frame"           , "Poster frame"           , null                , "Position of the thumbnail frame"],
   ["has_aired"              , "Has aired"              , "Aired"             , "Any item of the asset has aired"],
   ["qc/report"              , "QC report"              , null                , ""],
   ["path"                   , "Path"                   , null                , ""],
