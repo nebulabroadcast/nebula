@@ -40,11 +40,8 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
       if (topics.length) {
         console.log('Requesting subscriptions for topics:', topics.join(', '));
       }
-      const subscribeMessage = {
-        topic: 'auth',
-        token: JSON.parse(localStorage.getItem('accessToken') || '""'),
-        subscribe: topics,
-      };
+      // The server authenticates the connection with the session cookie
+      const subscribeMessage = { topic: 'auth', subscribe: topics };
       ws.current.send(JSON.stringify(subscribeMessage));
     }
   };

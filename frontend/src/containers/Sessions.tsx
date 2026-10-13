@@ -1,18 +1,9 @@
 import { Table, Timestamp, Section, Button, Icon, PanelHeader } from '@components';
 import type { TableRowData } from '@components/table/types';
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
-import type { SessionModel } from '@/client';
+import type { SessionListItem as SessionModel } from '@/client';
 import nebula from '@/nebula';
-
-// The token is stored JSON-encoded by useLocalStorage
-const getCurrentToken = (): string | null => {
-  try {
-    return JSON.parse(localStorage.getItem('accessToken') || 'null') as string | null;
-  } catch {
-    return null;
-  }
-};
 
 const clientIcon = (session: SessionModel): string => {
   const agent = session.client_info?.agent;
@@ -64,7 +55,6 @@ interface SessionsProps {
 const Sessions: React.FC<SessionsProps> = ({ userId }) => {
   const [sessions, setSessions] = useState<SessionModel[]>([]);
   const [loading, setLoading] = useState(false);
-  const currentToken = useMemo(() => getCurrentToken(), []);
 
   const loadSessions = useCallback(() => {
     if (!userId) return;
@@ -104,16 +94,17 @@ const Sessions: React.FC<SessionsProps> = ({ userId }) => {
     void loadSessions();
   }, [userId, loadSessions]);
 
+  // The server marks the session this page is using
   const otherTokens = sessions
-    .map((session) => session.token)
-    .filter((token) => token !== currentToken);
+    .filter((session) => !session.current)
+    .map((session) => session.token);
   // On the admin users page the list usually doesn't contain our own session
   const hasCurrent = otherTokens.length < sessions.length;
 
   const invalidateFormatter = (rowData: TableRowData) => {
     const session = rowData as SessionModel;
     const token = session.token;
-    if (token === currentToken) {
+    if (session.current) {
       return (
         <td className="dim" style={{ textAlign: 'right' }}>
           This session
@@ -152,9 +143,7 @@ const Sessions: React.FC<SessionsProps> = ({ userId }) => {
           className="contained"
           keyField="token"
           rowHighlightColor={(rowData) =>
-            (rowData as SessionModel).token === currentToken
-              ? 'var(--color-cyan)'
-              : undefined
+            (rowData as SessionModel).current ? 'var(--color-cyan)' : undefined
           }
           columns={[
             {
