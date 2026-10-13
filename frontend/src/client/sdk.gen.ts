@@ -1065,7 +1065,8 @@ export const assetsDelete = <ThrowOnError extends boolean = false>(
 /**
  * Get an asset
  *
- * Without `fields`, every stored field is returned.
+ * Without `fields`, every stored field and the computed fields
+ * (`has_aired`, `__aux`) are returned.
  */
 export const assetsGet = <ThrowOnError extends boolean = false>(
   options: Options<AssetsGetData, ThrowOnError>
