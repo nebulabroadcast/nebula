@@ -94,5 +94,8 @@ class UploadMedia(APIRequest):
                 asset["path"] = os.path.splitext(asset["path"])[0] + "." + extension
                 # TODO: remove old file?
             asset["status"] = ObjectStatus.CREATING
+            # The file is complete: meta skips its completion wait
+            # if the file still has the uploaded size
+            asset["__file/written"] = i
             await asset.save()
         nebula.log.info(f"Uploaded media file for {asset}")
