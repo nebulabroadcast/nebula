@@ -16,6 +16,7 @@ import { useSearchParams } from 'react-router';
 import { toast } from 'react-toastify';
 import styled from 'styled-components';
 
+import { fetchAsset, saveAsset, type AuxChanges } from './assetApi';
 import AssetMainProps from './AssetMainProps';
 import { AssetPreview } from './AssetPreview';
 import AssetEditorNav from './EditorNav';
@@ -108,6 +109,8 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
   } = useNebula();
   const [assetData, setAssetData] = useState<Record<string, any>>({});
   const [originalData, setOriginalData] = useState<Record<string, any>>({});
+  // Changed aux documents (transcription...), saved separately from metadata
+  const [auxChanges, setAuxChanges] = useState<AuxChanges>({});
   const [loading, setLoading] = useState(false);
   const [editorMode, setEditorMode] = useLocalStorage<'metadata' | 'preview'>(
     'mam.editor.mode',
@@ -131,15 +134,11 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
   const loadAsset = useCallback(
     (id_asset: number) => {
       setLoading(true);
-      return nebula
-        .get({
-          body: { object_type: 'asset', ids: [id_asset] },
-          throwOnError: true,
-        })
-        .then((response) => {
-          const data = response.data.data?.[0] || {};
+      return fetchAsset(id_asset)
+        .then((data) => {
           setAssetData(data);
           setOriginalData(data);
+          setAuxChanges({});
           assetIdRef.current = id_asset;
           changedKeysRef.current = new Set();
           setSearchParams((o) => {
@@ -167,14 +166,8 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
     console.log('Refetching unchanged fields for asset', assetIdRef.current);
     const changedKeys = changedKeysRef.current;
     setLoading(true);
-    nebula
-      .get({
-        body: { object_type: 'asset', ids: [assetIdRef.current] },
-        throwOnError: true,
-      })
-      .then((response) => {
-        const freshData = response.data.data?.[0] || {};
-
+    fetchAsset(assetIdRef.current)
+      .then((freshData) => {
         setAssetData((oldFormData) => {
           const newFormData = { ...oldFormData };
           const allKeys = new Set([
@@ -218,6 +211,12 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
     });
   };
 
+  // Change an aux document (called by the transcription panel)
+
+  const setAux = useCallback((key: string, data: unknown) => {
+    setAuxChanges((o) => ({ ...o, [key]: data }));
+  }, []);
+
   // Which keys have been changed by the user
   // (compared to the data we loaded from the server).
   // Unset values are normalized to null, so clearing a field
@@ -243,7 +242,7 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
     changedKeysRef.current = changedKeys;
   }, [changedKeys, loading]);
 
-  // Data of the set request.
+  // Metadata to save.
   // For existing assets, only the fields the user has changed are sent,
   // for new ones everything we have.
   // Cleared fields are sent as null, which unsets them server-side.
@@ -317,7 +316,6 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
       'subclips',
       'poster_frame',
       'assignees',
-      '__aux/nebula:transcription',
     ];
     for (const field of fields) {
       editableFieldNames.push(field.name);
@@ -330,9 +328,22 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
   // This returns true only if a field that is editable has changed
 
   const isChanged = useMemo(
-    () => editableFieldNames.some((key) => changedKeys.has(key)),
-    [changedKeys, editableFieldNames]
+    () =>
+      editableFieldNames.some((key) => changedKeys.has(key)) || !isEmpty(auxChanges),
+    [changedKeys, editableFieldNames, auxChanges]
   );
+
+  // Save metadata and aux changes. Resolves with the asset id.
+
+  const save = useCallback(async () => {
+    const id = await saveAsset(
+      assetData.id as number | undefined,
+      savePayload,
+      auxChanges
+    );
+    setAuxChanges({});
+    return id;
+  }, [assetData.id, savePayload, auxChanges]);
 
   // Which actions are enabled (save, revert, etc.)
   // This is used to disable buttons when there are no changes
@@ -358,15 +369,13 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
         confirmLabel,
       })
         .then(() => {
-          nebula
-            .set({ body: { id: assetData.id, data: savePayload }, throwOnError: true })
-            .then((res) => {
+          save()
+            .then((id) => {
               // reload browser if it's a new asset
               // (if it already exists, it will be updated over ws,
               // but new assets won't be displayed until the browser is reloaded)
               if (!assetData.id) {
-                const newId = res.data.id;
-                setFocusedAsset(newId ?? null);
+                setFocusedAsset(id);
                 reloadBrowser();
               }
             })
@@ -393,7 +402,7 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
   }, [
     isChanged,
     assetData,
-    savePayload,
+    save,
     focusedAsset,
     loadAsset,
     reloadBrowser,
@@ -426,6 +435,7 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
       setAssetData({});
       setOriginalData({});
     }
+    setAuxChanges({});
   };
 
   const onCloneAsset = () => {
@@ -443,11 +453,13 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
     setAssetData(ndata);
     // the clone is a brand new object, so everything we have is a change
     setOriginalData({});
+    setAuxChanges({});
   };
 
   const onRevert = () => {
     if (!enabledActions.revert) return;
     setAssetData(originalData);
+    setAuxChanges({});
   };
 
   // Set while a save is in flight, so a second ctrl+s or click can't send
@@ -461,19 +473,13 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
     if (!enabledActions.save || savingRef.current) return;
     savingRef.current = true;
     setLoading(true);
-    nebula
-      .set({
-        body: { id: assetData.id, data: savePayload },
-        throwOnError: true,
-      })
-      .then((res) => {
+    save()
+      .then((id) => {
         // if asset already exists, we wait for the ws message to update the data
         if (assetData.id) return;
         // new asset: load it with its id and reload the browser
-        const newId = res.data.id;
-        const loaded = newId != null ? loadAsset(newId) : undefined;
         reloadBrowser();
-        return loaded;
+        return loadAsset(id);
       })
       .catch((error: unknown) => {
         setLoading(false);
@@ -489,7 +495,7 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
       });
     // we don't clear the loading state here,
     // we wait for the ws message that confirms the asset has been updated
-  }, [assetData.id, savePayload, enabledActions.save, loadAsset, reloadBrowser]);
+  }, [assetData.id, save, enabledActions.save, loadAsset, reloadBrowser]);
 
   // Keyboard shortcuts
 
@@ -540,7 +546,12 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
       case 'preview':
         return (
           <div className="grow row">
-            <AssetPreview assetData={assetData} setAssetData={setAssetData} />
+            <AssetPreview
+              assetData={assetData}
+              setAssetData={setAssetData}
+              auxChanges={auxChanges}
+              setAux={setAux}
+            />
           </div>
         );
 

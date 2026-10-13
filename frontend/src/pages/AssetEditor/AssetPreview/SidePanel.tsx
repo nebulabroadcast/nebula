@@ -2,6 +2,8 @@ import { Navbar, RadioButton } from '@components';
 import { VideoPlayerRef } from '@containers/VideoPlayer/types.ts';
 import { useLocalStorage } from '@lib/useLocalStorage';
 
+import type { AuxChanges } from '../assetApi';
+
 import { SidePanelMain } from './SidePanelMain';
 import { SidePanelSubclips } from './SidePanelSubclips';
 import { SidePanelTranscription } from './SidePanelTranscription.tsx';
@@ -30,6 +32,8 @@ const SidePanelOptions = [
 interface SidePanelProps {
   assetData: Record<string, any>;
   setAssetData: React.Dispatch<React.SetStateAction<Record<string, any>>>;
+  auxChanges: AuxChanges;
+  setAux: (key: string, data: unknown) => void;
   videoPlayerRef: React.RefObject<VideoPlayerRef | null>;
   position: number;
   selection: { mark_in: number | null; mark_out: number | null };
@@ -41,6 +45,8 @@ interface SidePanelProps {
 export const SidePanel: React.FC<SidePanelProps> = ({
   assetData,
   setAssetData,
+  auxChanges,
+  setAux,
   selection,
   setSelection,
   videoPlayerRef,
@@ -99,7 +105,8 @@ export const SidePanel: React.FC<SidePanelProps> = ({
           videoPlayerRef={videoPlayerRef}
           selection={selection}
           setSelection={setSelection}
-          patchAsset={patchAsset}
+          auxChanges={auxChanges}
+          setAux={setAux}
           position={position}
         />
       )}

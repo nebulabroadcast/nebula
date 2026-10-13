@@ -12,6 +12,8 @@ import { VideoPlayerRef } from '@containers/VideoPlayer/types.ts';
 import { useKeyDown } from '@lib/useKeyDown';
 import { useState, useEffect } from 'react';
 
+import type { AuxChanges } from '../assetApi';
+
 import type { AssetData } from './types';
 
 import nebula from '@/nebula';
@@ -23,6 +25,7 @@ interface Segment {
 }
 
 interface TranscriptionData {
+  language?: string | null;
   segments?: Segment[];
 }
 
@@ -30,7 +33,8 @@ interface SidePanelTranscriptionProps {
   position: number;
   frameRate: number;
   assetData: AssetData;
-  patchAsset: (data: Partial<AssetData>) => void;
+  auxChanges: AuxChanges;
+  setAux: (key: string, data: unknown) => void;
   videoPlayerRef: React.RefObject<VideoPlayerRef | null>;
   selection: { mark_in: number | null; mark_out: number | null };
   setSelection: React.Dispatch<
@@ -53,27 +57,27 @@ interface SegmentWidgetProps {
   onActivate?: () => void;
 }
 
-const getTranscription = async (assetId: number): Promise<Segment[]> => {
-  let response = await nebula.getAux({
-    body: { object_id: assetId, key: 'nebula:transcription', can_fail: true },
-    throwOnError: true,
-  });
-  let tdata = response.data as TranscriptionData | null;
+// Edits are always saved here
+const TRANSCRIPTION_KEY = 'nebula:transcription';
+// Where a stored transcription is read from, in order of preference
+const SOURCE_KEYS = [TRANSCRIPTION_KEY, 'openai:transcription'];
 
-  if (tdata?.segments) {
-    return tdata.segments;
+// The asset's stored transcription. Only keys the asset has (`__aux`) are
+// requested, so a missing transcription costs no request.
+const loadTranscription = async (
+  assetId: number,
+  auxKeys: string[]
+): Promise<TranscriptionData> => {
+  for (const key of SOURCE_KEYS) {
+    if (!auxKeys.includes(key)) continue;
+    const response = await nebula.assetsAuxGet({
+      path: { asset_id: assetId, key },
+      throwOnError: true,
+    });
+    const data = response.data as TranscriptionData | null;
+    if (data?.segments) return data;
   }
-
-  response = await nebula.getAux({
-    body: { object_id: assetId, key: 'openai:transcription', can_fail: true },
-    throwOnError: true,
-  });
-  tdata = response.data as TranscriptionData | null;
-
-  if (tdata?.segments) {
-    return tdata.segments;
-  }
-  return [];
+  return {};
 };
 
 const SegmentWidget: React.FC<SegmentWidgetProps> = ({
@@ -197,25 +201,48 @@ export const SidePanelTranscription = ({
   frameRate,
   videoPlayerRef,
   selection,
-  patchAsset,
+  auxChanges,
+  setAux,
   setSelection,
   position,
 }: SidePanelTranscriptionProps) => {
-  const [segments, setSegments] = useState<Segment[]>([]);
-  const [changed, setChanged] = useState(false);
+  const [stored, setStored] = useState<TranscriptionData>({});
   const [activeSegmentIndex, setActiveSegmentIndex] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
+  // Unsaved edits live in the editor's aux changes, so they survive switching
+  // panels and are saved with the asset. Without edits, the stored version
+  // is shown.
+  const draft = auxChanges[TRANSCRIPTION_KEY] as TranscriptionData | undefined;
+  const segments = draft?.segments ?? stored.segments ?? [];
+  const hasDraft = draft !== undefined;
+  const auxKeys = (assetData.__aux as string[] | undefined) ?? [];
+
+  const updateSegments = (update: (segments: Segment[]) => Segment[]) => {
+    setAux(TRANSCRIPTION_KEY, { ...stored, segments: update(segments) });
+  };
+
+  // (Re)load the stored transcription for a new asset, when its aux keys
+  // change, and when the edits are saved or reverted
   useEffect(() => {
-    if (!changed) {
+    if (!assetData.id) {
+      setStored({});
       return;
     }
-    patchAsset({
-      '__aux/nebula:transcription': {
-        segments,
-      },
-    });
-  }, [segments, patchAsset, changed]);
+    if (hasDraft) return;
+    let cancelled = false;
+    loadTranscription(assetData.id, auxKeys)
+      .then((data) => {
+        if (!cancelled) setStored(data);
+      })
+      .catch((err: unknown) => {
+        console.error('Failed to fetch transcription:', err);
+        if (!cancelled) setStored({});
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [assetData.id, auxKeys.join(','), hasDraft]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const getCurrentSegmentIndex = () => {
     return segments.findIndex(
@@ -224,46 +251,18 @@ export const SidePanelTranscription = ({
   };
 
   useEffect(() => {
+    // the selection moves the marks of the active segment
     if (activeSegmentIndex === null) return;
-    // update active segment when selection changes
-    setSegments((prev) => {
-      const newSegments = [...prev];
-      const segment = newSegments[activeSegmentIndex];
-      if (segment) {
-        segment.start = selection.mark_in ?? segment.start;
-        segment.end = selection.mark_out ?? segment.end;
-      }
-      return newSegments;
-    });
-    setChanged(true);
-
+    const segment = segments[activeSegmentIndex];
+    if (!segment) return;
+    const start = selection.mark_in ?? segment.start;
+    const end = selection.mark_out ?? segment.end;
+    if (start === segment.start && end === segment.end) return;
+    updateSegments((prev) =>
+      prev.map((s, i) => (i === activeSegmentIndex ? { ...s, start, end } : s))
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selection]);
-
-  const getSegments = async (assetId: number) => {
-    const segments = await getTranscription(assetId);
-    setSegments(segments);
-  };
-
-  useEffect(() => {
-    if (!assetData?.id) {
-      setSegments([]);
-      return;
-    }
-
-    const localTranscription = assetData[
-      '__aux/nebula:transcription'
-    ] as TranscriptionData | null;
-    if (localTranscription?.segments) {
-      setSegments(localTranscription.segments);
-      return;
-    }
-
-    getSegments(assetData?.id).catch((err: unknown) => {
-      console.error('Failed to fetch transcription:', err);
-      setSegments([]);
-    });
-  }, [assetData?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const onAdd = () => {
     const newSegment: Segment = {
@@ -271,33 +270,18 @@ export const SidePanelTranscription = ({
       end: position + 1,
       text: '',
     };
-    setSegments((prev) => {
-      const newSegments = [...prev, newSegment].sort((a, b) => a.start - b.start);
-
-      const newIndex = newSegments.indexOf(newSegment);
-      setActiveSegmentIndex(newIndex);
-      return newSegments;
-    });
-    setChanged(true);
+    const newSegments = [...segments, newSegment].sort((a, b) => a.start - b.start);
+    setActiveSegmentIndex(newSegments.indexOf(newSegment));
+    updateSegments(() => newSegments);
   };
 
   const onDelete = (index: number) => {
     setActiveSegmentIndex(null);
-    setChanged(true);
-    setSegments((prev) => {
-      const newSegments = [...prev];
-      newSegments.splice(index, 1);
-      return newSegments;
-    });
+    updateSegments((prev) => prev.filter((_, i) => i !== index));
   };
 
   const onTextChange = (index: number, text: string) => {
-    setSegments((prev) => {
-      const newSegments = [...prev];
-      newSegments[index] = { ...newSegments[index], text };
-      return newSegments;
-    });
-    setChanged(true);
+    updateSegments((prev) => prev.map((s, i) => (i === index ? { ...s, text } : s)));
   };
 
   const onClick = (segment: Segment) => {
