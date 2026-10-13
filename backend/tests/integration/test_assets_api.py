@@ -95,6 +95,21 @@ async def test_default_fields(client: httpx.AsyncClient, folder: int) -> None:
     assert item == stored
 
 
+async def test_detail_default_fields(client: httpx.AsyncClient, folder: int) -> None:
+    asset_id = (await folder_ids(folder))[0]
+    item = (await client.get(f"{ASSETS}/{asset_id}")).json()
+    row = await nebula.db.fetchrow("SELECT meta FROM assets WHERE id = $1", asset_id)
+    assert row is not None
+    stored = {k: v for k, v in row["meta"].items() if not k.startswith("__")}
+    assert {k: v for k, v in item.items() if k not in ("has_aired", "__aux")} == stored
+    # The computed fields come along by default for a single asset
+    assert isinstance(item["has_aired"], bool)
+    assert isinstance(item["__aux"], list)
+
+    item = (await client.get(f"{ASSETS}/{asset_id}", params={"fields": "id"})).json()
+    assert item == {"id": asset_id}
+
+
 async def test_pagination(client: httpx.AsyncClient, folder: int) -> None:
     ids: list[int] = []
     params: dict[str, Any] = {"id_folder": folder, "limit": 2, "fields": "id"}

@@ -121,17 +121,23 @@ def asset_response(
     keys: list[str] | None = None,
     computed: Mapping[str, Any] | None = None,
 ) -> Asset:
-    """The asset with the given keys. `computed`: values of computed fields."""
+    """The asset with the given keys, or the default ones (keys=None).
+
+    The default is every stored key except internal `__` ones, plus the
+    computed fields found in `computed`.
+    """
+    computed = computed or {}
     if keys is None:
         values = {
             key: value
             for key, value in meta.items()
             if not key.startswith("__") and value is not None
         }
+        values.update({key: computed[key] for key in COMPUTED_KEYS if key in computed})
     else:
         values = {}
         for key in keys:
-            source = (computed or {}) if key in COMPUTED_KEYS else meta
+            source = computed if key in COMPUTED_KEYS else meta
             value = source.get(key)
             if value is not None:
                 values[key] = value

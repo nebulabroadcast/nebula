@@ -61,11 +61,12 @@ async def get_asset(
         str | None, Query(description="Comma-separated fields to return")
     ] = None,
 ) -> Asset:
-    """Without `fields`, every stored field is returned."""
+    """Without `fields`, every stored field and the computed fields
+    (`has_aired`, `__aux`) are returned."""
     asset = await nebula.Asset.load(asset_id)
     asset.ensure_can_view()
     keys = response_keys(split_list(fields))
-    computed = await computed_values(asset_id, keys or [])
+    computed = await computed_values(asset_id, keys or list(COMPUTED_KEYS))
     return asset_response(asset.meta, keys, computed)
 
 

@@ -17,6 +17,7 @@ from fastapi.testclient import TestClient
 import nebula
 import nebula.helpers.assets
 import rest.assets.aux
+import rest.assets.detail
 from nebula.context import (
     RequestContext,
     is_system,
@@ -108,6 +109,13 @@ class FakeStore:
     async def msg(self, _topic: str, **data: Any) -> None:
         self.messages.append(data["objects"])
 
+    async def computed_values(self, asset_id: int, keys: list[str]) -> dict[str, Any]:
+        values = {
+            "has_aired": False,
+            "__aux": sorted(key for (id_, key) in self.aux if id_ == asset_id),
+        }
+        return {key: value for key, value in values.items() if key in keys}
+
 
 @pytest.fixture
 def store(monkeypatch: pytest.MonkeyPatch) -> Iterator[FakeStore]:
@@ -132,6 +140,7 @@ def store(monkeypatch: pytest.MonkeyPatch) -> Iterator[FakeStore]:
     monkeypatch.setattr(rest.assets.aux, "put_aux", fake.put_aux)
     monkeypatch.setattr(rest.assets.aux, "delete_aux", fake.delete_aux)
     monkeypatch.setattr(nebula, "msg", fake.msg)
+    monkeypatch.setattr(rest.assets.detail, "computed_values", fake.computed_values)
     monkeypatch.setattr(nebula.settings, "metatypes", METATYPES)
 
     default = is_system()
@@ -158,7 +167,8 @@ def client(store: FakeStore) -> TestClient:
 def test_get_asset(client: TestClient) -> None:
     response = client.get(f"{ASSETS}/10", headers=ADMIN)
     assert response.status_code == 200
-    # Every stored key, with the Asset defaults filled in on load
+    # Every stored key, with the Asset defaults filled in on load, and the
+    # computed fields
     assert response.json() == {
         "id": 10,
         "id_folder": 1,
@@ -168,6 +178,8 @@ def test_get_asset(client: TestClient) -> None:
         "content_type": 2,
         "media_type": 0,
         "version_of": 0,
+        "has_aired": False,
+        "__aux": [],
     }
 
     response = client.get(f"{ASSETS}/10", params={"fields": "title"}, headers=ADMIN)
@@ -306,6 +318,7 @@ def test_aux_lifecycle(client: TestClient, store: FakeStore) -> None:
     assert client.get(url, headers=EDITOR).status_code == 404
     assert client.put(url, json=[1, {"a": 2}], headers=EDITOR).status_code == 204
     assert client.get(url, headers=EDITOR).json() == [1, {"a": 2}]
+    assert client.get(f"{ASSETS}/10", headers=EDITOR).json()["__aux"] == ["site:notes"]
     assert store.messages == [[10]]
     assert client.delete(url, headers=EDITOR).status_code == 204
     assert client.get(url, headers=EDITOR).status_code == 404
