@@ -330,7 +330,7 @@ export {
   type ServicesResponse,
   type ServicesResponses,
   ServiceState,
-  type SessionModel,
+  type SessionListItem,
   type SetData,
   type SetError,
   type SetErrors,

@@ -45,7 +45,9 @@ export default ({ mode }: ConfigEnv) => {
         '/ws': {
           ws: true,
           target: SERVER_URL,
-          changeOrigin: true,
+          // Keep Host: the server compares it with Origin before it accepts
+          // the session cookie on the websocket handshake
+          changeOrigin: false,
         },
       },
     },

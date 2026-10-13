@@ -2374,9 +2374,9 @@ export const ServiceState = {
 export type ServiceState = (typeof ServiceState)[keyof typeof ServiceState];
 
 /**
- * SessionModel
+ * SessionListItem
  */
-export type SessionModel = {
+export type SessionListItem = {
   /**
    * User
    *
@@ -2411,6 +2411,12 @@ export type SessionModel = {
    * Transient
    */
   transient?: boolean;
+  /**
+   * Current
+   *
+   * The session the request was authenticated with
+   */
+  current?: boolean;
 };
 
 /**
@@ -3738,7 +3744,7 @@ export type ListSessionsResponses = {
    *
    * Successful Response
    */
-  200: Array<SessionModel>;
+  200: Array<SessionListItem>;
 };
 
 export type ListSessionsResponse = ListSessionsResponses[keyof ListSessionsResponses];

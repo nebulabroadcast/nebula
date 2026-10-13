@@ -1,3 +1,6 @@
+from fastapi import Request
+from pydantic import Field
+
 import nebula
 from server import APIModel, APIRequest
 from server.dependencies import CurrentUser
@@ -6,6 +9,12 @@ from server.session import Session, SessionModel
 
 class ListSessionsRequest(APIModel):
     id_user: int
+
+
+class SessionListItem(SessionModel):
+    current: bool = Field(
+        False, description="The session the request was authenticated with"
+    )
 
 
 class ListSessions(APIRequest):
@@ -19,8 +28,10 @@ class ListSessions(APIRequest):
         self,
         request: ListSessionsRequest,
         user: CurrentUser,
-    ) -> list[SessionModel]:
+        http_request: Request,
+    ) -> list[SessionListItem]:
         id_user = request.id_user
+        current_token = getattr(http_request.state, "session_token", None)
 
         if id_user != user.id and (not user.is_admin):
             raise nebula.ForbiddenException
@@ -33,6 +44,10 @@ class ListSessions(APIRequest):
             if (not user.is_admin) and (id_user != session.user["id"]):
                 continue
 
-            result.append(session)
+            result.append(
+                SessionListItem(
+                    **session.model_dump(), current=session.token == current_token
+                )
+            )
 
         return result

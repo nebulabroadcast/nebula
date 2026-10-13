@@ -2,7 +2,6 @@ import MainNavbar from '@containers/MainNavbar';
 import { DialogProvider } from '@features/Dialogs';
 import { MediaUploadProvider, MediaUploadMonitor } from '@features/MediaUpload';
 import { WebSocketProvider } from '@features/Websocket';
-import { useLocalStorage } from '@lib/useLocalStorage';
 import { AxiosError } from 'axios';
 import { useState, useEffect, useMemo, Suspense } from 'react';
 import { Outlet, useLocation } from 'react-router';
@@ -14,13 +13,22 @@ import LoginPage from './pages/LoginPage/LoginPage';
 import nebula, { client } from '@/nebula';
 
 const App = () => {
-  // API requests authenticate with the HttpOnly session cookie set by the
-  // server on login. The token is kept only for the websocket (and tool
-  // plugins), and changing it re-runs init after login/logout.
-  const [accessToken, setAccessToken] = useLocalStorage<string | null>(
-    'accessToken',
-    null
-  );
+  // Requests and the websocket authenticate with the HttpOnly session
+  // cookie the server sets on login; the frontend never sees the token.
+  // A login or a 401 bumps this, which re-runs init.
+  const [authVersion, setAuthVersion] = useState(0);
+  const onAuthChange = () => {
+    setAuthVersion((v) => v + 1);
+  };
+
+  useEffect(() => {
+    // Older versions kept the token in localStorage
+    try {
+      localStorage.removeItem('accessToken');
+    } catch {
+      // storage unavailable: nothing to clean up
+    }
+  }, []);
   const [errorCode, setErrorCode] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [initData, setInitData] = useState<InitResponse | null>(null);
@@ -53,7 +61,7 @@ const App = () => {
           },
           (error: unknown) => {
             if (error instanceof AxiosError && error.response?.status === 401) {
-              setAccessToken(null);
+              onAuthChange();
               if (window.location.pathname !== '/') {
                 window.location.href = '/';
               }
@@ -69,7 +77,7 @@ const App = () => {
       .finally(() => {
         setLoading(false);
       });
-  }, [accessToken]);
+  }, [authVersion]);
 
   useEffect(() => {
     // if we are logged in, but we are at  the root, redirect to /mam
@@ -91,7 +99,7 @@ const App = () => {
     return (
       <LoginPage
         motd={initData.motd || undefined}
-        onLogin={setAccessToken}
+        onLogin={onAuthChange}
         ssoOptions={initData.sso_options || undefined}
       />
     );
