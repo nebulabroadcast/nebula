@@ -103,6 +103,138 @@ export type ApplySchedulingTemplateRequest = {
 };
 
 /**
+ * Asset
+ *
+ * An asset. With `fields`, only the requested fields are present.
+ */
+export type Asset = {
+  /**
+   * Id
+   *
+   * Asset ID
+   */
+  id: number;
+  /**
+   * Id Folder
+   *
+   * Folder ID
+   */
+  id_folder?: number | null;
+  status?: ObjectStatus | null;
+  content_type?: ContentType | null;
+  media_type?: MediaType | null;
+  /**
+   * Ctime
+   *
+   * Creation time
+   */
+  ctime?: number | null;
+  /**
+   * Mtime
+   *
+   * Last modification time
+   */
+  mtime?: number | null;
+  /**
+   * Title
+   */
+  title?: string | null;
+  /**
+   * Has Aired
+   *
+   * Whether any item of the asset has aired (computed)
+   */
+  has_aired?: boolean | null;
+  /**
+   * Aux
+   *
+   * Keys of the asset's aux data (computed)
+   */
+  __aux?: Array<string> | null;
+  [key: string]: unknown;
+};
+
+/**
+ * AssetCreate
+ *
+ * A new asset. `id_folder` is required, unless the validator sets it.
+ */
+export type AssetCreate = {
+  /**
+   * Id Folder
+   */
+  id_folder?: number | null;
+  status?: ObjectStatus | null;
+  content_type?: ContentType | null;
+  media_type?: MediaType | null;
+  /**
+   * Title
+   */
+  title?: string | null;
+  /**
+   * Subtitle
+   */
+  subtitle?: string | null;
+  [key: string]: unknown;
+};
+
+/**
+ * AssetList
+ *
+ * A page of assets.
+ */
+export type AssetList = {
+  /**
+   * Items
+   */
+  items: Array<Asset>;
+  /**
+   * Next Cursor
+   *
+   * Pass as `cursor` to get the next page
+   */
+  next_cursor?: string | null;
+  /**
+   * Has More
+   */
+  has_more?: boolean;
+  /**
+   * Total
+   *
+   * Number of matching objects, if requested
+   */
+  total?: number | null;
+};
+
+/**
+ * AssetPatch
+ *
+ * Fields to change. Omitted fields stay as they are, null removes one.
+ *
+ * Any asset metatype can be set. Read-only (`id`, `ctime`, `mtime`,
+ * `created_by`, `updated_by`), computed (namespace `v`) and unknown keys
+ * are rejected.
+ */
+export type AssetPatch = {
+  /**
+   * Id Folder
+   */
+  id_folder?: number | null;
+  status?: ObjectStatus | null;
+  content_type?: ContentType | null;
+  media_type?: MediaType | null;
+  /**
+   * Title
+   */
+  title?: string | null;
+  /**
+   * Subtitle
+   */
+  subtitle?: string | null;
+  [key: string]: unknown;
+};
+
+/**
  * BasePlayoutChannelSettings
  */
 export type BasePlayoutChannelSettings = {
@@ -3696,6 +3828,340 @@ export type UploadResponses = {
    */
   200: unknown;
 };
+
+export type AssetsListData = {
+  body?: never;
+  path?: never;
+  query?: {
+    /**
+     * Fields
+     *
+     * Comma-separated fields to return
+     */
+    fields?: string | null;
+    /**
+     * Sort
+     *
+     * Comma-separated sort keys, '-' for descending
+     */
+    sort?: string | null;
+    /**
+     * Q
+     *
+     * Search
+     */
+    q?: string | null;
+    /**
+     * Limit
+     */
+    limit?: number;
+    /**
+     * Cursor
+     *
+     * `next_cursor` of the previous page
+     */
+    cursor?: string | null;
+    /**
+     * Include Total
+     *
+     * Count all matching objects
+     */
+    include_total?: boolean;
+  };
+  url: '/api/v2/assets';
+};
+
+export type AssetsListErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type AssetsListError = AssetsListErrors[keyof AssetsListErrors];
+
+export type AssetsListResponses = {
+  /**
+   * Successful Response
+   */
+  200: AssetList;
+};
+
+export type AssetsListResponse = AssetsListResponses[keyof AssetsListResponses];
+
+export type AssetsCreateData = {
+  body: AssetCreate;
+  path?: never;
+  query?: never;
+  url: '/api/v2/assets';
+};
+
+export type AssetsCreateErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type AssetsCreateError = AssetsCreateErrors[keyof AssetsCreateErrors];
+
+export type AssetsCreateResponses = {
+  /**
+   * Successful Response
+   */
+  201: Asset;
+};
+
+export type AssetsCreateResponse = AssetsCreateResponses[keyof AssetsCreateResponses];
+
+export type AssetsQueryPostData = {
+  body: QueryRequest;
+  path?: never;
+  query?: never;
+  url: '/api/v2/assets/query';
+};
+
+export type AssetsQueryPostErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type AssetsQueryPostError = AssetsQueryPostErrors[keyof AssetsQueryPostErrors];
+
+export type AssetsQueryPostResponses = {
+  /**
+   * Successful Response
+   */
+  200: AssetList;
+};
+
+export type AssetsQueryPostResponse =
+  AssetsQueryPostResponses[keyof AssetsQueryPostResponses];
+
+export type AssetsDeleteData = {
+  body?: never;
+  path: {
+    /**
+     * Asset Id
+     *
+     * Asset ID
+     */
+    asset_id: number;
+  };
+  query?: never;
+  url: '/api/v2/assets/{asset_id}';
+};
+
+export type AssetsDeleteErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type AssetsDeleteError = AssetsDeleteErrors[keyof AssetsDeleteErrors];
+
+export type AssetsDeleteResponses = {
+  /**
+   * Successful Response
+   */
+  204: void;
+};
+
+export type AssetsDeleteResponse = AssetsDeleteResponses[keyof AssetsDeleteResponses];
+
+export type AssetsGetData = {
+  body?: never;
+  path: {
+    /**
+     * Asset Id
+     *
+     * Asset ID
+     */
+    asset_id: number;
+  };
+  query?: {
+    /**
+     * Fields
+     *
+     * Comma-separated fields to return
+     */
+    fields?: string | null;
+  };
+  url: '/api/v2/assets/{asset_id}';
+};
+
+export type AssetsGetErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type AssetsGetError = AssetsGetErrors[keyof AssetsGetErrors];
+
+export type AssetsGetResponses = {
+  /**
+   * Successful Response
+   */
+  200: Asset;
+};
+
+export type AssetsGetResponse = AssetsGetResponses[keyof AssetsGetResponses];
+
+export type AssetsUpdateData = {
+  body: AssetPatch;
+  path: {
+    /**
+     * Asset Id
+     *
+     * Asset ID
+     */
+    asset_id: number;
+  };
+  query?: never;
+  url: '/api/v2/assets/{asset_id}';
+};
+
+export type AssetsUpdateErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type AssetsUpdateError = AssetsUpdateErrors[keyof AssetsUpdateErrors];
+
+export type AssetsUpdateResponses = {
+  /**
+   * Successful Response
+   */
+  200: Asset;
+};
+
+export type AssetsUpdateResponse = AssetsUpdateResponses[keyof AssetsUpdateResponses];
+
+export type AssetsAuxDeleteData = {
+  body?: never;
+  path: {
+    /**
+     * Asset Id
+     *
+     * Asset ID
+     */
+    asset_id: number;
+    /**
+     * Key
+     *
+     * Aux data key
+     */
+    key: string;
+  };
+  query?: never;
+  url: '/api/v2/assets/{asset_id}/aux/{key}';
+};
+
+export type AssetsAuxDeleteErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type AssetsAuxDeleteError = AssetsAuxDeleteErrors[keyof AssetsAuxDeleteErrors];
+
+export type AssetsAuxDeleteResponses = {
+  /**
+   * Successful Response
+   */
+  204: void;
+};
+
+export type AssetsAuxDeleteResponse =
+  AssetsAuxDeleteResponses[keyof AssetsAuxDeleteResponses];
+
+export type AssetsAuxGetData = {
+  body?: never;
+  path: {
+    /**
+     * Asset Id
+     *
+     * Asset ID
+     */
+    asset_id: number;
+    /**
+     * Key
+     *
+     * Aux data key
+     */
+    key: string;
+  };
+  query?: never;
+  url: '/api/v2/assets/{asset_id}/aux/{key}';
+};
+
+export type AssetsAuxGetErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type AssetsAuxGetError = AssetsAuxGetErrors[keyof AssetsAuxGetErrors];
+
+export type AssetsAuxGetResponses = {
+  /**
+   * Response Assets Aux Get
+   *
+   * Successful Response
+   */
+  200: unknown;
+};
+
+export type AssetsAuxPutData = {
+  /**
+   * Data
+   *
+   * Any JSON value
+   */
+  body: unknown;
+  path: {
+    /**
+     * Asset Id
+     *
+     * Asset ID
+     */
+    asset_id: number;
+    /**
+     * Key
+     *
+     * Aux data key
+     */
+    key: string;
+  };
+  query?: never;
+  url: '/api/v2/assets/{asset_id}/aux/{key}';
+};
+
+export type AssetsAuxPutErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type AssetsAuxPutError = AssetsAuxPutErrors[keyof AssetsAuxPutErrors];
+
+export type AssetsAuxPutResponses = {
+  /**
+   * Successful Response
+   */
+  204: void;
+};
+
+export type AssetsAuxPutResponse = AssetsAuxPutResponses[keyof AssetsAuxPutResponses];
 
 export type UsersListData = {
   body?: never;
