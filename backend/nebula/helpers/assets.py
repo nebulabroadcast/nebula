@@ -49,7 +49,12 @@ def ensure_can_save(asset: nebula.Asset, changes: dict[str, Any]) -> None:
         asset.ensure_can_edit(new_folder)
 
 
-async def save_asset_changes(asset: nebula.Asset, changes: dict[str, Any]) -> None:
+async def save_asset_changes(
+    asset: nebula.Asset,
+    changes: dict[str, Any],
+    *,
+    reload_settings: bool = True,
+) -> bool:
     """Apply metadata changes from a client and save the asset.
 
     `changes` are meta keys, None removes a key. Checks the keys and the
@@ -57,13 +62,16 @@ async def save_asset_changes(asset: nebula.Asset, changes: dict[str, Any]) -> No
     the asset validator plugin, which applies the changes itself, or
     applies them directly when there is none. Raises ValidationException
     (422) for invalid changes; nothing is saved then.
+
+    Returns True when the validator asked for a settings reload. The reload
+    is done here, unless `reload_settings` is False (a batch reloads once).
     """
     asset.check_changes(changes)
     is_new = asset.id is None
     ensure_can_save(asset, changes)
 
     user = current_user()
-    reload_settings = False
+    settings_changed = False
     async with nebula.db.transaction():
         if user is not None:
             if is_new:
@@ -75,7 +83,7 @@ async def save_asset_changes(asset: nebula.Asset, changes: dict[str, Any]) -> No
                 # `connection` is kept for plugin backward compatibility
                 await validator(asset, changes, connection=nebula.db, user=user)
             except nebula.RequestSettingsReload:
-                reload_settings = True
+                settings_changed = True
         else:
             asset.update(changes)
 
@@ -83,5 +91,6 @@ async def save_asset_changes(asset: nebula.Asset, changes: dict[str, Any]) -> No
             raise nebula.ValidationException("'id_folder' is required", key="id_folder")
         await asset.save()
 
-    if reload_settings:
+    if settings_changed and reload_settings:
         await load_settings()
+    return settings_changed

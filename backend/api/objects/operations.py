@@ -3,8 +3,8 @@ from typing import TYPE_CHECKING, Annotated, Any
 from pydantic import Field
 
 import nebula
-from nebula.enum import ObjectType, ObjectTypeId, get_object_type_id
-from nebula.helpers.aux import put_aux
+from nebula.enum import ObjectType
+from nebula.helpers.assets import save_asset_changes
 from nebula.helpers.scheduling import bin_refresh
 from nebula.helpers.validators import Validator
 from nebula.objects.utils import get_object_class_by_name
@@ -127,97 +127,96 @@ class Operations(APIRequest):
             error = None
             op_id = operation.id
 
-            aux_data = {}
-            for key in list(operation.data.keys()):
-                if not key.startswith("__aux/"):
-                    continue
-                value = operation.data.pop(key)
-                _key = key[len("__aux/") :]
-                aux_data[_key] = value
-
             try:
-                async with nebula.db.transaction():
-                    object_class = get_object_class_by_name(operation.object_type)
-
-                    # Object ACL on which ACL check will be performed
-                    # For new objects, it's just a copy of operation.data
-                    # For existing objects, it's a copy of the existing object
-                    acl_obj: BaseObject
-
-                    if operation.id is None:
-                        obj = object_class()
-                        operation.data.pop("id", None)
-                        obj["created_by"] = user.id
-                        obj["updated_by"] = user.id
-
-                        acl_obj = object_class.from_meta(operation.data)
-                    else:
-                        obj = await object_class.load(operation.id)
-                        obj["updated_by"] = user.id
-                        acl_obj = object_class.from_meta({**obj.meta})
-
-                    #
-                    # Modyfiing users
-                    #
-
-                    if isinstance(obj, nebula.User):
-                        if not (user.is_admin or obj.id == user.id):
-                            raise nebula.ForbiddenException(  # noqa: TRY301
-                                "Unable to modify other users"
-                            )
-
-                        if not user.is_admin:
-                            for key in list(operation.data.keys()):
-                                if key.startswith(("can/", "is_")):
-                                    operation.data.pop(key, None)
-
-                        password = operation.data.pop("password", None)
-                        if password:
-                            assert isinstance(obj, nebula.User)
-                            obj.set_password(password)
-
-                    #
-                    # ACL
-                    #
-
-                    await can_modify_object(acl_obj, user)
-
-                    #
-                    # Run validator
-                    #
-
-                    if validator := Validator.for_object(operation.object_type):
-                        try:
-                            await validator(
-                                obj,
-                                operation.data,
-                                # Kept for plugin backward compatibility.
-                                # nebula.db tracks the current transaction
-                                # internally, so this is now always the
-                                # global db singleton.
-                                connection=nebula.db,
-                                user=user,
-                            )
-                        except nebula.RequestSettingsReload:
-                            reload_settings = True
-                    else:
-                        obj.update(operation.data)
-                    await obj.save()
-
-                    object_type_id = ObjectTypeId(
-                        get_object_type_id(operation.object_type)
+                if operation.object_type == ObjectType.ASSET:
+                    # The same save as REST: key checks, edit rights in the
+                    # current and the new folder, validator
+                    asset = (
+                        nebula.Asset()
+                        if operation.id is None
+                        else await nebula.Asset.load(operation.id)
                     )
-                    for key, value in aux_data.items():
-                        assert obj.id is not None
-                        await put_aux(object_type_id, obj.id, key, value)
-
-                    if (
-                        isinstance(obj, nebula.Item)
-                        and obj["id_bin"]
-                        and obj["id_bin"] not in affected_bins
+                    if await save_asset_changes(
+                        asset, operation.data, reload_settings=False
                     ):
-                        affected_bins.append(obj["id_bin"])
-                    op_id = obj.id
+                        reload_settings = True
+                    op_id = asset.id
+                else:
+                    async with nebula.db.transaction():
+                        object_class = get_object_class_by_name(operation.object_type)
+
+                        # Object ACL on which ACL check will be performed
+                        # For new objects, it's just a copy of operation.data
+                        # For existing objects, it's a copy of the existing object
+                        acl_obj: BaseObject
+
+                        if operation.id is None:
+                            obj = object_class()
+                            operation.data.pop("id", None)
+                            obj["created_by"] = user.id
+                            obj["updated_by"] = user.id
+
+                            acl_obj = object_class.from_meta(operation.data)
+                        else:
+                            obj = await object_class.load(operation.id)
+                            obj["updated_by"] = user.id
+                            acl_obj = object_class.from_meta({**obj.meta})
+
+                        #
+                        # Modyfiing users
+                        #
+
+                        if isinstance(obj, nebula.User):
+                            if not (user.is_admin or obj.id == user.id):
+                                raise nebula.ForbiddenException(  # noqa: TRY301
+                                    "Unable to modify other users"
+                                )
+
+                            if not user.is_admin:
+                                for key in list(operation.data.keys()):
+                                    if key.startswith(("can/", "is_")):
+                                        operation.data.pop(key, None)
+
+                            password = operation.data.pop("password", None)
+                            if password:
+                                assert isinstance(obj, nebula.User)
+                                obj.set_password(password)
+
+                        #
+                        # ACL
+                        #
+
+                        await can_modify_object(acl_obj, user)
+
+                        #
+                        # Run validator
+                        #
+
+                        if validator := Validator.for_object(operation.object_type):
+                            try:
+                                await validator(
+                                    obj,
+                                    operation.data,
+                                    # Kept for plugin backward compatibility.
+                                    # nebula.db tracks the current transaction
+                                    # internally, so this is now always the
+                                    # global db singleton.
+                                    connection=nebula.db,
+                                    user=user,
+                                )
+                            except nebula.RequestSettingsReload:
+                                reload_settings = True
+                        else:
+                            obj.update(operation.data)
+                        await obj.save()
+
+                        if (
+                            isinstance(obj, nebula.Item)
+                            and obj["id_bin"]
+                            and obj["id_bin"] not in affected_bins
+                        ):
+                            affected_bins.append(obj["id_bin"])
+                        op_id = obj.id
             except Exception as e:
                 error = str(e)
                 success = False
