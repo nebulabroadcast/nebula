@@ -187,16 +187,12 @@ const RundownTable: React.FC<RundownTableProps> = ({
     const id_asset = focusedObject.id_asset;
     const id_event = focusedObject.id_event;
     try {
-      const res = await nebula.get({
-        body: { object_type: 'asset', ids: [id_asset] },
+      // all fields: channel fields may include keys that aren't asset fields
+      const res = await nebula.assetsGet({
+        path: { asset_id: id_asset },
         throwOnError: true,
       });
-      console.log('Asset:', res.data.data);
-      if (!res.data?.data?.length) {
-        console.error('Asset not found:', id_asset);
-        return;
-      }
-      const meta = res.data.data[0];
+      const meta: Record<string, any> = res.data;
       const emeta: Record<string, any> = {};
       for (const field of channelConfig?.fields || []) {
         const key = field.name;
@@ -283,11 +279,12 @@ const RundownTable: React.FC<RundownTableProps> = ({
 
     if (object_type === 'item' && idAsset) {
       try {
-        const res = await nebula.get({
-          body: { object_type: 'asset', ids: [idAsset] },
+        // all fields: the item form has keys that aren't asset fields (note)
+        const res = await nebula.assetsGet({
+          path: { asset_id: idAsset },
           throwOnError: true,
         });
-        const assetData = res.data.data?.[0] || {};
+        const assetData: Record<string, unknown> = res.data;
         for (const field of fields) {
           const key = field.name;
           if (!objectData[key]) objectData[key] = assetData[key];

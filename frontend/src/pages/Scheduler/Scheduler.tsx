@@ -236,11 +236,12 @@ const Scheduler: React.FC<SchedulerProps> = ({ draggedObjects }) => {
     // serie should be a string, but it may also be a numeric row id
     let serieId: string | undefined;
     try {
-      const res = await nebula.get({
-        body: { object_type: 'asset', ids: [Number(dragged.id)] },
+      const res = await nebula.assetsGet({
+        path: { asset_id: Number(dragged.id) },
+        query: { fields: 'serie' },
         throwOnError: true,
       });
-      const serie = res.data.data?.[0]?.serie;
+      const serie: unknown = res.data.serie;
       if (typeof serie === 'string' || typeof serie === 'number') {
         serieId = String(serie);
       }
