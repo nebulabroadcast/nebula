@@ -4,6 +4,8 @@ import type { WebSocketHandler } from '@features/Websocket';
 import { useWebSocket } from '@features/Websocket';
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 
+import type { AuxChanges } from '../assetApi';
+
 import { SidePanel } from './SidePanel';
 import type { AssetData, ProxyInfo } from './types';
 
@@ -13,9 +15,16 @@ import nebula from '@/nebula';
 interface PreviewProps {
   assetData: AssetData;
   setAssetData: React.Dispatch<React.SetStateAction<AssetData>>;
+  auxChanges: AuxChanges;
+  setAux: (key: string, data: unknown) => void;
 }
 
-export const AssetPreview: React.FC<PreviewProps> = ({ assetData, setAssetData }) => {
+export const AssetPreview: React.FC<PreviewProps> = ({
+  assetData,
+  setAssetData,
+  auxChanges,
+  setAux,
+}) => {
   const videoPlayerRef = useRef<VideoPlayerRef>(null);
 
   // Current active selection
@@ -158,6 +167,8 @@ export const AssetPreview: React.FC<PreviewProps> = ({ assetData, setAssetData }
       <SidePanel
         assetData={assetData}
         setAssetData={setAssetData}
+        auxChanges={auxChanges}
+        setAux={setAux}
         videoPlayerRef={videoPlayerRef}
         position={position}
         selection={selection}

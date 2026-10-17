@@ -1,17 +1,16 @@
 from typing import Any
 
 import nebula
+from nebula.objects.asset import asset_edit_denial
 from nebula.objects.base import BaseObject
 
 
 def can_access_object(meta: dict[str, Any], user: nebula.User) -> bool:
-    if user.is_admin or (user.id in meta.get("assignees", [])):
+    """Read access to objects other than assets (see can_view_asset)."""
+    if user.is_admin:
         return True
     if user.is_limited:
         return meta.get("created_by") == user.id
-    if id_folder := meta.get("id_folder"):
-        # Users can view assets in folders they have access to
-        return user.can("asset_view", id_folder)
 
     if login := meta.get("login"):
         # Users can view their own data
@@ -22,7 +21,7 @@ def can_access_object(meta: dict[str, Any], user: nebula.User) -> bool:
     return False
 
 
-async def can_modify_object(obj: BaseObject, user: nebula.User) -> None:  # noqa: C901, PLR0912
+async def can_modify_object(obj: BaseObject, user: nebula.User) -> None:  # noqa: C901
     """Check if user can modify an object.
 
     Raises ForbiddenException if user is not allowed to modify the object.
@@ -32,13 +31,8 @@ async def can_modify_object(obj: BaseObject, user: nebula.User) -> None:  # noqa
         return
 
     if isinstance(obj, nebula.Asset):
-        acl = user.get("can/asset_edit", False)
-        if not acl:
-            raise nebula.ForbiddenException("You are not allowed to edit assets")
-        if isinstance(acl, list) and obj["id_folder"] not in acl:
-            raise nebula.ForbiddenException(
-                "You are not allowed to edit assets in this folder"
-            )
+        if denial := asset_edit_denial(user, obj["id_folder"]):
+            raise nebula.ForbiddenException(denial)
 
     elif isinstance(obj, nebula.Event):
         acl = user.get("can/scheduler_edit", False)

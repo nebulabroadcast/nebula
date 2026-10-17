@@ -3,6 +3,9 @@ from typing import Annotated, Any
 from pydantic import Field
 
 import nebula
+from nebula.enum import ObjectTypeId
+from nebula.helpers.aux import get_aux, put_aux
+from nebula.transcription import TranscriptionSegment
 from server.dependencies import CurrentUser
 from server.models import RequestModel
 from server.request import APIRequest
@@ -10,12 +13,6 @@ from server.request import APIRequest
 
 class GetTranscriptionRequest(RequestModel):
     id_asset: int = Field(..., description="Asset ID")
-
-
-class TranscriptionSegment(RequestModel):
-    start: float
-    end: float
-    text: str
 
 
 class GetTranscriptionResponse(RequestModel):
@@ -49,29 +46,17 @@ def parse_transcription(transcription_data: dict[str, Any]) -> GetTranscriptionR
 
 
 async def get_fallback_transcription(id_asset: int) -> GetTranscriptionResponse:
-    query = """
-            SELECT data FROM aux
-            WHERE
-                key = 'openai:transcription'
-            AND id_object = $1
-        """
-
-    res = await nebula.db.fetchrow(query, id_asset)
-    if not res:
+    data = await get_aux(ObjectTypeId.ASSET, id_asset, "openai:transcription")
+    if data is None:
         raise nebula.NotFoundException("Transcription not found")
-    return parse_transcription(res["data"])
+    return parse_transcription(data)
 
 
 async def get_primary_transcription(id_asset: int) -> GetTranscriptionResponse:
-    query = """
-        SELECT data FROM aux
-        WHERE key = 'nebula:transcription'
-        AND id_object = $1
-    """
-    res = await nebula.db.fetchrow(query, id_asset)
-    if not res:
+    data = await get_aux(ObjectTypeId.ASSET, id_asset, "nebula:transcription")
+    if data is None:
         raise nebula.NotFoundException("Transcription not found")
-    return parse_transcription(res["data"])
+    return parse_transcription(data)
 
 
 class GetTranscription(APIRequest):
@@ -87,20 +72,9 @@ class GetTranscription(APIRequest):
         user: CurrentUser,
     ) -> GetTranscriptionResponse:
 
-        q = "SELECT id_folder FROM assets WHERE id = $1"
-        res = await nebula.db.fetchrow(q, payload.id_asset)
-        if not res:
-            raise nebula.NotFoundException("Asset not found")
-        id_folder = res["id_folder"]
-
-        if not user.is_admin:
-            acl = user.get("can/asset_view", False)
-            if not acl:
-                raise nebula.ForbiddenException("You are not allowed to view assets")
-            if isinstance(acl, list) and id_folder not in acl:
-                raise nebula.ForbiddenException(
-                    "You are not allowed to view assets in this folder"
-                )
+        _ = user
+        asset = await nebula.Asset.load(payload.id_asset)
+        asset.ensure_can_view()
 
         try:
             return await get_primary_transcription(payload.id_asset)
@@ -136,20 +110,9 @@ class SaveTranscription(APIRequest):
         user: CurrentUser,
     ) -> None:
 
-        q = "SELECT id_folder FROM assets WHERE id = $1"
-        res = await nebula.db.fetchrow(q, payload.id_asset)
-        if not res:
-            raise nebula.NotFoundException("Asset not found")
-        id_folder = res["id_folder"]
-
-        if not user.is_admin:
-            acl = user.get("can/asset_edit", False)
-            if not acl:
-                raise nebula.ForbiddenException("You are not allowed to edit assets")
-            if isinstance(acl, list) and id_folder not in acl:
-                raise nebula.ForbiddenException(
-                    "You are not allowed to edit assets in this folder"
-                )
+        _ = user
+        asset = await nebula.Asset.load(payload.id_asset)
+        asset.ensure_can_edit()
 
         data = {
             "language": None,
@@ -163,11 +126,6 @@ class SaveTranscription(APIRequest):
             ],
         }
 
-        query = """
-            INSERT INTO aux (key, object_type, id_object, data)
-            VALUES ('nebula:transcription', 0, $1, $2)
-            ON CONFLICT (key, object_type, id_object) DO UPDATE
-            SET data = EXCLUDED.data
-        """
-
-        await nebula.db.execute(query, payload.id_asset, data)
+        await put_aux(
+            ObjectTypeId.ASSET, payload.id_asset, "nebula:transcription", data
+        )

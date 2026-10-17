@@ -14,6 +14,7 @@ import pytest_asyncio
 
 import nebula
 from nebula.enum import ObjectTypeId
+from rest.assets.fields import COMPUTED_FIELDS
 from server.query import (
     Field,
     FieldKind,
@@ -39,27 +40,8 @@ def asset_fields() -> list[Field]:
         column("status", FieldKind.INTEGER),
         column("ctime", FieldKind.INTEGER),
         column("mtime", FieldKind.INTEGER),
-        Field(
-            "aired",
-            FieldKind.BOOLEAN,
-            t"COALESCE(aired.value, FALSE)",
-            join=t"""LEFT JOIN LATERAL (
-                SELECT TRUE AS value
-                FROM items i JOIN asrun r ON r.id_item = i.id
-                WHERE i.id_asset = b.id
-                LIMIT 1
-            ) AS aired ON TRUE""",
-            sortable=True,
-        ),
-        Field(
-            "aux",
-            FieldKind.LIST,
-            t"aux.value",
-            join=t"""LEFT JOIN LATERAL (
-                SELECT COALESCE(jsonb_agg(key ORDER BY key), '[]') AS value
-                FROM aux WHERE object_type = 0 AND id_object = b.id
-            ) AS aux ON TRUE""",
-        ),
+        # The asset resource's computed fields (has_aired, __aux)
+        *COMPUTED_FIELDS,
         # Every metatype; sortable to test paging on every kind of value
         *(f for ns in sorted(namespaces) for f in meta_namespace(ns, sortable=True)),
     ]
@@ -144,8 +126,8 @@ async def test_every_operator_executes(sample: list[dict[str, Any]]) -> None:
         {"key": list_key, "op": "eq", "value": []},
         {"key": list_key, "op": "exists", "value": True},
         {"key": "id", "op": "exists", "value": False},
-        {"key": "aired", "op": "eq", "value": False},
-        {"key": "aux", "op": "contains", "value": ["x"]},
+        {"key": "has_aired", "op": "eq", "value": False},
+        {"key": "__aux", "op": "contains", "value": ["x"]},
     ]
     for condition in conditions:
         await fetch_ids(base, {"filter": condition})
@@ -285,22 +267,23 @@ async def test_computed_fields(history: dict[str, int]) -> None:
     aired, with_aux, plain = history["aired"], history["with_aux"], history["plain"]
     base = assets_base([aired, with_aux, plain])
 
-    items = await fetch(base, {"fields": ["aired", "aux"], "sort": ["id"]})
+    items = await fetch(base, {"fields": ["has_aired", "__aux"], "sort": ["id"]})
     assert items == [
-        {"id": aired, "aired": True, "aux": []},
-        {"id": with_aux, "aired": False, "aux": ["bar", "foo"]},
-        {"id": plain, "aired": False, "aux": []},
+        {"id": aired, "has_aired": True, "__aux": []},
+        {"id": with_aux, "has_aired": False, "__aux": ["bar", "foo"]},
+        {"id": plain, "has_aired": False, "__aux": []},
     ]
 
-    condition = {"key": "aired", "op": "eq", "value": True}
+    condition = {"key": "has_aired", "op": "eq", "value": True}
     assert await fetch_ids(base, {"filter": condition}) == [aired]
-    condition = {"key": "aux", "op": "contains", "value": ["foo"]}
+    condition = {"key": "__aux", "op": "contains", "value": ["foo"]}
     assert await fetch_ids(base, {"filter": condition}) == [with_aux]
 
-    # Sortable in this test (not by default): true sorts after false
-    assert await fetch_ids(base, {"sort": ["-aired", "id"]}) == [aired, with_aux, plain]
-    assert await fetch_all_pages(base, {"sort": ["-aired"]}, page_size=1) == (
-        await fetch_ids(base, {"sort": ["-aired"]})
+    # True sorts after false
+    expected = [aired, with_aux, plain]
+    assert await fetch_ids(base, {"sort": ["-has_aired", "id"]}) == expected
+    assert await fetch_all_pages(base, {"sort": ["-has_aired"]}, page_size=1) == (
+        await fetch_ids(base, {"sort": ["-has_aired"]})
     )
 
 
