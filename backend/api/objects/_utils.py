@@ -6,13 +6,11 @@ from nebula.objects.base import BaseObject
 
 
 def can_access_object(meta: dict[str, Any], user: nebula.User) -> bool:
-    if user.is_admin or (user.id in meta.get("assignees", [])):
+    """Read access to objects other than assets (see can_view_asset)."""
+    if user.is_admin:
         return True
     if user.is_limited:
         return meta.get("created_by") == user.id
-    if id_folder := meta.get("id_folder"):
-        # Users can view assets in folders they have access to
-        return user.can("asset_view", id_folder)
 
     if login := meta.get("login"):
         # Users can view their own data

@@ -10,6 +10,8 @@ import time
 from collections.abc import Mapping
 from typing import Any
 
+from pydantic import TypeAdapter, ValidationError
+
 import nebula
 from nebula.objects.asset import is_asset_key
 from rest.assets.models import Asset
@@ -142,4 +144,41 @@ def asset_response(
             if value is not None:
                 values[key] = value
     values["id"] = meta["id"]
+    check_core_values(values)
     return Asset.model_validate(values)
+
+
+# Typed fields of the Asset model that come from stored meta. Stored data
+# isn't always clean (old data, direct db writes), and one odd value must
+# not fail the whole response.
+CORE_ADAPTERS: dict[str, TypeAdapter[Any]] = {
+    name: TypeAdapter(field.annotation)
+    for name, field in Asset.model_fields.items()
+    if name != "id"
+    and name not in COMPUTED_KEYS
+    and field.alias is None
+    and field.annotation is not None
+}
+
+
+def check_core_values(values: dict[str, Any]) -> None:
+    """Make stored values fit the typed fields: a number where text is
+    expected becomes text, anything else that doesn't fit is left out."""
+    for key, adapter in CORE_ADAPTERS.items():
+        if key not in values:
+            continue
+        value = values[key]
+        try:
+            adapter.validate_python(value)
+            continue
+        except ValidationError:
+            pass
+        try:
+            values[key] = adapter.validate_python(str(value))
+            continue
+        except ValidationError:
+            del values[key]
+            nebula.log.warning(
+                f"Asset {values.get('id')}: stored '{key}' {value!r} "
+                "doesn't fit its type, left out of the response"
+            )

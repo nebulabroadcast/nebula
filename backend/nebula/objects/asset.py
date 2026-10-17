@@ -2,6 +2,7 @@ import os
 from typing import TYPE_CHECKING, Any, cast
 
 import asyncpg
+from nx.db import db
 
 from nebula.context import get_request_context, require_access
 from nebula.enum import ContentType, MediaType, ObjectStatus, ObjectTypeId
@@ -12,6 +13,7 @@ from nebula.exceptions import (
     ValidationException,
 )
 from nebula.helpers.aux import delete_aux
+from nebula.messaging import msg
 from nebula.objects.base import BaseObject
 from nebula.settings import settings
 from nebula.storages import storages
@@ -38,7 +40,7 @@ def is_asset_key(key: str) -> bool:
 
 
 def can_view_asset(user: User, meta: dict[str, Any]) -> bool:
-    if user.is_admin or user.id in meta.get("assignees", []):
+    if user.is_admin or user.id in (meta.get("assignees") or []):
         return True
     if user.is_limited:
         return bool(meta.get("created_by") == user.id)
@@ -129,11 +131,26 @@ class Asset(BaseObject):
     #
 
     async def delete(self) -> None:
+        """Delete the asset, its rundown items (by cascade) and aux data.
+
+        The bins that held its items are refreshed, and clients are told
+        the asset is gone (`objects_changed`).
+        """
+        from nebula.helpers.scheduling import bin_refresh  # noqa: PLC0415
+
+        bins = []
+        if self.id is not None:
+            rows = await db.fetch(
+                "SELECT DISTINCT id_bin FROM items WHERE id_asset = $1", self.id
+            )
+            bins = [row["id_bin"] for row in rows]
         try:
             await super().delete()
         except asyncpg.exceptions.ForeignKeyViolationError as e:
             # asrun keeps aired items, which keep their asset
             raise ConflictException(f"{self} has aired and can't be deleted") from e
+        await bin_refresh(bins)
+        await msg("objects_changed", object_type=self.object_type, objects=[self.id])
 
     async def delete_children(self) -> None:
         if self.id is not None:

@@ -1,8 +1,10 @@
+from dataclasses import replace
 from typing import TYPE_CHECKING, Annotated, Any
 
 from pydantic import Field
 
 import nebula
+from nebula.context import get_request_context, request_context
 from nebula.enum import ObjectType
 from nebula.helpers.assets import save_asset_changes
 from nebula.helpers.scheduling import bin_refresh
@@ -143,15 +145,19 @@ class Operations(APIRequest):
                 if operation.object_type == ObjectType.ASSET:
                     # The same save as REST: key checks, edit rights in the
                     # current and the new folder, validator
-                    asset = (
-                        nebula.Asset()
-                        if operation.id is None
-                        else await nebula.Asset.load(operation.id)
-                    )
-                    if await save_asset_changes(
-                        asset, operation.data, reload_settings=False
-                    ):
-                        reload_settings = True
+                    # save_asset_changes reads the user from the context;
+                    # run it as the user this call is for
+                    context = replace(get_request_context(), user=user, system=False)
+                    with request_context(context):
+                        asset = (
+                            nebula.Asset()
+                            if operation.id is None
+                            else await nebula.Asset.load(operation.id)
+                        )
+                        if await save_asset_changes(
+                            asset, operation.data, reload_settings=False
+                        ):
+                            reload_settings = True
                     op_id = asset.id
                 else:
                     async with nebula.db.transaction():

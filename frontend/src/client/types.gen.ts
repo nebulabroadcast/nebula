@@ -2509,16 +2509,21 @@ export type TokenExchangeRequest = {
 export type TranscriptionSegment = {
   /**
    * Start
+   *
+   * Start time in seconds
    */
   start: number;
   /**
    * End
+   *
+   * End time in seconds
    */
   end: number;
   /**
    * Text
    */
   text: string;
+  [key: string]: unknown;
 };
 
 /**

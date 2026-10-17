@@ -4,6 +4,7 @@ from pydantic import Field
 
 import nebula
 from nebula.enum import ObjectType
+from nebula.objects.asset import can_view_asset
 from server import APIModel, APIRequest
 from server.dependencies import CurrentUser
 
@@ -67,7 +68,11 @@ class GetObjects(APIRequest):
 
         data = []
         async for row in nebula.db.iterate(query, request.ids):
-            if not can_access_object(row["meta"], user):
+            if request.object_type == ObjectType.ASSET:
+                allowed = can_view_asset(user, row["meta"])
+            else:
+                allowed = can_access_object(row["meta"], user)
+            if not allowed:
                 raise nebula.ForbiddenException(
                     "You are not allowed to access this object"
                 )

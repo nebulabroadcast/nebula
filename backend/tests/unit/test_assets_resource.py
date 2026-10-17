@@ -234,6 +234,18 @@ def test_asset_response(store: FakeStore) -> None:
     }
 
 
+def test_asset_response_odd_values(store: FakeStore) -> None:
+    _ = store
+    # Stored data isn't always clean: a number where text is expected is
+    # returned as text, a value that doesn't fit at all is left out
+    meta = {"id": 1, "title": 1984, "status": 99, "content_type": 1}
+    assert asset_response(meta).model_dump(by_alias=True, exclude_unset=True) == {
+        "id": 1,
+        "title": "1984",
+        "content_type": 1,
+    }
+
+
 #
 # Writing
 #
@@ -338,6 +350,18 @@ def test_aux_typed(client: TestClient, store: FakeStore) -> None:
     }
     response = client.put(url, json={"segments": [{"start": "x"}]}, headers=ADMIN)
     assert response.status_code == 422
+
+
+def test_aux_typed_keeps_extra_fields(client: TestClient, store: FakeStore) -> None:
+    # A Whisper result has more than the model checks; nothing is dropped
+    url = f"{ASSETS}/10/aux/openai:transcription"
+    doc = {
+        "language": "en",
+        "text": "Hi",
+        "segments": [{"start": 0.0, "end": 1.5, "text": "Hi", "words": [{"w": "Hi"}]}],
+    }
+    assert client.put(url, json=doc, headers=ADMIN).status_code == 204
+    assert store.aux[(10, "openai:transcription")] == doc
 
 
 def test_aux_access(client: TestClient) -> None:

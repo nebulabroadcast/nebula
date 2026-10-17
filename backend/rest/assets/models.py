@@ -7,9 +7,10 @@ Which keys a client may write is checked by nebula.Asset.check_changes.
 
 from typing import Annotated, Any
 
-from pydantic import ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from nebula.enum import ContentType, MediaType, ObjectStatus
+from nebula.transcription import Transcription
 from server.models import APIModel
 from server.query import QueryResponse
 
@@ -77,20 +78,7 @@ class AssetCreate(AssetPatch):
 #
 
 
-class TranscriptionSegment(APIModel):
-    start: Annotated[float, Field(description="Start time in seconds")]
-    end: Annotated[float, Field(description="End time in seconds")]
-    text: str
-
-
-class Transcription(APIModel):
-    """Aux data `nebula:transcription` (and `openai:transcription`)."""
-
-    language: str | None = None
-    segments: list[TranscriptionSegment] = []
-
-
-AUX_MODELS: dict[str, type[APIModel]] = {
+AUX_MODELS: dict[str, type[BaseModel]] = {
     "nebula:transcription": Transcription,
     "openai:transcription": Transcription,
 }
