@@ -10,7 +10,7 @@ import { useLocalStorage } from '@lib/useLocalStorage';
 import { getErrorDetail } from '@lib/utils';
 import { AxiosError } from 'axios';
 import clsx from 'clsx';
-import { isEqual, isEmpty } from 'lodash';
+import { isEqual, isEmpty, union } from 'lodash';
 import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router';
 import { toast } from 'react-toastify';
@@ -341,6 +341,17 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
       savePayload,
       auxChanges
     );
+    // The saved aux keys exist now. Add them to `__aux` right away, so the
+    // panels load the saved documents instead of waiting for the refetch.
+    const savedKeys = Object.keys(auxChanges);
+    if (savedKeys.length) {
+      const withKeys = (data: Record<string, any>) => ({
+        ...data,
+        __aux: union((data.__aux as string[] | undefined) ?? [], savedKeys),
+      });
+      setAssetData(withKeys);
+      setOriginalData(withKeys);
+    }
     setAuxChanges({});
     return id;
   }, [assetData.id, savePayload, auxChanges]);
