@@ -1,4 +1,4 @@
-"""Run server.query SQL against a real database.
+"""Run nebula.query SQL against a real database.
 
 Read-only: tests that need rows (computed fields) add them in a transaction
 that is rolled back. The base query limits assets to a sample, so results
@@ -14,8 +14,8 @@ import pytest_asyncio
 
 import nebula
 from nebula.enum import ObjectTypeId
-from rest.assets.fields import COMPUTED_FIELDS
-from server.query import (
+from nebula.objects.asset.query import COMPUTED_FIELDS
+from nebula.query import (
     Field,
     FieldKind,
     FulltextSearch,

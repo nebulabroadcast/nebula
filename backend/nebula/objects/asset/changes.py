@@ -1,37 +1,20 @@
-"""Asset operations shared by the RPC and REST APIs."""
+"""Saving asset changes from a client (REST and RPC `ops`/`set`)."""
 
-from string.templatelib import Template
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-import nebula
+from nx.db import db
+
 from nebula.context import current_user
 from nebula.enum import ObjectType
+from nebula.exceptions import RequestSettingsReload, ValidationException
 from nebula.helpers.validators import Validator
 from nebula.settings import load_settings
-from nebula.sql import SQL
+
+if TYPE_CHECKING:
+    from nebula.objects.asset import Asset
 
 
-def asset_acl(user: nebula.User | None, alias: str = "a") -> Template | None:
-    """SQL condition limiting a listing to the assets the user may see.
-
-    None when nothing is hidden. `alias` is the assets table in the query.
-    """
-    if user is None:
-        return None
-    conditions: list[Template] = []
-    if user.is_limited:
-        conditions.append(
-            t"""({alias:ident}.meta->>'created_by' = {str(user.id)}::text
-                OR {alias:ident}.meta->'assignees' @> {[user.id]}::jsonb)"""
-        )
-    if (can_view := user["can/asset_view"]) and isinstance(can_view, list):
-        conditions.append(t"{alias:ident}.id_folder = ANY({can_view}::integer[])")
-    if not conditions:
-        return None
-    return SQL.join(conditions, " AND ")
-
-
-def ensure_can_save(asset: nebula.Asset, changes: dict[str, Any]) -> None:
+def ensure_can_save(asset: Asset, changes: dict[str, Any]) -> None:
     """Edit rights in the asset's folder, and in the new one if it changes."""
     if asset.id is not None:
         asset.ensure_can_edit()
@@ -40,7 +23,7 @@ def ensure_can_save(asset: nebula.Asset, changes: dict[str, Any]) -> None:
         try:
             new_folder = int(new_folder)
         except (TypeError, ValueError) as e:
-            raise nebula.ValidationException(
+            raise ValidationException(
                 "'id_folder' must be an integer", key="id_folder"
             ) from e
     if asset.id is None or (
@@ -50,7 +33,7 @@ def ensure_can_save(asset: nebula.Asset, changes: dict[str, Any]) -> None:
 
 
 async def save_asset_changes(
-    asset: nebula.Asset,
+    asset: Asset,
     changes: dict[str, Any],
     *,
     reload_settings: bool = True,
@@ -72,7 +55,7 @@ async def save_asset_changes(
 
     user = current_user()
     settings_changed = False
-    async with nebula.db.transaction():
+    async with db.transaction():
         if user is not None:
             if is_new:
                 asset["created_by"] = user.id
@@ -81,14 +64,14 @@ async def save_asset_changes(
         if validator := Validator.for_object(ObjectType.ASSET):
             try:
                 # `connection` is kept for plugin backward compatibility
-                await validator(asset, changes, connection=nebula.db, user=user)
-            except nebula.RequestSettingsReload:
+                await validator(asset, changes, connection=db, user=user)
+            except RequestSettingsReload:
                 settings_changed = True
         else:
             asset.update(changes)
 
         if not asset["id_folder"]:
-            raise nebula.ValidationException("'id_folder' is required", key="id_folder")
+            raise ValidationException("'id_folder' is required", key="id_folder")
         await asset.save()
 
     if settings_changed and reload_settings:

@@ -887,34 +887,6 @@ export type FolderSettings = {
 };
 
 /**
- * GetAuxDataRequest
- */
-export type GetAuxDataRequest = {
-  /**
-   * Key
-   *
-   * Key of the aux data to retrieve
-   */
-  key?: string | null;
-  /**
-   * Type of the object the aux data is attached to
-   */
-  object_type?: ObjectType;
-  /**
-   * Object Id
-   *
-   * ID of the object the aux data is attached to
-   */
-  object_id: number;
-  /**
-   * Can Fail
-   *
-   * Return null instead of a 404 error if  not found.
-   */
-  can_fail?: boolean;
-};
-
-/**
  * GetAvailableActionsRequest
  */
 export type GetAvailableActionsRequest = {
@@ -968,36 +940,6 @@ export type GetObjectsResponse = {
   data?: Array<{
     [key: string]: unknown;
   }>;
-};
-
-/**
- * GetTranscriptionRequest
- */
-export type GetTranscriptionRequest = {
-  /**
-   * Id Asset
-   *
-   * Asset ID
-   */
-  id_asset: number;
-};
-
-/**
- * GetTranscriptionResponse
- */
-export type GetTranscriptionResponse = {
-  /**
-   * Language
-   *
-   * Language of the transcription
-   */
-  language?: string | null;
-  /**
-   * Segments
-   *
-   * List of transcription segments
-   */
-  segments?: Array<TranscriptionSegment> | null;
 };
 
 /**
@@ -2081,24 +2023,6 @@ export type SsoOption = {
 };
 
 /**
- * SaveTranscriptionRequest
- */
-export type SaveTranscriptionRequest = {
-  /**
-   * Id Asset
-   *
-   * Asset ID
-   */
-  id_asset: number;
-  /**
-   * Segments
-   *
-   * List of transcription segments
-   */
-  segments: Array<TranscriptionSegment>;
-};
-
-/**
  * SchedulerRequest
  */
 export type SchedulerRequest = {
@@ -2501,29 +2425,6 @@ export type TokenExchangeRequest = {
    * Access token to be exchanged for a new one
    */
   access_token: string;
-};
-
-/**
- * TranscriptionSegment
- */
-export type TranscriptionSegment = {
-  /**
-   * Start
-   *
-   * Start time in seconds
-   */
-  start: number;
-  /**
-   * End
-   *
-   * End time in seconds
-   */
-  end: number;
-  /**
-   * Text
-   */
-  text: string;
-  [key: string]: unknown;
 };
 
 /**
@@ -3053,57 +2954,6 @@ export type SendResponses = {
 
 export type SendResponse = SendResponses[keyof SendResponses];
 
-export type GetTranscriptionData = {
-  body: GetTranscriptionRequest;
-  path?: never;
-  query?: never;
-  url: '/api/get_transcription';
-};
-
-export type GetTranscriptionErrors = {
-  /**
-   * Validation Error
-   */
-  422: HttpValidationError;
-};
-
-export type GetTranscriptionError =
-  GetTranscriptionErrors[keyof GetTranscriptionErrors];
-
-export type GetTranscriptionResponses = {
-  /**
-   * Successful Response
-   */
-  200: GetTranscriptionResponse;
-};
-
-export type GetTranscriptionResponse2 =
-  GetTranscriptionResponses[keyof GetTranscriptionResponses];
-
-export type SaveTranscriptionData = {
-  body: SaveTranscriptionRequest;
-  path?: never;
-  query?: never;
-  url: '/api/save_transcription';
-};
-
-export type SaveTranscriptionErrors = {
-  /**
-   * Validation Error
-   */
-  422: HttpValidationError;
-};
-
-export type SaveTranscriptionError =
-  SaveTranscriptionErrors[keyof SaveTranscriptionErrors];
-
-export type SaveTranscriptionResponses = {
-  /**
-   * Successful Response
-   */
-  200: unknown;
-};
-
 export type PlayoutData = {
   body: PlayoutControlRequest;
   path?: never;
@@ -3286,31 +3136,6 @@ export type DeleteError = DeleteErrors[keyof DeleteErrors];
 
 export type DeleteResponses = {
   /**
-   * Successful Response
-   */
-  200: unknown;
-};
-
-export type GetAuxData = {
-  body: GetAuxDataRequest;
-  path?: never;
-  query?: never;
-  url: '/api/get-aux';
-};
-
-export type GetAuxErrors = {
-  /**
-   * Validation Error
-   */
-  422: HttpValidationError;
-};
-
-export type GetAuxError = GetAuxErrors[keyof GetAuxErrors];
-
-export type GetAuxResponses = {
-  /**
-   * Response Get Aux
-   *
    * Successful Response
    */
   200: unknown;

@@ -64,7 +64,9 @@ async def test_set_without_permission_is_forbidden(client: httpx.AsyncClient) ->
         headers={"Authorization": f"Bearer {USER_TOKEN}"},
     )
     assert response.status_code == 403
-    assert response.json()["detail"] == "You are not allowed to edit assets"
+    assert (
+        response.json()["detail"] == "You are not allowed to edit assets in this folder"
+    )
 
 
 async def test_set_missing_object_is_not_found(client: httpx.AsyncClient) -> None:

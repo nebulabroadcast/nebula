@@ -4,15 +4,15 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 
 import nebula
-from rest.users.common import PREFIX
-from rest.users.fields import response_keys, user_query_fields, user_response
-from rest.users.models import UserList
-from server.query import (
+from nebula.query import (
     QueryRequest,
     SubstringSearch,
     fetch_page,
-    query_params_dependency,
 )
+from rest.users.common import PREFIX
+from rest.users.fields import response_keys, user_query_fields, user_response
+from rest.users.models import UserList
+from server.query.params import query_params_dependency
 
 router = APIRouter(prefix=PREFIX)
 

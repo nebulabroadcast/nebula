@@ -145,7 +145,6 @@ class BaseObject:
 
     #
     # Factory methods
-    # TODO: after upgrading to Python 3.11, use 'self' as a return type
     #
 
     @classmethod

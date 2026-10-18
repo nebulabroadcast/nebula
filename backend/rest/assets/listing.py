@@ -1,47 +1,24 @@
-from string.templatelib import Template
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
 
-import nebula
-from nebula.context import current_user
-from nebula.enum import ObjectTypeId
-from nebula.helpers.assets import asset_acl
-from rest.assets.common import PREFIX
-from rest.assets.fields import (
-    asset_query_fields,
-    asset_response,
-    indexed_meta_keys,
-    response_keys,
-)
-from rest.assets.models import AssetList
-from server.query import (
-    FulltextSearch,
+from nebula.objects.asset import Asset
+from nebula.objects.asset.query import SEARCH, asset_listing, asset_query_fields
+from nebula.query import (
     QueryRequest,
     fetch_page,
-    query_params_dependency,
 )
+from rest.assets.common import PREFIX
+from rest.assets.fields import asset_response, response_keys
+from rest.assets.models import AssetList
+from server.query.params import query_params_dependency
 
 router = APIRouter(prefix=PREFIX)
 
-SEARCH = FulltextSearch(ObjectTypeId.ASSET)
-
-
-def assets_base(where: Template | None = None) -> Template:
-    """Assets matching `where` (on `a`). fetch_page adds filters, sorting..."""
-    condition = t"WHERE {where}" if where is not None else t""
-    return t"""
-        SELECT a.id, a.id_folder, a.status, a.content_type, a.media_type,
-            a.ctime, a.mtime, a.meta
-        FROM assets a {condition}
-    """
-
 
 async def query_assets(request: QueryRequest) -> AssetList:
-    nebula.Asset.ensure_can_list()
+    fields, base = await asset_listing(Asset)
     keys = response_keys(request.fields)
-    fields = asset_query_fields(await indexed_meta_keys())
-    base = assets_base(asset_acl(current_user(), "a"))
     page = await fetch_page(request, fields, base, SEARCH)
     items = [asset_response(row["meta"], keys, dict(row)) for row in page.rows]
     return AssetList.model_validate(page.response(items))

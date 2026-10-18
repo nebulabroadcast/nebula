@@ -3,15 +3,14 @@ import json
 import os
 from typing import Literal
 
-from pydantic import Field
+from pydantic import BaseModel, Field
 
 import nebula
-from server import APIModel
 
 FrontendScope = Literal["tool", "mam"]
 
 
-class PluginItemModel(APIModel):
+class PluginItemModel(BaseModel):
     """Plugin item model.
 
     This model is used to describe a plugin in the frontend.

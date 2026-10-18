@@ -9,9 +9,7 @@ from dataclasses import dataclass
 from typing import Any
 
 import nebula
-from rest.users.models import USER_NAMESPACE, User
-from server.models.user_models import UserPermissionsModel
-from server.query import (
+from nebula.query import (
     Field,
     FieldKind,
     QueryValidationError,
@@ -19,6 +17,8 @@ from server.query import (
     meta,
     meta_namespace,
 )
+from rest.users.models import USER_NAMESPACE, User
+from server.models.user_models import UserPermissionsModel
 
 FLAGS = ("is_admin", "is_limited", "local_network_only")
 

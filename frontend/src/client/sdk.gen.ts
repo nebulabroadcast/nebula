@@ -48,18 +48,12 @@ import type {
   DeleteData,
   DeleteErrors,
   DeleteResponses,
-  GetAuxData,
-  GetAuxErrors,
-  GetAuxResponses,
   GetData,
   GetErrors,
   GetProxyInfoData,
   GetProxyInfoErrors,
   GetProxyInfoResponses,
   GetResponses,
-  GetTranscriptionData,
-  GetTranscriptionErrors,
-  GetTranscriptionResponses,
   InitData,
   InitResponses,
   InvalidateSessionData,
@@ -106,9 +100,6 @@ import type {
   RundownData,
   RundownErrors,
   RundownResponses,
-  SaveTranscriptionData,
-  SaveTranscriptionErrors,
-  SaveTranscriptionResponses,
   SaveUserData,
   SaveUserErrors,
   SaveUserResponses,
@@ -303,50 +294,6 @@ export const send = <ThrowOnError extends boolean = false>(
   });
 
 /**
- * Transcription
- *
- * Return a transcription of an asset
- */
-export const getTranscription = <ThrowOnError extends boolean = false>(
-  options: Options<GetTranscriptionData, ThrowOnError>
-): RequestResult<GetTranscriptionResponses, GetTranscriptionErrors, ThrowOnError> =>
-  (options.client ?? client).post<
-    GetTranscriptionResponses,
-    GetTranscriptionErrors,
-    ThrowOnError
-  >({
-    responseType: 'json',
-    url: '/api/get_transcription',
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-  });
-
-/**
- * Save Transcription
- *
- * Save a transcription for an asset
- */
-export const saveTranscription = <ThrowOnError extends boolean = false>(
-  options: Options<SaveTranscriptionData, ThrowOnError>
-): RequestResult<SaveTranscriptionResponses, SaveTranscriptionErrors, ThrowOnError> =>
-  (options.client ?? client).post<
-    SaveTranscriptionResponses,
-    SaveTranscriptionErrors,
-    ThrowOnError
-  >({
-    responseType: 'json',
-    url: '/api/save_transcription',
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-  });
-
-/**
  * Playout Control
  *
  * Control a playout server
@@ -496,24 +443,6 @@ export const delete_ = <ThrowOnError extends boolean = false>(
   (options.client ?? client).post<DeleteResponses, DeleteErrors, ThrowOnError>({
     responseType: 'json',
     url: '/api/delete',
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-  });
-
-/**
- * Get Aux Data
- *
- * Retrieve aux data for a given object.
- */
-export const getAux = <ThrowOnError extends boolean = false>(
-  options: Options<GetAuxData, ThrowOnError>
-): RequestResult<GetAuxResponses, GetAuxErrors, ThrowOnError> =>
-  (options.client ?? client).post<GetAuxResponses, GetAuxErrors, ThrowOnError>({
-    responseType: 'json',
-    url: '/api/get-aux',
     ...options,
     headers: {
       'Content-Type': 'application/json',

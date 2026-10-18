@@ -14,8 +14,8 @@ from fastapi.exceptions import RequestValidationError
 from pydantic import ValidationError
 from starlette.datastructures import QueryParams
 
-from server.query.fields import Field, FieldKind, QueryValidationError
-from server.query.models import FilterAnd, FilterCondition, QueryRequest
+from nebula.query.fields import Field, FieldKind, QueryValidationError
+from nebula.query.models import FilterAnd, FilterCondition, QueryRequest
 
 QUERY_OPTIONS = {"fields", "sort", "q", "limit", "cursor", "include_total"}
 

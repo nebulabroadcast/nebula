@@ -10,9 +10,9 @@ from typing import Annotated, Any
 from pydantic import BaseModel, ConfigDict, Field
 
 from nebula.enum import ContentType, MediaType, ObjectStatus
+from nebula.query import QueryResponse
 from nebula.transcription import Transcription
 from server.models import APIModel
-from server.query import QueryResponse
 
 
 class Asset(APIModel):
@@ -64,7 +64,7 @@ class AssetPatch(APIModel):
     subtitle: str | None = None
 
     def to_meta_changes(self) -> dict[str, Any]:
-        """Changes as meta keys, for nebula.helpers.assets.save_asset_changes."""
+        """Changes as meta keys, for nebula.objects.asset.changes.save_asset_changes."""
         return self.model_dump(exclude_unset=True)
 
 

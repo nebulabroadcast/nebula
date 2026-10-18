@@ -348,7 +348,7 @@ Operators:
 | `exists` | key is set (`true`) or not set (`false`) | bool |
 | `contains` | list/object metadata contains value (jsonb `@>`) | list or object |
 
-Translation rules (implemented once in `server/query/`):
+Translation rules (implemented once in `nebula/query/`; `server/query/params.py` parses query strings):
 
 - Keys are validated against the resource's fields (§7.6). An unknown key
   is a 422. Key names are never interpolated into SQL as raw strings.
@@ -429,7 +429,7 @@ async def query_users(request: QueryRequest) -> UserList:
     return UserList.model_validate(page.response(items))
 ```
 
-`fetch_page` (`server/query/`) wraps the base query as `b` and adds
+`fetch_page` (`nebula/query/`) wraps the base query as `b` and adds
 filters, search, sorting and paging around it. It returns the base query's
 rows; turning them into the response is up to the resource.
 
@@ -443,7 +443,7 @@ filters still use the tables' indexes, provided that:
 - aggregates (`count(...)`) are joined fields rather than columns of the
   base query: a filter on an aggregate column runs after the aggregation.
 
-Fields (`server/query/fields.py`) are `column(...)`, `meta(...)`,
+Fields (`nebula/query/fields.py`) are `column(...)`, `meta(...)`,
 `meta_namespace(...)` for every metatype of a namespace, or a `Field` with
 its own SQL. A field can bring a `join`, which is added only when the
 request filters, sorts or asks for the field:

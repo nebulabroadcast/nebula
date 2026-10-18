@@ -3,18 +3,13 @@ from typing import Annotated
 from fastapi import APIRouter, Query, Response
 
 import nebula
-from nebula.helpers.assets import save_asset_changes
+from nebula.objects.asset.changes import save_asset_changes
+from nebula.objects.asset.query import COMPUTED_KEYS, asset_query_fields, assets_base
+from nebula.query import QueryRequest, fetch_page
 from rest.assets.common import PREFIX, AssetId
-from rest.assets.fields import (
-    COMPUTED_KEYS,
-    asset_query_fields,
-    asset_response,
-    response_keys,
-)
-from rest.assets.listing import assets_base
+from rest.assets.fields import asset_response, response_keys
 from rest.assets.models import Asset, AssetCreate, AssetPatch
 from server.errors import REST_PREFIX
-from server.query import QueryRequest, fetch_page
 from server.query.params import split_list
 
 router = APIRouter(prefix=PREFIX)
