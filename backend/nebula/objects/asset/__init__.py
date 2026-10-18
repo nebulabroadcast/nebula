@@ -2,8 +2,8 @@
 
 The class is here; access rules (access.py), which keys are asset fields
 (keys.py), saving client changes (changes.py) and querying (query.py) are
-in the submodules. Every name this module had before it became a package
-is still importable from it.
+in the submodules. Every name the released module (asset.py) defined is
+still importable from it.
 """
 
 import os
@@ -92,10 +92,6 @@ class Asset(BaseObject):
     def ensure_can_edit(self, id_folder: int | None = None) -> None:
         """Check edit rights in the asset's folder, or in `id_folder`."""
         folder = self["id_folder"] if id_folder is None else id_folder
-        require_access(
-            lambda user: user.can("asset_edit", anyval=True),
-            "You are not allowed to edit assets",
-        )
         require_access(
             lambda user: user.can("asset_edit", folder),
             "You are not allowed to edit assets in this folder",

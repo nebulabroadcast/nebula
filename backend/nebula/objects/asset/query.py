@@ -17,7 +17,7 @@ from typing import TYPE_CHECKING, Any
 from nx.db import db
 from pydantic import ValidationError
 
-from nebula.context import current_user
+from nebula.context import current_user, is_system
 from nebula.enum import ObjectTypeId
 from nebula.objects.asset.access import asset_acl
 from nebula.objects.asset.keys import is_asset_key
@@ -146,6 +146,36 @@ class AssetPage:
     has_more: bool
 
 
+async def asset_listing() -> tuple[list[Field], Template]:
+    """Fields and base query of the assets the current user may list.
+
+    Raises like Asset.ensure_can_list (401/403). In a system context
+    nothing is hidden. The REST listing and Asset.query / iterate use it.
+    """
+    from nebula.objects.asset import Asset  # noqa: PLC0415 (import cycle)
+
+    Asset.ensure_can_list()
+    user = None if is_system() else current_user()
+    fields = asset_query_fields(await indexed_meta_keys())
+    return fields, assets_base(asset_acl(user, "a"))
+
+
+def asset_request(
+    filter: FilterNode | dict[str, Any] | None,  # noqa: A002
+    q: str | None,
+    sort: list[str] | None,
+    limit: int,
+    cursor: str | None = None,
+) -> QueryRequest:
+    """The QueryRequest for Asset.query / iterate; ValidationException if bad."""
+    try:
+        return QueryRequest.model_validate(
+            {"filter": filter, "q": q, "sort": sort, "limit": limit, "cursor": cursor}
+        )
+    except ValidationError as e:
+        raise QueryValidationError(f"Invalid asset query: {e}") from e
+
+
 async def query_assets(  # noqa: PLR0913
     cls: type[Asset],
     filter: FilterNode | dict[str, Any] | None = None,  # noqa: A002
@@ -157,18 +187,12 @@ async def query_assets(  # noqa: PLR0913
 ) -> AssetPage:
     """One page of the assets matching the filter, as asset objects.
 
-    The current user's asset access condition applies (none in a system
+    The current user's asset access applies (nothing is hidden in a system
     context, e.g. a stand-alone service). Raises ValidationException for an
     invalid filter, sort or cursor, as the REST listing does (422/400).
     """
-    try:
-        request = QueryRequest.model_validate(
-            {"filter": filter, "q": q, "sort": sort, "limit": limit, "cursor": cursor}
-        )
-    except ValidationError as e:
-        raise QueryValidationError(f"Invalid asset query: {e}") from e
-    fields = asset_query_fields(await indexed_meta_keys())
-    base = assets_base(asset_acl(current_user(), "a"))
+    request = asset_request(filter, q, sort, limit, cursor)
+    fields, base = await asset_listing()
     page = await fetch_page(request, fields, base, SEARCH)
     return AssetPage(
         items=[cls.from_meta(row["meta"]) for row in page.rows],
@@ -186,13 +210,12 @@ async def iterate_assets(
     page_size: int = 100,
 ) -> AsyncIterator[Asset]:
     """Every asset matching the filter, fetched page by page."""
-    cursor = None
+    request = asset_request(filter, q, sort, page_size)
+    fields, base = await asset_listing()
     while True:
-        page = await query_assets(
-            cls, filter, q=q, sort=sort, limit=page_size, cursor=cursor
-        )
-        for asset in page.items:
-            yield asset
+        page = await fetch_page(request, fields, base, SEARCH)
+        for row in page.rows:
+            yield cls.from_meta(row["meta"])
         if not page.has_more:
             return
-        cursor = page.next_cursor
+        request = request.model_copy(update={"cursor": page.next_cursor})

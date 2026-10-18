@@ -4,7 +4,7 @@ import pytest
 import pytest_asyncio
 
 import nebula
-from nebula.context import RequestContext, request_context
+from nebula.context import RequestContext, request_context, system_context
 
 pytestmark = pytest.mark.asyncio(loop_scope="session")
 
@@ -70,3 +70,19 @@ async def test_query_access(folder: int) -> None:
     with request_context(RequestContext(system=True)):
         page = await nebula.Asset.query(flt, limit=1)
     assert len(page.items) == 1
+    # ...also inside a user's request: system_context keeps the user
+    with request_context(RequestContext(user=limited)), system_context():
+        page = await nebula.Asset.query(flt, limit=1)
+    assert len(page.items) == 1
+
+
+async def test_query_needs_list_rights() -> None:
+    # As the REST listing: no asset_view at all is a 403, no user a 401
+    viewer = nebula.User(meta={"id": -2, "login": "nobody"})
+    with request_context(RequestContext(user=viewer)):
+        with pytest.raises(nebula.ForbiddenException):
+            await nebula.Asset.query()
+        with pytest.raises(nebula.ForbiddenException):
+            _ = [a async for a in nebula.Asset.iterate()]
+    with request_context(RequestContext()), pytest.raises(nebula.UnauthorizedException):
+        await nebula.Asset.query()

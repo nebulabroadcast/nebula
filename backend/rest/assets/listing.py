@@ -2,15 +2,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends
 
-import nebula
-from nebula.context import current_user
-from nebula.objects.asset.access import asset_acl
-from nebula.objects.asset.query import (
-    SEARCH,
-    asset_query_fields,
-    assets_base,
-    indexed_meta_keys,
-)
+from nebula.objects.asset.query import SEARCH, asset_listing, asset_query_fields
 from nebula.query import (
     QueryRequest,
     fetch_page,
@@ -24,10 +16,8 @@ router = APIRouter(prefix=PREFIX)
 
 
 async def query_assets(request: QueryRequest) -> AssetList:
-    nebula.Asset.ensure_can_list()
+    fields, base = await asset_listing()
     keys = response_keys(request.fields)
-    fields = asset_query_fields(await indexed_meta_keys())
-    base = assets_base(asset_acl(current_user(), "a"))
     page = await fetch_page(request, fields, base, SEARCH)
     items = [asset_response(row["meta"], keys, dict(row)) for row in page.rows]
     return AssetList.model_validate(page.response(items))
