@@ -12,6 +12,14 @@ export interface TableColumn {
   width?: string | number;
   title?: React.ReactNode;
   formatter?: TableCellFormatter;
+  // false: the header can't be clicked to sort by this column
+  sortable?: boolean;
+}
+
+// dnd-kit `data` of a dragged row. The items are built when the drag
+// starts: the dragged row, or every selected row if it is selected.
+export interface TableDragData {
+  getItems: () => TableDraggableItem[];
 }
 
 export interface TableDroppable {

@@ -100,13 +100,8 @@ interface AssetEditorProps {
 }
 
 const AssetEditor: React.FC<AssetEditorProps> = () => {
-  const {
-    focusedAsset,
-    setPageTitle,
-    reloadBrowser,
-    setSelectedAssets,
-    setFocusedAsset,
-  } = useNebula();
+  const { focusedAsset, setPageTitle, setSelectedAssets, setFocusedAsset } =
+    useNebula();
   const [assetData, setAssetData] = useState<Record<string, any>>({});
   const [originalData, setOriginalData] = useState<Record<string, any>>({});
   // Changed aux documents (transcription...), saved separately from metadata
@@ -382,13 +377,8 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
         .then(() => {
           save()
             .then((id) => {
-              // reload browser if it's a new asset
-              // (if it already exists, it will be updated over ws,
-              // but new assets won't be displayed until the browser is reloaded)
-              if (!assetData.id) {
-                setFocusedAsset(id);
-                reloadBrowser();
-              }
+              // a new asset: focus it (the browser shows it over ws)
+              if (!assetData.id) setFocusedAsset(id);
             })
             .catch((error: unknown) => {
               if (!(error instanceof AxiosError)) return;
@@ -416,7 +406,6 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
     save,
     focusedAsset,
     loadAsset,
-    reloadBrowser,
     setFocusedAsset,
     showDialog,
   ]);
@@ -488,8 +477,7 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
       .then((id) => {
         // if asset already exists, we wait for the ws message to update the data
         if (assetData.id) return;
-        // new asset: load it with its id and reload the browser
-        reloadBrowser();
+        // new asset: load it with its id (the browser shows it over ws)
         return loadAsset(id);
       })
       .catch((error: unknown) => {
@@ -506,7 +494,7 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
       });
     // we don't clear the loading state here,
     // we wait for the ws message that confirms the asset has been updated
-  }, [assetData.id, save, enabledActions.save, loadAsset, reloadBrowser]);
+  }, [assetData.id, save, enabledActions.save, loadAsset]);
 
   // Keyboard shortcuts
 

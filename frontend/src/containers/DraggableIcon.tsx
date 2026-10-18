@@ -1,4 +1,4 @@
-import type { TableDraggableItem } from '@components/table/types';
+import type { TableDraggableItem, TableDragData } from '@components/table/types';
 import { useDraggable } from '@dnd-kit/core';
 import styled from 'styled-components';
 
@@ -27,7 +27,7 @@ interface DraggableIconProps {
 const DraggableIcon = ({ name, icon, tooltip, data }: DraggableIconProps) => {
   const { attributes, listeners } = useDraggable({
     id: name,
-    data: [data],
+    data: { getItems: () => [data] } satisfies TableDragData,
   });
 
   return (

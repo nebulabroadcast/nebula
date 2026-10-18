@@ -13,6 +13,8 @@ interface InputTextProps {
   readOnly?: boolean;
   onDoubleClick?: (e: React.MouseEvent<HTMLInputElement>) => void;
   onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
+  onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
 }
 
 export const InputText = forwardRef<HTMLInputElement, InputTextProps>(
@@ -35,6 +37,8 @@ export const InputText = forwardRef<HTMLInputElement, InputTextProps>(
         onChange={handleChange}
         onDoubleClick={props.onDoubleClick}
         onKeyDown={props.onKeyDown}
+        onFocus={props.onFocus}
+        onBlur={props.onBlur}
         style={props.style}
         className={clsx('nb-input', props.className)}
       />

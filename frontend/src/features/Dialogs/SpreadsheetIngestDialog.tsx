@@ -1,5 +1,4 @@
 import { Button, Dialog, Spacer } from '@components';
-import { useNebula } from '@features/Nebula';
 import { getErrorDetail } from '@lib/utils';
 import clsx from 'clsx';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -146,7 +145,6 @@ const SpreadsheetIngestDialog = ({
   handleCancel,
   handleConfirm,
 }: SpreadsheetIngestDialogProps) => {
-  const { reloadBrowser } = useNebula();
   const [pasted, setPasted] = useState('');
   // Results of the rows sent to the server, by row index.
   // Rows which have been created are not sent again on retry.
@@ -268,9 +266,6 @@ const SpreadsheetIngestDialog = ({
         });
         setResults(newResults);
 
-        if (response.data.operations.some((result) => result.success)) {
-          reloadBrowser();
-        }
         if (!response.data.success) return; // keep the dialog open to retry
 
         const ids = [...newResults.values()]
