@@ -8,10 +8,13 @@ import fastapi
 
 import nebula
 from nebula.common import classes_from_module, import_module
-from nebula.plugins.library import plugin_library
+from nebula.plugins.library import plugin_library, register_plugin_type
 from nebula.utils import slugify
 from server.context import ScopedEndpoint, server_context
 from server.request import APIRequest
+
+# API plugins extend APIRequest; nebula.plugins doesn't know the server
+register_plugin_type("api", APIRequest)
 
 
 def find_api_endpoints() -> list[APIRequest]:
