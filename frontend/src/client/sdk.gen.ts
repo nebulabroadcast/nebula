@@ -54,9 +54,6 @@ import type {
   GetProxyInfoErrors,
   GetProxyInfoResponses,
   GetResponses,
-  GetTranscriptionData,
-  GetTranscriptionErrors,
-  GetTranscriptionResponses,
   InitData,
   InitResponses,
   InvalidateSessionData,
@@ -103,9 +100,6 @@ import type {
   RundownData,
   RundownErrors,
   RundownResponses,
-  SaveTranscriptionData,
-  SaveTranscriptionErrors,
-  SaveTranscriptionResponses,
   SaveUserData,
   SaveUserErrors,
   SaveUserResponses,
@@ -292,50 +286,6 @@ export const send = <ThrowOnError extends boolean = false>(
   (options.client ?? client).post<SendResponses, SendErrors, ThrowOnError>({
     responseType: 'json',
     url: '/api/send',
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-  });
-
-/**
- * Transcription
- *
- * Return a transcription of an asset
- */
-export const getTranscription = <ThrowOnError extends boolean = false>(
-  options: Options<GetTranscriptionData, ThrowOnError>
-): RequestResult<GetTranscriptionResponses, GetTranscriptionErrors, ThrowOnError> =>
-  (options.client ?? client).post<
-    GetTranscriptionResponses,
-    GetTranscriptionErrors,
-    ThrowOnError
-  >({
-    responseType: 'json',
-    url: '/api/get_transcription',
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-  });
-
-/**
- * Save Transcription
- *
- * Save a transcription for an asset
- */
-export const saveTranscription = <ThrowOnError extends boolean = false>(
-  options: Options<SaveTranscriptionData, ThrowOnError>
-): RequestResult<SaveTranscriptionResponses, SaveTranscriptionErrors, ThrowOnError> =>
-  (options.client ?? client).post<
-    SaveTranscriptionResponses,
-    SaveTranscriptionErrors,
-    ThrowOnError
-  >({
-    responseType: 'json',
-    url: '/api/save_transcription',
     ...options,
     headers: {
       'Content-Type': 'application/json',

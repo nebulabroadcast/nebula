@@ -943,36 +943,6 @@ export type GetObjectsResponse = {
 };
 
 /**
- * GetTranscriptionRequest
- */
-export type GetTranscriptionRequest = {
-  /**
-   * Id Asset
-   *
-   * Asset ID
-   */
-  id_asset: number;
-};
-
-/**
- * GetTranscriptionResponse
- */
-export type GetTranscriptionResponse = {
-  /**
-   * Language
-   *
-   * Language of the transcription
-   */
-  language?: string | null;
-  /**
-   * Segments
-   *
-   * List of transcription segments
-   */
-  segments?: Array<TranscriptionSegment> | null;
-};
-
-/**
  * HTTPValidationError
  */
 export type HttpValidationError = {
@@ -2053,24 +2023,6 @@ export type SsoOption = {
 };
 
 /**
- * SaveTranscriptionRequest
- */
-export type SaveTranscriptionRequest = {
-  /**
-   * Id Asset
-   *
-   * Asset ID
-   */
-  id_asset: number;
-  /**
-   * Segments
-   *
-   * List of transcription segments
-   */
-  segments: Array<TranscriptionSegment>;
-};
-
-/**
  * SchedulerRequest
  */
 export type SchedulerRequest = {
@@ -2473,29 +2425,6 @@ export type TokenExchangeRequest = {
    * Access token to be exchanged for a new one
    */
   access_token: string;
-};
-
-/**
- * TranscriptionSegment
- */
-export type TranscriptionSegment = {
-  /**
-   * Start
-   *
-   * Start time in seconds
-   */
-  start: number;
-  /**
-   * End
-   *
-   * End time in seconds
-   */
-  end: number;
-  /**
-   * Text
-   */
-  text: string;
-  [key: string]: unknown;
 };
 
 /**
@@ -3024,57 +2953,6 @@ export type SendResponses = {
 };
 
 export type SendResponse = SendResponses[keyof SendResponses];
-
-export type GetTranscriptionData = {
-  body: GetTranscriptionRequest;
-  path?: never;
-  query?: never;
-  url: '/api/get_transcription';
-};
-
-export type GetTranscriptionErrors = {
-  /**
-   * Validation Error
-   */
-  422: HttpValidationError;
-};
-
-export type GetTranscriptionError =
-  GetTranscriptionErrors[keyof GetTranscriptionErrors];
-
-export type GetTranscriptionResponses = {
-  /**
-   * Successful Response
-   */
-  200: GetTranscriptionResponse;
-};
-
-export type GetTranscriptionResponse2 =
-  GetTranscriptionResponses[keyof GetTranscriptionResponses];
-
-export type SaveTranscriptionData = {
-  body: SaveTranscriptionRequest;
-  path?: never;
-  query?: never;
-  url: '/api/save_transcription';
-};
-
-export type SaveTranscriptionErrors = {
-  /**
-   * Validation Error
-   */
-  422: HttpValidationError;
-};
-
-export type SaveTranscriptionError =
-  SaveTranscriptionErrors[keyof SaveTranscriptionErrors];
-
-export type SaveTranscriptionResponses = {
-  /**
-   * Successful Response
-   */
-  200: unknown;
-};
 
 export type PlayoutData = {
   body: PlayoutControlRequest;
