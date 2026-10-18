@@ -1,6 +1,6 @@
 import type { BrowserView, Condition, TabSettings, UserView, ViewKey } from './types';
 
-import type { FilterCondition, QueryRequest } from '@/client';
+import type { QueryRequest } from '@/client';
 import nebula from '@/nebula';
 
 export const PAGE_SIZE = 200;
@@ -39,13 +39,18 @@ export const resolveView = (
   if (kind === 'site') {
     const view = nebula.settings?.views?.find((v) => v.id === Number(id));
     if (!view) return null;
+    const conditions: Condition[] = [];
+    if (view.folders?.length) {
+      conditions.push({ key: 'id_folder', op: 'in', value: view.folders });
+    }
+    if (view.states?.length) {
+      conditions.push({ key: 'status', op: 'in', value: view.states });
+    }
     return {
       key,
       name: view.name,
-      folders: view.folders ?? null,
-      states: view.states ?? null,
       columns: view.columns?.length ? view.columns : DEFAULT_COLUMNS,
-      conditions: [],
+      conditions,
       query: '',
       sort: DEFAULT_SORT,
     };
@@ -55,18 +60,14 @@ export const resolveView = (
   return { ...view, key };
 };
 
-// The view's folders, states and conditions, and the tab's conditions
-export const tabFilter = (
-  view: BrowserView,
-  conditions: Condition[]
-): QueryRequest['filter'] => {
-  const and: FilterCondition[] = [];
-  if (view.folders?.length)
-    and.push({ key: 'id_folder', op: 'in', value: view.folders });
-  if (view.states?.length) and.push({ key: 'status', op: 'in', value: view.states });
-  and.push(...view.conditions, ...conditions);
-  return and.length ? { and } : null;
-};
+// The settings of a tab showing the view
+export const viewTab = (view: BrowserView): Omit<TabSettings, 'id'> => ({
+  view: view.key,
+  conditions: view.conditions,
+  query: view.query,
+  sort: view.sort,
+  columns: null,
+});
 
 export const tabColumns = (view: BrowserView, tab: TabSettings): string[] =>
   tab.columns?.length ? tab.columns : view.columns;
@@ -78,8 +79,8 @@ export const tabRequest = (view: BrowserView, tab: TabSettings): QueryRequest =>
     fields.add('mark_out');
   }
   return {
-    filter: tabFilter(view, tab.conditions),
-    q: [view.query, tab.query].join(' ').trim() || null,
+    filter: tab.conditions.length ? { and: tab.conditions } : null,
+    q: tab.query || null,
     sort: [tab.sort],
     fields: [...fields],
     limit: PAGE_SIZE,

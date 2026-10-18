@@ -4,14 +4,8 @@ import React, { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 import { BrowserContext, type BrowserContextType } from './context';
-import {
-  DEFAULT_SORT,
-  firstSiteView,
-  resolveView,
-  tabColumns,
-  userViewKey,
-} from './query';
-import type { TabSettings, UserView, ViewKey } from './types';
+import { firstSiteView, resolveView, tabColumns, userViewKey, viewTab } from './query';
+import type { Condition, TabSettings, UserView, ViewKey } from './types';
 
 const NO_TABS: TabSettings[] = [];
 const NO_USER_VIEWS: UserView[] = [];
@@ -31,8 +25,8 @@ const validTabs = (tabs: TabSettings[], userViews: UserView[]): TabSettings[] =>
     resolveView(tab.view, userViews) ? tab : { ...tab, view: fallback }
   );
   if (result.length) return result;
-  const settings = { view: fallback, conditions: [], query: '', sort: DEFAULT_SORT };
-  return [newTab(settings, 'default')];
+  const view = resolveView(fallback, userViews);
+  return view ? [newTab(viewTab(view), 'default')] : [];
 };
 
 export const BrowserProvider = ({ children }: { children: React.ReactNode }) => {
@@ -75,17 +69,25 @@ export const BrowserProvider = ({ children }: { children: React.ReactNode }) => 
     else setSelections((prev) => ({ ...prev, [id]: ids }));
   };
 
-  const openTab: BrowserContextType['openTab'] = (settings) => {
-    const active = tabs.find((tab) => tab.id === activeId);
+  // A view's settings (the active tab's view by default), with more
+  // conditions
+  const openTab = (viewKey?: ViewKey, conditions: Condition[] = []) => {
+    const key = viewKey ?? tabs.find((tab) => tab.id === activeId)?.view;
+    const view = resolveView(key ?? firstSiteView() ?? '', userViews);
+    if (!view) return;
+    const settings = viewTab(view);
     const tab = newTab({
-      view: active?.view ?? firstSiteView() ?? '',
-      conditions: [],
-      query: '',
-      sort: DEFAULT_SORT,
       ...settings,
+      conditions: [...settings.conditions, ...conditions],
     });
     setTabs((prev) => [...prev, tab]);
     activateTab(tab.id);
+  };
+
+  // The tab gets the view's conditions, query, sort and columns
+  const selectView = (tabId: string, viewKey: ViewKey) => {
+    const view = resolveView(viewKey, userViews);
+    if (view) updateTab(tabId, viewTab(view));
   };
 
   const closeTab = (id: string) => {
@@ -151,21 +153,14 @@ export const BrowserProvider = ({ children }: { children: React.ReactNode }) => 
     const userView: UserView = {
       id: uuidv4(),
       name,
-      folders: view.folders,
-      states: view.states,
       columns: tabColumns(view, tab),
       columnWidths: columnWidths(view.key),
-      conditions: [...view.conditions, ...tab.conditions],
-      query: [view.query, tab.query].join(' ').trim(),
+      conditions: tab.conditions,
+      query: tab.query,
       sort: tab.sort,
     };
     setUserViews((prev) => [...prev, userView]);
-    updateTab(tabId, {
-      view: userViewKey(userView.id),
-      conditions: [],
-      query: '',
-      columns: null,
-    });
+    updateTab(tabId, { view: userViewKey(userView.id), columns: null });
   };
 
   const renameUserView = (id: string, name: string) => {
@@ -186,6 +181,7 @@ export const BrowserProvider = ({ children }: { children: React.ReactNode }) => 
     unsortable,
     view: (tab) => resolveView(tab.view, userViews),
     openTab,
+    selectView,
     closeTab,
     activateTab,
     updateTab,

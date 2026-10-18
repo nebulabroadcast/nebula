@@ -137,17 +137,14 @@ const AssetEditorNav: React.FC<AssetEditorNavProps> = ({
       separator: idx === 0,
       disabled: !assetData[l.source_key],
       onClick: () => {
-        browser.openTab({
-          view: siteViewKey(l.view),
-          conditions: [
-            {
-              key: l.target_key,
-              op: 'eq',
-              // as the target field expects it (an id stored as a string...)
-              value: parseValue(l.target_key, String(assetData[l.source_key])),
-            },
-          ],
-        });
+        browser.openTab(siteViewKey(l.view), [
+          {
+            key: l.target_key,
+            op: 'eq',
+            // as the target field expects it (an id stored as a string...)
+            value: parseValue(l.target_key, String(assetData[l.source_key])),
+          },
+        ]);
       },
     }));
   }, [assetData, currentFolder, browser]);

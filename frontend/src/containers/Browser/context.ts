@@ -1,6 +1,6 @@
 import { createContext } from 'react';
 
-import type { BrowserView, TabSettings, UserView, ViewKey } from './types';
+import type { BrowserView, Condition, TabSettings, UserView, ViewKey } from './types';
 
 export interface BrowserContextType {
   tabs: TabSettings[];
@@ -13,7 +13,8 @@ export interface BrowserContextType {
   unsortable: string[];
 
   view: (tab: TabSettings) => BrowserView | null;
-  openTab: (settings?: Partial<Omit<TabSettings, 'id'>>) => void;
+  openTab: (view?: ViewKey, conditions?: Condition[]) => void;
+  selectView: (tabId: string, view: ViewKey) => void;
   closeTab: (id: string) => void;
   activateTab: (id: string) => void;
   updateTab: (id: string, settings: Partial<Omit<TabSettings, 'id'>>) => void;

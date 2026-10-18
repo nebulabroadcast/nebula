@@ -1,10 +1,8 @@
 import DatePickerDialog from '@components/DatePickerDialog';
 import type { ComponentProps } from 'react';
 
-import ConditionDialog from './ConditionDialog';
 import ConfirmDialog from './ConfirmDialog';
 import MetadataDialog from './MetadataDialog';
-import PromptDialog from './PromptDialog';
 import SendToDialog from './SendToDialog';
 import SeriesScheduleDialog from './SeriesScheduleDialog';
 import SpreadsheetIngestDialog from './SpreadsheetIngestDialog';
@@ -14,10 +12,8 @@ import SubclipsDialog from './SubclipsDialog';
 // The rest of its props are passed to showDialog(), and the value it hands
 // to handleConfirm is what the returned promise resolves with.
 export const dialogs = {
-  condition: ConditionDialog,
   confirm: ConfirmDialog,
   metadata: MetadataDialog,
-  prompt: PromptDialog,
   sendto: SendToDialog,
   date: DatePickerDialog,
   subclips: SubclipsDialog,

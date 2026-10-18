@@ -1,52 +1,11 @@
-import { Button, Dropdown, InputText, Navbar } from '@components';
-import type { DropdownOptionProps } from '@components/Dropdown';
-import { useDialog } from '@features/Dialogs';
-import { useEffect, useState } from 'react';
-import styled from 'styled-components';
+import { Button } from '@components';
+import clsx from 'clsx';
+import { useEffect, useRef, useState } from 'react';
 
-import {
-  conditionLabel,
-  filterableKeys,
-  parseFilterInput,
-  queryWords,
-} from './conditions';
-import { siteViewKey, userViewKey } from './query';
+import { conditionParts, lastWord, parseFilterInput, type Draft } from './conditions';
+import FilterPopover from './FilterPopover';
 import type { Condition, TabSettings } from './types';
 import { useBrowser } from './useBrowser';
-
-import nebula from '@/nebula';
-
-const MAX_SUGGESTIONS = 8;
-
-const FilterInput = styled.div`
-  position: relative;
-  flex-grow: 1;
-  display: flex;
-
-  input {
-    flex-grow: 1;
-    min-width: 120px;
-  }
-
-  .suggestions {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    z-index: 10;
-    display: flex;
-    flex-direction: column;
-    min-width: 200px;
-    padding: 4px 0;
-    background-color: var(--color-surface-04);
-    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.5);
-
-    button {
-      justify-content: flex-start;
-      background: none;
-      border: 0;
-    }
-  }
-`;
 
 // Conditions with the same key are replaced
 const mergeConditions = (current: Condition[], added: Condition[]): Condition[] => [
@@ -54,204 +13,180 @@ const mergeConditions = (current: Condition[], added: Condition[]): Condition[] 
   ...added,
 ];
 
+const summary = (conditions: Condition[]) =>
+  conditions
+    .map((condition) => {
+      const { field, operator, value } = conditionParts(condition);
+      return `${field} ${operator} ${value}`.trim();
+    })
+    .join('\n');
+
+// The search input of a tab. Focusing it opens the filter popover; when
+// closed, it shows how many filters the tab has
 const BrowserFilterBar = ({ tab }: { tab: TabSettings }) => {
   const browser = useBrowser();
-  const showDialog = useDialog();
   const view = browser.view(tab);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const [open, setOpen] = useState(false);
   const [text, setText] = useState(tab.query);
-  const [focused, setFocused] = useState(false);
+  const [draft, setDraftState] = useState<Draft | null>(null);
+  const [editIndex, setEditIndex] = useState<number | null>(null);
+  const [pickColumn, setPickColumn] = useState(false);
+  // Backspace in the empty input marks the last filter, a second removes it
+  const [armed, setArmed] = useState(false);
+  // Row of the popover chosen with the arrow keys (-1: none, 'fields':
+  // the first of the field list, where typing starts)
+  const [highlight, setHighlight] = useState<number | 'fields'>(-1);
 
-  // Fulltext words apply while typing; `key:value` words become
-  // conditions on Enter
-  useEffect(() => {
-    const query = queryWords(text);
-    if (query === tab.query) return;
-    const timer = setTimeout(() => {
-      browser.updateTab(tab.id, { query });
-    }, 300);
-    return () => {
-      clearTimeout(timer);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [text]);
+  const setDraft = (next: Draft | null, index: number | null = null) => {
+    setDraftState(next);
+    setEditIndex(next ? index : null);
+  };
 
-  const applyText = () => {
+  const close = (query = tab.query) => {
+    setOpen(false);
+    setDraft(null);
+    setPickColumn(false);
+    setArmed(false);
+    setHighlight(-1);
+    setText(query);
+    inputRef.current?.blur();
+  };
+
+  // `key:value` words become conditions, the rest is the search
+  const search = () => {
     const { conditions, query } = parseFilterInput(text);
     browser.updateTab(tab.id, {
       conditions: mergeConditions(tab.conditions, conditions),
       query,
     });
-    setText(query);
+    close(query);
   };
 
-  // Fields matching the word being typed
-  const lastWord = text.split(/\s+/).at(-1) ?? '';
-  const suggestions =
-    focused && lastWord.length >= 2 && !lastWord.includes(':')
-      ? filterableKeys()
-          .filter((key) => {
-            const word = lastWord.toLowerCase();
-            const header = nebula.metaType(key).header || '';
-            return (
-              key.toLowerCase().includes(word) || header.toLowerCase().includes(word)
-            );
-          })
-          .slice(0, MAX_SUGGESTIONS)
-      : [];
+  // Closed by a click anywhere else
+  useEffect(() => {
+    if (!open) return;
+    const onMouseDown = (event: MouseEvent) => {
+      if (!wrapperRef.current?.contains(event.target as Node)) close();
+    };
+    document.addEventListener('mousedown', onMouseDown);
+    return () => {
+      document.removeEventListener('mousedown', onMouseDown);
+    };
+  });
 
-  const addCondition = (key: string) => {
-    setText(text.slice(0, text.length - lastWord.length).trimEnd());
-    showDialog('condition', nebula.metaType(key).title || key, { field: key })
-      .then((condition) => {
-        browser.updateTab(tab.id, {
-          conditions: mergeConditions(tab.conditions, [condition]),
-        });
-      })
-      .catch(() => {
-        // dialog dismissed, do nothing
-      });
-  };
+  // Rows of the popover the arrow keys walk: filters and fields, then views
+  const rows = () =>
+    ['.main', '.views'].flatMap((column) => [
+      ...(wrapperRef.current?.querySelectorAll<HTMLElement>(`${column} [data-nav]`) ??
+        []),
+    ]);
 
-  //
-  // Views
-  //
+  const highlighted = () =>
+    highlight === 'fields'
+      ? rows().findIndex((row) => row.closest('.fields'))
+      : highlight;
 
-  const viewOptions: DropdownOptionProps[] = [
-    ...(nebula.settings?.views || []).map((v) => ({
-      label: v.name,
-      separator: v.separator,
-      onClick: () => {
-        browser.updateTab(tab.id, { view: siteViewKey(v.id), columns: null });
-      },
-    })),
-    ...browser.userViews.map((v, idx) => ({
-      label: v.name,
-      icon: 'person',
-      separator: idx === 0,
-      onClick: () => {
-        browser.updateTab(tab.id, {
-          view: userViewKey(v.id),
-          sort: v.sort,
-          columns: null,
-        });
-      },
-    })),
-    {
-      label: 'Save as view...',
-      icon: 'bookmark_add',
-      separator: true,
-      onClick: () => {
-        showDialog('prompt', 'Save as view', { placeholder: 'View name' })
-          .then((name) => {
-            browser.saveUserView(tab.id, name);
-          })
-          .catch(() => {
-            // dialog dismissed, do nothing
-          });
-      },
-    },
-  ];
+  // The highlighted row, marked after every render (rows change with it)
+  useEffect(() => {
+    const current = highlighted();
+    rows().forEach((row, idx) => row.classList.toggle('hi', idx === current));
+  });
 
-  const [viewKind, userViewId] = tab.view.split(':', 2);
-  if (viewKind === 'user') {
-    viewOptions.push(
-      {
-        label: 'Rename view...',
-        icon: 'edit',
-        onClick: () => {
-          showDialog('prompt', 'Rename view', { value: view?.name })
-            .then((name) => {
-              browser.renameUserView(userViewId, name);
-            })
-            .catch(() => {
-              // dialog dismissed, do nothing
-            });
-        },
-      },
-      {
-        label: 'Delete view',
-        icon: 'delete',
-        hlColor: 'var(--color-red)',
-        onClick: () => {
-          showDialog('confirm', 'Delete view', {
-            message: `Delete the view **${view?.name}**?`,
-          })
-            .then(() => {
-              browser.deleteUserView(userViewId);
-            })
-            .catch(() => {
-              // dialog dismissed, do nothing
-            });
-        },
+  const onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault();
+      const count = rows().length;
+      if (!count) return;
+      const step = event.key === 'ArrowDown' ? 1 : -1;
+      setHighlight((highlighted() + step + count) % count);
+    } else if (event.key === 'Enter') {
+      event.preventDefault();
+      const row = rows()[highlighted()] as HTMLElement | undefined;
+      if (row) row.click();
+      else search();
+      setHighlight(-1);
+    } else if (event.key === 'Escape') {
+      if (draft || pickColumn) {
+        setDraft(null);
+        setPickColumn(false);
+      } else {
+        close();
       }
-    );
-  }
+    } else if (event.key === 'Backspace' && !text && tab.conditions.length) {
+      if (armed) {
+        browser.updateTab(tab.id, { conditions: tab.conditions.slice(0, -1) });
+        setArmed(false);
+      } else {
+        setArmed(true);
+      }
+    } else {
+      setArmed(false);
+    }
+  };
+
+  // Back to the view's filters and no search
+  const differs =
+    tab.query !== (view?.query ?? '') ||
+    JSON.stringify(tab.conditions) !== JSON.stringify(view?.conditions ?? []);
+
+  const count = tab.conditions.length;
 
   return (
-    <Navbar>
-      <Dropdown
-        options={viewOptions}
-        label={view?.name || ''}
-        buttonStyle={{ justifyContent: 'flex-start' }}
-        iconOnRight={true}
-      />
-      {tab.conditions.map((condition, idx) => (
-        <Button
-          key={idx}
-          label={conditionLabel(condition)}
-          icon="filter_alt_off"
-          iconOnRight={true}
-          className="tool"
-          tooltip="Remove condition"
-          onClick={() => {
-            browser.updateTab(tab.id, {
-              conditions: tab.conditions.filter((_, i) => i !== idx),
-            });
-          }}
-        />
-      ))}
-      <FilterInput>
-        <InputText
-          placeholder="Search, or type a field name to filter by it"
+    <div className="filter-row" ref={wrapperRef}>
+      <div
+        className={clsx('filter-bar', open && 'open')}
+        onMouseDown={(event) => {
+          if (event.target !== inputRef.current) event.preventDefault();
+          inputRef.current?.focus();
+        }}
+      >
+        <span className="icon material-symbols-outlined" translate="no">
+          search
+        </span>
+        {count > 0 && (
+          <span className="filter-count" title={summary(tab.conditions)}>
+            <span className="icon material-symbols-outlined" translate="no">
+              filter_alt
+            </span>
+            {count}
+          </span>
+        )}
+        <input
+          ref={inputRef}
           value={text}
-          onChange={setText}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter') applyText();
+          placeholder={open ? 'Search, or type a field name' : 'Search or filter'}
+          spellCheck={false}
+          onChange={(event) => {
+            setText(event.target.value);
+            setArmed(false);
+            setHighlight(event.target.value.trim() ? 'fields' : -1);
           }}
           onFocus={() => {
-            setFocused(true);
+            setOpen(true);
           }}
-          onBlur={() => {
-            setFocused(false);
-          }}
+          onKeyDown={onKeyDown}
         />
-        {suggestions.length > 0 && (
-          <div className="suggestions">
-            {suggestions.map((key) => (
-              <Button
-                key={key}
-                label={`${nebula.metaType(key).title} (${key})`}
-                icon="filter_alt"
-                // keep the input focused until the click
-                onMouseDown={(event) => {
-                  event.preventDefault();
-                }}
-                onClick={() => {
-                  addCondition(key);
-                }}
-              />
-            ))}
-          </div>
+        {differs && (
+          <Button
+            icon="close"
+            className="tool"
+            tooltip="Back to the view's filters"
+            onMouseDown={(event) => {
+              event.stopPropagation();
+            }}
+            onClick={() => {
+              browser.updateTab(tab.id, {
+                conditions: view?.conditions ?? [],
+                query: view?.query ?? '',
+              });
+              close(view?.query ?? '');
+            }}
+          />
         )}
-      </FilterInput>
-      <Button
-        icon="close"
-        className="tool"
-        tooltip="Clear search query"
-        onClick={() => {
-          setText('');
-        }}
-      />
+      </div>
       <Button
         icon="refresh"
         className="tool"
@@ -260,7 +195,33 @@ const BrowserFilterBar = ({ tab }: { tab: TabSettings }) => {
           browser.reloadTab(tab.id);
         }}
       />
-    </Navbar>
+      {open && (
+        <FilterPopover
+          tab={tab}
+          text={text}
+          draft={draft}
+          editIndex={editIndex}
+          armed={armed}
+          pickColumn={pickColumn}
+          setDraft={(next, index) => {
+            setDraft(next, index);
+            setHighlight(-1);
+            // the field name typed to find it goes
+            if (next)
+              setText(text.slice(0, text.length - lastWord(text).length).trimEnd());
+          }}
+          setPickColumn={(on) => {
+            setPickColumn(on);
+            setHighlight(-1);
+            inputRef.current?.focus();
+          }}
+          onSearch={search}
+          onClose={() => {
+            close();
+          }}
+        />
+      )}
+    </div>
   );
 };
 

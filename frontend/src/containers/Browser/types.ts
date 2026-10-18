@@ -29,8 +29,6 @@ export interface TabSettings {
 export interface UserView {
   id: string;
   name: string;
-  folders: number[] | null;
-  states: number[] | null;
   columns: string[];
   columnWidths: Record<string, number>;
   conditions: Condition[];
@@ -38,14 +36,13 @@ export interface UserView {
   sort: string;
 }
 
-// A site or a user view, as tabs use it
+// A site or a user view, as tabs use it. A tab that picks the view gets
+// a copy of its conditions (a site view's folders and states), query and
+// sort, and can change them.
 export interface BrowserView {
   key: ViewKey;
   name: string;
-  folders: number[] | null;
-  states: number[] | null;
   columns: string[];
-  // A user view's conditions and query; tabs add their own
   conditions: Condition[];
   query: string;
   sort: string;

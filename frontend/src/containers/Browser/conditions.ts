@@ -1,5 +1,6 @@
 import type { Condition, FilterOp } from './types';
 
+import { ObjectStatus } from '@/client';
 import nebula from '@/nebula';
 
 export interface Operator {
@@ -7,7 +8,35 @@ export interface Operator {
   label: string;
   // exists: the value is fixed (true: is set, false: isn't)
   value?: boolean;
+  // The value is a list
+  multi?: boolean;
 }
+
+export interface ValueOption {
+  value: string | number;
+  title: string;
+}
+
+// The values a field can have, when they are a fixed list: folders,
+// statuses, classifications
+export const valueOptions = (key: string): ValueOption[] | null => {
+  if (key === 'id_folder') {
+    return (nebula.settings?.folders || []).map((f) => ({
+      value: f.id,
+      title: f.name,
+    }));
+  }
+  if (key === 'status') {
+    return Object.entries(ObjectStatus).map(([name, value]) => ({
+      value,
+      title: name.toLowerCase(),
+    }));
+  }
+  const cs = nebula.metaType(key).cs;
+  return cs
+    ? nebula.csOptions(cs).map((o) => ({ value: o.value, title: o.title }))
+    : null;
+};
 
 const IS_SET: Operator[] = [
   { op: 'exists', label: 'is set', value: true },
@@ -25,10 +54,19 @@ const ORDERED: Operator[] = [
   { op: 'gte', label: '≥' },
 ];
 
+const ANY_OF: Operator[] = [
+  { op: 'in', label: 'is any of', multi: true },
+  { op: 'nin', label: 'is none of', multi: true },
+];
+
 // The operators the listing accepts for a field (nebula/query/query.py,
 // OPERATOR_KINDS), by its metatype
 export const operatorsFor = (key: string): Operator[] => {
-  switch (nebula.metaType(key).type) {
+  const type = nebula.metaType(key).type;
+  if (type === 'list')
+    return [{ op: 'contains', label: 'contains', multi: true }, ...IS_SET];
+  if (valueOptions(key)) return [...EQUAL, ...ANY_OF, ...IS_SET];
+  switch (type) {
     case 'integer':
     case 'numeric':
     case 'datetime':
@@ -37,10 +75,6 @@ export const operatorsFor = (key: string): Operator[] => {
       return [...ORDERED, ...IS_SET];
     case 'boolean':
       return [{ op: 'eq', label: 'is' }];
-    case 'select':
-      return [...EQUAL, ...IS_SET];
-    case 'list':
-      return [{ op: 'contains', label: 'contains' }, ...IS_SET];
     case 'object':
       return IS_SET;
     default:
@@ -99,28 +133,72 @@ export const parseFilterInput = (
   return { conditions, query: words.join(' ') };
 };
 
-// Fulltext words only: what the query is while `key:value` is being typed
-export const queryWords = (text: string): string => parseFilterInput(text).query;
+// The word being typed at the end of the filter input
+export const lastWord = (text: string): string => text.split(/\s+/).at(-1) ?? '';
 
 const formatValue = (key: string, value: unknown): string => {
   if (Array.isArray(value)) return value.map((v) => formatValue(key, v)).join(', ');
-  const metaType = nebula.metaType(key);
-  if (metaType.cs) {
-    const option = nebula.csOptions(metaType.cs).find((o) => o.value === value);
-    if (option) return option.title;
-  }
-  if (key === 'id_folder')
-    return nebula.getFolderName(value as number) || String(value);
+  const option = valueOptions(key)?.find((o) => o.value === value);
+  if (option) return option.title;
+  if (typeof value === 'boolean') return value ? 'yes' : 'no';
   return typeof value === 'string' ? value : JSON.stringify(value);
 };
 
-export const conditionLabel = (condition: Condition): string => {
-  const header = nebula.metaType(condition.key).header || condition.key;
-  const operator = operatorOf(condition);
-  if (condition.op === 'exists') return `${header} ${operator?.label}`;
+// What a condition shows: "Genre", "is any of", "Action, Comedy"
+export const conditionParts = (condition: Condition) => {
+  const field = nebula.metaType(condition.key).title || condition.key;
+  const operator = operatorOf(condition)?.label ?? condition.op;
+  if (condition.op === 'exists') return { field, operator, value: '' };
   const value =
     condition.op === 'ilike'
       ? String(condition.value).replace(/^%|%$/g, '')
       : formatValue(condition.key, condition.value);
-  return `${header} ${operator?.label ?? condition.op} ${value}`;
+  return { field, operator, value };
+};
+
+// A condition being added or edited in the filter popover
+export interface Draft {
+  key: string;
+  operator: Operator;
+  value?: unknown;
+}
+
+export const newDraft = (key: string): Draft => ({
+  key,
+  operator: operatorsFor(key)[0],
+  value: nebula.metaType(key).type === 'boolean' ? true : undefined,
+});
+
+export const draftOf = (condition: Condition): Draft => ({
+  key: condition.key,
+  operator: operatorOf(condition) ?? operatorsFor(condition.key)[0],
+  value:
+    condition.op === 'ilike'
+      ? String(condition.value).replace(/^%|%$/g, '')
+      : condition.value,
+});
+
+// The value kept when the operator changes between one value and a list
+export const withOperator = (draft: Draft, operator: Operator): Draft => {
+  const values = Array.isArray(draft.value) ? draft.value : [draft.value];
+  const defined = values.filter((v) => v !== undefined);
+  return {
+    ...draft,
+    operator,
+    value: operator.multi ? defined : defined[0],
+  };
+};
+
+// The condition, or null while the value is missing
+export const conditionOf = ({ key, operator, value }: Draft): Condition | null => {
+  if (operator.op === 'exists') return { key, op: 'exists', value: operator.value };
+  if (operator.multi) {
+    return Array.isArray(value) && value.length
+      ? { key, op: operator.op, value }
+      : null;
+  }
+  if (value === undefined || value === '' || Number.isNaN(value)) return null;
+  if (operator.op === 'ilike')
+    return { key, op: 'ilike', value: `%${value as string}%` };
+  return { key, op: operator.op, value };
 };
