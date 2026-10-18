@@ -87,11 +87,26 @@ export const operatorOf = (condition: Condition): Operator | undefined =>
     (o) => o.op === condition.op && (o.op !== 'exists' || o.value === condition.value)
   );
 
-// Fields conditions can be added for, in the filter input
-export const filterableKeys = (): string[] =>
-  Object.keys(nebula.settings?.metatypes || {}).filter(
-    (key) => nebula.metaType(key).type !== 'object'
-  );
+// Asset fields, as the backend has them (nebula/objects/asset/keys.py):
+// the asset namespaces, the asset keys of "o", and virtual fields of
+// assets ("va")
+const ASSET_NAMESPACES = ['a', 'ai', 'f', 'm', 'q', 'va'];
+const ASSET_OBJECT_KEYS = [
+  'id',
+  'id_folder',
+  'created_by',
+  'updated_by',
+  'ctime',
+  'mtime',
+];
+
+// Asset fields that can be filtered by or shown as columns
+export const assetKeys = (): string[] =>
+  Object.keys(nebula.settings?.metatypes || {}).filter((key) => {
+    const { ns, type } = nebula.metaType(key);
+    if (type === 'object') return false;
+    return ASSET_NAMESPACES.includes(ns ?? '') || ASSET_OBJECT_KEYS.includes(key);
+  });
 
 // A value typed as text (`key:value` in the filter input) as the field
 // expects it
@@ -119,7 +134,7 @@ export const parseFilterInput = (
 ): { conditions: Condition[]; query: string } => {
   const conditions: Condition[] = [];
   const words: string[] = [];
-  const keys = new Set(filterableKeys());
+  const keys = new Set(assetKeys());
   for (const word of text.split(/\s+/)) {
     const [key, value] = word.split(/:(.*)/s, 2);
     if (value && keys.has(key)) {

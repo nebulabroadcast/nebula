@@ -122,7 +122,7 @@ META_TYPES = {
     },
     # Whether any item of the asset has aired (computed from asrun)
     "has_aired": {
-        "ns": "v",
+        "ns": "va",
         "type": T.BOOLEAN,
     },
     "solver": {

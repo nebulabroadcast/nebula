@@ -7,7 +7,7 @@ import {
   conditionOf,
   lastWord,
   conditionParts,
-  filterableKeys,
+  assetKeys,
   newDraft,
   operatorsFor,
   withOperator,
@@ -561,7 +561,7 @@ const FilterPopover = ({
   // Fields matching the word being typed, to filter by or to show as a
   // column
   const word = lastWord(text).toLowerCase();
-  const fields = filterableKeys()
+  const fields = assetKeys()
     .filter((key) => {
       if (pickColumn && columns.includes(key)) return false;
       const title = nebula.metaType(key).title.toLowerCase();

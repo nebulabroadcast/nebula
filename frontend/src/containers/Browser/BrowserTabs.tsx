@@ -9,52 +9,54 @@ const BrowserTabs = () => {
 
   return (
     <div className="tabs">
-      {browser.tabs.map((tab) => {
-        const newCount = browser.newCounts[tab.id] ?? 0;
-        return (
-          <div
-            key={tab.id}
-            className={clsx('tab', tab.id === browser.activeId && 'active')}
-            onClick={() => {
-              browser.activateTab(tab.id);
-            }}
-            onAuxClick={(event) => {
-              if (event.button === 1) browser.closeTab(tab.id);
-            }}
-          >
-            <span className="label">
-              {browser.view(tab)?.name}
-              {tab.query && <span className="query"> · {tab.query}</span>}
-            </span>
-            {newCount > 0 && (
-              <span
-                className="new"
-                title="Reload to show new assets"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  browser.activateTab(tab.id);
-                  browser.reloadTab(tab.id);
-                }}
-              >
-                {newCount} new
+      <div className="tab-list">
+        {browser.tabs.map((tab) => {
+          const newCount = browser.newCounts[tab.id] ?? 0;
+          return (
+            <div
+              key={tab.id}
+              className={clsx('tab', tab.id === browser.activeId && 'active')}
+              onClick={() => {
+                browser.activateTab(tab.id);
+              }}
+              onAuxClick={(event) => {
+                if (event.button === 1) browser.closeTab(tab.id);
+              }}
+            >
+              <span className="label">
+                {browser.view(tab)?.name}
+                {tab.query && <span className="query"> · {tab.query}</span>}
               </span>
-            )}
-            {browser.tabs.length > 1 && (
-              <span
-                className="close icon material-symbols-outlined"
-                translate="no"
-                title="Close (middle click)"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  browser.closeTab(tab.id);
-                }}
-              >
-                close
-              </span>
-            )}
-          </div>
-        );
-      })}
+              {newCount > 0 && (
+                <span
+                  className="new"
+                  title="Reload to show new assets"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    browser.activateTab(tab.id);
+                    browser.reloadTab(tab.id);
+                  }}
+                >
+                  {newCount} new
+                </span>
+              )}
+              {browser.tabs.length > 1 && (
+                <span
+                  className="close icon material-symbols-outlined"
+                  translate="no"
+                  title="Close (middle click)"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    browser.closeTab(tab.id);
+                  }}
+                >
+                  close
+                </span>
+              )}
+            </div>
+          );
+        })}
+      </div>
       <Button
         icon="add"
         className="tool"

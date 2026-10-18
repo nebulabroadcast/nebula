@@ -2,7 +2,7 @@ import { Button } from '@components';
 import clsx from 'clsx';
 import { useEffect, useRef, useState } from 'react';
 
-import { conditionParts, lastWord, parseFilterInput, type Draft } from './conditions';
+import { lastWord, parseFilterInput, type Draft } from './conditions';
 import FilterPopover from './FilterPopover';
 import type { Condition, TabSettings } from './types';
 import { useBrowser } from './useBrowser';
@@ -13,16 +13,8 @@ const mergeConditions = (current: Condition[], added: Condition[]): Condition[] 
   ...added,
 ];
 
-const summary = (conditions: Condition[]) =>
-  conditions
-    .map((condition) => {
-      const { field, operator, value } = conditionParts(condition);
-      return `${field} ${operator} ${value}`.trim();
-    })
-    .join('\n');
-
-// The search input of a tab. Focusing it opens the filter popover; when
-// closed, it shows how many filters the tab has
+// The search input of a tab. Focusing it opens the filter popover, which
+// shows the tab's filters
 const BrowserFilterBar = ({ tab }: { tab: TabSettings }) => {
   const browser = useBrowser();
   const view = browser.view(tab);
@@ -132,8 +124,6 @@ const BrowserFilterBar = ({ tab }: { tab: TabSettings }) => {
     tab.query !== (view?.query ?? '') ||
     JSON.stringify(tab.conditions) !== JSON.stringify(view?.conditions ?? []);
 
-  const count = tab.conditions.length;
-
   return (
     <div className="filter-row" ref={wrapperRef}>
       <div
@@ -143,17 +133,6 @@ const BrowserFilterBar = ({ tab }: { tab: TabSettings }) => {
           inputRef.current?.focus();
         }}
       >
-        <span className="icon material-symbols-outlined" translate="no">
-          search
-        </span>
-        {count > 0 && (
-          <span className="filter-count" title={summary(tab.conditions)}>
-            <span className="icon material-symbols-outlined" translate="no">
-              filter_alt
-            </span>
-            {count}
-          </span>
-        )}
         <input
           ref={inputRef}
           value={text}

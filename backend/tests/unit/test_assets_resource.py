@@ -62,7 +62,7 @@ METATYPES = {
     "title": MetaType(ns="m", metaclass=MetaClass.STRING),
     "subtitle": MetaType(ns="m", metaclass=MetaClass.STRING),
     "duration": MetaType(ns="f", metaclass=MetaClass.TIMECODE),
-    "has_aired": MetaType(ns="v", metaclass=MetaClass.BOOLEAN),
+    "has_aired": MetaType(ns="va", metaclass=MetaClass.BOOLEAN),
     "login": MetaType(ns="u", metaclass=MetaClass.STRING),
 }
 
