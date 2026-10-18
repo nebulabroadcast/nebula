@@ -14,6 +14,7 @@ import pytest_asyncio
 
 import nebula
 from nebula.enum import ObjectTypeId
+from nebula.objects.asset.query import COMPUTED_FIELDS
 from nebula.query import (
     Field,
     FieldKind,
@@ -24,7 +25,6 @@ from nebula.query import (
     fetch_page,
     meta_namespace,
 )
-from rest.assets.fields import COMPUTED_FIELDS
 
 pytestmark = pytest.mark.asyncio(loop_scope="session")
 

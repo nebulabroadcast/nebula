@@ -1,12 +1,9 @@
-"""What asset lists can filter and sort by, and how an asset is returned.
+"""How an asset is returned by the REST API.
 
-Fields are the asset metatypes, the indexed table columns and the computed
-fields. Meta keys are sortable only when they have an index: assets can be
-many, and a sort without an index sorts every matching row on every page.
+What assets can be filtered and sorted by is in nebula.objects.asset.query
+(re-exported here for the resource's modules).
 """
 
-import re
-import time
 from collections.abc import Mapping
 from typing import Any
 
@@ -14,91 +11,16 @@ from pydantic import TypeAdapter, ValidationError
 
 import nebula
 from nebula.objects.asset import is_asset_key
-from nebula.query import Field, FieldKind, QueryValidationError, column, meta
-from nebula.query.fields import METACLASS_KINDS
+from nebula.objects.asset.query import (
+    COLUMNS,
+    COMPUTED_FIELDS,
+    COMPUTED_KEYS,
+    INDEX_DEFINITION,
+    asset_query_fields,
+    indexed_meta_keys,
+)
+from nebula.query import QueryValidationError
 from rest.assets.models import Asset
-
-# Table columns, all indexed
-COLUMNS = [
-    column(key, FieldKind.INTEGER)
-    for key in (
-        "id",
-        "id_folder",
-        "status",
-        "content_type",
-        "media_type",
-        "ctime",
-        "mtime",
-    )
-]
-
-COMPUTED_FIELDS = [
-    Field(
-        "has_aired",
-        FieldKind.BOOLEAN,
-        t"COALESCE(has_aired.value, FALSE)",
-        join=t"""LEFT JOIN LATERAL (
-            SELECT TRUE AS value
-            FROM items i JOIN asrun r ON r.id_item = i.id
-            WHERE i.id_asset = b.id
-            LIMIT 1
-        ) AS has_aired ON TRUE""",
-        sortable=True,
-    ),
-    Field(
-        "__aux",
-        FieldKind.LIST,
-        t"aux_keys.value",
-        join=t"""LEFT JOIN LATERAL (
-            SELECT COALESCE(jsonb_agg(key ORDER BY key), '[]') AS value
-            FROM aux WHERE object_type = 0 AND id_object = b.id
-        ) AS aux_keys ON TRUE""",
-    ),
-]
-COMPUTED_KEYS = frozenset(field.key for field in COMPUTED_FIELDS)
-
-
-def asset_query_fields(indexed: frozenset[str] = frozenset()) -> list[Field]:
-    """Fields of the asset listing. `indexed`: meta keys with an index."""
-    fields = [*COLUMNS, *COMPUTED_FIELDS]
-    for key, meta_type in nebula.settings.metatypes.items():
-        if not is_asset_key(key):
-            continue
-        kind = METACLASS_KINDS[meta_type.metaclass]
-        # Indexes are on the text value, so only strings can use them
-        sortable = kind == FieldKind.STRING and key in indexed
-        fields.append(meta(key, kind, sortable=sortable))
-    return fields
-
-
-#
-# Meta keys with an index (setup creates them for metatypes with
-# `index: True`). Indexes only change with setup, so they are cached.
-#
-
-INDEX_DEFINITION = re.compile(r"USING btree \(\(\(meta ->> '([^']+)'::text\)\)\)$")
-INDEX_CACHE_SECONDS = 60
-_indexed: tuple[float, frozenset[str]] | None = None
-
-
-async def indexed_meta_keys() -> frozenset[str]:
-    global _indexed  # noqa: PLW0603
-    if _indexed is not None and time.monotonic() - _indexed[0] < INDEX_CACHE_SECONDS:
-        return _indexed[1]
-    rows = await nebula.db.fetch(
-        """
-        SELECT indexdef FROM pg_indexes
-        WHERE schemaname = 'public' AND tablename = 'assets'
-        """
-    )
-    keys = frozenset(
-        match.group(1)
-        for row in rows
-        if (match := INDEX_DEFINITION.search(row["indexdef"]))
-    )
-    _indexed = (time.monotonic(), keys)
-    return keys
-
 
 #
 # Response
@@ -182,3 +104,16 @@ def check_core_values(values: dict[str, Any]) -> None:
                 f"Asset {values.get('id')}: stored '{key}' {value!r} "
                 "doesn't fit its type, left out of the response"
             )
+
+
+__all__ = [
+    "COLUMNS",
+    "COMPUTED_FIELDS",
+    "COMPUTED_KEYS",
+    "INDEX_DEFINITION",
+    "asset_query_fields",
+    "asset_response",
+    "check_core_values",
+    "indexed_meta_keys",
+    "response_keys",
+]

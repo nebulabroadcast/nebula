@@ -1,4 +1,13 @@
+"""Assets: media files or virtual objects in a folder.
+
+The class is here; access rules (access.py), which keys are asset fields
+(keys.py), saving client changes (changes.py) and querying (query.py) are
+in the submodules. Every name this module had before it became a package
+is still importable from it.
+"""
+
 import os
+from collections.abc import AsyncIterator
 from typing import TYPE_CHECKING, Any, cast
 
 import asyncpg
@@ -10,55 +19,42 @@ from nebula.exceptions import (
     ConflictException,
     ForbiddenException,
     UnauthorizedException,
-    ValidationException,
 )
 from nebula.helpers.aux import delete_aux
 from nebula.messaging import msg
+from nebula.objects.asset.access import (
+    asset_acl,
+    asset_edit_denial,
+    can_view_asset,
+)
+from nebula.objects.asset.keys import (
+    ASSET_NAMESPACES,
+    ASSET_OBJECT_KEYS,
+    READ_ONLY_KEYS,
+    VIRTUAL_NAMESPACE,
+    check_asset_changes,
+    is_asset_key,
+)
 from nebula.objects.base import BaseObject
 from nebula.settings import settings
 from nebula.storages import storages
 from nebula.utils import get_base_name, slugify
 
 if TYPE_CHECKING:
-    from nebula.objects.user import User
+    from nebula.objects.asset.query import AssetPage
+    from nebula.query import FilterNode
 
-# Metatype namespaces of asset metadata, and the asset keys of the object
-# namespace ("o", shared with items, bins and events)
-ASSET_NAMESPACES = {"a", "ai", "f", "m", "q"}
-ASSET_OBJECT_KEYS = {"id", "id_folder", "created_by", "updated_by", "ctime", "mtime"}
-# Namespace of virtual fields: computed by the server, never written
-VIRTUAL_NAMESPACE = "v"
-# Set by the server only
-READ_ONLY_KEYS = {"id", "ctime", "mtime", "created_by", "updated_by"}
-
-
-def is_asset_key(key: str) -> bool:
-    """Whether the key is an asset metatype (virtual ones excluded)."""
-    if (meta_type := settings.metatypes.get(key)) is None:
-        return False
-    return meta_type.ns in ASSET_NAMESPACES or key in ASSET_OBJECT_KEYS
-
-
-def can_view_asset(user: User, meta: dict[str, Any]) -> bool:
-    if user.is_admin or user.id in (meta.get("assignees") or []):
-        return True
-    if user.is_limited:
-        return bool(meta.get("created_by") == user.id)
-    if id_folder := meta.get("id_folder"):
-        return user.can("asset_view", id_folder)
-    return False
-
-
-def asset_edit_denial(user: User, id_folder: int | None) -> str | None:
-    """Why the user can't edit assets in the folder, None if they can."""
-    if user.is_admin:
-        return None
-    acl = user.get("can/asset_edit", False)
-    if not acl:
-        return "You are not allowed to edit assets"
-    if isinstance(acl, list) and id_folder not in acl:
-        return "You are not allowed to edit assets in this folder"
-    return None
+__all__ = [
+    "ASSET_NAMESPACES",
+    "ASSET_OBJECT_KEYS",
+    "READ_ONLY_KEYS",
+    "VIRTUAL_NAMESPACE",
+    "Asset",
+    "asset_acl",
+    "asset_edit_denial",
+    "can_view_asset",
+    "is_asset_key",
+]
 
 
 class Asset(BaseObject):
@@ -115,16 +111,50 @@ class Asset(BaseObject):
 
     def check_changes(self, changes: dict[str, Any]) -> None:
         """Raise unless every key is asset metadata a client may set."""
-        for key in changes:
-            if key.startswith("__"):
-                raise ValidationException(f"'{key}' can't be set", key=key)
-            if key in READ_ONLY_KEYS:
-                raise ValidationException(f"'{key}' is read-only", key=key)
-            meta_type = settings.metatypes.get(key)
-            if meta_type is not None and meta_type.ns == VIRTUAL_NAMESPACE:
-                raise ValidationException(f"'{key}' is computed", key=key)
-            if not is_asset_key(key):
-                raise ValidationException(f"Unknown asset field '{key}'", key=key)
+        check_asset_changes(changes)
+
+    #
+    # Querying
+    #
+
+    @classmethod
+    async def query(
+        cls,
+        filter: FilterNode | dict[str, Any] | None = None,  # noqa: A002
+        *,
+        q: str | None = None,
+        sort: list[str] | None = None,
+        limit: int = 100,
+        cursor: str | None = None,
+    ) -> AssetPage:
+        """One page of the assets matching the filter (REST filter language).
+
+        `q` is a fulltext query; `sort`, `limit` and `cursor` as in the REST
+        listing. The current user's access condition applies (none in a
+        system context, e.g. a stand-alone service).
+        """
+        from nebula.objects.asset.query import query_assets  # noqa: PLC0415
+
+        return await query_assets(
+            cls, filter, q=q, sort=sort, limit=limit, cursor=cursor
+        )
+
+    @classmethod
+    async def iterate(
+        cls,
+        filter: FilterNode | dict[str, Any] | None = None,  # noqa: A002
+        *,
+        q: str | None = None,
+        sort: list[str] | None = None,
+        page_size: int = 100,
+    ) -> AsyncIterator[Asset]:
+        """Every asset matching the filter, fetched page by page."""
+        from nebula.objects.asset.query import iterate_assets  # noqa: PLC0415
+
+        async for asset in iterate_assets(
+            cls, filter, q=q, sort=sort, page_size=page_size
+        ):
+            yield asset
 
     #
     # Deleting

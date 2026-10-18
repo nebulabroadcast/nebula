@@ -15,7 +15,7 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 import nebula
-import nebula.helpers.assets
+import nebula.objects.asset.changes
 import rest.assets.aux
 import rest.assets.detail
 from nebula.context import (
@@ -25,11 +25,12 @@ from nebula.context import (
     set_default_system,
 )
 from nebula.enum import MetaClass
-from nebula.helpers.assets import asset_acl
+from nebula.objects.asset.access import asset_acl
+from nebula.objects.asset.query import INDEX_DEFINITION
 from nebula.query import QueryValidationError
 from nebula.settings.metatypes import MetaType
 from nebula.sql import SQL
-from rest.assets.fields import INDEX_DEFINITION, asset_response, response_keys
+from rest.assets.fields import asset_response, response_keys
 from server.errors import REST_PREFIX, install_error_handlers
 from server.middleware.context import RequestContextMiddleware
 from server.rest import install_rest_routers
@@ -135,7 +136,7 @@ def store(monkeypatch: pytest.MonkeyPatch) -> Iterator[FakeStore]:
     monkeypatch.setattr(nebula.Asset, "save", save)
     monkeypatch.setattr(nebula.Asset, "delete", delete)
     monkeypatch.setattr(nebula.db, "transaction", no_transaction)
-    monkeypatch.setattr(nebula.helpers.assets.Validator, "validators", {})
+    monkeypatch.setattr(nebula.objects.asset.changes.Validator, "validators", {})
     monkeypatch.setattr(rest.assets.aux, "get_aux", fake.get_aux)
     monkeypatch.setattr(rest.assets.aux, "put_aux", fake.put_aux)
     monkeypatch.setattr(rest.assets.aux, "delete_aux", fake.delete_aux)
@@ -399,12 +400,12 @@ def test_ensure_can_save(store: FakeStore) -> None:
     editor = nebula.User(meta=USERS[2])
     with request_context(RequestContext(user=editor)):
         asset = nebula.Asset(meta={"id": 10, "id_folder": 1})
-        nebula.helpers.assets.ensure_can_save(asset, {"title": "x"})
-        nebula.helpers.assets.ensure_can_save(asset, {"id_folder": "1"})
+        nebula.objects.asset.changes.ensure_can_save(asset, {"title": "x"})
+        nebula.objects.asset.changes.ensure_can_save(asset, {"id_folder": "1"})
         with pytest.raises(nebula.ForbiddenException):
-            nebula.helpers.assets.ensure_can_save(asset, {"id_folder": 2})
+            nebula.objects.asset.changes.ensure_can_save(asset, {"id_folder": 2})
         with pytest.raises(nebula.ValidationException):
-            nebula.helpers.assets.ensure_can_save(asset, {"id_folder": "x"})
+            nebula.objects.asset.changes.ensure_can_save(asset, {"id_folder": "x"})
 
 
 def test_index_definition() -> None:

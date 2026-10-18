@@ -6,9 +6,9 @@ from pydantic import Field
 import nebula
 from nebula.context import get_request_context, request_context
 from nebula.enum import ObjectType
-from nebula.helpers.assets import save_asset_changes
 from nebula.helpers.scheduling import bin_refresh
 from nebula.helpers.validators import Validator
+from nebula.objects.asset.changes import save_asset_changes
 from nebula.objects.utils import get_object_class_by_name
 from nebula.settings import load_settings
 from server import APIModel, APIRequest

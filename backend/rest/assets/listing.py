@@ -1,14 +1,12 @@
-from string.templatelib import Template
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
 
 import nebula
 from nebula.context import current_user
-from nebula.enum import ObjectTypeId
-from nebula.helpers.assets import asset_acl
+from nebula.objects.asset.access import asset_acl
+from nebula.objects.asset.query import SEARCH, assets_base
 from nebula.query import (
-    FulltextSearch,
     QueryRequest,
     fetch_page,
 )
@@ -23,18 +21,6 @@ from rest.assets.models import AssetList
 from server.query.params import query_params_dependency
 
 router = APIRouter(prefix=PREFIX)
-
-SEARCH = FulltextSearch(ObjectTypeId.ASSET)
-
-
-def assets_base(where: Template | None = None) -> Template:
-    """Assets matching `where` (on `a`). fetch_page adds filters, sorting..."""
-    condition = t"WHERE {where}" if where is not None else t""
-    return t"""
-        SELECT a.id, a.id_folder, a.status, a.content_type, a.media_type,
-            a.ctime, a.mtime, a.meta
-        FROM assets a {condition}
-    """
 
 
 async def query_assets(request: QueryRequest) -> AssetList:

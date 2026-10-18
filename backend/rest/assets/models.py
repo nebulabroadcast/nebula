@@ -64,7 +64,7 @@ class AssetPatch(APIModel):
     subtitle: str | None = None
 
     def to_meta_changes(self) -> dict[str, Any]:
-        """Changes as meta keys, for nebula.helpers.assets.save_asset_changes."""
+        """Changes as meta keys, for nebula.objects.asset.changes.save_asset_changes."""
         return self.model_dump(exclude_unset=True)
 
 

@@ -4,9 +4,9 @@ import nebula
 from nebula.common import SerializableValue, sql_list
 from nebula.enum import MetaClass
 from nebula.exceptions import NebulaException
-from nebula.helpers.assets import asset_acl
 from nebula.helpers.fulltext import fulltext_ranges
 from nebula.metadata.normalize import normalize_meta
+from nebula.objects.asset.access import asset_acl
 from nebula.sql import SQL
 
 from ._models import BrowseAssetsRequest, ConditionModel
