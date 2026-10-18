@@ -887,34 +887,6 @@ export type FolderSettings = {
 };
 
 /**
- * GetAuxDataRequest
- */
-export type GetAuxDataRequest = {
-  /**
-   * Key
-   *
-   * Key of the aux data to retrieve
-   */
-  key?: string | null;
-  /**
-   * Type of the object the aux data is attached to
-   */
-  object_type?: ObjectType;
-  /**
-   * Object Id
-   *
-   * ID of the object the aux data is attached to
-   */
-  object_id: number;
-  /**
-   * Can Fail
-   *
-   * Return null instead of a 404 error if  not found.
-   */
-  can_fail?: boolean;
-};
-
-/**
  * GetAvailableActionsRequest
  */
 export type GetAvailableActionsRequest = {
@@ -3286,31 +3258,6 @@ export type DeleteError = DeleteErrors[keyof DeleteErrors];
 
 export type DeleteResponses = {
   /**
-   * Successful Response
-   */
-  200: unknown;
-};
-
-export type GetAuxData = {
-  body: GetAuxDataRequest;
-  path?: never;
-  query?: never;
-  url: '/api/get-aux';
-};
-
-export type GetAuxErrors = {
-  /**
-   * Validation Error
-   */
-  422: HttpValidationError;
-};
-
-export type GetAuxError = GetAuxErrors[keyof GetAuxErrors];
-
-export type GetAuxResponses = {
-  /**
-   * Response Get Aux
-   *
    * Successful Response
    */
   200: unknown;

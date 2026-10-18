@@ -48,9 +48,6 @@ import type {
   DeleteData,
   DeleteErrors,
   DeleteResponses,
-  GetAuxData,
-  GetAuxErrors,
-  GetAuxResponses,
   GetData,
   GetErrors,
   GetProxyInfoData,
@@ -496,24 +493,6 @@ export const delete_ = <ThrowOnError extends boolean = false>(
   (options.client ?? client).post<DeleteResponses, DeleteErrors, ThrowOnError>({
     responseType: 'json',
     url: '/api/delete',
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-  });
-
-/**
- * Get Aux Data
- *
- * Retrieve aux data for a given object.
- */
-export const getAux = <ThrowOnError extends boolean = false>(
-  options: Options<GetAuxData, ThrowOnError>
-): RequestResult<GetAuxResponses, GetAuxErrors, ThrowOnError> =>
-  (options.client ?? client).post<GetAuxResponses, GetAuxErrors, ThrowOnError>({
-    responseType: 'json',
-    url: '/api/get-aux',
     ...options,
     headers: {
       'Content-Type': 'application/json',
