@@ -1,7 +1,6 @@
 from typing import Any
 
 import nebula
-from nebula.objects.asset import asset_edit_denial
 from nebula.objects.base import BaseObject
 
 
@@ -30,11 +29,9 @@ async def can_modify_object(obj: BaseObject, user: nebula.User) -> None:  # noqa
     if user.is_admin:
         return
 
-    if isinstance(obj, nebula.Asset):
-        if denial := asset_edit_denial(user, obj["id_folder"]):
-            raise nebula.ForbiddenException(denial)
+    # Assets are checked by save_asset_changes (Asset.ensure_can_edit)
 
-    elif isinstance(obj, nebula.Event):
+    if isinstance(obj, nebula.Event):
         acl = user.get("can/scheduler_edit", False)
         if not acl:
             raise nebula.ForbiddenException("You are not allowed to edit schedule")

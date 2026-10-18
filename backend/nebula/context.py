@@ -101,19 +101,10 @@ def require_access(allowed: Callable[[User], bool], detail: str) -> None:
     Trusted (system) code always passes. Without a user, raises 401;
     when the check fails, raises 403 with the given detail.
     """
-    require_no_denial(lambda user: None if allowed(user) else detail)
-
-
-def require_no_denial(denial: Callable[[User], str | None]) -> None:
-    """Like require_access, for checks that say why access is denied.
-
-    `denial` returns the reason the user may not act (the 403 detail), or
-    None if they may.
-    """
     context = get_request_context()
     if context.system:
         return
     if context.user is None:
         raise UnauthorizedException("Authentication required")
-    if reason := denial(context.user):
-        raise ForbiddenException(reason)
+    if not allowed(context.user):
+        raise ForbiddenException(detail)

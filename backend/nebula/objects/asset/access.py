@@ -1,4 +1,4 @@
-"""Who may see and edit which assets.
+"""Who may see which assets. (Edit rights: Asset.ensure_can_edit.)
 
 Viewing has two rules, on purpose: `can_view_asset` (one asset: detail,
 aux, RPC get) lets limited users see the assets they created or are
@@ -24,18 +24,6 @@ def can_view_asset(user: User, meta: dict[str, Any]) -> bool:
     if id_folder := meta.get("id_folder"):
         return user.can("asset_view", id_folder)
     return False
-
-
-def asset_edit_denial(user: User, id_folder: int | None) -> str | None:
-    """Why the user can't edit assets in the folder, None if they can."""
-    if user.is_admin:
-        return None
-    acl = user.get("can/asset_edit", False)
-    if not acl:
-        return "You are not allowed to edit assets"
-    if isinstance(acl, list) and id_folder not in acl:
-        return "You are not allowed to edit assets in this folder"
-    return None
 
 
 def asset_acl(user: User | None, alias: str = "a") -> Template | None:

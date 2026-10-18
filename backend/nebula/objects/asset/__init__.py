@@ -13,14 +13,13 @@ from typing import TYPE_CHECKING, Any, cast
 import asyncpg
 from nx.db import db
 
-from nebula.context import require_access, require_no_denial
+from nebula.context import require_access
 from nebula.enum import ContentType, MediaType, ObjectStatus, ObjectTypeId
 from nebula.exceptions import ConflictException
 from nebula.helpers.aux import delete_aux
 from nebula.messaging import msg
 from nebula.objects.asset.access import (
     asset_acl,
-    asset_edit_denial,
     can_view_asset,
 )
 from nebula.objects.asset.keys import (
@@ -47,7 +46,6 @@ __all__ = [
     "VIRTUAL_NAMESPACE",
     "Asset",
     "asset_acl",
-    "asset_edit_denial",
     "can_view_asset",
     "is_asset_key",
 ]
@@ -94,7 +92,14 @@ class Asset(BaseObject):
     def ensure_can_edit(self, id_folder: int | None = None) -> None:
         """Check edit rights in the asset's folder, or in `id_folder`."""
         folder = self["id_folder"] if id_folder is None else id_folder
-        require_no_denial(lambda user: asset_edit_denial(user, folder))
+        require_access(
+            lambda user: user.can("asset_edit", anyval=True),
+            "You are not allowed to edit assets",
+        )
+        require_access(
+            lambda user: user.can("asset_edit", folder),
+            "You are not allowed to edit assets in this folder",
+        )
 
     def ensure_can_delete(self) -> None:
         require_access(lambda u: u.is_admin, "You are not allowed to delete assets")
