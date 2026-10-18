@@ -11,10 +11,10 @@ from pydantic import ConfigDict, Field, model_validator
 
 import nebula
 from nebula.metadata.normalize import normalize_meta
+from nebula.query import QueryResponse
 from nebula.settings.common import LanguageCode
 from server.models import APIModel
 from server.models.user_models import PermissionValue, UserPermissionsModel
-from server.query import QueryResponse
 
 USER_NAMESPACE = "u"
 

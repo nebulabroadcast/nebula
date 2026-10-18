@@ -10,9 +10,9 @@ from typing import Annotated, Any
 from pydantic import BaseModel, ConfigDict, Field
 
 from nebula.enum import ContentType, MediaType, ObjectStatus
+from nebula.query import QueryResponse
 from nebula.transcription import Transcription
 from server.models import APIModel
-from server.query import QueryResponse
 
 
 class Asset(APIModel):

@@ -1,8 +1,8 @@
-"""Filtering, sorting, search and pagination for REST list endpoints.
+"""The query engine for REST list endpoints (rest/README.md §7).
 
-See rest/README.md §7. A resource lists the fields it can be filtered and
-sorted by (fields.py) and writes its base query; fetch_page (query.py)
-builds the SQL around the base query and runs it.
+The engine itself is nebula.query; this package re-exports it, so existing
+imports keep working, and adds parsing URL query parameters into a
+QueryRequest (params.py), which is HTTP-specific.
 """
 
 __all__ = [
@@ -23,7 +23,7 @@ __all__ = [
     "query_params_dependency",
 ]
 
-from server.query.fields import (
+from nebula.query.fields import (
     Field,
     FieldKind,
     FulltextSearch,
@@ -33,6 +33,6 @@ from server.query.fields import (
     meta,
     meta_namespace,
 )
-from server.query.models import QueryRequest, QueryResponse
+from nebula.query.models import QueryRequest, QueryResponse
+from nebula.query.query import ListQuery, Page, fetch_page
 from server.query.params import query_from_params, query_params_dependency
-from server.query.query import ListQuery, Page, fetch_page

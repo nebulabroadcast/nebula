@@ -27,11 +27,12 @@ from dataclasses import dataclass
 from enum import StrEnum
 from string.templatelib import Template
 
-import nebula
 from nebula.enum import MetaClass, ObjectTypeId
+from nebula.exceptions import ValidationException
+from nebula.settings import settings
 
 
-class QueryValidationError(nebula.ValidationException):
+class QueryValidationError(ValidationException):
     """Invalid query from the client. Not worth an error log line."""
 
     log = False
@@ -106,7 +107,7 @@ def meta_namespace(namespace: str, *, sortable: bool = False) -> list[Field]:
     """Every metatype of a namespace, from the current settings."""
     return [
         meta(key, METACLASS_KINDS[meta_type.metaclass], sortable=sortable)
-        for key, meta_type in nebula.settings.metatypes.items()
+        for key, meta_type in settings.metatypes.items()
         if meta_type.ns == namespace
     ]
 

@@ -14,9 +14,9 @@ from pydantic import TypeAdapter, ValidationError
 
 import nebula
 from nebula.objects.asset import is_asset_key
+from nebula.query import Field, FieldKind, QueryValidationError, column, meta
+from nebula.query.fields import METACLASS_KINDS
 from rest.assets.models import Asset
-from server.query import Field, FieldKind, QueryValidationError, column, meta
-from server.query.fields import METACLASS_KINDS
 
 # Table columns, all indexed
 COLUMNS = [

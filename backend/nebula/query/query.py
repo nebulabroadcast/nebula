@@ -15,23 +15,23 @@ from dataclasses import dataclass
 from string.templatelib import Template
 from typing import Any
 
-import nebula
+from nx.db import db
+
 from nebula.helpers.fulltext import fulltext_ranges
-from nebula.sql import SQL
-from server.query.cursor import (
+from nebula.query.cursor import (
     InvalidCursorError,
     decode_cursor,
     encode_cursor,
     query_hash,
 )
-from server.query.fields import (
+from nebula.query.fields import (
     Field,
     FieldKind,
     FulltextSearch,
     QueryValidationError,
     SubstringSearch,
 )
-from server.query.models import (
+from nebula.query.models import (
     FilterAnd,
     FilterCondition,
     FilterNode,
@@ -39,6 +39,7 @@ from server.query.models import (
     FilterOr,
     QueryRequest,
 )
+from nebula.sql import SQL
 
 MAX_FILTER_DEPTH = 8
 
@@ -377,7 +378,7 @@ async def fetch_page(
     """
     query = ListQuery(request, fields, base, search)
     sql, params = SQL.render(query.page_sql())
-    rows = await nebula.db.fetch(sql, *params)
+    rows = await db.fetch(sql, *params)
     has_more = len(rows) > request.limit
     rows = rows[: request.limit]
 
@@ -389,6 +390,6 @@ async def fetch_page(
     total = None
     if request.include_total:
         sql, params = SQL.render(query.count_sql())
-        row = await nebula.db.fetchrow(sql, *params)
+        row = await db.fetchrow(sql, *params)
         total = row["total"] if row else 0
     return Page(rows, next_cursor, has_more, total)

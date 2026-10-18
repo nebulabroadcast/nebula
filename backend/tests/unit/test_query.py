@@ -1,4 +1,4 @@
-"""server.query: request checks and the SQL around the base query. No database."""
+"""nebula.query and server.query params: request checks and SQL. No database."""
 
 from typing import Any
 
@@ -8,8 +8,7 @@ from pydantic import ValidationError
 from starlette.datastructures import QueryParams
 
 from nebula.enum import ObjectTypeId
-from nebula.sql import SQL
-from server.query import (
+from nebula.query import (
     Field,
     FieldKind,
     FulltextSearch,
@@ -19,9 +18,10 @@ from server.query import (
     SubstringSearch,
     column,
     meta,
-    query_from_params,
 )
-from server.query.cursor import InvalidCursorError, encode_cursor
+from nebula.query.cursor import InvalidCursorError, encode_cursor
+from nebula.sql import SQL
+from server.query.params import query_from_params
 
 BASE = t"SELECT id, id_folder, meta FROM assets"
 

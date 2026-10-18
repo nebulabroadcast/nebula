@@ -8,12 +8,12 @@ import base64
 import hashlib
 from typing import Any
 
-import nebula
 from nebula.common import json_dumps, json_loads
-from server.query.models import QueryRequest
+from nebula.exceptions import BadRequestException
+from nebula.query.models import QueryRequest
 
 
-class InvalidCursorError(nebula.BadRequestException):
+class InvalidCursorError(BadRequestException):
     log = False
 
 

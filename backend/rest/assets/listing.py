@@ -7,6 +7,11 @@ import nebula
 from nebula.context import current_user
 from nebula.enum import ObjectTypeId
 from nebula.helpers.assets import asset_acl
+from nebula.query import (
+    FulltextSearch,
+    QueryRequest,
+    fetch_page,
+)
 from rest.assets.common import PREFIX
 from rest.assets.fields import (
     asset_query_fields,
@@ -15,12 +20,7 @@ from rest.assets.fields import (
     response_keys,
 )
 from rest.assets.models import AssetList
-from server.query import (
-    FulltextSearch,
-    QueryRequest,
-    fetch_page,
-    query_params_dependency,
-)
+from server.query.params import query_params_dependency
 
 router = APIRouter(prefix=PREFIX)
 

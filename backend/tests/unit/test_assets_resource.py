@@ -26,12 +26,12 @@ from nebula.context import (
 )
 from nebula.enum import MetaClass
 from nebula.helpers.assets import asset_acl
+from nebula.query import QueryValidationError
 from nebula.settings.metatypes import MetaType
 from nebula.sql import SQL
 from rest.assets.fields import INDEX_DEFINITION, asset_response, response_keys
 from server.errors import REST_PREFIX, install_error_handlers
 from server.middleware.context import RequestContextMiddleware
-from server.query import QueryValidationError
 from server.rest import install_rest_routers
 from server.session import Session
 
