@@ -121,7 +121,7 @@ const BrowserFilterBar = ({ tab }: { tab: TabSettings }) => {
       label: v.name,
       separator: v.separator,
       onClick: () => {
-        browser.updateTab(tab.id, { view: siteViewKey(v.id) });
+        browser.updateTab(tab.id, { view: siteViewKey(v.id), columns: null });
       },
     })),
     ...browser.userViews.map((v, idx) => ({
@@ -129,7 +129,11 @@ const BrowserFilterBar = ({ tab }: { tab: TabSettings }) => {
       icon: 'person',
       separator: idx === 0,
       onClick: () => {
-        browser.updateTab(tab.id, { view: userViewKey(v.id), sort: v.sort });
+        browser.updateTab(tab.id, {
+          view: userViewKey(v.id),
+          sort: v.sort,
+          columns: null,
+        });
       },
     })),
     {

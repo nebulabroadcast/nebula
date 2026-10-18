@@ -68,8 +68,11 @@ export const tabFilter = (
   return and.length ? { and } : null;
 };
 
+export const tabColumns = (view: BrowserView, tab: TabSettings): string[] =>
+  tab.columns?.length ? tab.columns : view.columns;
+
 export const tabRequest = (view: BrowserView, tab: TabSettings): QueryRequest => {
-  const fields = new Set([...REQUIRED_FIELDS, ...view.columns]);
+  const fields = new Set([...REQUIRED_FIELDS, ...tabColumns(view, tab)]);
   if (fields.has('duration')) {
     fields.add('mark_in');
     fields.add('mark_out');

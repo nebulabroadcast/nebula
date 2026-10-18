@@ -16,7 +16,7 @@ import { debounce } from 'lodash';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 
-import { PAGE_SIZE, DEFAULT_SORT, tabRequest } from './query';
+import { PAGE_SIZE, DEFAULT_SORT, tabColumns, tabRequest } from './query';
 import type { BrowserView, TabSettings } from './types';
 import { useBrowser } from './useBrowser';
 
@@ -217,7 +217,7 @@ const BrowserTab = ({ tab, view, active, isDragging }: BrowserTabProps) => {
 
   const columns = useMemo(
     (): TableColumn[] =>
-      view.columns
+      tabColumns(view, tab)
         .filter((name) => name !== 'subtitle') // shown with the title
         .map((name) => ({
           name,
@@ -226,7 +226,7 @@ const BrowserTab = ({ tab, view, active, isDragging }: BrowserTabProps) => {
           width: getColumnWidth(name),
           sortable: !browser.unsortable.includes(name),
         })),
-    [view.columns, browser.unsortable]
+    [view, tab, browser.unsortable]
   );
 
   const sortBy = tab.sort.replace(/^-/, '');

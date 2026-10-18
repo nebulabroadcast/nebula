@@ -21,6 +21,8 @@ export interface TabSettings {
   query: string;
   // Sort key, '-' prefix for descending
   sort: string;
+  // Columns chosen for this tab; the view's when not set
+  columns?: string[] | null;
 }
 
 // A tab saved by the user (localStorage)

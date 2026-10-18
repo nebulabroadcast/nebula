@@ -4,7 +4,13 @@ import React, { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 import { BrowserContext, type BrowserContextType } from './context';
-import { DEFAULT_SORT, firstSiteView, resolveView, userViewKey } from './query';
+import {
+  DEFAULT_SORT,
+  firstSiteView,
+  resolveView,
+  tabColumns,
+  userViewKey,
+} from './query';
 import type { TabSettings, UserView, ViewKey } from './types';
 
 const NO_TABS: TabSettings[] = [];
@@ -147,14 +153,19 @@ export const BrowserProvider = ({ children }: { children: React.ReactNode }) => 
       name,
       folders: view.folders,
       states: view.states,
-      columns: view.columns,
+      columns: tabColumns(view, tab),
       columnWidths: columnWidths(view.key),
       conditions: [...view.conditions, ...tab.conditions],
       query: [view.query, tab.query].join(' ').trim(),
       sort: tab.sort,
     };
     setUserViews((prev) => [...prev, userView]);
-    updateTab(tabId, { view: userViewKey(userView.id), conditions: [], query: '' });
+    updateTab(tabId, {
+      view: userViewKey(userView.id),
+      conditions: [],
+      query: '',
+      columns: null,
+    });
   };
 
   const renameUserView = (id: string, name: string) => {
