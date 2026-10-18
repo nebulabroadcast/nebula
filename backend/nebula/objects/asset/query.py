@@ -146,15 +146,13 @@ class AssetPage:
     has_more: bool
 
 
-async def asset_listing() -> tuple[list[Field], Template]:
+async def asset_listing(cls: type[Asset]) -> tuple[list[Field], Template]:
     """Fields and base query of the assets the current user may list.
 
     Raises like Asset.ensure_can_list (401/403). In a system context
     nothing is hidden. The REST listing and Asset.query / iterate use it.
     """
-    from nebula.objects.asset import Asset  # noqa: PLC0415 (import cycle)
-
-    Asset.ensure_can_list()
+    cls.ensure_can_list()
     user = None if is_system() else current_user()
     fields = asset_query_fields(await indexed_meta_keys())
     return fields, assets_base(asset_acl(user, "a"))
@@ -192,7 +190,7 @@ async def query_assets(  # noqa: PLR0913
     invalid filter, sort or cursor, as the REST listing does (422/400).
     """
     request = asset_request(filter, q, sort, limit, cursor)
-    fields, base = await asset_listing()
+    fields, base = await asset_listing(cls)
     page = await fetch_page(request, fields, base, SEARCH)
     return AssetPage(
         items=[cls.from_meta(row["meta"]) for row in page.rows],
@@ -209,9 +207,13 @@ async def iterate_assets(
     sort: list[str] | None = None,
     page_size: int = 100,
 ) -> AsyncIterator[Asset]:
-    """Every asset matching the filter, fetched page by page."""
+    """Every asset matching the filter, fetched page by page.
+
+    An async generator: the access check, and the request checks, run when
+    iteration starts (in the request context active then), not at the call.
+    """
     request = asset_request(filter, q, sort, page_size)
-    fields, base = await asset_listing()
+    fields, base = await asset_listing(cls)
     while True:
         page = await fetch_page(request, fields, base, SEARCH)
         for row in page.rows:

@@ -148,7 +148,7 @@ class PluginLibrary:
                         )
                         continue
                     for plugin_class in classes_from_module(exp_class, plugin_module):
-                        plugins[plugin_type_name].append(plugin_class())
+                        plugins.setdefault(plugin_type_name, []).append(plugin_class())
 
 
 plugin_library = PluginLibrary()

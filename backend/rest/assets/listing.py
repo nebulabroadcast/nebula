@@ -2,6 +2,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends
 
+from nebula.objects.asset import Asset
 from nebula.objects.asset.query import SEARCH, asset_listing, asset_query_fields
 from nebula.query import (
     QueryRequest,
@@ -16,7 +17,7 @@ router = APIRouter(prefix=PREFIX)
 
 
 async def query_assets(request: QueryRequest) -> AssetList:
-    fields, base = await asset_listing()
+    fields, base = await asset_listing(Asset)
     keys = response_keys(request.fields)
     page = await fetch_page(request, fields, base, SEARCH)
     items = [asset_response(row["meta"], keys, dict(row)) for row in page.rows]

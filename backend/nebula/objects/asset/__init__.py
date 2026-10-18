@@ -139,7 +139,10 @@ class Asset(BaseObject):
         sort: list[str] | None = None,
         page_size: int = 100,
     ) -> AsyncIterator[Asset]:
-        """Every asset matching the filter, fetched page by page."""
+        """Every asset matching the filter, fetched page by page.
+
+        The access check runs when iteration starts, not at the call.
+        """
         from nebula.objects.asset.query import iterate_assets  # noqa: PLC0415
 
         async for asset in iterate_assets(

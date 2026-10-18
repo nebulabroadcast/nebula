@@ -7,8 +7,12 @@ from typing import Any
 import fastapi
 
 import nebula
-from nebula.common import classes_from_module, import_module
-from nebula.plugins.library import plugin_library, register_plugin_type
+from nebula.common import classes_from_module
+from nebula.plugins.library import (
+    import_plugin_module,
+    plugin_library,
+    register_plugin_type,
+)
 from nebula.utils import slugify
 from server.context import ScopedEndpoint, server_context
 from server.request import APIRequest
@@ -21,25 +25,8 @@ def find_api_endpoints() -> list[APIRequest]:
     """Find all built-in API endpoints."""
     result = []
     for module_fname in os.listdir("api"):
-        module_path = os.path.join("api", module_fname)
-
-        # Search for python files with API endpoints
-        # in case of a directory, search for __init__.py
-
-        if os.path.isdir(module_path):
-            module_path = os.path.join(module_path, "__init__.py")
-            if not os.path.isfile(module_path):
-                continue
-            module_name = module_fname
-        else:
-            module_name = os.path.splitext(module_fname)[0]
-
-        # Import module
-
-        try:
-            module = import_module(module_name, module_path)
-        except ImportError:
-            nebula.log.traceback(f"Failed to load endpoint {module_name}")
+        # A module that fails to import is logged and skipped
+        if (module := import_plugin_module("api", module_fname)) is None:
             continue
 
         # Find API endpoints
