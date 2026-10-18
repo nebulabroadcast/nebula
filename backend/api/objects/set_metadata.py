@@ -1,4 +1,3 @@
-import nebula
 from server import APIRequest
 from server.dependencies import CurrentUser
 
@@ -17,16 +16,7 @@ class SetMetadata(APIRequest):
         request: Operation,
         user: CurrentUser,
     ) -> OperationResult:
-        operation = Operations()
-        result = await operation.handle(
-            OperationsRequest(operations=[request]),
-            user=user,
+        result = await Operations().run(
+            OperationsRequest(operations=[request]), user, raise_errors=True
         )
-
-        if not result.success:
-            raise nebula.NebulaException(
-                result.operations[0].error or "Unknown error",
-                user_name=user.name,
-            )
-
         return result.operations[0]

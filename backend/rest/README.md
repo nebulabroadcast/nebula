@@ -154,8 +154,10 @@ POST    /api/v2/users/{id}/avatar      upload binary sub-resource
 - Actions that aren't CRUD use a verb sub-path with `POST`:
   `POST /api/v2/users/{id}/send-invitation`. Use these sparingly. If
   something is really a state change, prefer `PATCH`.
-- `PUT` is not used. Full replacement of a Nebula object is never what
-  the client actually wants.
+- `PUT` is not used for objects. Full replacement of a Nebula object is
+  never what the client actually wants. The exception is a sub-resource
+  that is one whole document addressed by a key, such as aux data
+  (`PUT /assets/{id}/aux/{key}`, §9).
 
 
 ## 4. Naming and payloads
@@ -172,6 +174,17 @@ POST    /api/v2/users/{id}/avatar      upload binary sub-resource
   `models.py`.
 - Timestamps are Unix epoch seconds (float), matching existing metadata.
 - Ids are integers. `id` is always present in responses.
+- Two kinds of keys appear in responses:
+  - **fields** have a metatype and are named like any metadata key.
+    Fields in namespace `v` (virtual) are computed by the server and are
+    read-only: `has_aired`, or the rundown's `broadcast_time`. Their
+    metatype gives them titles, headers and formatting;
+  - **`__` keys** are data about the object that isn't a field and has no
+    metatype, e.g. `__aux` (the asset's aux data keys). They are never
+    writable.
+
+  Create and patch bodies with a `__` key or a namespace `v` key are a 422.
+  Setup rejects metatype names starting with `__`.
 - Responses for a single object are the object itself, without an envelope.
 
 ### 4.1 Partially typed models
@@ -497,6 +510,17 @@ Avatars, and later thumbnails or attachments, follow the proxy pattern:
   which is already in the server image, so there is no new Python dependency.
 - `DELETE` removes the file and returns **204**.
 - A missing file is a 404 (the frontend shows a placeholder).
+
+Aux data (`/assets/{id}/aux/{key}`) is a JSON document per key, stored in
+the `aux` table:
+
+- `GET` returns the document, 404 when there is none.
+- `PUT` replaces the whole document and returns **204**. Keys with a known
+  structure (`nebula:transcription`) have a model, and PUT validates it;
+  other keys take any JSON value. There is no PATCH of aux content.
+- `DELETE` returns **204**, also when there was nothing to delete.
+- Writes send `objects_changed` for the asset (its `__aux` changed), but
+  don't change its `mtime` and don't run the validator.
 
 
 ## 10. Errors

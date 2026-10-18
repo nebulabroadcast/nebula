@@ -120,6 +120,11 @@ META_TYPES = {
         "ns": "v",
         "type": T.BOOLEAN,
     },
+    # Whether any item of the asset has aired (computed from asrun)
+    "has_aired": {
+        "ns": "v",
+        "type": T.BOOLEAN,
+    },
     "solver": {
         "ns": "ai",
         "type": T.SELECT,
@@ -181,6 +186,17 @@ META_TYPES = {
         "fulltext": 5,
         "type": T.TEXT,
     },
+    # IDs of the users the asset is assigned to (they can see and edit it)
+    "assignees": {
+        "ns": "a",
+        "type": T.OBJECT,
+    },
+    # Position of the thumbnail frame, in seconds
+    "poster_frame": {
+        "ns": "a",
+        "type": T.TIMECODE,
+    },
+    # Deprecated: stored flag, use the computed `has_aired`
     "aired": {
         "ns": "a",
         "type": T.BOOLEAN,

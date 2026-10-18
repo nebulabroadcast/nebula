@@ -15,6 +15,33 @@ import type {
   ApplySchedulingTemplateData,
   ApplySchedulingTemplateErrors,
   ApplySchedulingTemplateResponses,
+  AssetsAuxDeleteData,
+  AssetsAuxDeleteErrors,
+  AssetsAuxDeleteResponses,
+  AssetsAuxGetData,
+  AssetsAuxGetErrors,
+  AssetsAuxGetResponses,
+  AssetsAuxPutData,
+  AssetsAuxPutErrors,
+  AssetsAuxPutResponses,
+  AssetsCreateData,
+  AssetsCreateErrors,
+  AssetsCreateResponses,
+  AssetsDeleteData,
+  AssetsDeleteErrors,
+  AssetsDeleteResponses,
+  AssetsGetData,
+  AssetsGetErrors,
+  AssetsGetResponses,
+  AssetsListData,
+  AssetsListErrors,
+  AssetsListResponses,
+  AssetsQueryPostData,
+  AssetsQueryPostErrors,
+  AssetsQueryPostResponses,
+  AssetsUpdateData,
+  AssetsUpdateErrors,
+  AssetsUpdateResponses,
   BrowseData,
   BrowseErrors,
   BrowseResponses,
@@ -952,6 +979,183 @@ export const upload = <ThrowOnError extends boolean = false>(
     responseType: 'json',
     url: '/upload/{id_asset}',
     ...options,
+  });
+
+/**
+ * List assets
+ *
+ * List assets. Query parameters other than the options are equality
+ * filters (`?id_folder=1&status=1`); repeat one to match any of the values.
+ *
+ * `q` is a fulltext search. Without `fields`, every stored field is
+ * returned. Users see the assets of the folders they can view; limited
+ * users see the assets they created or are assigned to.
+ */
+export const assetsList = <ThrowOnError extends boolean = false>(
+  options?: Options<AssetsListData, ThrowOnError>
+): RequestResult<AssetsListResponses, AssetsListErrors, ThrowOnError> =>
+  (options?.client ?? client).get<AssetsListResponses, AssetsListErrors, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/v2/assets',
+    ...options,
+  });
+
+/**
+ * Create an asset
+ *
+ * Create an asset. The asset validator plugin runs as for any save.
+ *
+ * Needs `asset_edit` for the asset's folder.
+ */
+export const assetsCreate = <ThrowOnError extends boolean = false>(
+  options: Options<AssetsCreateData, ThrowOnError>
+): RequestResult<AssetsCreateResponses, AssetsCreateErrors, ThrowOnError> =>
+  (options.client ?? client).post<
+    AssetsCreateResponses,
+    AssetsCreateErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    url: '/api/v2/assets',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+/**
+ * Query assets (POST)
+ *
+ * Same as `QUERY /assets`, for clients that can't send the QUERY method.
+ */
+export const assetsQueryPost = <ThrowOnError extends boolean = false>(
+  options: Options<AssetsQueryPostData, ThrowOnError>
+): RequestResult<AssetsQueryPostResponses, AssetsQueryPostErrors, ThrowOnError> =>
+  (options.client ?? client).post<
+    AssetsQueryPostResponses,
+    AssetsQueryPostErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    url: '/api/v2/assets/query',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+/**
+ * Delete an asset
+ *
+ * Delete the asset, with its rundown items and aux data.
+ *
+ * Admins only. 409 when an item of the asset has aired.
+ */
+export const assetsDelete = <ThrowOnError extends boolean = false>(
+  options: Options<AssetsDeleteData, ThrowOnError>
+): RequestResult<AssetsDeleteResponses, AssetsDeleteErrors, ThrowOnError> =>
+  (options.client ?? client).delete<
+    AssetsDeleteResponses,
+    AssetsDeleteErrors,
+    ThrowOnError
+  >({ url: '/api/v2/assets/{asset_id}', ...options });
+
+/**
+ * Get an asset
+ *
+ * Without `fields`, every stored field and the computed fields
+ * (`has_aired`, `__aux`) are returned.
+ */
+export const assetsGet = <ThrowOnError extends boolean = false>(
+  options: Options<AssetsGetData, ThrowOnError>
+): RequestResult<AssetsGetResponses, AssetsGetErrors, ThrowOnError> =>
+  (options.client ?? client).get<AssetsGetResponses, AssetsGetErrors, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/v2/assets/{asset_id}',
+    ...options,
+  });
+
+/**
+ * Update an asset
+ *
+ * Change some of the asset's fields. Omitted fields stay as they are,
+ * null removes a value. The asset validator plugin runs as for any save.
+ *
+ * Needs `asset_edit` for the asset's folder, and for the new one when the
+ * folder changes.
+ */
+export const assetsUpdate = <ThrowOnError extends boolean = false>(
+  options: Options<AssetsUpdateData, ThrowOnError>
+): RequestResult<AssetsUpdateResponses, AssetsUpdateErrors, ThrowOnError> =>
+  (options.client ?? client).patch<
+    AssetsUpdateResponses,
+    AssetsUpdateErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    url: '/api/v2/assets/{asset_id}',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+/**
+ * Delete aux data of an asset
+ *
+ * Needs `asset_edit` for the asset's folder. 204 also when there was none.
+ */
+export const assetsAuxDelete = <ThrowOnError extends boolean = false>(
+  options: Options<AssetsAuxDeleteData, ThrowOnError>
+): RequestResult<AssetsAuxDeleteResponses, AssetsAuxDeleteErrors, ThrowOnError> =>
+  (options.client ?? client).delete<
+    AssetsAuxDeleteResponses,
+    AssetsAuxDeleteErrors,
+    ThrowOnError
+  >({ url: '/api/v2/assets/{asset_id}/aux/{key}', ...options });
+
+/**
+ * Get aux data of an asset
+ *
+ * The document stored under the key. 404 when there is none.
+ */
+export const assetsAuxGet = <ThrowOnError extends boolean = false>(
+  options: Options<AssetsAuxGetData, ThrowOnError>
+): RequestResult<AssetsAuxGetResponses, AssetsAuxGetErrors, ThrowOnError> =>
+  (options.client ?? client).get<
+    AssetsAuxGetResponses,
+    AssetsAuxGetErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    url: '/api/v2/assets/{asset_id}/aux/{key}',
+    ...options,
+  });
+
+/**
+ * Store aux data of an asset
+ *
+ * Store a JSON document under the key, replacing the previous one. Documents of known keys (`nebula:transcription`, `openai:transcription`) are validated.
+ *
+ * Needs `asset_edit` for the asset's folder.
+ */
+export const assetsAuxPut = <ThrowOnError extends boolean = false>(
+  options: Options<AssetsAuxPutData, ThrowOnError>
+): RequestResult<AssetsAuxPutResponses, AssetsAuxPutErrors, ThrowOnError> =>
+  (options.client ?? client).put<
+    AssetsAuxPutResponses,
+    AssetsAuxPutErrors,
+    ThrowOnError
+  >({
+    url: '/api/v2/assets/{asset_id}/aux/{key}',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
   });
 
 /**
