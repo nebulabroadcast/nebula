@@ -1,7 +1,6 @@
 """How an asset is returned by the REST API.
 
-What assets can be filtered and sorted by is in nebula.objects.asset.query
-(re-exported here for the resource's modules).
+What assets can be filtered and sorted by is in nebula.objects.asset.query.
 """
 
 from collections.abc import Mapping
@@ -11,14 +10,7 @@ from pydantic import TypeAdapter, ValidationError
 
 import nebula
 from nebula.objects.asset import is_asset_key
-from nebula.objects.asset.query import (
-    COLUMNS,
-    COMPUTED_FIELDS,
-    COMPUTED_KEYS,
-    INDEX_DEFINITION,
-    asset_query_fields,
-    indexed_meta_keys,
-)
+from nebula.objects.asset.query import COMPUTED_KEYS
 from nebula.query import QueryValidationError
 from rest.assets.models import Asset
 
@@ -104,16 +96,3 @@ def check_core_values(values: dict[str, Any]) -> None:
                 f"Asset {values.get('id')}: stored '{key}' {value!r} "
                 "doesn't fit its type, left out of the response"
             )
-
-
-__all__ = [
-    "COLUMNS",
-    "COMPUTED_FIELDS",
-    "COMPUTED_KEYS",
-    "INDEX_DEFINITION",
-    "asset_query_fields",
-    "asset_response",
-    "check_core_values",
-    "indexed_meta_keys",
-    "response_keys",
-]

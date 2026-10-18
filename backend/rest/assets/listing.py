@@ -5,18 +5,18 @@ from fastapi import APIRouter, Depends
 import nebula
 from nebula.context import current_user
 from nebula.objects.asset.access import asset_acl
-from nebula.objects.asset.query import SEARCH, assets_base
+from nebula.objects.asset.query import (
+    SEARCH,
+    asset_query_fields,
+    assets_base,
+    indexed_meta_keys,
+)
 from nebula.query import (
     QueryRequest,
     fetch_page,
 )
 from rest.assets.common import PREFIX
-from rest.assets.fields import (
-    asset_query_fields,
-    asset_response,
-    indexed_meta_keys,
-    response_keys,
-)
+from rest.assets.fields import asset_response, response_keys
 from rest.assets.models import AssetList
 from server.query.params import query_params_dependency
 
