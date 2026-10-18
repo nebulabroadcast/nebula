@@ -29,7 +29,8 @@ PLUGIN_TYPES: dict[str, type] = {
 def register_plugin_type(name: str, base_class: type) -> None:
     """Make plugins of this type loadable (e.g. "api" by the server)."""
     PLUGIN_TYPES[name] = base_class
-    # Plugins already loaded without this type are loaded again on next use
+    # Plugins already loaded without this type load again on next use (from
+    # the modules already imported)
     plugin_library.reset()
 
 
@@ -70,14 +71,18 @@ def import_plugin_module(base_dir: str, module_fname: str) -> ModuleType | None:
 class PluginLibrary:
     def __init__(self) -> None:
         self._plugins: dict[str, list[Any]] | None = None
+        # Imported plugin modules by path, kept when plugins are reloaded, so
+        # no module runs twice (None: not a plugin module, or it failed)
+        self._modules: dict[str, ModuleType | None] = {}
 
     @property
     def plugins(self) -> dict[str, list[Any]]:
         """Loaded plugins by type. Loads them on first use."""
         if self._plugins is None:
-            self._plugins = {k: [] for k in PLUGIN_TYPES}
-            self.init_legacy_plugins()
-            self.init_packages()
+            plugins: dict[str, list[Any]] = {k: [] for k in PLUGIN_TYPES}
+            self.init_legacy_plugins(plugins)
+            self.init_packages(plugins)
+            self._plugins = plugins
         return self._plugins
 
     def reset(self) -> None:
@@ -91,23 +96,28 @@ class PluginLibrary:
                 return plugin
         raise KeyError
 
-    def init_legacy_plugins(self) -> None:
+    def module(self, base_dir: str, module_fname: str) -> ModuleType | None:
+        path = os.path.join(base_dir, module_fname)
+        if path not in self._modules:
+            self._modules[path] = import_plugin_module(base_dir, module_fname)
+        return self._modules[path]
+
+    def init_legacy_plugins(self, plugins: dict[str, list[Any]]) -> None:
         """Old style plugins are separated by types into directories"""
-        assert self._plugins is not None
-        for plugin_type_name in self._plugins:
+        for plugin_type_name, found in plugins.items():
             plugin_type_dir = os.path.join(config.plugin_dir, plugin_type_name)
             if not os.path.isdir(plugin_type_dir):
                 continue
             for module_fname in os.listdir(plugin_type_dir):
-                plugin_module = import_plugin_module(plugin_type_dir, module_fname)
-                if plugin_module is None:
+                if (
+                    plugin_module := self.module(plugin_type_dir, module_fname)
+                ) is None:
                     continue
-
                 exp_class = PLUGIN_TYPES[plugin_type_name]
                 for plugin_class in classes_from_module(exp_class, plugin_module):
-                    self._plugins[plugin_type_name].append(plugin_class())
+                    found.append(plugin_class())
 
-    def init_packages(self) -> None:
+    def init_packages(self, plugins: dict[str, list[Any]]) -> None:
         """New style plugins (git compatible) contains 'package.toml' file
         in the root. package.toml contains a list of modules available
         in the package
@@ -125,8 +135,7 @@ class PluginLibrary:
 
             module_guide = manifest.get("modules", {})
             for module_fname, plugin_types in module_guide.items():
-                plugin_module = import_plugin_module(package_dir, module_fname)
-                if plugin_module is None:
+                if (plugin_module := self.module(package_dir, module_fname)) is None:
                     continue
 
                 for plugin_type_name in plugin_types:
@@ -139,8 +148,7 @@ class PluginLibrary:
                         )
                         continue
                     for plugin_class in classes_from_module(exp_class, plugin_module):
-                        assert self._plugins is not None
-                        self._plugins[plugin_type_name].append(plugin_class())
+                        plugins[plugin_type_name].append(plugin_class())
 
 
 plugin_library = PluginLibrary()
