@@ -66,6 +66,7 @@ export const Pop = styled.div`
     display: flex;
     align-items: center;
     gap: 6px;
+    box-sizing: border-box; /* rows that are divs, not buttons */
     width: 100%;
     height: 26px;
     padding: 0 10px;
