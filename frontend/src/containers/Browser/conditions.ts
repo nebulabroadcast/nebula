@@ -13,7 +13,7 @@ export interface Operator {
 }
 
 export interface ValueOption {
-  value: string | number;
+  value: string | number | boolean;
   title: string;
 }
 
@@ -54,6 +54,12 @@ const ORDERED: Operator[] = [
   { op: 'gte', label: '≥' },
 ];
 
+// Classifications with levels ("3.4.6" is under "3.4", under "3"). Their
+// "is any of" matches everything under the picked values (query.ts)
+export const isHierarchical = (key: string): boolean =>
+  nebula.metaType(key).type !== 'list' &&
+  !!valueOptions(key)?.some((option) => String(option.value).includes('.'));
+
 const ANY_OF: Operator[] = [
   { op: 'in', label: 'is any of', multi: true },
   { op: 'nin', label: 'is none of', multi: true },
@@ -65,6 +71,7 @@ export const operatorsFor = (key: string): Operator[] => {
   const type = nebula.metaType(key).type;
   if (type === 'list')
     return [{ op: 'contains', label: 'contains', multi: true }, ...IS_SET];
+  if (isHierarchical(key)) return [...ANY_OF, ...IS_SET];
   if (valueOptions(key)) return [...EQUAL, ...ANY_OF, ...IS_SET];
   switch (type) {
     case 'integer':

@@ -1,6 +1,7 @@
+import { isHierarchical } from './conditions';
 import type { BrowserView, Condition, TabSettings, UserView, ViewKey } from './types';
 
-import type { QueryRequest } from '@/client';
+import type { FilterCondition, FilterNot, FilterOr, QueryRequest } from '@/client';
 import nebula from '@/nebula';
 
 export const PAGE_SIZE = 200;
@@ -72,6 +73,27 @@ export const viewTab = (view: BrowserView): Omit<TabSettings, 'id'> => ({
 export const tabColumns = (view: BrowserView, tab: TabSettings): string[] =>
   tab.columns?.length ? tab.columns : view.columns;
 
+// The tab shows something else than its view (other filters, search,
+// sort or columns)
+export const tabChanged = (view: BrowserView, tab: TabSettings): boolean =>
+  JSON.stringify([tab.conditions, tab.query, tab.sort, tabColumns(view, tab)]) !==
+  JSON.stringify([view.conditions, view.query, view.sort, view.columns]);
+
+// A value of a hierarchical field stands for itself and everything under it
+const asFilter = (condition: Condition): FilterCondition | FilterOr | FilterNot => {
+  const { key, op, value } = condition;
+  if (!(op === 'in' || op === 'nin') || !Array.isArray(value) || !isHierarchical(key)) {
+    return condition;
+  }
+  const under: FilterOr = {
+    or: value.flatMap((v: unknown) => [
+      { key, op: 'eq', value: v },
+      { key, op: 'like', value: `${String(v)}.%` },
+    ]),
+  };
+  return op === 'in' ? under : { not: under };
+};
+
 export const tabRequest = (view: BrowserView, tab: TabSettings): QueryRequest => {
   const fields = new Set([...REQUIRED_FIELDS, ...tabColumns(view, tab)]);
   if (fields.has('duration')) {
@@ -79,7 +101,7 @@ export const tabRequest = (view: BrowserView, tab: TabSettings): QueryRequest =>
     fields.add('mark_out');
   }
   return {
-    filter: tab.conditions.length ? { and: tab.conditions } : null,
+    filter: tab.conditions.length ? { and: tab.conditions.map(asFilter) } : null,
     q: tab.query || null,
     sort: [tab.sort],
     fields: [...fields],

@@ -205,6 +205,7 @@ META_TYPES = {
         "ns": "m",
         "type": T.STRING,
         "fulltext": 9,
+        "index": True,
     },
     "subtitle": {
         "ns": "m",
@@ -464,6 +465,7 @@ META_TYPES = {
         "ns": "m",
         "fulltext": 9,
         "type": T.STRING,
+        "index": True,
     },  # Primary Content ID (local or global)
     "id/youtube": {
         "ns": "m",

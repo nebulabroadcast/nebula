@@ -1,8 +1,8 @@
 import { InputDatetime, InputText, InputTimecode } from '@components';
-import clsx from 'clsx';
 import { useEffect, useRef } from 'react';
 
 import { parseValue, valueOptions, type Draft } from './conditions';
+import OptionList from './OptionList';
 
 import nebula from '@/nebula';
 
@@ -26,32 +26,18 @@ const ValueInput = ({ draft, onChange, onSubmit }: ValueInputProps) => {
   const type = nebula.metaType(key).type;
 
   if (options || type === 'boolean') {
-    const choices = options ?? [
-      { value: true, title: 'yes' },
-      { value: false, title: 'no' },
-    ];
-    const selected = operator.multi
-      ? ((value as unknown[] | undefined) ?? [])
-      : [value];
     return (
-      <div className="options">
-        {choices.map((option) => {
-          const on = selected.includes(option.value);
-          return (
-            <button
-              key={String(option.value)}
-              className={clsx(on && 'on')}
-              onClick={() => {
-                if (!operator.multi) onChange(option.value);
-                else if (on) onChange(selected.filter((v) => v !== option.value));
-                else onChange([...selected, option.value]);
-              }}
-            >
-              {option.title}
-            </button>
-          );
-        })}
-      </div>
+      <OptionList
+        options={
+          options ?? [
+            { value: true, title: 'yes' },
+            { value: false, title: 'no' },
+          ]
+        }
+        multi={!!operator.multi}
+        value={value}
+        onChange={onChange}
+      />
     );
   }
 

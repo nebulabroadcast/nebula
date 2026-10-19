@@ -98,9 +98,11 @@ const BrowserTab = ({ tab, view, active, isDragging }: BrowserTabProps) => {
         // the loaded rows, or to the default sort. The refused sort can't
         // be chosen again this session
         if (!(error instanceof AxiosError) || error.response?.status !== 422) return;
-        const back = loadedRef.current?.tab ?? { ...tab, sort: DEFAULT_SORT };
-        if (back.sort !== tab.sort) browser.markUnsortable(tab.sort.replace(/^-/, ''));
-        else if (!loadedRef.current) return; // nothing to go back to
+        const unsortable = /^Can't sort by '(.+)'$/.exec(getErrorDetail(error))?.[1];
+        if (unsortable) browser.markUnsortable(unsortable);
+        const loaded = loadedRef.current?.tab;
+        if (!loaded && !unsortable) return; // nothing to go back to
+        const back = loaded ?? { ...tab, sort: DEFAULT_SORT };
         browser.updateTab(tab.id, {
           view: back.view,
           conditions: back.conditions,

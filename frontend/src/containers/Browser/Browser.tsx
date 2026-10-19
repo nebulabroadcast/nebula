@@ -30,6 +30,16 @@ const Header = styled.div`
     padding: 4px 4px 0;
   }
 
+  .tabs > .nb-button {
+    background: none;
+    color: var(--color-text-dim);
+
+    &:hover {
+      color: var(--color-text-hl);
+      background-color: var(--color-surface-03);
+    }
+  }
+
   .tab-list {
     flex: 1;
     align-self: stretch;

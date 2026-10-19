@@ -3,7 +3,7 @@ import clsx from 'clsx';
 import { useEffect, useRef, useState } from 'react';
 
 import { lastWord, parseFilterInput, type Draft } from './conditions';
-import FilterPopover from './FilterPopover';
+import FilterPopover, { type PopoverMode } from './FilterPopover';
 import type { Condition, TabSettings } from './types';
 import { useBrowser } from './useBrowser';
 
@@ -25,7 +25,7 @@ const BrowserFilterBar = ({ tab }: { tab: TabSettings }) => {
   const [text, setText] = useState(tab.query);
   const [draft, setDraftState] = useState<Draft | null>(null);
   const [editIndex, setEditIndex] = useState<number | null>(null);
-  const [pickColumn, setPickColumn] = useState(false);
+  const [mode, setMode] = useState<PopoverMode>('filters');
   // Backspace in the empty input marks the last filter, a second removes it
   const [armed, setArmed] = useState(false);
   // Row of the popover chosen with the arrow keys (-1: none, 'fields':
@@ -40,11 +40,16 @@ const BrowserFilterBar = ({ tab }: { tab: TabSettings }) => {
   const close = (query = tab.query) => {
     setOpen(false);
     setDraft(null);
-    setPickColumn(false);
+    setMode('filters');
     setArmed(false);
     setHighlight(-1);
     setText(query);
     inputRef.current?.blur();
+  };
+
+  // The field name typed to find a field goes when it's picked
+  const clearWord = () => {
+    setText(text.slice(0, text.length - lastWord(text).length).trimEnd());
   };
 
   // `key:value` words become conditions, the rest is the search
@@ -101,9 +106,8 @@ const BrowserFilterBar = ({ tab }: { tab: TabSettings }) => {
       else search();
       setHighlight(-1);
     } else if (event.key === 'Escape') {
-      if (draft || pickColumn) {
+      if (draft) {
         setDraft(null);
-        setPickColumn(false);
       } else {
         close();
       }
@@ -181,19 +185,18 @@ const BrowserFilterBar = ({ tab }: { tab: TabSettings }) => {
           draft={draft}
           editIndex={editIndex}
           armed={armed}
-          pickColumn={pickColumn}
+          mode={mode}
+          setMode={(next) => {
+            setMode(next);
+            setDraft(null);
+            setHighlight(-1);
+          }}
           setDraft={(next, index) => {
             setDraft(next, index);
             setHighlight(-1);
-            // the field name typed to find it goes
-            if (next)
-              setText(text.slice(0, text.length - lastWord(text).length).trimEnd());
+            if (next) clearWord();
           }}
-          setPickColumn={(on) => {
-            setPickColumn(on);
-            setHighlight(-1);
-            inputRef.current?.focus();
-          }}
+          onPicked={clearWord}
           onSearch={search}
           onClose={() => {
             close();

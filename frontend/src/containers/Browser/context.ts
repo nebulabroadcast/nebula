@@ -31,6 +31,7 @@ export interface BrowserContextType {
   setColumnWidth: (view: ViewKey, column: string, width: number | null) => void;
 
   saveUserView: (tabId: string, name: string) => void;
+  updateUserView: (tabId: string) => void;
   renameUserView: (id: string, name: string) => void;
   deleteUserView: (id: string) => void;
 }
