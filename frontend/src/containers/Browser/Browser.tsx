@@ -30,7 +30,11 @@ const Header = styled.div`
     padding: 4px 4px 0;
   }
 
+  /* as high as the tabs, at their bottom */
   .tabs > .nb-button {
+    align-self: flex-end;
+    min-height: 34px;
+    max-height: 34px;
     background: none;
     color: var(--color-text-dim);
 
@@ -57,7 +61,7 @@ const Header = styled.div`
     gap: 6px;
     min-width: 48px;
     max-width: 200px;
-    height: 30px;
+    height: 34px;
     padding: 0 4px 0 10px;
     border-radius: 6px 6px 0 0;
     color: var(--color-text-dim);
@@ -122,10 +126,9 @@ const Header = styled.div`
     display: flex;
     align-items: center;
     gap: 4px;
-    height: calc(var(--input-height) + 8px);
+    height: var(--input-height);
     margin: 0 4px 4px;
-    padding: 4px;
-    border-radius: 6px;
+    border-radius: 4px;
     background-color: var(--color-surface-04);
   }
 
