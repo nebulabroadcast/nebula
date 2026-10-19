@@ -26,8 +26,6 @@ const BrowserFilterBar = ({ tab }: { tab: TabSettings }) => {
   const [draft, setDraftState] = useState<Draft | null>(null);
   const [editIndex, setEditIndex] = useState<number | null>(null);
   const [mode, setMode] = useState<PopoverMode>('filters');
-  // Backspace in the empty input marks the last filter, a second removes it
-  const [armed, setArmed] = useState(false);
   // Row of the popover chosen with the arrow keys (-1: none, 'fields':
   // the first of the field list, where typing starts)
   const [highlight, setHighlight] = useState<number | 'fields'>(-1);
@@ -41,7 +39,6 @@ const BrowserFilterBar = ({ tab }: { tab: TabSettings }) => {
     setOpen(false);
     setDraft(null);
     setMode('filters');
-    setArmed(false);
     setHighlight(-1);
     setText(query);
     inputRef.current?.blur();
@@ -111,15 +108,6 @@ const BrowserFilterBar = ({ tab }: { tab: TabSettings }) => {
       } else {
         close();
       }
-    } else if (event.key === 'Backspace' && !text && tab.conditions.length) {
-      if (armed) {
-        browser.updateTab(tab.id, { conditions: tab.conditions.slice(0, -1) });
-        setArmed(false);
-      } else {
-        setArmed(true);
-      }
-    } else {
-      setArmed(false);
     }
   };
 
@@ -144,7 +132,6 @@ const BrowserFilterBar = ({ tab }: { tab: TabSettings }) => {
           spellCheck={false}
           onChange={(event) => {
             setText(event.target.value);
-            setArmed(false);
             setHighlight(event.target.value.trim() ? 'fields' : -1);
           }}
           onFocus={() => {
@@ -184,7 +171,6 @@ const BrowserFilterBar = ({ tab }: { tab: TabSettings }) => {
           text={text}
           draft={draft}
           editIndex={editIndex}
-          armed={armed}
           mode={mode}
           setMode={(next) => {
             setMode(next);

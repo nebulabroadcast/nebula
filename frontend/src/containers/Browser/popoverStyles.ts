@@ -117,11 +117,6 @@ export const Pop = styled.div`
       color: var(--color-cyan);
     }
 
-    &.armed {
-      box-shadow: inset 2px 0 0 var(--color-red);
-      background-color: color-mix(in srgb, var(--color-red) 10%, transparent);
-    }
-
     input {
       flex: 1;
       height: 22px;

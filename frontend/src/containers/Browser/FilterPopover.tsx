@@ -30,7 +30,6 @@ interface FilterPopoverProps {
   mode: PopoverMode;
   draft: Draft | null;
   editIndex: number | null;
-  armed: boolean;
   setMode: (mode: PopoverMode) => void;
   setDraft: (draft: Draft | null, editIndex?: number | null) => void;
   // A field was picked from the list (as a column)
@@ -48,7 +47,6 @@ const FilterPopover = ({
   mode,
   draft,
   editIndex,
-  armed,
   setMode,
   setDraft,
   onPicked,
@@ -89,11 +87,7 @@ const FilterPopover = ({
       <button
         key={idx}
         data-nav
-        className={clsx(
-          'it',
-          armed && idx === tab.conditions.length - 1 && 'armed',
-          editIndex === idx && 'current'
-        )}
+        className={clsx('it', editIndex === idx && 'current')}
         title="Edit"
         onClick={() => {
           setDraft(draftOf(condition), idx);
@@ -281,7 +275,6 @@ const FilterPopover = ({
         <span>↑↓ move</span>
         <span>Enter pick or search</span>
         <span>field:value adds a filter</span>
-        <span>⌫ removes the last filter</span>
         <span>Esc close</span>
       </div>
     </Pop>
