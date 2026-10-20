@@ -1,6 +1,6 @@
 import type { Condition, FilterOp } from './types';
 
-import { ObjectStatus } from '@/client';
+import { ContentType, MediaType, ObjectStatus } from '@/client';
 import nebula from '@/nebula';
 
 export interface Operator {
@@ -17,8 +17,35 @@ export interface ValueOption {
   title: string;
 }
 
+// Values of the asset enums that make sense when filtering assets
+// (aired, unknown or remote aren't asset states)
+const ENUM_OPTIONS: Record<string, ValueOption[]> = {
+  status: [
+    { value: ObjectStatus.OFFLINE, title: 'offline' },
+    { value: ObjectStatus.ONLINE, title: 'online' },
+    { value: ObjectStatus.CREATING, title: 'creating' },
+    { value: ObjectStatus.TRASHED, title: 'trashed' },
+    { value: ObjectStatus.ARCHIVED, title: 'archived' },
+    { value: ObjectStatus.RESET, title: 'reset' },
+    { value: ObjectStatus.CORRUPTED, title: 'corrupted' },
+    { value: ObjectStatus.ONAIR, title: 'on air' },
+    { value: ObjectStatus.RETRIEVING, title: 'retrieving' },
+  ],
+  content_type: [
+    { value: ContentType.VIDEO, title: 'video' },
+    { value: ContentType.AUDIO, title: 'audio' },
+    { value: ContentType.IMAGE, title: 'image' },
+    { value: ContentType.TEXT, title: 'text' },
+    { value: ContentType.DATABROADCASTING, title: 'data broadcasting' },
+  ],
+  media_type: [
+    { value: MediaType.FILE, title: 'file' },
+    { value: MediaType.VIRTUAL, title: 'virtual' },
+  ],
+};
+
 // The values a field can have, when they are a fixed list: folders,
-// statuses, classifications
+// asset enums, classifications
 export const valueOptions = (key: string): ValueOption[] | null => {
   if (key === 'id_folder') {
     return (nebula.settings?.folders || []).map((f) => ({
@@ -26,12 +53,7 @@ export const valueOptions = (key: string): ValueOption[] | null => {
       title: f.name,
     }));
   }
-  if (key === 'status') {
-    return Object.entries(ObjectStatus).map(([name, value]) => ({
-      value,
-      title: name.toLowerCase(),
-    }));
-  }
+  if (key in ENUM_OPTIONS) return ENUM_OPTIONS[key];
   const cs = nebula.metaType(key).cs;
   return cs
     ? nebula.csOptions(cs).map((o) => ({ value: o.value, title: o.title }))
@@ -85,7 +107,8 @@ export const operatorsFor = (key: string): Operator[] => {
     case 'object':
       return IS_SET;
     default:
-      return [...EQUAL, { op: 'ilike', label: 'contains' }, ...IS_SET];
+      // the first is the default
+      return [{ op: 'ilike', label: 'contains' }, ...EQUAL, ...IS_SET];
   }
 };
 
