@@ -9,7 +9,8 @@ from nebula.settings import settings
 # namespace ("o", shared with items, bins and events)
 ASSET_NAMESPACES = {"a", "ai", "f", "m", "q"}
 ASSET_OBJECT_KEYS = {"id", "id_folder", "created_by", "updated_by", "ctime", "mtime"}
-# Namespace of virtual fields: computed by the server, never written
+# Namespace of virtual fields: computed by the server, never written. Like
+# "ai", it combines with an object's: "va" is computed for assets
 VIRTUAL_NAMESPACE = "v"
 # Set by the server only
 READ_ONLY_KEYS = {"id", "ctime", "mtime", "created_by", "updated_by"}
@@ -30,7 +31,7 @@ def check_asset_changes(changes: dict[str, Any]) -> None:
         if key in READ_ONLY_KEYS:
             raise ValidationException(f"'{key}' is read-only", key=key)
         meta_type = settings.metatypes.get(key)
-        if meta_type is not None and meta_type.ns == VIRTUAL_NAMESPACE:
+        if meta_type is not None and VIRTUAL_NAMESPACE in meta_type.ns:
             raise ValidationException(f"'{key}' is computed", key=key)
         if not is_asset_key(key):
             raise ValidationException(f"Unknown asset field '{key}'", key=key)

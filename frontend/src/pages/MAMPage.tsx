@@ -1,5 +1,5 @@
-import { TableDraggableItem } from '@components/table/types';
-import Browser from '@containers/Browser';
+import type { TableDraggableItem, TableDragData } from '@components/table/types';
+import Browser, { BrowserProvider } from '@containers/Browser';
 import Splitter, { SplitDirection } from '@devbookhq/splitter';
 import {
   DndContext,
@@ -7,7 +7,6 @@ import {
   useSensor,
   useSensors,
   DragStartEvent,
-  DragEndEvent,
 } from '@dnd-kit/core';
 import { useNebula } from '@features/Nebula';
 import { useLocalStorage } from '@lib/useLocalStorage';
@@ -90,14 +89,13 @@ const MAMPage: React.FC = () => {
 
   const onDragStart = (event: DragStartEvent) => {
     setIsDragging(true);
-    const objects = event.active.data.current as TableDraggableItem[];
+    const objects = (event.active.data.current as TableDragData).getItems();
     console.debug('Start drag', objects);
     setDraggedObjects(objects);
     setBodyCursor('grabbing');
   };
 
-  const onDragEnd = (event: DragEndEvent) => {
-    console.debug('End drag', event.active.data.current);
+  const onDragEnd = () => {
     setIsDragging(false);
     setDraggedObjects(null);
     setBodyCursor('auto');
@@ -190,22 +188,24 @@ const MAMPage: React.FC = () => {
 
   return (
     <MAMContainer>
-      <DndContext
-        onDragEnd={onDragEnd}
-        onDragStart={onDragStart}
-        onDragCancel={onDragEnd}
-        sensors={sensors}
-      >
-        <Splitter
-          direction={SplitDirection.Horizontal}
-          onResizeStarted={onResizeStart}
-          onResizeFinished={onResizeEnd}
-          initialSizes={splitterSizes || undefined}
+      <BrowserProvider>
+        <DndContext
+          onDragEnd={onDragEnd}
+          onDragStart={onDragStart}
+          onDragCancel={onDragEnd}
+          sensors={sensors}
         >
-          <Browser isDragging={isDragging} />
-          {moduleComponent as React.ReactNode}
-        </Splitter>
-      </DndContext>
+          <Splitter
+            direction={SplitDirection.Horizontal}
+            onResizeStarted={onResizeStart}
+            onResizeFinished={onResizeEnd}
+            initialSizes={splitterSizes || undefined}
+          >
+            <Browser isDragging={isDragging} />
+            {moduleComponent as React.ReactNode}
+          </Splitter>
+        </DndContext>
+      </BrowserProvider>
       {draggedObjects && draggedObjects.length > 0 && (
         <DraggedIndicator ref={draggedIndicatorRef}>{draggedwidget}</DraggedIndicator>
       )}

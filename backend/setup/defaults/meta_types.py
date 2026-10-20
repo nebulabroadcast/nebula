@@ -122,7 +122,7 @@ META_TYPES = {
     },
     # Whether any item of the asset has aired (computed from asrun)
     "has_aired": {
-        "ns": "v",
+        "ns": "va",
         "type": T.BOOLEAN,
     },
     "solver": {
@@ -205,6 +205,7 @@ META_TYPES = {
         "ns": "m",
         "type": T.STRING,
         "fulltext": 9,
+        "index": True,
     },
     "subtitle": {
         "ns": "m",
@@ -464,6 +465,7 @@ META_TYPES = {
         "ns": "m",
         "fulltext": 9,
         "type": T.STRING,
+        "index": True,
     },  # Primary Content ID (local or global)
     "id/youtube": {
         "ns": "m",
