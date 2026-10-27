@@ -44,7 +44,6 @@
       flex-direction: row;
       align-items: center;
       justify-content: space-between;
-      cursor: pointer;
       user-select: none;
       user-drag: none;
       .icon {
@@ -71,6 +70,24 @@
         /* body rows are position: relative, keep the header above them */
         z-index: 2;
         outline: 2px solid var(--color-surface-02);
+
+        &.sortable div {
+          cursor: pointer;
+        }
+
+        .resize-handle {
+          position: absolute;
+          top: 0;
+          right: 0;
+          bottom: 0;
+          width: 6px;
+          cursor: col-resize;
+          touch-action: none;
+
+          &:hover {
+            background-color: var(--color-surface-05);
+          }
+        }
       }
 
       /* if this is used, left colored border is visible in the corner of the table header, which looks bad */
@@ -153,6 +170,21 @@
         }
       }
 
+      /* Spacer rows of virtual tables stand for the rows not rendered */
+      tr.spacer {
+        border: 0;
+        cursor: default;
+
+        &:hover {
+          background-color: transparent;
+        }
+
+        td {
+          height: auto;
+          padding: 0;
+        }
+      }
+
       .drop-highlight {
         td {
           border-bottom: 1px solid var(--color-cyan);
@@ -160,4 +192,9 @@
       }
     }
   }
+}
+
+/* Rows of virtual tables have a fixed height (ROW_HEIGHT in VirtualRows.tsx) */
+.nb-table.virtual table tbody tr[data-index] {
+  height: 25px;
 }

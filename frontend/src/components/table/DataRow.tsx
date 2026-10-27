@@ -3,8 +3,13 @@ import clsx from 'clsx';
 import React, { useMemo } from 'react';
 
 import BodyCell from './BodyCell';
-import { rowId, rowType, toDraggableItem } from './rowFields';
-import { TableRowData, TableColumn, TableDraggableItem } from './types';
+import { rowId, rowType } from './rowFields';
+import type {
+  TableRowData,
+  TableColumn,
+  TableDraggableItem,
+  TableDragData,
+} from './types';
 
 interface DataRowProps {
   rowData: TableRowData;
@@ -22,7 +27,7 @@ interface DataRowProps {
   ident: string | number;
   index: number;
   selected?: boolean;
-  draggableItems?: TableDraggableItem[];
+  getDragItems: (rowData: TableRowData, index: number) => TableDraggableItem[];
 }
 
 const DataRow = ({
@@ -36,7 +41,7 @@ const DataRow = ({
   ident,
   index,
   selected = false,
-  draggableItems,
+  getDragItems,
 }: DataRowProps) => {
   const type = rowType(rowData);
   const id = rowId(rowData);
@@ -45,11 +50,7 @@ const DataRow = ({
     // rows and rundown (item/event) rows share one context and their numeric
     // ids overlap, so the type has to be part of the id.
     id: `${type}-${id}`,
-    data:
-      draggableItems?.length &&
-      draggableItems.some((item) => item.id === id && item.type === type)
-        ? draggableItems
-        : [toDraggableItem(rowData)],
+    data: { getItems: () => getDragItems(rowData, index) } satisfies TableDragData,
   });
 
   const handleClick = (event: React.MouseEvent<HTMLTableRowElement>) => {

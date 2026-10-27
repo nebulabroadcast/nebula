@@ -15,9 +15,9 @@ import {
   Dialog,
 } from '@/components';
 import type { DropdownOptionProps } from '@/components/Dropdown';
+import { parseValue, siteViewKey, useBrowser } from '@/containers/Browser';
 import { useDialog } from '@/features/Dialogs';
 import { MediaUploadDialog, useMediaUpload } from '@/features/MediaUpload';
-import { useNebula } from '@/features/Nebula';
 import nebula from '@/nebula';
 
 interface AssetEditorNavProps {
@@ -85,7 +85,7 @@ const AssetEditorNav: React.FC<AssetEditorNavProps> = ({
   const [detailsVisible, setDetailsVisible] = useState(false);
   const [uploadVisible, setUploadVisible] = useState(false);
   const showDialog = useDialog();
-  const { setCurrentView, setSearchQuery } = useNebula();
+  const browser = useBrowser();
   const { queue } = useMediaUpload();
 
   // There's already an upload task for this asset in the queue
@@ -137,13 +137,17 @@ const AssetEditorNav: React.FC<AssetEditorNavProps> = ({
       separator: idx === 0,
       disabled: !assetData[l.source_key],
       onClick: () => {
-        const val = assetData[l.source_key] as string | number;
-        const query = `${l.target_key}:${val}`;
-        setCurrentView(l.view);
-        setSearchQuery(query);
+        browser.openTab(siteViewKey(l.view), [
+          {
+            key: l.target_key,
+            op: 'eq',
+            // as the target field expects it (an id stored as a string...)
+            value: parseValue(l.target_key, String(assetData[l.source_key])),
+          },
+        ]);
       },
     }));
-  }, [assetData, currentFolder, setCurrentView, setSearchQuery]);
+  }, [assetData, currentFolder, browser]);
 
   const sendTo = useCallback(() => {
     if (!assetData?.id) return;

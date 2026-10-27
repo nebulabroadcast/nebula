@@ -1,420 +1,209 @@
-import { Table, Section } from '@components';
-import type {
-  TableColumn,
-  TableRowData,
-  TableSortDirection,
-} from '@components/table/types';
-import Pagination from '@containers/Pagination';
-import { useDialog } from '@features/Dialogs';
-import { useNebula } from '@features/Nebula';
-import {
-  getColumnWidth,
-  getFormatter,
-  formatRowHighlightColor,
-  formatRowHighlightStyle,
-} from '@lib/tableFormat';
-import { useLocalStorage } from '@lib/useLocalStorage';
-import { getErrorDetail } from '@lib/utils';
-import clsx from 'clsx';
-import { debounce } from 'lodash';
-import { useCallback, useEffect, useState, useRef, useMemo } from 'react';
-import { toast } from 'react-toastify';
+import styled from 'styled-components';
 
-import BrowserNav from './BrowserNav';
+import BrowserFilterBar from './BrowserFilterBar';
+import BrowserTab from './BrowserTab';
+import BrowserTabs from './BrowserTabs';
+import { useBrowser } from './useBrowser';
 
-import type { BrowseAssetsRequest } from '@/client';
-import type { ContextMenuOption } from '@/components/ContextMenu';
-import { useWebSocket, type WebSocketHandler } from '@/features/Websocket';
-import nebula from '@/nebula';
+// Tabs and the filter bar, as high as two navbars and the gap between
+// them, so the browser lines up with the panels next to it
+const Header = styled.div`
+  position: relative;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  height: calc(2 * (var(--input-height) + 8px) + var(--section-gap));
+  border-radius: var(--nav-border-radius);
+  background-color: var(--color-surface-02);
 
-const ROWS_PER_PAGE = 200;
+  .icon {
+    font-size: 18px;
+  }
 
-type RequestParams = Required<
-  Pick<
-    BrowseAssetsRequest,
-    'view' | 'query' | 'conditions' | 'limit' | 'offset' | 'order_by' | 'order_dir'
-  >
->;
+  /* Tabs shrink to fit; the new tab button stays at the far right */
+  .tabs {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 0;
+    padding: 4px 4px 0;
+  }
 
-interface BrowserTableProps {
+  /* as high as the tabs, at their bottom */
+  .tabs > .nb-button {
+    align-self: flex-end;
+    min-height: 34px;
+    max-height: 34px;
+    background: none;
+    color: var(--color-text-dim);
+
+    &:hover {
+      color: var(--color-text-hl);
+      background-color: var(--color-surface-03);
+    }
+  }
+
+  .tab-list {
+    flex: 1;
+    align-self: stretch;
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .tab {
+    flex: 0 1 auto;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 48px;
+    max-width: 200px;
+    height: 34px;
+    padding: 0 4px 0 10px;
+    border-radius: 6px 6px 0 0;
+    color: var(--color-text-dim);
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+
+    .label {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .query {
+      color: var(--color-text-dim);
+    }
+
+    &:hover {
+      background-color: var(--color-surface-03);
+      color: var(--color-text);
+    }
+
+    &.active {
+      background-color: var(--color-surface-04);
+      color: var(--color-text-hl);
+    }
+
+    .new {
+      display: inline-flex;
+      align-items: center;
+      height: 16px;
+      padding: 0 5px;
+      border: 1px solid color-mix(in srgb, var(--color-cyan) 50%, transparent);
+      border-radius: 8px;
+      font-size: 10px;
+      color: var(--color-cyan);
+
+      &:hover {
+        background-color: color-mix(in srgb, var(--color-cyan) 18%, transparent);
+      }
+    }
+
+    .close {
+      font-size: 15px;
+      border-radius: 3px;
+      opacity: 0;
+
+      &:hover {
+        opacity: 1;
+        background-color: var(--color-surface-07);
+      }
+    }
+
+    &:hover .close,
+    &.active .close {
+      opacity: 0.7;
+    }
+  }
+
+  /* the active tab sits on the bar: no rounded corner under the first one */
+  .filter-row {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    height: var(--input-height);
+    margin: 0 4px 4px;
+    border-radius: 4px;
+    background-color: var(--color-surface-04);
+  }
+
+  &:has(.tab:first-child.active) .filter-row {
+    border-top-left-radius: 0;
+  }
+
+  .filter-bar {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: var(--input-height);
+    padding: 0 2px 0 8px;
+    border-radius: 4px;
+    color: var(--color-text-dim);
+    cursor: text;
+
+    &.open {
+      background-color: var(--color-surface-05);
+      outline: 1px solid var(--color-violet);
+    }
+
+    &:hover:not(.open) {
+      background-color: var(--color-surface-05);
+    }
+
+    input {
+      flex: 1;
+      min-width: 60px;
+      height: 100%;
+      padding: 0;
+      border: 0;
+      outline: 0;
+      background: none;
+      color: var(--color-text);
+    }
+  }
+`;
+
+interface BrowserProps {
   isDragging: boolean;
 }
 
-const BrowserTable = ({ isDragging }: BrowserTableProps) => {
-  const {
-    currentViewId,
-    searchQuery,
-    filterConditions,
-    selectedAssets,
-    focusedAsset,
-    browserRefreshId,
-    setCurrentView,
-    setFilterConditions,
-    setSelectedAssets,
-    setFocusedAsset,
-  } = useNebula();
-
-  const currentView = useMemo(
-    () => (nebula?.settings?.views || []).find((v) => v.id === currentViewId),
-    [currentViewId]
-  );
-
-  const ws = useWebSocket();
-
-  const [columns, setColumns] = useState<TableColumn[]>([]);
-  const [data, setData] = useState<TableRowData[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [sortBy, setSortBy] = useLocalStorage('mam.browser.sortBy', 'ctime');
-  const [sortDirection, setSortDirection] = useLocalStorage<TableSortDirection>(
-    'mam.browser.sortDirection',
-    'desc'
-  );
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(false);
-  const showDialog = useDialog();
-
-  const dataRef = useRef(data);
-  const requestParamsRef = useRef<RequestParams | null>(null);
-  // Incremented on every load. Responses of superseded requests are ignored,
-  // so a slow response can't overwrite newer data or the selected sort order
-  const requestSeqRef = useRef(0);
-  const contextCellRef = useRef<{ rowData: TableRowData; columnName: string } | null>(
-    null
-  );
-
-  //
-  // Data loading
-  //
-
-  const loadData = useCallback(() => {
-    // Use current value of requestParamsRef to avoid stale data
-    const params = requestParamsRef.current;
-    if (!params) return;
-    const seq = ++requestSeqRef.current;
-    void nebula
-      .browse({ body: params, throwOnError: true })
-      .then((response) => {
-        if (seq !== requestSeqRef.current) return;
-        const hasMore = response.data.data.length > ROWS_PER_PAGE;
-        const rows = response.data.data.slice(0, ROWS_PER_PAGE);
-        setData(rows);
-        // the server may fall back to a different sort order
-        setSortBy(response.data.order_by);
-        setSortDirection(response.data.order_dir);
-
-        const cols = [];
-        for (const colName of response.data.columns) {
-          if (colName == 'subtitle') continue; // added automatically
-          cols.push({
-            name: colName,
-            title: nebula.metaType(colName).header,
-            formatter: getFormatter(colName),
-            width: getColumnWidth(colName),
-          });
-        }
-        setColumns(cols);
-        setHasMore(hasMore);
-      })
-      .finally(() => {
-        if (seq === requestSeqRef.current) setLoading(false);
-      });
-  }, [setSortBy, setSortDirection]);
-
-  //
-  // References
-  //
-
-  useEffect(() => {
-    // Save the data to a ref - it is used by the pubsub event handler
-    // to match the changed objects with the current data
-    dataRef.current = data;
-  }, [data]);
-
-  useEffect(() => {
-    // User changed view or search query
-    if (!currentViewId) {
-      // No view selected, load the first available view
-      if (nebula?.settings?.views?.length) {
-        setCurrentView(nebula.settings.views[0].id);
-      }
-      return;
-    }
-
-    // Save the request params - we will use them to load the data
-    // when objects are changed externally
-
-    requestParamsRef.current = {
-      view: currentViewId,
-      query: searchQuery || '',
-      conditions: filterConditions.length ? filterConditions : null,
-      limit: ROWS_PER_PAGE + 1,
-      offset: page ? (page - 1) * ROWS_PER_PAGE : 0,
-      order_by: sortBy,
-      order_dir: sortDirection,
-    };
-
-    // show loading indicator only if the user initiated the refresh
-    setLoading(true);
-    loadData();
-  }, [
-    currentView,
-    searchQuery,
-    filterConditions,
-    sortBy,
-    sortDirection,
-    page,
-    browserRefreshId,
-    loadData,
-  ]);
-
-  useEffect(() => {
-    // Reset page when view, search query or filters change
-    setPage(1);
-  }, [currentView, searchQuery, filterConditions, sortBy, sortDirection]);
-
-  //
-  // Subscribe to objects_changed pubsub event
-  //
-
-  useEffect(() => {
-    // Debounce the loadData function to avoid multiple requests
-    // when multiple objects are changed at the same time
-    const debouncingLoadData = debounce(loadData, 100);
-
-    const handlePubSub: WebSocketHandler<'objects_changed'> = (_topic, message) => {
-      if (message.object_type !== 'asset') return;
-      let changed = false;
-      for (const obj of message.objects) {
-        const _data = dataRef.current || [];
-        if (_data.find((row) => row.id === obj)) {
-          changed = true;
-          break;
-        }
-      }
-      if (changed) {
-        debouncingLoadData();
-      }
-    };
-
-    const unsubscribe = ws.subscribe('objects_changed', handlePubSub);
-    return () => {
-      unsubscribe();
-      debouncingLoadData.cancel();
-    };
-  }, [ws, loadData]);
-
-  //
-  // User interaction
-  //
-
-  const onRowClick = (rowData: TableRowData, event: React.MouseEvent) => {
-    const rowId = rowData.id as number;
-    let newSelectedAssets: number[] = [];
-    if (event.ctrlKey) {
-      if (selectedAssets.includes(rowId)) {
-        newSelectedAssets = selectedAssets.filter((obj) => obj !== rowId);
-      } else {
-        newSelectedAssets = [...selectedAssets, rowId];
-      }
-    } else if (event.shiftKey) {
-      const clickedIndex = data.findIndex((row) => row.id === rowId);
-      const focusedAssetIndex = data.findIndex((row) => row.id === focusedAsset);
-      const firstSelectedIndex = data.findIndex((row) =>
-        selectedAssets.includes(row.id as number)
-      );
-      const focusedIndex =
-        focusedAssetIndex !== -1
-          ? focusedAssetIndex
-          : firstSelectedIndex !== -1
-            ? firstSelectedIndex
-            : clickedIndex !== -1
-              ? clickedIndex
-              : 0;
-
-      const min = Math.min(clickedIndex, focusedIndex);
-      const max = Math.max(clickedIndex, focusedIndex);
-
-      // Get the ids of the rows in the range
-      const rangeIds = data.slice(min, max + 1).map((row) => row.id as number);
-
-      newSelectedAssets = [...new Set([...selectedAssets, ...rangeIds])];
-    } else {
-      newSelectedAssets = [rowId];
-    }
-
-    setSelectedAssets(newSelectedAssets);
-    setFocusedAsset(rowId);
-  };
-
-  const focusNext = (offset: number) => {
-    if (focusedAsset === null) return;
-    const nextIndex = data.findIndex((row) => row.id === focusedAsset) + offset;
-    if (nextIndex < data.length) {
-      const nextRow = data[nextIndex] as TableRowData | undefined;
-      if (!nextRow) return;
-      const nextId = nextRow.id as number;
-      setSelectedAssets([nextId]);
-      setFocusedAsset(nextId);
-    }
-  };
-
-  const onKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'ArrowDown') {
-      focusNext(1);
-      e.preventDefault();
-    }
-    if (e.key === 'ArrowUp') {
-      focusNext(-1);
-      e.preventDefault();
-    }
-  };
-
-  const saveSelectionStatus = (status: number) => {
-    const operations = selectedAssets.map((id) => ({
-      id,
-      data: { status },
-    }));
-    nebula
-      .ops({ body: { operations }, throwOnError: true })
-      .then(() => {
-        toast.success('Status updated');
-      })
-      .catch((error: unknown) => {
-        console.error(error);
-        toast.error(getErrorDetail(error));
-      });
-  };
-
-  const setSelectionStatus = (status: number, question: string) => {
-    // Change asset status of the selected assets
-    if (question) {
-      showDialog('confirm', 'Are you sure?', { message: question })
-        .then(() => {
-          saveSelectionStatus(status);
-        })
-        .catch(() => {
-          // dialog dismissed, do nothing
-        });
-    } else {
-      saveSelectionStatus(status);
-    }
-  };
-
-  const sendTo = () => {
-    showDialog('sendto', 'Send to...', { assets: selectedAssets })
-      .then(() => {
-        // nothing to do after sending
-      })
-      .catch(() => {
-        // dialog dismissed, do nothing
-      });
-  };
-
-  const contextMenu = (): ContextMenuOption[] => {
-    const options: ContextMenuOption[] = [];
-
-    const cell = contextCellRef.current;
-    const cellValue = cell?.rowData[cell.columnName];
-    if (
-      cell &&
-      cellValue !== null &&
-      cellValue !== undefined &&
-      cellValue !== '' &&
-      typeof cellValue !== 'object'
-    ) {
-      const columnName = cell.columnName;
-      options.push({
-        label: `Filter by ${nebula.metaType(columnName).header}`,
-        icon: 'filter_alt',
-        separator: true,
-        onClick: () => {
-          setFilterConditions([
-            ...filterConditions.filter((condition) => condition.key !== columnName),
-            {
-              key: columnName,
-              value: cellValue as string | number | boolean,
-              operator: '=',
-            },
-          ]);
-        },
-      });
-    }
-
-    options.push(
-      {
-        label: 'Send to...',
-        separator: options.length > 0,
-        icon: 'send',
-        onClick: () => {
-          sendTo();
-        },
-      },
-      {
-        label: 'Reset',
-        icon: 'undo',
-        onClick: () => {
-          setSelectionStatus(5, 'Do you want to reload selected assets metadata?');
-        },
-      },
-      {
-        label: 'Archive',
-        separator: true,
-        icon: 'archive',
-        onClick: () => {
-          setSelectionStatus(4, 'Do you want to move selected assets to archive?');
-        },
-      },
-      {
-        label: 'Trash',
-        icon: 'delete',
-        hlColor: 'var(--color-red)',
-        onClick: () => {
-          setSelectionStatus(3, 'Do you want to move selected assets to trash?');
-        },
-      }
-    );
-
-    return options;
-  };
-
-  const tableClass = clsx('contained', isDragging && 'no-scroll');
+// Every tab stays mounted (hidden ones with display: none), so switching
+// tabs keeps their rows and scroll position, and hidden tabs keep up with
+// changes
+const Browser = ({ isDragging }: BrowserProps) => {
+  const browser = useBrowser();
+  const active = browser.tabs.find((tab) => tab.id === browser.activeId);
 
   return (
     <>
-      <Section className="grow">
-        <Table
-          data={data}
-          columns={columns}
-          className={tableClass}
-          keyField="id"
-          selection={selectedAssets}
-          onRowClick={onRowClick}
-          onContextMenu={(rowData, columnName) => {
-            contextCellRef.current = { rowData, columnName };
-          }}
-          onKeyDown={onKeyDown}
-          rowHighlightColor={formatRowHighlightColor}
-          rowHighlightStyle={formatRowHighlightStyle}
-          loading={loading}
-          sortBy={sortBy}
-          sortDirection={sortDirection}
-          contextMenu={contextMenu}
-          onSort={(sortBy, sortDirection) => {
-            setSortBy(sortBy);
-            setSortDirection(sortDirection);
-          }}
-        />
-      </Section>
-      <Pagination page={page} setPage={setPage} hasMore={hasMore} />
-    </>
-  );
-};
-
-const Browser = ({ isDragging }: BrowserTableProps) => {
-  return (
-    <>
-      <BrowserNav />
-      <BrowserTable isDragging={isDragging} />
+      <Header>
+        <BrowserTabs />
+        {/* Starts over with another tab or view (the input shows the tab's query) */}
+        {active && (
+          <BrowserFilterBar key={`${active.id}:${active.view}`} tab={active} />
+        )}
+      </Header>
+      {browser.tabs.map((tab) => {
+        const view = browser.view(tab);
+        return (
+          view && (
+            <BrowserTab
+              key={tab.id}
+              tab={tab}
+              view={view}
+              active={tab.id === browser.activeId}
+              isDragging={isDragging}
+            />
+          )
+        );
+      })}
     </>
   );
 };
