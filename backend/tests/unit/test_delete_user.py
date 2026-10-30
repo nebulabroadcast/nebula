@@ -1,4 +1,4 @@
-"""A deleted user is logged out everywhere. No database, no redis."""
+"""Deleting users, events and assets. No database, no redis."""
 
 from collections.abc import AsyncGenerator
 from types import SimpleNamespace
@@ -47,3 +47,24 @@ async def test_delete_user_logs_them_out(monkeypatch: pytest.MonkeyPatch) -> Non
     with request_context(RequestContext(user=ADMIN, session_token="admin")):  # noqa: S106
         await DeleteObjects().handle(request, ADMIN)
     assert sessions == {}
+
+
+@pytest.mark.asyncio
+async def test_delete_skips_what_it_cant(monkeypatch: pytest.MonkeyPatch) -> None:
+    deleted: list[int | None] = []
+
+    async def load(_cls: Any, object_id: int, **_: Any) -> nebula.Event:
+        if object_id == 99:
+            raise nebula.NotFoundException("Event ID 99 not found")
+        return nebula.Event(meta={"id": object_id})
+
+    async def delete(self: nebula.Event) -> None:
+        if self.id == 2:
+            raise nebula.ConflictException("aired")  # e.g. the asrun foreign key
+        deleted.append(self.id)
+
+    monkeypatch.setattr(nebula.Event, "load", classmethod(load))
+    monkeypatch.setattr(nebula.Event, "delete", delete)
+    request = DeleteObjectsRequest(object_type=ObjectType.EVENT, ids=[1, 99, 2, 3])
+    await DeleteObjects().handle(request, ADMIN)
+    assert deleted == [1, 3]

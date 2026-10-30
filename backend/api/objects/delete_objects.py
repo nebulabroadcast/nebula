@@ -87,13 +87,17 @@ class DeleteObjects(APIRequest):
         # Delete simple objects
 
         cls = get_object_class_by_name(request.object_type)
+        # Best effort, as the scheduler's delete: whatever can't be deleted
+        # (missing, aired...) is logged and skipped
         for id_object in request.ids:
-            obj = await cls.load(id_object)
             try:
+                obj = await cls.load(id_object)
                 await obj.delete()
                 if isinstance(obj, nebula.User):
                     await Session.revoke_user(obj.id, keep_current=False)
             except Exception:
-                nebula.log.traceback(f"Unable to delete {obj}")
+                nebula.log.traceback(
+                    f"Unable to delete {request.object_type.value} {id_object}"
+                )
 
         return
