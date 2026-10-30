@@ -126,12 +126,6 @@ def install_frontend_plugins(app: FastAPI) -> None:
         )
 
 
-# TODO: this is a development hack.
-HLS_DIR = "/mnt/nebula_01/hls/"
-if os.path.exists(HLS_DIR):
-    app.mount("/hls", StaticFiles(directory=HLS_DIR))
-
-
 def install_frontend(app: FastAPI) -> None:
     if nebula.config.frontend_dir and os.path.isdir(nebula.config.frontend_dir):
         app.mount("/", StaticFiles(directory=nebula.config.frontend_dir, html=True))
