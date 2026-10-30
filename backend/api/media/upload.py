@@ -23,13 +23,14 @@ class UploadMedia(APIRequest):
     title = "Get objects"
     category = "Asset management"
 
-    async def handle(
+    async def handle(  # noqa: PLR0915
         self,
         request: Request,
         asset: AssetInPath,
         user: CurrentUser,
     ) -> None:
         _ = user  # Required to gate this endpoint behind authentication
+        asset.ensure_can_edit()  # checks the request's user (nebula.context)
         assert asset["media_type"] == MediaType.FILE, "Only file assets can be uploaded"
         extension = request.headers.get("X-nebula-extension")
         assert extension, "Missing X-nebula-extension header"
