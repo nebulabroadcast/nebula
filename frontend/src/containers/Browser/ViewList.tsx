@@ -71,7 +71,7 @@ const ViewList = ({ tab, view, onClose }: ViewListProps) => {
         onClose();
       }}
     >
-      <Icon name={tab.view === key ? 'radio_button_checked' : icon} />
+      <Icon name={icon} />
       <span className="grow">{name}</span>
       {actions}
     </button>
@@ -137,7 +137,7 @@ const ViewList = ({ tab, view, onClose }: ViewListProps) => {
       )}
       {userView && (
         <button
-          className="it current"
+          className="it changed"
           data-nav
           title="Save the filters, search, sort and columns into this view"
           onClick={() => {

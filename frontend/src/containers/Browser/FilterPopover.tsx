@@ -210,7 +210,7 @@ const FilterPopover = ({
     </>
   );
 
-  const modeButton = (value: PopoverMode, label: string, count: number) => (
+  const modeButton = (value: PopoverMode, label: string) => (
     <button
       className={clsx(mode === value && 'on')}
       onClick={() => {
@@ -218,7 +218,6 @@ const FilterPopover = ({
       }}
     >
       {label}
-      <span className="count">{count}</span>
     </button>
   );
 
@@ -235,8 +234,8 @@ const FilterPopover = ({
         <ViewList tab={tab} view={view} onClose={onClose} />
         <div className="main">
           <div className="modes">
-            {modeButton('filters', 'Filters', tab.conditions.length)}
-            {modeButton('columns', 'Columns', columns.length)}
+            {modeButton('filters', 'Filters')}
+            {modeButton('columns', 'Columns')}
           </div>
           {mode === 'filters' ? (
             <>
@@ -270,12 +269,6 @@ const FilterPopover = ({
             </>
           )}
         </div>
-      </div>
-      <div className="foot">
-        <span>↑↓ move</span>
-        <span>Enter pick or search</span>
-        <span>field:value adds a filter</span>
-        <span>Esc close</span>
       </div>
     </Pop>
   );

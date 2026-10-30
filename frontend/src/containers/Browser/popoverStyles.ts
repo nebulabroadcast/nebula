@@ -109,12 +109,18 @@ export const Pop = styled.div`
     }
 
     &.hi {
-      box-shadow: inset 2px 0 0 var(--color-violet);
+      box-shadow: inset 2px 0 0 var(--color-cyan);
     }
 
     &.current,
     &.current .icon {
       color: var(--color-cyan);
+    }
+
+    /* unsaved changes */
+    &.changed,
+    &.changed .icon {
+      color: var(--color-violet);
     }
 
     input {
@@ -191,7 +197,8 @@ export const Pop = styled.div`
   }
 
   .options button.on {
-    background-color: var(--color-violet);
+    background-color: var(--active-item-background);
+    color: var(--active-item-color);
   }
 
   .operators {
@@ -229,16 +236,6 @@ export const Pop = styled.div`
     border-top: 1px solid var(--color-surface-05);
   }
 
-  .foot {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    padding: 4px 10px;
-    border-top: 1px solid var(--color-surface-05);
-    font-size: 10.5px;
-    color: var(--color-text-dim);
-  }
-
   @media (max-width: 520px) {
     .cols {
       grid-template-columns: 1fr;
@@ -259,9 +256,6 @@ export const Pop = styled.div`
     border-bottom: 1px solid var(--color-surface-05);
 
     button {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
       height: 26px;
       padding: 0 10px;
       border: 0;
@@ -276,14 +270,7 @@ export const Pop = styled.div`
 
       &.on {
         color: var(--color-text-hl);
-        border-bottom-color: var(--color-violet);
-      }
-
-      .count {
-        padding: 0 4px;
-        border-radius: 6px;
-        background-color: var(--color-surface-06);
-        font-size: 10px;
+        border-bottom-color: var(--color-cyan);
       }
     }
   }

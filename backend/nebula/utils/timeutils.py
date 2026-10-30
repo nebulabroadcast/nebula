@@ -9,7 +9,7 @@ __all__ = [
 ]
 
 
-import datetime
+import datetime as dt
 import time
 
 
@@ -23,13 +23,13 @@ def datestr2ts(datestr: str, hh: int = 0, mm: int = 0, ss: int = 0) -> int:
         raise ValueError("Invalid date string")
     if not all(e.isdigit() for e in split):
         raise ValueError("Invalid date string")
-    dt = datetime.datetime(  # noqa: DTZ001
+    dat = dt.datetime(  # noqa: DTZ001
         int(split[0]),
         int(split[1].lstrip("0")),
         int(split[2].lstrip("0")),
     )
-    offset = datetime.timedelta(hours=hh, minutes=mm, seconds=ss)
-    return int(time.mktime((dt + offset).timetuple()))
+    offset = dt.timedelta(hours=hh, minutes=mm, seconds=ss)
+    return int(time.mktime((dat + offset).timetuple()))
 
 
 def tc2s(tc: str, base: float = 25) -> float:

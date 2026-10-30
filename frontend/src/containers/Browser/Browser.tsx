@@ -150,7 +150,7 @@ const Header = styled.div`
 
     &.open {
       background-color: var(--color-surface-05);
-      outline: 1px solid var(--color-violet);
+      outline: 1px solid var(--color-cyan);
     }
 
     &:hover:not(.open) {

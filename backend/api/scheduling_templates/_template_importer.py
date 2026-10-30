@@ -1,4 +1,4 @@
-import datetime
+import datetime as dt
 import re
 from typing import Any, Literal
 
@@ -109,7 +109,7 @@ class TemplateImporter:
         week_start = get_week_start(date, self.day_start_hour, self.day_start_minute)
 
         for i in range(7):
-            day_start = week_start + datetime.timedelta(days=i)
+            day_start = week_start + dt.timedelta(days=i)
             day_name: DayKey = DAY_NAMES[day_start.weekday()]
 
             day_start_ts = int(day_start.timestamp())

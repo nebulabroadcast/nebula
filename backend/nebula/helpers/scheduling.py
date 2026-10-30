@@ -1,4 +1,4 @@
-import datetime
+import datetime as dt
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, Any
 
@@ -134,7 +134,7 @@ def parse_rundown_date(
 ) -> int:
     """Parse the date from the request and return a datetime object"""
     if not date:
-        date = datetime.datetime.now().strftime("%Y-%m-%d")  # noqa: DTZ005
+        date = dt.datetime.now().strftime("%Y-%m-%d")  # noqa: DTZ005
     hh, mm = channel_config.day_start
     return datestr2ts(date, hh=hh, mm=mm)
 

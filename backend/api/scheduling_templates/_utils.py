@@ -1,4 +1,4 @@
-import datetime
+import datetime as dt
 import json
 import os
 from typing import Any
@@ -38,12 +38,12 @@ def load_template(name: str) -> dict[str, Any]:
         raise nebula.NebulaException(f"Failed to load template {name}") from e
 
 
-def get_week_start(date: str, hour: int = 0, minute: int = 0) -> datetime.datetime:
+def get_week_start(date: str, hour: int = 0, minute: int = 0) -> dt.datetime:
     """Get the start of the week for the given date"""
     date = date.split("T", maxsplit=1)[0]  # Remove time if present
-    this_date = datetime.datetime.strptime(date, "%Y-%m-%d")  # noqa: DTZ007
-    week_start_midnight = this_date - datetime.timedelta(days=this_date.weekday())
-    return datetime.datetime(  # noqa: DTZ001
+    this_date = dt.datetime.strptime(date, "%Y-%m-%d")  # noqa: DTZ007
+    week_start_midnight = this_date - dt.timedelta(days=this_date.weekday())
+    return dt.datetime(  # noqa: DTZ001
         week_start_midnight.year,
         week_start_midnight.month,
         week_start_midnight.day,
