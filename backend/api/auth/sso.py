@@ -1,5 +1,6 @@
 from typing import cast
 
+from authlib.common.errors import AuthlibBaseError
 from fastapi import Request
 from fastapi.responses import RedirectResponse
 
@@ -48,20 +49,28 @@ class SSOLoginCallback(APIRequest):
         oauth_verifier = request.query_params.get("oauth_verifier")
 
         user_info = {}
+        # None when the provider sends none of them (e.g. ?error=access_denied
+        # after the user cancels)
+        token = None
 
-        if code:
-            token = await remote.authorize_access_token(request)  # type: ignore[no-untyped-call]
-            user_info = token.get("userinfo", {})
+        try:
+            if code:
+                token = await remote.authorize_access_token(request)  # type: ignore[no-untyped-call]
+                user_info = token.get("userinfo", {})
 
-        if id_token and not user_info:
-            token = {"id_token": id_token}
-            user_info = await remote.parse_id_token(request, token)
+            if id_token and not user_info:
+                token = {"id_token": id_token}
+                user_info = await remote.parse_id_token(request, token)
 
-        if oauth_verifier and not user_info:
-            token = await remote.authorize_access_token(request)  # type: ignore[no-untyped-call]
+            if oauth_verifier and not user_info:
+                token = await remote.authorize_access_token(request)  # type: ignore[no-untyped-call]
 
-        if token and not user_info:
-            user_info = await remote.userinfo(token=token)
+            if token and not user_info:
+                user_info = await remote.userinfo(token=token)
+        except AuthlibBaseError as e:
+            # Mismatching state, expired code, invalid id_token...
+            nebula.log.warning(f"SSO login with {provider} failed: {e}")
+            return RedirectResponse("/?error=Login failed")
 
         if not user_info:
             return RedirectResponse("/?error=Invalid response from provider")
