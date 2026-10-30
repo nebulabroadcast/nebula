@@ -12,6 +12,9 @@ const parentOf = (value: string) => value.slice(0, Math.max(0, value.lastIndexOf
 const compareLevels = (a: string, b: string) =>
   a.localeCompare(b, undefined, { numeric: true });
 
+// Labels and headers only group the values under them
+const pickable = (option: ValueOption) => !option.role || option.role === 'option';
+
 interface OptionListProps {
   options: ValueOption[];
   // Picks several values; otherwise one
@@ -23,7 +26,13 @@ interface OptionListProps {
 // Values to pick from. Hierarchical values ("3.4.6" under "3.4" under "3")
 // are a tree: a picked value includes everything under it, so its
 // descendants show as included
-const OptionList = ({ options, multi, value, onChange }: OptionListProps) => {
+const OptionList = ({
+  options: allOptions,
+  multi,
+  value,
+  onChange,
+}: OptionListProps) => {
+  const options = allOptions.filter((option) => option.role !== 'hidden');
   const selected = multi ? ((value as unknown[] | undefined) ?? []) : [value];
   const hierarchical = options.some((o) => String(o.value).includes('.'));
   const [search, setSearch] = useState('');
@@ -35,6 +44,13 @@ const OptionList = ({ options, multi, value, onChange }: OptionListProps) => {
     }
     return open;
   });
+
+  const toggleOpen = (v: string) => {
+    const next = new Set(expanded);
+    if (next.has(v)) next.delete(v);
+    else next.add(v);
+    setExpanded(next);
+  };
 
   const toggle = (option: ValueOption) => {
     if (!multi) onChange(option.value);
@@ -71,6 +87,7 @@ const OptionList = ({ options, multi, value, onChange }: OptionListProps) => {
             <button
               key={String(option.value)}
               className={clsx(selected.includes(option.value) && 'on')}
+              disabled={!pickable(option)}
               onClick={() => {
                 toggle(option);
               }}
@@ -126,6 +143,7 @@ const OptionList = ({ options, multi, value, onChange }: OptionListProps) => {
             const parent = includedBy(v);
             const on = selected.includes(option.value);
             const open = !!word || expanded.has(v);
+            const isLabel = !pickable(option);
             return (
               <div
                 key={v}
@@ -140,23 +158,24 @@ const OptionList = ({ options, multi, value, onChange }: OptionListProps) => {
                   )}
                   translate="no"
                   onClick={() => {
-                    const next = new Set(expanded);
-                    if (open) next.delete(v);
-                    else next.add(v);
-                    setExpanded(next);
+                    toggleOpen(v);
                   }}
                 >
                   {open ? 'expand_more' : 'chevron_right'}
                 </span>
                 <button
+                  className={clsx(isLabel && 'label')}
                   disabled={!!parent}
                   onClick={() => {
-                    toggle(option);
+                    if (isLabel) toggleOpen(v);
+                    else toggle(option);
                   }}
                 >
-                  <span className="icon material-symbols-outlined" translate="no">
-                    {on || parent ? 'check_box' : 'check_box_outline_blank'}
-                  </span>
+                  {!isLabel && (
+                    <span className="icon material-symbols-outlined" translate="no">
+                      {on || parent ? 'check_box' : 'check_box_outline_blank'}
+                    </span>
+                  )}
                   {option.title}
                 </button>
               </div>

@@ -182,8 +182,15 @@ export const Pop = styled.div`
     color: var(--color-text-dim);
     cursor: pointer;
 
-    &:hover {
+    &:hover:not(:disabled) {
       color: var(--color-text-hl);
+    }
+
+    /* a label, not a value */
+    &:disabled {
+      background: none;
+      color: var(--color-text);
+      cursor: default;
     }
 
     &.on {
@@ -342,6 +349,10 @@ export const Pop = styled.div`
 
         &:hover:not(:disabled) {
           background-color: var(--color-surface-05);
+        }
+
+        &.label:hover {
+          background: none;
         }
       }
 

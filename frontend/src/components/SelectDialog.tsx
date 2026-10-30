@@ -23,15 +23,17 @@ interface OptionProps {
 }
 
 const Option: React.FC<OptionProps> = ({ option, selected, onClick }) => {
+  // Labels and headers only group the options under them
+  const isLabel = option.role === 'label' || option.role === 'header';
   return (
     <div
       className={clsx(
         'nb-select-dialog-option',
         selected && 'selected',
-        option.role === 'label' && 'label'
+        isLabel && option.role
       )}
       style={{ paddingLeft: (option.level || 0) * 15 }}
-      onClick={option.role === 'label' ? undefined : onClick}
+      onClick={isLabel ? undefined : onClick}
       data-tooltip={option.description}
     >
       {option.title}

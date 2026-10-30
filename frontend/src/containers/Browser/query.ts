@@ -1,4 +1,4 @@
-import { isHierarchical } from './conditions';
+import { isHierarchical, valueOptions } from './conditions';
 import type { BrowserView, Condition, TabSettings, UserView, ViewKey } from './types';
 
 import type { FilterCondition, FilterNot, FilterOr, QueryRequest } from '@/client';
@@ -79,12 +79,27 @@ export const tabChanged = (view: BrowserView, tab: TabSettings): boolean =>
   JSON.stringify([tab.conditions, tab.query, tab.sort, tabColumns(view, tab)]) !==
   JSON.stringify([view.conditions, view.query, view.sort, view.columns]);
 
-// A value of a hierarchical field stands for itself and everything under it
+// The values, and the known values under them
+const withDescendants = (key: string, values: unknown[]): unknown[] => {
+  const prefixes = values.map((v) => `${String(v)}.`);
+  const under = (valueOptions(key) ?? [])
+    .map((option) => option.value)
+    .filter((v) => prefixes.some((prefix) => String(v).startsWith(prefix)));
+  return [...new Set([...values, ...under])];
+};
+
+// A value of a hierarchical field stands for itself and everything under
+// it. A list field contains any of the values: one `contains` each (the
+// listing's `contains` with several values needs all of them)
 const asFilter = (condition: Condition): FilterCondition | FilterOr | FilterNot => {
   const { key, op, value } = condition;
-  if (!(op === 'in' || op === 'nin') || !Array.isArray(value) || !isHierarchical(key)) {
-    return condition;
+  if (!Array.isArray(value)) return condition;
+  if (op === 'contains') {
+    const values = isHierarchical(key) ? withDescendants(key, value) : value;
+    if (values.length < 2) return condition;
+    return { or: values.map((v) => ({ key, op, value: [v] })) };
   }
+  if (!(op === 'in' || op === 'nin') || !isHierarchical(key)) return condition;
   const under: FilterOr = {
     or: value.flatMap((v: unknown) => [
       { key, op: 'eq', value: v },

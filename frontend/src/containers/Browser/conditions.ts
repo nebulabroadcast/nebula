@@ -1,6 +1,6 @@
 import type { Condition, FilterOp } from './types';
 
-import { ContentType, MediaType, ObjectStatus } from '@/client';
+import { ContentType, MediaType, ObjectStatus, type ClientCsItemModel } from '@/client';
 import nebula from '@/nebula';
 
 export interface Operator {
@@ -15,6 +15,9 @@ export interface Operator {
 export interface ValueOption {
   value: string | number | boolean;
   title: string;
+  // Classification values: hidden ones aren't offered, labels and headers
+  // can't be picked
+  role?: ClientCsItemModel['role'];
 }
 
 // Values of the asset enums that make sense when filtering assets
@@ -56,7 +59,9 @@ export const valueOptions = (key: string): ValueOption[] | null => {
   if (key in ENUM_OPTIONS) return ENUM_OPTIONS[key];
   const cs = nebula.metaType(key).cs;
   return cs
-    ? nebula.csOptions(cs).map((o) => ({ value: o.value, title: o.title }))
+    ? nebula
+        .csOptions(cs)
+        .map((o) => ({ value: o.value, title: o.title, role: o.role }))
     : null;
 };
 
@@ -77,9 +82,9 @@ const ORDERED: Operator[] = [
 ];
 
 // Classifications with levels ("3.4.6" is under "3.4", under "3"). Their
-// "is any of" matches everything under the picked values (query.ts)
+// "is any of" and "contains" match everything under the picked values
+// (query.ts)
 export const isHierarchical = (key: string): boolean =>
-  nebula.metaType(key).type !== 'list' &&
   !!valueOptions(key)?.some((option) => String(option.value).includes('.'));
 
 const ANY_OF: Operator[] = [
