@@ -25,8 +25,9 @@ def load_template(name: str) -> dict[str, Any]:
     template_dir = get_templates_dir()
     if not template_dir:
         raise nebula.NotFoundException("Templates directory not found")
+    # Only the listed names: a name with "../" would read any .json file
     template_path = os.path.join(template_dir, f"{name}.json")
-    if not os.path.isfile(template_path):
+    if name not in list_templates() or not os.path.isfile(template_path):
         raise nebula.NotFoundException(f"Template {name} not found")
     try:
         with open(template_path) as f:

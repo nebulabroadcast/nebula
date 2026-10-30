@@ -45,7 +45,10 @@ class ApplySchedulingTemplate(APIRequest):
         user: CurrentUser,
         request: ApplySchedulingTemplateRequest,
     ) -> None:
-        _ = user  # Required to gate this endpoint behind authentication
+        if not user.can("scheduler_edit", request.id_channel):
+            raise nebula.ForbiddenException(
+                "You are not allowed to edit the schedule of this channel"
+            )
         if not (channel := nebula.settings.get_playout_channel(request.id_channel)):
             raise nebula.BadRequestException(f"No such channel {request.id_channel}")
 
