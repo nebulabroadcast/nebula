@@ -114,7 +114,7 @@ class User(BaseObject):
         """Return the user with the given email."""
         row = await db.fetch(
             """
-            SELECT meta FROM users WHERE meta->>'email' ILIKE $1
+            SELECT meta FROM users WHERE lower(meta->>'email') = lower($1)
             """,
             email,
         )
@@ -132,7 +132,7 @@ class User(BaseObject):
             res = await db.fetch(
                 """
                 SELECT meta FROM users
-                WHERE (login ILIKE $1 OR meta->>'email' ILIKE $1)
+                WHERE (lower(login) = lower($1) OR lower(meta->>'email') = lower($1))
                 AND meta->>'password' = $2
                 """,
                 username,

@@ -70,8 +70,8 @@ class PasswordReset(APIRequest):
         try:
             query = """
                 SELECT meta FROM users
-                WHERE meta->>'email' ILIKE $1
-                OR login ILIKE $1
+                WHERE lower(meta->>'email') = lower($1)
+                OR lower(login) = lower($1)
             """
             res = await nebula.db.fetchrow(query, email)
             if res is None:
