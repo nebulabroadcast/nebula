@@ -11,7 +11,7 @@ import nebula
 from api.objects.operations import Operation, Operations, OperationsRequest
 from nebula.enum import MetaClass, ObjectType
 from nebula.helpers.validators import Validator
-from nebula.objects.user import hash_password
+from nebula.objects.user import hash_api_key, verify_password
 from nebula.settings.metatypes import MetaType
 from server.session import Session
 
@@ -76,14 +76,14 @@ async def test_admin_edits_user(saved: list[dict[str, Any]]) -> None:
     data = {"local_network_only": False, "password": "long enough"}
     await ops(ADMIN, 2, data)
     assert saved[0]["local_network_only"] is not True
-    assert saved[0]["password"] == hash_password("long enough")
+    assert verify_password("long enough", saved[0]["password"])
     # A new password logs the user out everywhere
     assert saved[1] == {"logged_out": "alice"}
 
 
 @pytest.mark.parametrize(
     "data",
-    [{"api_key": hash_password("mine")}, {"id": 5}, {"password": "short"}],
+    [{"api_key": hash_api_key("mine")}, {"id": 5}, {"password": "short"}],
 )
 async def test_admin_goes_through_checks(
     saved: list[dict[str, Any]], data: dict[str, Any]

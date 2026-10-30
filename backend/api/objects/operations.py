@@ -201,7 +201,7 @@ class Operations(APIRequest):
                             with request_context(context):
                                 password = operation.data.pop("password", None)
                                 if password:
-                                    obj.change_password(password)
+                                    await obj.change_password(password)
                                 obj.apply_changes(operation.data)
 
                         #

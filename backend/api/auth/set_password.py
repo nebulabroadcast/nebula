@@ -67,7 +67,7 @@ class SetPassword(APIRequest):
         if len(request.password) < 8:
             raise nebula.BadRequestException("Password is too short")
 
-        target_user.set_password(request.password)
+        await target_user.set_password(request.password)
         await target_user.save()
         await Session.revoke_user(target_user.id)
 

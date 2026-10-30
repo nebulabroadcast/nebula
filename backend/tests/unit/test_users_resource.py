@@ -19,7 +19,7 @@ import nebula.helpers.email
 import rest.users.avatar
 from nebula.context import is_system, set_default_system
 from nebula.enum import MetaClass
-from nebula.objects.user import hash_password
+from nebula.objects.user import hash_api_key, verify_password
 from nebula.settings.metatypes import MetaType
 from server.errors import REST_PREFIX, install_error_handlers
 from server.middleware.context import RequestContextMiddleware
@@ -151,7 +151,7 @@ def test_discovery_mounts_users(client: TestClient) -> None:
 
 
 def test_get_user(client: TestClient, users: FakeUsers) -> None:
-    users.rows[2]["api_key"] = hash_password("nb.key")
+    users.rows[2]["api_key"] = hash_api_key("nb.key")
     users.rows[2]["api_key_preview"] = "nb.k*******.key"
 
     response = client.get(f"{USERS}/2", headers=ADMIN)
@@ -333,7 +333,7 @@ def test_set_password(client: TestClient, users: FakeUsers) -> None:
     url = f"{USERS}/2/password"
     response = client.post(url, headers=ALICE, json={"password": "new password"})
     assert response.status_code == 204
-    assert users.rows[2]["password"] == hash_password("new password")
+    assert verify_password("new password", users.rows[2]["password"])
     # Alice's other session is logged out, the one she used stays
     assert users.sessions == {token_for(1): 1, token_for(2): 2}
 
@@ -350,7 +350,7 @@ def test_regenerate_api_key(client: TestClient, users: FakeUsers) -> None:
     response = client.post(f"{USERS}/2/api-key", headers=ALICE)
     assert response.status_code == 200
     api_key = response.json()["api_key"]
-    assert users.rows[2]["api_key"] == hash_password(api_key)
+    assert users.rows[2]["api_key"] == hash_api_key(api_key)
 
     body = client.get(f"{USERS}/2", headers=ALICE).json()
     assert body["api_key_preview"] == f"{api_key[:4]}*******{api_key[-4:]}"

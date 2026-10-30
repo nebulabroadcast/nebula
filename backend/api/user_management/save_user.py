@@ -37,7 +37,7 @@ class SaveUser(APIRequest):
         user.set_permissions(permissions)
 
         if password:
-            user.set_password(password)
+            await user.set_password(password)
 
         if api_key:
             user.set_api_key(api_key)

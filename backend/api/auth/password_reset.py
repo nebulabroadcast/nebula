@@ -153,6 +153,6 @@ class PasswordResetCallback(APIRequest):
             )
             raise nebula.BadRequestException("Invalid password reset token")
 
-        user.set_password(payload.password)
+        await user.set_password(payload.password)
         await user.save()
         await Session.revoke_user(user.id)

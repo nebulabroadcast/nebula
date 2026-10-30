@@ -1,4 +1,7 @@
+import asyncio
+import functools
 import hashlib
+import hmac
 import secrets
 import string
 from typing import Any, cast
@@ -6,14 +9,12 @@ from typing import Any, cast
 import asyncpg
 from nx.db import db
 
-from nebula.config import config
 from nebula.context import require_access
 from nebula.exceptions import (
     ConflictException,
     LoginFailedException,
     NebulaException,
     NotFoundException,
-    NotImplementedException,
     ValidationException,
 )
 from nebula.objects.base import BaseObject
@@ -35,10 +36,48 @@ SELF_EDITABLE_KEYS = {"email", "full_name", "language"}
 ADMIN_ONLY_KEYS = {"login", "is_admin", "is_limited", "local_network_only"}
 
 
+# scrypt cost: ~16 MB of memory and a few tens of ms per hash
+SCRYPT_N, SCRYPT_R, SCRYPT_P = 2**14, 8, 1
+
+
+def _scrypt(password: str, salt: bytes, n: int, r: int, p: int) -> bytes:
+    return hashlib.scrypt(password.encode("utf-8"), salt=salt, n=n, r=r, p=p)
+
+
 def hash_password(password: str) -> str:
-    if config.password_hashing == "legacy":  # noqa: S105
-        return hashlib.sha256(password.encode("ascii")).hexdigest()
-    raise NotImplementedException("Hashing method not available")
+    """Return a salted hash: scrypt$n$r$p$salt$hash."""
+    salt = secrets.token_bytes(16)
+    digest = _scrypt(password, salt, SCRYPT_N, SCRYPT_R, SCRYPT_P)
+    return f"scrypt${SCRYPT_N}${SCRYPT_R}${SCRYPT_P}${salt.hex()}${digest.hex()}"
+
+
+def hash_api_key(api_key: str) -> str:
+    # API keys are long and random, so a fast hash is enough. It must be
+    # unsalted: users are looked up by it
+    return hashlib.sha256(api_key.encode("utf-8")).hexdigest()
+
+
+def is_legacy_hash(stored: str) -> bool:
+    """Unsalted SHA-256, from before scrypt. Replaced on the next login."""
+    return not stored.startswith("scrypt$")
+
+
+def verify_password(password: str, stored: str) -> bool:
+    if not stored:
+        return False
+    if is_legacy_hash(stored):
+        candidate = hash_api_key(password)  # the same unsalted SHA-256
+        return hmac.compare_digest(candidate, stored)
+    _, n, r, p, salt, digest = stored.split("$")
+    computed = _scrypt(password, bytes.fromhex(salt), int(n), int(r), int(p))
+    return hmac.compare_digest(computed.hex(), digest)
+
+
+@functools.cache
+def _dummy_hash() -> str:
+    """Checked when no user matches, so a wrong login name takes as long
+    as a wrong password."""
+    return hash_password(secrets.token_hex(16))
 
 
 def generate_api_key() -> str:
@@ -100,7 +139,7 @@ class User(BaseObject):
 
     @classmethod
     async def by_api_key(cls, api_key: str) -> User:
-        api_key_hash = hash_password(api_key)
+        api_key_hash = hash_api_key(api_key)
         row = await db.fetch(
             "SELECT meta FROM users WHERE meta->>'api_key' = $1",
             api_key_hash,
@@ -127,31 +166,55 @@ class User(BaseObject):
         """Return a User instance based on username and password."""
         if not password:
             raise LoginFailedException("Password cannot be empty")
-        passhash = hash_password(password)
         try:
             res = await db.fetch(
                 """
                 SELECT meta FROM users
-                WHERE (lower(login) = lower($1) OR lower(meta->>'email') = lower($1))
-                AND meta->>'password' = $2
+                WHERE lower(login) = lower($1) OR lower(meta->>'email') = lower($1)
                 """,
                 username,
-                passhash,
             )
         except asyncpg.exceptions.UndefinedTableError as e:
             raise NebulaException("Nebula is not installed") from e
-        if not res:
-            raise LoginFailedException(
-                "Invalid user name/password combination",
-                log=f"Invalid logging attempted with name '{username}'",
-            )
-        return cls(meta=res[0]["meta"])
 
-    def set_password(self, password: str) -> None:
-        self.meta["password"] = hash_password(password)
+        # Several rows if one user's login is another one's email
+        metas = [dict(row["meta"]) for row in res]
+        if not metas:
+            metas = [{"password": await asyncio.to_thread(_dummy_hash)}]
+        for meta in metas:
+            stored = meta.get("password") or ""
+            if await asyncio.to_thread(verify_password, password, stored):
+                user = cls(meta=meta)
+                if is_legacy_hash(stored):
+                    await user._upgrade_password_hash(password)
+                return user
+        raise LoginFailedException(
+            "Invalid user name/password combination",
+            log=f"Invalid logging attempted with name '{username}'",
+        )
+
+    async def _upgrade_password_hash(self, password: str) -> None:
+        """Store a legacy hash as scrypt. Only the password: a login
+        isn't an edit (no mtime, no change notification)."""
+        await self.set_password(password)
+        await db.execute(
+            """
+            UPDATE users
+            SET password = $1, meta = jsonb_set(meta, '{password}', to_jsonb($2::text))
+            WHERE id = $3
+            """,
+            # Twice: $1 is VARCHAR, $2 TEXT, one parameter can't be both
+            self.meta["password"],
+            self.meta["password"],
+            self.id,
+        )
+
+    async def set_password(self, password: str) -> None:
+        # scrypt takes tens of ms: off the event loop
+        self.meta["password"] = await asyncio.to_thread(hash_password, password)
 
     def set_api_key(self, api_key: str) -> None:
-        self.meta["api_key"] = hash_password(api_key)
+        self.meta["api_key"] = hash_api_key(api_key)
         self.meta["api_key_preview"] = api_key[:4] + "*******" + api_key[-4:]
 
     @property
@@ -229,13 +292,13 @@ class User(BaseObject):
             self.ensure_can_edit()
         self.update(changes)
 
-    def change_password(self, password: str) -> None:
+    async def change_password(self, password: str) -> None:
         self.ensure_can_edit()
         if len(password) < MIN_PASSWORD_LENGTH:
             raise ValidationException(
                 f"Password must have at least {MIN_PASSWORD_LENGTH} characters"
             )
-        self.set_password(password)
+        await self.set_password(password)
 
     def regenerate_api_key(self) -> str:
         """Replace the API key with a new one and return it (shown only once)."""

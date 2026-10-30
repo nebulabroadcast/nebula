@@ -1,7 +1,7 @@
 __all__ = ["NebulaConfigModel", "config"]
 
 import os
-from typing import Literal, cast
+from typing import cast
 
 import dotenv
 from nx.config import ConfigModel, ConfigProxy
@@ -37,11 +37,6 @@ class NebulaConfigModel(ConfigModel):
     plugin_dir: str = Field(
         "/plugins",
         description="Path to the plugin directory",
-    )
-
-    password_hashing: Literal["legacy"] = Field(
-        "legacy",
-        description="Password hashing method",
     )
 
     session_secret: str = Field(

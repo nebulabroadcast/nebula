@@ -70,7 +70,7 @@ async def create_default_user() -> None:
     }
 
     user = User(meta=meta)
-    user.set_password("nebula")
+    await user.set_password("nebula")
     await user.save()
 
 

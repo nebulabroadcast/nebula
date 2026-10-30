@@ -89,7 +89,7 @@ async def update_user(user_id: UserId, payload: UserPatch) -> User:
 async def set_password(user_id: UserId, payload: NewPassword) -> None:
     """Admins can set any user's password, users can set their own."""
     user = await nebula.User.load(user_id)
-    user.change_password(payload.password)
+    await user.change_password(payload.password)
     await user.save()
     await Session.revoke_user(user.id)
 
