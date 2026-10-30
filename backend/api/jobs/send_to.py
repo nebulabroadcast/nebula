@@ -4,6 +4,7 @@ from typing import Any
 from pydantic import Field
 
 import nebula
+from nebula.objects.asset import can_view_asset
 from server import APIModel, APIRequest
 from server.dependencies import CurrentUser
 
@@ -164,6 +165,17 @@ class SendTo(APIRequest):
     ) -> SendToResponse:
         if not user.can("job_control", request.id_action):
             raise nebula.ForbiddenException
+
+        # All assets first, so a refused one doesn't leave half the jobs
+        query = "SELECT id, meta FROM assets WHERE id = ANY($1)"
+        metas = {r["id"]: r["meta"] for r in await nebula.db.fetch(query, request.ids)}
+        for id_asset in request.ids:
+            if (meta := metas.get(id_asset)) is None:
+                raise nebula.NotFoundException(f"Asset ID {id_asset} not found")
+            if not can_view_asset(user, meta):
+                raise nebula.ForbiddenException(
+                    f"You are not allowed to access asset ID {id_asset}"
+                )
 
         nebula.log.info(
             f"Starting action {request.id_action} "

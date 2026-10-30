@@ -5,7 +5,7 @@ from starlette.responses import FileResponse
 
 import nebula
 from server import APIModel, APIRequest
-from server.dependencies import CurrentUser
+from server.dependencies import AssetInPath, CurrentUser
 
 
 def get_proxy_path(id_asset: int) -> str:
@@ -34,9 +34,12 @@ class ServeProxy(APIRequest):
     category = "Asset management"
     methods = ["GET"]
 
-    async def handle(self, id_asset: int, user: CurrentUser) -> FileResponse:
-        _ = user  # Not used for now, but we might want to check permissions
-        video_path = get_proxy_path(id_asset)
+    async def handle(self, user: CurrentUser, asset: AssetInPath) -> FileResponse:
+        # user first: anonymous requests get 401 before the asset is looked up
+        _ = user
+        asset.ensure_can_view()  # checks the request's user (nebula.context)
+        assert asset.id is not None
+        video_path = get_proxy_path(asset.id)
         if not await anyio.Path(video_path).exists():
             raise nebula.NotFoundException("Proxy not found")
         return FileResponse(video_path, media_type="video/mp4")
@@ -62,16 +65,18 @@ class GetProxyInfo(APIRequest):
     category = "Asset management"
     methods = ["GET"]
 
-    async def handle(self, id_asset: int, user: CurrentUser) -> ProxyInfo:
-        _ = user  # Not used for now, but we might want to check permissions
-        video_path = get_proxy_path(id_asset)
+    async def handle(self, user: CurrentUser, asset: AssetInPath) -> ProxyInfo:
+        _ = user  # see ServeProxy
+        asset.ensure_can_view()
+        assert asset.id is not None
+        video_path = get_proxy_path(asset.id)
         timestamp = None
         if exists := await anyio.Path(video_path).exists():
             stat = await anyio.Path(video_path).stat()
             timestamp = stat.st_mtime
 
         return ProxyInfo(
-            id=id_asset,
+            id=asset.id,
             available=exists,
             timestamp=timestamp,
         )
