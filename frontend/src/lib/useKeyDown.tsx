@@ -19,13 +19,17 @@ export const useKeyDown = (key: string, callback: () => void) => {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Function keys (F1 - F12) don't type: they work while typing too,
+      // and replace what the browser does with them (F1 opens its help)
+      const functionKey = /^F\d{1,2}$/.test(e.key);
       const editing = isEditableTarget(e.target);
       // If user is typing, only allow ctrl/meta shortcuts through
-      if (editing && !e.ctrlKey && !e.metaKey) {
+      if (editing && !functionKey && !e.ctrlKey && !e.metaKey) {
         return;
       }
 
       if (e.key === key) {
+        if (functionKey) e.preventDefault();
         callbackRef.current();
       }
     };

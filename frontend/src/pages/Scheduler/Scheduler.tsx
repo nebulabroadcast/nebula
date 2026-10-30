@@ -7,7 +7,7 @@ import {
   DraggedExternal,
   SchedulerEventInput,
 } from '@containers/Calendar/types';
-import { useDialog } from '@features/Dialogs';
+import { showEventDialog, useDialog } from '@features/Dialogs';
 import { useWebSocket, type WebSocketHandler } from '@features/Websocket';
 import { DateTime } from 'luxon';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
@@ -271,32 +271,9 @@ const Scheduler: React.FC<SchedulerProps> = ({ draggedObjects }) => {
   //
 
   const editEvent = async (event: CalendarEvent) => {
-    if (!channelConfig) return;
-    const title = `Edit event: ${event.title || 'Untitled'}`;
-    const fields = [{ name: 'start' }, ...(channelConfig.fields || [])];
-
-    const initialData: Record<string, unknown> = {};
-    if (event.id) {
-      try {
-        const res = await nebula.get({
-          body: { object_type: 'event', ids: [Number(event.id)] },
-          throwOnError: true,
-        });
-        const edata = res.data.data?.[0] || {};
-        for (const field of fields) {
-          initialData[field.name] = edata[field.name];
-        }
-      } catch (e) {
-        console.error('Failed to load event', e);
-      }
-    }
-
-    try {
-      const r = await showDialog('metadata', title, { fields, initialData });
-      void saveEvent({ ...r, start: r.start as number, id: event.id });
-    } catch {
-      //
-    }
+    if (currentChannelId === null || !event.id) return;
+    const data = await showEventDialog(showDialog, currentChannelId, Number(event.id));
+    if (data) void saveEvent({ ...data.meta, start: data.start, id: event.id });
   };
 
   const deleteEvent = (eventId: string | number) => {

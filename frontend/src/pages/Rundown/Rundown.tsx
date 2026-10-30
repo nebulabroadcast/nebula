@@ -81,10 +81,10 @@ const Rundown: React.FC<RundownProps> = ({ draggedObjects }) => {
   }, [playoutStatus]);
 
   //
-  // Go to now
+  // F1: go to the item on air
   //
 
-  useKeyDown('n', () => {
+  useKeyDown('F1', () => {
     const currentEvent = playoutStatusRef.current?.id_event;
     const currentItem = playoutStatusRef.current?.current_item;
     if (!currentEvent) return;

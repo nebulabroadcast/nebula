@@ -4,7 +4,7 @@ import type {
   TableDropTarget,
   TableRowData,
 } from '@components/table/types';
-import { useDialog } from '@features/Dialogs';
+import { showEventDialog, useDialog } from '@features/Dialogs';
 import { useNebula } from '@features/Nebula';
 import { formatRowHighlightColor, formatRowHighlightStyle } from '@lib/tableFormat';
 import React, { useMemo, useRef, useEffect } from 'react';
@@ -93,7 +93,8 @@ const RundownTable: React.FC<RundownTableProps> = ({
   }, [currentChannelId]);
 
   //
-  // Scroll to the event definded in the hash when the component mounts
+  // Scroll to the event in the hash (scheduler double click), or to an item
+  // of it in the `item` param (F1: the item on air, in the middle)
   //
 
   useEffect(() => {
@@ -105,32 +106,36 @@ const RundownTable: React.FC<RundownTableProps> = ({
     const rqts = queryParams.get('rqts') || 0;
 
     // already scrolled to this hash
-    if (lastHash.current === location.hash.slice(1) && lastRqTs.current === rqts)
-      return;
+    const eventId = location.hash.slice(1);
+    if (lastHash.current === eventId && lastRqTs.current === rqts) return;
 
-    // find the index of the event to scroll to
-    let scrollToIndex: number | null = null;
-    for (let i = 0; i < data.length; i++) {
-      const row = data[i];
-      if (row.type === 'event' && row.id.toString() === location.hash.slice(1)) {
-        scrollToIndex = i;
-        break;
-      }
-    }
-
-    if (scrollToIndex === null) return;
+    // an item of another event (a param left over) is ignored
+    const itemId = queryParams.get('item');
+    const itemIndex = data.findIndex(
+      (row) =>
+        row.type === 'item' &&
+        row.id.toString() === itemId &&
+        row.id_event?.toString() === eventId
+    );
+    const scrollToIndex =
+      itemIndex !== -1
+        ? itemIndex
+        : data.findIndex(
+            (row) => row.type === 'event' && row.id.toString() === eventId
+          );
+    if (scrollToIndex === -1) return;
 
     // get the row element and scroll to it
     const query = `[data-index="${scrollToIndex}"]`;
-    const row = tableRef.current.querySelector(query);
+    const row = tableRef.current.querySelector<HTMLElement>(query);
     if (row) {
-      const pos =
-        (row as HTMLElement).offsetTop - (row.parentNode as HTMLElement).offsetTop;
+      const pos = row.offsetTop - (row.parentNode as HTMLElement).offsetTop;
       const parent = row.parentNode?.parentNode?.parentNode as HTMLElement; // he he he
       if (parent) {
-        parent.scrollTop = pos;
+        parent.scrollTop =
+          itemIndex === -1 ? pos : pos - (parent.clientHeight - row.offsetHeight) / 2;
       }
-      lastHash.current = location.hash.slice(1);
+      lastHash.current = eventId;
       lastRqTs.current = rqts;
     }
   }, [location, data]);
@@ -239,7 +244,30 @@ const RundownTable: React.FC<RundownTableProps> = ({
     updateObject(object_type, id, { run_mode });
   };
 
-  const editObject = async (object_type: ObjectType, id: number | string) => {
+  // The scheduler's event dialog, saved through the scheduler (it moves the
+  // event and retimes the rundown)
+  const canEditEvents =
+    currentChannelId !== null &&
+    nebula.can('scheduler_view', currentChannelId) &&
+    nebula.can('scheduler_edit', currentChannelId);
+
+  const editEvent = async (id: number | string) => {
+    if (!canEditEvents || currentChannelId === null) return;
+    const event = await showEventDialog(showDialog, currentChannelId, Number(id));
+    if (!event) return;
+    try {
+      await nebula.scheduler({
+        body: { id_channel: currentChannelId, events: [event] },
+        throwOnError: true,
+      });
+      loadRundown();
+    } catch (err) {
+      onError(err);
+    }
+  };
+
+  const editItem = async (id: number | string) => {
+    const object_type = 'item';
     let objectData: Record<string, unknown> = {};
     try {
       const res = await nebula.get({
@@ -252,14 +280,12 @@ const RundownTable: React.FC<RundownTableProps> = ({
       return;
     }
 
-    // Create a field list based on the object type
+    // Create a field list based on the item role
 
     const itemRole = objectData.item_role;
     const idAsset = objectData.id_asset as number | null | undefined;
     let fields: Array<{ name: string }>;
-    if (object_type === 'event') {
-      fields = [...(channelConfig?.fields || [])];
-    } else if (itemRole === 'placeholder' || itemRole === 'live') {
+    if (itemRole === 'placeholder' || itemRole === 'live') {
       fields = [{ name: 'title' }, { name: 'duration' }];
     } else if (itemRole === 'lead_in' || itemRole === 'lead_out') {
       return;
@@ -275,9 +301,9 @@ const RundownTable: React.FC<RundownTableProps> = ({
       return;
     }
 
-    // if the object is item with asset, we need to get the asset data
+    // an item with an asset shows the asset's values it doesn't override
 
-    if (object_type === 'item' && idAsset) {
+    if (idAsset) {
       try {
         // all fields: the item form has keys that aren't asset fields (note)
         const res = await nebula.assetsGet({
@@ -298,7 +324,7 @@ const RundownTable: React.FC<RundownTableProps> = ({
     // construct the form title and initial data
 
     const objectTitle = typeof objectData.title === 'string' ? objectData.title : '';
-    const title = `Edit ${object_type}: ${objectTitle}`;
+    const title = `Edit item: ${objectTitle}`;
     const initialData: Record<string, unknown> = {};
     for (const field of fields) {
       initialData[field.name] = objectData[field.name];
@@ -327,6 +353,7 @@ const RundownTable: React.FC<RundownTableProps> = ({
     if (row.type === 'event') {
       setSelectedItems([]);
       setSelectedEvents([row.id]);
+      if (event.detail === 2) void editEvent(row.id);
       return;
     }
 
@@ -434,7 +461,7 @@ const RundownTable: React.FC<RundownTableProps> = ({
           label: 'Edit item',
           icon: 'edit',
           onClick: () => {
-            void editObject('item', selectedItems[0]);
+            void editItem(selectedItems[0]);
           },
         });
         if (focusedObject.id_asset) {
@@ -477,13 +504,15 @@ const RundownTable: React.FC<RundownTableProps> = ({
       });
       return res;
     } else if (selectedEvents.length === 1) {
-      res.push({
-        label: 'Edit event',
-        icon: 'edit',
-        onClick: () => {
-          void editObject('event', selectedEvents[0]);
-        },
-      });
+      if (canEditEvents) {
+        res.push({
+          label: 'Edit event',
+          icon: 'edit',
+          onClick: () => {
+            void editEvent(selectedEvents[0]);
+          },
+        });
+      }
       res.push(...getRunModeOptions('event', selectedEvents[0], setRunMode));
     }
     return res;
@@ -508,11 +537,6 @@ const RundownTable: React.FC<RundownTableProps> = ({
 
   // Create a new event, the same way an empty event dropped
   // to the scheduler does: ask for the metadata first
-
-  const canCreateEvent =
-    currentChannelId !== null &&
-    nebula.can('scheduler_view', currentChannelId) &&
-    nebula.can('scheduler_edit', currentChannelId);
 
   const createEvent = async () => {
     if (currentChannelId === null || !startTime) return;
@@ -551,7 +575,7 @@ const RundownTable: React.FC<RundownTableProps> = ({
         <EmptyRundown>
           <p>There are no events scheduled for this day.</p>
           <p>Create an event first, then add items to it here.</p>
-          {canCreateEvent && (
+          {canEditEvents && (
             <Button
               icon="calendar_add_on"
               label="Create event"
