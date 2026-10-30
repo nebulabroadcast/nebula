@@ -62,37 +62,26 @@ def process_inline_conditions(request: BrowseAssetsRequest) -> None:
 
 
 def build_order(order_by: str) -> str:
-    # Select the key to order by
-    # Ensure the key is in the columns list
-    # This effectively prevents SQL injections
+    # The key is inlined into the SQL, so it must be a known column or
+    # meta key: anything else (e.g. a client-sent column name) sorts by ctime
 
     # Database columns are already typed. Casting them would prevent
     # using their index (idx_ctime...).
     if order_by in nebula.Asset.db_columns:
         return order_by
 
-    cast_order_by = None
-    if order_by_type := nebula.settings.metatypes.get(order_by):
-        match order_by_type.metaclass:
-            case MetaClass.DATETIME | MetaClass.TIMECODE | MetaClass.NUMERIC:
-                cast_order_by = "NUMERIC"
-            case MetaClass.INTEGER:
-                cast_order_by = "INTEGER"
-            case _:
-                cast_order_by = None
+    if order_by not in nebula.settings.metatypes:
+        return "ctime"
 
-    # By default try to sort by database columns,
-    # since they are indexed and faster. It the user
-    # wants to sort by a key which is not a database
-    # column, we need to sort by the JSONB key
-
-    if order_by not in nebula.Asset.db_columns:
-        order_by = f"a.meta->>'{order_by}'"
-
-    if cast_order_by:
-        order_by = f"COALESCE(CAST({order_by} AS {cast_order_by}), 0)"
-
-    return order_by
+    # Not a database column: sort by the JSONB key
+    order_by_sql = f"a.meta->>'{order_by}'"
+    match nebula.settings.metatypes[order_by].metaclass:
+        case MetaClass.DATETIME | MetaClass.TIMECODE | MetaClass.NUMERIC:
+            return f"COALESCE(CAST({order_by_sql} AS NUMERIC), 0)"
+        case MetaClass.INTEGER:
+            return f"COALESCE(CAST({order_by_sql} AS INTEGER), 0)"
+        case _:
+            return order_by_sql
 
 
 def build_query(  # noqa: C901
