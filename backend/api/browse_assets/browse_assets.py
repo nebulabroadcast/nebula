@@ -35,6 +35,8 @@ class BrowseAssets(APIRequest):
         request: BrowseAssetsRequest,
         user: CurrentUser,
     ) -> BrowseAssetsResponse:
+        # As the REST listing: asset_acl only narrows down what a user may list
+        nebula.Asset.ensure_can_list()
         columns: list[str] = ["title", "duration"]
         if request.view is not None and not request.columns:
             assert isinstance(request.view, int), "View must be an integer"

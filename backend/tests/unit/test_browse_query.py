@@ -3,7 +3,10 @@
 import pytest
 
 import nebula
+from api.browse_assets._models import BrowseAssetsRequest
 from api.browse_assets._query import build_order
+from api.browse_assets.browse_assets import BrowseAssets
+from nebula.context import RequestContext, request_context
 from nebula.enum import MetaClass
 from nebula.settings.metatypes import MetaType
 
@@ -33,3 +36,15 @@ def test_order_by_unknown_key_is_not_inlined() -> None:
     # anything: it must never reach the SQL
     injection = "x' OR 1=1; DROP TABLE users; --"
     assert build_order(injection) == "ctime"
+
+
+@pytest.mark.asyncio
+async def test_browse_needs_list_rights() -> None:
+    # No asset_view at all: asset_acl adds no condition, so without the check
+    # the query would return every asset
+    nobody = nebula.User(meta={"id": 5, "login": "nobody"})
+    with (
+        request_context(RequestContext(user=nobody)),
+        pytest.raises(nebula.ForbiddenException),
+    ):
+        await BrowseAssets().handle(BrowseAssetsRequest(), nobody)
