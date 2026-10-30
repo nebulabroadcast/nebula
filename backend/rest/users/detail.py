@@ -91,7 +91,7 @@ async def set_password(user_id: UserId, payload: NewPassword) -> None:
     user = await nebula.User.load(user_id)
     user.change_password(payload.password)
     await user.save()
-    await Session.refresh_user(user)
+    await Session.revoke_user(user.id)
 
 
 @router.post(

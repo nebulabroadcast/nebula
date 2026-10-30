@@ -9,6 +9,7 @@ from nebula.helpers.scheduling import bin_refresh
 from nebula.objects.utils import get_object_class_by_name
 from server import APIModel, APIRequest
 from server.dependencies import CurrentUser
+from server.session import Session
 
 
 class DeleteObjectsRequest(APIModel):
@@ -91,6 +92,8 @@ class DeleteObjects(APIRequest):
             obj = await cls.load(id_object)
             try:
                 await obj.delete()
+                if isinstance(obj, nebula.User):
+                    await Session.revoke_user(obj.id, keep_current=False)
             except Exception:
                 nebula.log.traceback(f"Unable to delete {obj}")
 

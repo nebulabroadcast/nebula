@@ -205,6 +205,21 @@ class Session:
                 yield session
 
     @classmethod
+    async def revoke_user(cls, user_id: int | None, keep_current: bool = True) -> None:
+        """Log the user out everywhere: on a password change or deletion.
+
+        The session of the current request survives (unless keep_current
+        is False), so users changing their own password stay logged in.
+        """
+        keep = nebula.context.get_request_context().session_token
+        async for session in cls.list():
+            if session.user.get("id") != user_id:
+                continue
+            if keep_current and session.token == keep:
+                continue
+            await cls.delete(session.token)
+
+    @classmethod
     async def refresh_user(cls, user: nebula.User) -> None:
         """Update the user data in all sessions of the user.
 

@@ -39,6 +39,8 @@ class RequestContext:
     user: User | None = None
     initiator: str | None = None
     system: bool = False
+    # Token of the session the request is authenticated with, if any
+    session_token: str | None = None
 
 
 _request_context: ContextVar[RequestContext | None] = ContextVar(

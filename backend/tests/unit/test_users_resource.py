@@ -4,7 +4,7 @@ import copy
 import shutil
 import struct
 import zlib
-from collections.abc import Iterator
+from collections.abc import AsyncIterator, Iterator
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
@@ -56,6 +56,8 @@ class FakeUsers:
             },
         }
         self.refreshed: list[int] = []
+        # Stored sessions: token -> user id. Alice is logged in twice
+        self.sessions = {token_for(1): 1, token_for(2): 2, "other" * 13: 2}
 
     def session_user(self, token: str) -> dict[str, Any] | None:
         for user_id, meta in self.rows.items():
@@ -65,7 +67,7 @@ class FakeUsers:
 
 
 @pytest.fixture
-def users(monkeypatch: pytest.MonkeyPatch) -> Iterator[FakeUsers]:
+def users(monkeypatch: pytest.MonkeyPatch) -> Iterator[FakeUsers]:  # noqa: C901
     fake = FakeUsers()
 
     async def check(token: str, _request: Any, _transient: bool = False) -> Any:
@@ -90,7 +92,16 @@ def users(monkeypatch: pytest.MonkeyPatch) -> Iterator[FakeUsers]:
         assert user.id is not None
         fake.refreshed.append(user.id)
 
+    async def list_sessions() -> AsyncIterator[Any]:
+        for token, user_id in list(fake.sessions.items()):
+            yield SimpleNamespace(token=token, user={"id": user_id})
+
+    async def delete(token: str) -> None:
+        del fake.sessions[token]
+
     monkeypatch.setattr(Session, "check", check)
+    monkeypatch.setattr(Session, "list", list_sessions)
+    monkeypatch.setattr(Session, "delete", delete)
     monkeypatch.setattr(Session, "refresh_user", refresh_user)
     monkeypatch.setattr(nebula.User, "load", classmethod(load))
     monkeypatch.setattr(nebula.User, "save", save)
@@ -323,6 +334,8 @@ def test_set_password(client: TestClient, users: FakeUsers) -> None:
     response = client.post(url, headers=ALICE, json={"password": "new password"})
     assert response.status_code == 204
     assert users.rows[2]["password"] == hash_password("new password")
+    # Alice's other session is logged out, the one she used stays
+    assert users.sessions == {token_for(1): 1, token_for(2): 2}
 
     response = client.post(url, headers=ALICE, json={"password": "short"})
     assert response.status_code == 422

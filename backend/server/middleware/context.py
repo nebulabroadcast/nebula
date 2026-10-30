@@ -73,7 +73,11 @@ class RequestContextMiddleware(BaseHTTPMiddleware):
             request.state.unauthorized_reason = str(e)
 
         initiator = request.headers.get("x-client-id")
-        context = RequestContext(user=user, initiator=initiator)
+        context = RequestContext(
+            user=user,
+            initiator=initiator,
+            session_token=request.state.session_token,
+        )
 
         with (
             request_context(context),

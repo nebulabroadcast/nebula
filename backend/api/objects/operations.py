@@ -13,6 +13,7 @@ from nebula.objects.utils import get_object_class_by_name
 from nebula.settings import load_settings
 from server import APIModel, APIRequest
 from server.dependencies import CurrentUser
+from server.session import Session
 
 from ._utils import can_modify_object
 
@@ -140,6 +141,7 @@ class Operations(APIRequest):
             success = True
             error = None
             op_id = operation.id
+            password = None
 
             try:
                 if operation.object_type == ObjectType.ASSET:
@@ -229,6 +231,8 @@ class Operations(APIRequest):
                         else:
                             obj.update(operation.data)
                         await obj.save()
+                        if password:
+                            await Session.revoke_user(obj.id)
 
                         if (
                             isinstance(obj, nebula.Item)

@@ -7,6 +7,7 @@ import nebula
 from nebula.helpers.email import render_email_template, send_mail
 from nebula.helpers.tokens import TokenManager
 from server import APIModel, APIRequest
+from server.session import Session
 from server.utils import get_real_ip
 
 
@@ -154,3 +155,4 @@ class PasswordResetCallback(APIRequest):
 
         user.set_password(payload.password)
         await user.save()
+        await Session.revoke_user(user.id)

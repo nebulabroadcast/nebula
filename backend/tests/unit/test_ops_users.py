@@ -2,6 +2,7 @@
 
 import contextlib
 from collections.abc import AsyncGenerator
+from types import SimpleNamespace
 from typing import Any
 
 import pytest
@@ -12,6 +13,7 @@ from nebula.enum import MetaClass, ObjectType
 from nebula.helpers.validators import Validator
 from nebula.objects.user import hash_password
 from nebula.settings.metatypes import MetaType
+from server.session import Session
 
 pytestmark = pytest.mark.asyncio
 
@@ -21,7 +23,10 @@ ALICE = nebula.User(meta={"id": 2, "login": "alice"})
 
 @pytest.fixture
 def saved(monkeypatch: pytest.MonkeyPatch) -> list[dict[str, Any]]:
-    """Meta of every saved user. Alice is restricted to the local network."""
+    """Meta of every saved user, and logged out sessions.
+
+    Alice is restricted to the local network.
+    """
     saves: list[dict[str, Any]] = []
 
     async def load(_cls: Any, object_id: int, **_: Any) -> nebula.User:
@@ -36,6 +41,14 @@ def saved(monkeypatch: pytest.MonkeyPatch) -> list[dict[str, Any]]:
     async def transaction() -> AsyncGenerator[None]:
         yield
 
+    async def list_sessions() -> AsyncGenerator[Any]:
+        yield SimpleNamespace(token="alice", user={"id": 2})  # noqa: S106
+
+    async def delete(token: str) -> None:
+        saves.append({"logged_out": token})
+
+    monkeypatch.setattr(Session, "list", list_sessions)
+    monkeypatch.setattr(Session, "delete", delete)
     monkeypatch.setattr(nebula.User, "load", classmethod(load))
     monkeypatch.setattr(nebula.User, "save", save)
     monkeypatch.setattr(nebula.db, "transaction", transaction)
@@ -64,6 +77,8 @@ async def test_admin_edits_user(saved: list[dict[str, Any]]) -> None:
     await ops(ADMIN, 2, data)
     assert saved[0]["local_network_only"] is not True
     assert saved[0]["password"] == hash_password("long enough")
+    # A new password logs the user out everywhere
+    assert saved[1] == {"logged_out": "alice"}
 
 
 @pytest.mark.parametrize(

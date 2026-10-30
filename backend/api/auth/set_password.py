@@ -7,6 +7,7 @@ import nebula
 from server.dependencies import CurrentUser
 from server.models import APIModel
 from server.request import APIRequest
+from server.session import Session
 
 
 class SetPasswordRequest(APIModel):
@@ -68,5 +69,6 @@ class SetPassword(APIRequest):
 
         target_user.set_password(request.password)
         await target_user.save()
+        await Session.revoke_user(target_user.id)
 
         return Response(status_code=204)

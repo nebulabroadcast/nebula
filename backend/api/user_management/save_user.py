@@ -45,3 +45,5 @@ class SaveUser(APIRequest):
         await user.save()
 
         await Session.refresh_user(user)
+        if password:
+            await Session.revoke_user(user.id)
