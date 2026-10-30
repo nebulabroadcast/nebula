@@ -1,3 +1,4 @@
+import { Icon } from '@components';
 import clsx from 'clsx';
 
 import ColumnList from './ColumnList';
@@ -17,7 +18,7 @@ import { tabColumns } from './query';
 import type { TabSettings } from './types';
 import { useBrowser } from './useBrowser';
 import ValueInput from './ValueInput';
-import ViewList, { Icon } from './ViewList';
+import ViewList from './ViewList';
 
 import nebula from '@/nebula';
 
@@ -104,7 +105,7 @@ const FilterPopover = ({
             if (editIndex === idx) setDraft(null);
           }}
         >
-          <Icon name="close" className="remove" />
+          <Icon icon="close" className="remove" />
         </span>
       </button>
     );
@@ -143,20 +144,14 @@ const FilterPopover = ({
       <div className="row end">
         <button
           className="it"
-          style={{ width: 'auto' }}
           onClick={() => {
             setDraft(null);
           }}
         >
           Cancel
         </button>
-        <button
-          className="it"
-          style={{ width: 'auto' }}
-          disabled={!conditionOf(draft)}
-          onClick={commit}
-        >
-          <Icon name="check" />
+        <button className="it" disabled={!conditionOf(draft)} onClick={commit}>
+          <Icon icon="check" />
           {editIndex === null ? 'Add filter' : 'Update'}
         </button>
       </div>
@@ -183,7 +178,7 @@ const FilterPopover = ({
       <div className="fields">
         {word && mode === 'filters' && (
           <button className="it" data-nav onClick={onSearch}>
-            <Icon name="search" />
+            <Icon icon="search" />
             <span className="grow">Search for “{text.trim()}”</span>
           </button>
         )}
@@ -201,7 +196,7 @@ const FilterPopover = ({
               }
             }}
           >
-            <Icon name={mode === 'columns' ? 'add' : 'filter_alt'} />
+            <Icon icon={mode === 'columns' ? 'add' : 'filter_alt'} />
             <span className="grow">{nebula.metaType(key).title}</span>
             <span className="dim">{key}</span>
           </button>

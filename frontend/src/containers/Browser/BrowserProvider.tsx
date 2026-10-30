@@ -4,7 +4,14 @@ import React, { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 import { BrowserContext, type BrowserContextType } from './context';
-import { firstSiteView, resolveView, tabColumns, userViewKey, viewTab } from './query';
+import {
+  firstSiteView,
+  resolveView,
+  userViewId,
+  userViewKey,
+  userViewSettings,
+  viewTab,
+} from './query';
 import type { Condition, TabSettings, UserView, ViewKey } from './types';
 
 const NO_TABS: TabSettings[] = [];
@@ -121,8 +128,8 @@ export const BrowserProvider = ({ children }: { children: React.ReactNode }) => 
   //
 
   const columnWidths = (view: ViewKey) => {
-    const [kind, id] = view.split(':', 2);
-    if (kind === 'user') return userViews.find((v) => v.id === id)?.columnWidths ?? {};
+    const id = userViewId(view);
+    if (id !== null) return userViews.find((v) => v.id === id)?.columnWidths ?? {};
     return siteWidths[view] ?? {};
   };
 
@@ -131,8 +138,8 @@ export const BrowserProvider = ({ children }: { children: React.ReactNode }) => 
       Object.entries(columnWidths(view)).filter(([name]) => name !== column)
     );
     if (width !== null) widths[column] = width;
-    const [kind, id] = view.split(':', 2);
-    if (kind === 'user') {
+    const id = userViewId(view);
+    if (id !== null) {
       setUserViews((prev) =>
         prev.map((v) => (v.id === id ? { ...v, columnWidths: widths } : v))
       );
@@ -153,11 +160,8 @@ export const BrowserProvider = ({ children }: { children: React.ReactNode }) => 
     const userView: UserView = {
       id: uuidv4(),
       name,
-      columns: tabColumns(view, tab),
       columnWidths: columnWidths(view.key),
-      conditions: tab.conditions,
-      query: tab.query,
-      sort: tab.sort,
+      ...userViewSettings(view, tab),
     };
     setUserViews((prev) => [...prev, userView]);
     updateTab(tabId, { view: userViewKey(userView.id), columns: null });
@@ -167,14 +171,9 @@ export const BrowserProvider = ({ children }: { children: React.ReactNode }) => 
   const updateUserView = (tabId: string) => {
     const tab = tabs.find((t) => t.id === tabId);
     const view = tab && resolveView(tab.view, userViews);
-    const [kind, id] = tab?.view.split(':', 2) ?? [];
-    if (!tab || !view || kind !== 'user') return;
-    const settings = {
-      columns: tabColumns(view, tab),
-      conditions: tab.conditions,
-      query: tab.query,
-      sort: tab.sort,
-    };
+    const id = tab && userViewId(tab.view);
+    if (!tab || !view || !id) return;
+    const settings = userViewSettings(view, tab);
     setUserViews((prev) => prev.map((v) => (v.id === id ? { ...v, ...settings } : v)));
     updateTab(tabId, { columns: null });
   };

@@ -183,8 +183,20 @@ export const parseFilterInput = (
   return { conditions, query: words.join(' ') };
 };
 
+// Conditions with the same key are replaced
+export const mergeConditions = (
+  current: Condition[],
+  added: Condition[]
+): Condition[] => [
+  ...current.filter((c) => !added.some((a) => a.key === c.key)),
+  ...added,
+];
+
 // The word being typed at the end of the filter input
 export const lastWord = (text: string): string => text.split(/\s+/).at(-1) ?? '';
+
+// The text an `ilike` condition looks for, without its wildcards
+const likeText = (value: unknown): string => String(value).replace(/^%|%$/g, '');
 
 const formatValue = (key: string, value: unknown): string => {
   if (Array.isArray(value)) return value.map((v) => formatValue(key, v)).join(', ');
@@ -201,7 +213,7 @@ export const conditionParts = (condition: Condition) => {
   if (condition.op === 'exists') return { field, operator, value: '' };
   const value =
     condition.op === 'ilike'
-      ? String(condition.value).replace(/^%|%$/g, '')
+      ? likeText(condition.value)
       : formatValue(condition.key, condition.value);
   return { field, operator, value };
 };
@@ -222,10 +234,7 @@ export const newDraft = (key: string): Draft => ({
 export const draftOf = (condition: Condition): Draft => ({
   key: condition.key,
   operator: operatorOf(condition) ?? operatorsFor(condition.key)[0],
-  value:
-    condition.op === 'ilike'
-      ? String(condition.value).replace(/^%|%$/g, '')
-      : condition.value,
+  value: condition.op === 'ilike' ? likeText(condition.value) : condition.value,
 });
 
 // The value kept when the operator changes between one value and a list

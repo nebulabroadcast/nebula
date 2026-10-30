@@ -2,16 +2,10 @@ import { Button } from '@components';
 import clsx from 'clsx';
 import { useEffect, useRef, useState } from 'react';
 
-import { lastWord, parseFilterInput, type Draft } from './conditions';
+import { lastWord, mergeConditions, parseFilterInput, type Draft } from './conditions';
 import FilterPopover, { type PopoverMode } from './FilterPopover';
-import type { Condition, TabSettings } from './types';
+import type { TabSettings } from './types';
 import { useBrowser } from './useBrowser';
-
-// Conditions with the same key are replaced
-const mergeConditions = (current: Condition[], added: Condition[]): Condition[] => [
-  ...current.filter((c) => !added.some((a) => a.key === c.key)),
-  ...added,
-];
 
 // The search input of a tab. Focusing it opens the filter popover, which
 // shows the tab's filters

@@ -27,6 +27,10 @@ const REQUIRED_FIELDS = [
 export const siteViewKey = (id: number): ViewKey => `site:${id}`;
 export const userViewKey = (id: string): ViewKey => `user:${id}`;
 
+// The id of a user view's key, null for a site view
+export const userViewId = (key: ViewKey): string | null =>
+  key.startsWith('user:') ? key.slice('user:'.length) : null;
+
 export const firstSiteView = (): ViewKey | null => {
   const view = nebula.settings?.views?.[0];
   return view ? siteViewKey(view.id) : null;
@@ -36,29 +40,28 @@ export const resolveView = (
   key: ViewKey,
   userViews: UserView[]
 ): BrowserView | null => {
-  const [kind, id] = key.split(':', 2);
-  if (kind === 'site') {
-    const view = nebula.settings?.views?.find((v) => v.id === Number(id));
-    if (!view) return null;
-    const conditions: Condition[] = [];
-    if (view.folders?.length) {
-      conditions.push({ key: 'id_folder', op: 'in', value: view.folders });
-    }
-    if (view.states?.length) {
-      conditions.push({ key: 'status', op: 'in', value: view.states });
-    }
-    return {
-      key,
-      name: view.name,
-      columns: view.columns?.length ? view.columns : DEFAULT_COLUMNS,
-      conditions,
-      query: '',
-      sort: DEFAULT_SORT,
-    };
+  const userId = userViewId(key);
+  if (userId !== null) {
+    const view = userViews.find((v) => v.id === userId);
+    return view ? { ...view, key } : null;
   }
-  const view = userViews.find((v) => v.id === id);
+  const view = nebula.settings?.views?.find((v) => siteViewKey(v.id) === key);
   if (!view) return null;
-  return { ...view, key };
+  const conditions: Condition[] = [];
+  if (view.folders?.length) {
+    conditions.push({ key: 'id_folder', op: 'in', value: view.folders });
+  }
+  if (view.states?.length) {
+    conditions.push({ key: 'status', op: 'in', value: view.states });
+  }
+  return {
+    key,
+    name: view.name,
+    columns: view.columns?.length ? view.columns : DEFAULT_COLUMNS,
+    conditions,
+    query: '',
+    sort: DEFAULT_SORT,
+  };
 };
 
 // The settings of a tab showing the view
@@ -72,6 +75,14 @@ export const viewTab = (view: BrowserView): Omit<TabSettings, 'id'> => ({
 
 export const tabColumns = (view: BrowserView, tab: TabSettings): string[] =>
   tab.columns?.length ? tab.columns : view.columns;
+
+// What a user view keeps of the tab
+export const userViewSettings = (view: BrowserView, tab: TabSettings) => ({
+  columns: tabColumns(view, tab),
+  conditions: tab.conditions,
+  query: tab.query,
+  sort: tab.sort,
+});
 
 // The tab shows something else than its view (other filters, search,
 // sort or columns)

@@ -16,11 +16,12 @@ import { debounce } from 'lodash';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 
+import { mergeConditions } from './conditions';
 import { PAGE_SIZE, DEFAULT_SORT, tabColumns, tabRequest } from './query';
 import type { BrowserView, TabSettings } from './types';
 import { useBrowser } from './useBrowser';
 
-import type { QueryRequest } from '@/client';
+import { ObjectStatus, type QueryRequest } from '@/client';
 import { useWebSocket, type WebSocketHandler } from '@/features/Websocket';
 import nebula from '@/nebula';
 
@@ -337,10 +338,9 @@ const BrowserTab = ({ tab, view, active, isDragging }: BrowserTabProps) => {
         separator: true,
         onClick: () => {
           browser.updateTab(tab.id, {
-            conditions: [
-              ...tab.conditions.filter((condition) => condition.key !== key),
+            conditions: mergeConditions(tab.conditions, [
               { key, op: 'eq', value: cellValue },
-            ],
+            ]),
           });
         },
       });
@@ -361,7 +361,10 @@ const BrowserTab = ({ tab, view, active, isDragging }: BrowserTabProps) => {
         label: 'Reset',
         icon: 'undo',
         onClick: () => {
-          setSelectionStatus(5, 'Do you want to reload selected assets metadata?');
+          setSelectionStatus(
+            ObjectStatus.RESET,
+            'Do you want to reload selected assets metadata?'
+          );
         },
       },
       {
@@ -369,7 +372,10 @@ const BrowserTab = ({ tab, view, active, isDragging }: BrowserTabProps) => {
         separator: true,
         icon: 'archive',
         onClick: () => {
-          setSelectionStatus(4, 'Do you want to move selected assets to archive?');
+          setSelectionStatus(
+            ObjectStatus.ARCHIVED,
+            'Do you want to move selected assets to archive?'
+          );
         },
       },
       {
@@ -377,7 +383,10 @@ const BrowserTab = ({ tab, view, active, isDragging }: BrowserTabProps) => {
         icon: 'delete',
         hlColor: 'var(--color-red)',
         onClick: () => {
-          setSelectionStatus(3, 'Do you want to move selected assets to trash?');
+          setSelectionStatus(
+            ObjectStatus.TRASHED,
+            'Do you want to move selected assets to trash?'
+          );
         },
       }
     );

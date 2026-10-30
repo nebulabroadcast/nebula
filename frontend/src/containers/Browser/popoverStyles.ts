@@ -123,8 +123,11 @@ export const Pop = styled.div`
       color: var(--color-violet);
     }
 
+    /* fits the views column: .nb-input is at least 200 px wide and 30 high */
     input {
       flex: 1;
+      min-width: 0;
+      min-height: 0;
       height: 22px;
     }
   }
@@ -158,6 +161,10 @@ export const Pop = styled.div`
 
     .row.end {
       justify-content: flex-end;
+
+      .it {
+        width: auto;
+      }
     }
   }
 
@@ -169,8 +176,7 @@ export const Pop = styled.div`
     overflow: auto;
   }
 
-  .options button,
-  .chips button {
+  .options button {
     display: inline-flex;
     align-items: center;
     gap: 4px;
@@ -230,13 +236,6 @@ export const Pop = styled.div`
         color: var(--color-cyan);
       }
     }
-  }
-
-  .chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    padding: 2px 10px 6px;
   }
 
   .divider {

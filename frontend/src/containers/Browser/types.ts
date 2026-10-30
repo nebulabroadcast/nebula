@@ -25,17 +25,6 @@ export interface TabSettings {
   columns?: string[] | null;
 }
 
-// A tab saved by the user (localStorage)
-export interface UserView {
-  id: string;
-  name: string;
-  columns: string[];
-  columnWidths: Record<string, number>;
-  conditions: Condition[];
-  query: string;
-  sort: string;
-}
-
 // A site or a user view, as tabs use it. A tab that picks the view gets
 // a copy of its conditions (a site view's folders and states), query and
 // sort, and can change them.
@@ -47,3 +36,9 @@ export interface BrowserView {
   query: string;
   sort: string;
 }
+
+// A tab saved by the user (localStorage)
+export type UserView = Omit<BrowserView, 'key'> & {
+  id: string;
+  columnWidths: Record<string, number>;
+};

@@ -1,3 +1,4 @@
+import { Icon } from '@components';
 import clsx from 'clsx';
 import { useState } from 'react';
 
@@ -172,9 +173,9 @@ const OptionList = ({
                   }}
                 >
                   {!isLabel && (
-                    <span className="icon material-symbols-outlined" translate="no">
-                      {on || parent ? 'check_box' : 'check_box_outline_blank'}
-                    </span>
+                    <Icon
+                      icon={on || parent ? 'check_box' : 'check_box_outline_blank'}
+                    />
                   )}
                   {option.title}
                 </button>

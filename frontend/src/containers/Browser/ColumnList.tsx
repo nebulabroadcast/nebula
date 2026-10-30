@@ -1,7 +1,6 @@
+import { Icon } from '@components';
 import clsx from 'clsx';
 import { useState } from 'react';
-
-import { Icon } from './ViewList';
 
 import nebula from '@/nebula';
 
@@ -57,7 +56,7 @@ const ColumnList = ({ columns, onChange }: ColumnListProps) => {
             setTarget(null);
           }}
         >
-          <Icon name="drag_indicator" />
+          <Icon icon="drag_indicator" />
           <span className="grow">{nebula.metaType(name).title || name}</span>
           <span className="dim">{name}</span>
           {columns.length > 1 && (
@@ -67,7 +66,7 @@ const ColumnList = ({ columns, onChange }: ColumnListProps) => {
                 onChange(columns.filter((c) => c !== name));
               }}
             >
-              <Icon name="close" className="remove" />
+              <Icon icon="close" className="remove" />
             </span>
           )}
         </div>

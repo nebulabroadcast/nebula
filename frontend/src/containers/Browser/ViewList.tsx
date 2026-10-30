@@ -1,18 +1,13 @@
+import { Icon } from '@components';
 import { useDialog } from '@features/Dialogs';
 import clsx from 'clsx';
 import React, { useState } from 'react';
 
-import { siteViewKey, tabChanged, userViewKey } from './query';
+import { siteViewKey, tabChanged, userViewId, userViewKey } from './query';
 import type { BrowserView, TabSettings } from './types';
 import { useBrowser } from './useBrowser';
 
 import nebula from '@/nebula';
-
-export const Icon = ({ name, className }: { name: string; className?: string }) => (
-  <span className={clsx('icon material-symbols-outlined', className)} translate="no">
-    {name}
-  </span>
-);
 
 const NameInput = ({
   value,
@@ -71,13 +66,13 @@ const ViewList = ({ tab, view, onClose }: ViewListProps) => {
         onClose();
       }}
     >
-      <Icon name={icon} />
+      <Icon icon={icon} />
       <span className="grow">{name}</span>
       {actions}
     </button>
   );
 
-  const userView = tab.view.startsWith('user:') && tabChanged(view, tab);
+  const userView = userViewId(tab.view) !== null && tabChanged(view, tab);
 
   return (
     <div className="views">
@@ -112,7 +107,7 @@ const ViewList = ({ tab, view, onClose }: ViewListProps) => {
                   setRenaming(v.id);
                 }}
               >
-                <Icon name="edit" className="remove" />
+                <Icon icon="edit" className="remove" />
               </span>
               <span
                 title="Delete"
@@ -129,7 +124,7 @@ const ViewList = ({ tab, view, onClose }: ViewListProps) => {
                     });
                 }}
               >
-                <Icon name="delete" className="remove" />
+                <Icon icon="delete" className="remove" />
               </span>
             </span>
           )
@@ -144,7 +139,7 @@ const ViewList = ({ tab, view, onClose }: ViewListProps) => {
             browser.updateUserView(tab.id);
           }}
         >
-          <Icon name="save" />
+          <Icon icon="save" />
           <span className="grow">Save changes to {view.name}</span>
         </button>
       )}
@@ -164,7 +159,7 @@ const ViewList = ({ tab, view, onClose }: ViewListProps) => {
             setSaving(true);
           }}
         >
-          <Icon name="bookmark_add" />
+          <Icon icon="bookmark_add" />
           <span className="grow">Save as new view...</span>
         </button>
       )}
