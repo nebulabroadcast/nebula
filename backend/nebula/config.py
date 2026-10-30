@@ -60,6 +60,11 @@ class NebulaConfigModel(ConfigModel):
         "after too many failed login attempts",
     )
 
+    server_url: str | None = Field(
+        None,
+        description="Public URL of the server (e.g. https://nebula.example.com), "
+        "used in links sent by email. Password reset emails need it",
+    )
     trusted_proxies: int = Field(
         1,
         ge=0,

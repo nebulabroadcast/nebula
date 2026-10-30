@@ -7,7 +7,7 @@ import nebula
 from nebula.helpers.email import render_email_template, send_mail
 from nebula.helpers.tokens import TokenManager
 from server import APIModel, APIRequest
-from server.utils import get_real_ip, server_url_from_request
+from server.utils import get_real_ip
 
 
 class PasswordResetRequest(APIModel):
@@ -67,6 +67,11 @@ class PasswordReset(APIRequest):
 
     async def request_password_reset(self, email: str, request: Request) -> None:
         nebula.log.info(f"Password reset requested for email: {email}")
+        # Not from the request: an anonymous client could point the
+        # link (and the token in it) to its own site
+        if not (server_url := nebula.config.server_url):
+            nebula.log.error("Password reset needs NEBULA_SERVER_URL to be set")
+            return
         try:
             query = """
                 SELECT meta FROM users
@@ -83,7 +88,6 @@ class PasswordReset(APIRequest):
             user = nebula.User.from_row(res)
 
             ip_address = get_real_ip(request)
-            server_url = server_url_from_request(request)
 
             token = await TokenManager.create(
                 "password-reset",
@@ -95,7 +99,7 @@ class PasswordReset(APIRequest):
                 blocking_id=ip_address,
             )
 
-            reset_link = f"{server_url}?rp={token.token}"
+            reset_link = f"{server_url.rstrip('/')}?rp={token.token}"
 
             email_body = await render_email_template(
                 "password-reset",

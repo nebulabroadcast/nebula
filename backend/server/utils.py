@@ -60,7 +60,12 @@ def get_real_ip(request: Request) -> str:
 
 
 def server_url_from_request(request: Request) -> str:
-    """Constructs the server URL from the request object."""
+    """Return NEBULA_SERVER_URL, or construct the server URL from the request.
+
+    Only for authenticated requests: anyone can set these headers.
+    """
+    if config.server_url:
+        return config.server_url.rstrip("/")
     if referer := request.headers.get("referer"):
         parsed_url = urlparse(referer)
         return f"{parsed_url.scheme}://{parsed_url.netloc}"

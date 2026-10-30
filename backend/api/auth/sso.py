@@ -1,5 +1,4 @@
 from typing import cast
-from urllib.parse import urlparse
 
 from fastapi import Request
 from fastapi.responses import RedirectResponse
@@ -8,6 +7,7 @@ import nebula
 from server.request import APIRequest
 from server.session import Session
 from server.sso import NebulaSSO
+from server.utils import server_url_from_request
 
 
 class SSOLogin(APIRequest):
@@ -22,16 +22,8 @@ class SSOLogin(APIRequest):
     async def handle(self, request: Request, provider: str) -> RedirectResponse:
         client = NebulaSSO.client(provider)
 
-        referer = request.headers.get("referer")
-        if referer:
-            parsed_url = urlparse(referer)
-            base_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
-        else:
-            base_url = "http://localhost:4455"
-
-        # We cannot use request.url_for here because it screws the frontend
-        # dev server proxy
-
+        # Not request.url_for: it breaks behind the frontend dev server proxy
+        base_url = server_url_from_request(request)
         redirect_uri = f"{base_url}/api/sso/callback/{provider}"
         nebula.log.debug(f"Redirect URI: {redirect_uri}")
         return await client.authorize_redirect(request, redirect_uri)  # type: ignore[no-any-return]
