@@ -209,6 +209,13 @@ class Operations(APIRequest):
                         #
 
                         await can_modify_object(acl_obj, user)
+                        if operation.id is not None:
+                            # ...and where the changes would put it (an event
+                            # moved to another channel, an item to another bin)
+                            changed = {**obj.meta, **operation.data}
+                            await can_modify_object(
+                                object_class.from_meta(changed), user
+                            )
 
                         #
                         # Run validator

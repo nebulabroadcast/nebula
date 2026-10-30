@@ -5,7 +5,7 @@ from pydantic import Field
 
 import nebula
 from nebula.enum import ObjectType
-from nebula.helpers.scheduling import bin_refresh
+from nebula.helpers.scheduling import bin_refresh, ensure_can_edit_rundowns
 from nebula.objects.utils import get_object_class_by_name
 from server import APIModel, APIRequest
 from server.dependencies import CurrentUser
@@ -47,10 +47,9 @@ class DeleteObjects(APIRequest):
             case ObjectType.ITEM:
                 # TODO: refactor events
 
-                if not user.can("rundown_edit", anyval=True):
-                    raise nebula.ForbiddenException(
-                        "You are not allowed to edit this rundown"
-                    )
+                q = "SELECT id_bin FROM items WHERE id = ANY($1)"
+                rows = await nebula.db.fetch(q, request.ids)
+                await ensure_can_edit_rundowns(user, [r["id_bin"] for r in rows])
 
                 query = "DELETE FROM items WHERE id = ANY($1) RETURNING id, id_bin"
                 affected_bins = set()

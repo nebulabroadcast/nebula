@@ -1,6 +1,6 @@
 import nebula
 from nebula.exceptions import NotFoundException
-from nebula.helpers.scheduling import can_append
+from nebula.helpers.scheduling import can_append, ensure_can_edit_rundowns
 
 from ._models import OrderRequest, OrderResponse
 
@@ -94,5 +94,9 @@ async def set_items_order(request: OrderRequest, user: nebula.User) -> OrderResp
                 item["updated_by"] = user.id
                 await item.save(notify=False)
             pos += 1
+
+        # The target bin and the bins items came from: rolls back if any
+        # belongs to a channel the user can't edit
+        await ensure_can_edit_rundowns(user, affected_bins)
 
     return OrderResponse(affected_bins=affected_bins)

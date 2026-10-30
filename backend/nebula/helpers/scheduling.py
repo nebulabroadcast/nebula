@@ -1,4 +1,5 @@
 import datetime
+from collections.abc import Iterable
 from typing import TYPE_CHECKING, Any
 
 import nebula
@@ -8,6 +9,26 @@ if TYPE_CHECKING:
     from nebula.settings.models import AcceptModel, PlayoutChannelSettings
 
 ItemRuns = dict[int, tuple[float, float]]
+
+
+async def ensure_can_edit_rundowns(
+    user: nebula.User, bins: Iterable[int | None]
+) -> None:
+    """Raise unless the user may edit the rundowns these bins belong to."""
+    if user.can("rundown_edit"):
+        return  # admin, or all channels
+    if not user.can("rundown_edit", anyval=True):
+        raise nebula.ForbiddenException("You are not allowed to edit rundown")
+    bin_ids = list({id_bin for id_bin in bins if id_bin})
+    q = "SELECT id_magic, id_channel FROM events WHERE id_magic = ANY($1)"
+    channels = {
+        row["id_magic"]: row["id_channel"] for row in await nebula.db.fetch(q, bin_ids)
+    }
+    # A bin without an event belongs to no channel the user may edit
+    if not all(user.can("rundown_edit", channels.get(id_bin)) for id_bin in bin_ids):
+        raise nebula.ForbiddenException(
+            "You are not allowed to edit rundown for this channel"
+        )
 
 
 async def bin_refresh(bins: list[int], **kwargs: Any) -> None:

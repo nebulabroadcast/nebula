@@ -1,6 +1,7 @@
 from typing import Any
 
 import nebula
+from nebula.helpers.scheduling import ensure_can_edit_rundowns
 from nebula.objects.base import BaseObject
 
 
@@ -20,7 +21,7 @@ def can_access_object(meta: dict[str, Any], user: nebula.User) -> bool:
     return False
 
 
-async def can_modify_object(obj: BaseObject, user: nebula.User) -> None:  # noqa: C901
+async def can_modify_object(obj: BaseObject, user: nebula.User) -> None:
     """Check if user can modify an object.
 
     Raises ForbiddenException if user is not allowed to modify the object.
@@ -41,20 +42,7 @@ async def can_modify_object(obj: BaseObject, user: nebula.User) -> None:  # noqa
             )
 
     elif isinstance(obj, nebula.Item):
-        acl = user.get("can/rundown_edit", False)
-        if not acl:
-            raise nebula.ForbiddenException("You are not allowed to edit rundown")
-        if isinstance(acl, list):
-            q = "SELECT id_channel FROM events WHERE id_magic = $1"
-            res = await nebula.db.fetch(q, obj["id_bin"])
-            if not res:
-                raise nebula.NotFoundException("Bin not found")
-            if res[0]["id_channel"] not in acl:
-                raise nebula.ForbiddenException(
-                    "You are not allowed to edit rundown for this channel"
-                )
-
-        # TODO: Check if user can edit rundown for this channel
+        await ensure_can_edit_rundowns(user, [obj["id_bin"]])
 
     elif isinstance(obj, nebula.Bin):
         raise nebula.ForbiddenException("It is not allowed to edit bins directly")
