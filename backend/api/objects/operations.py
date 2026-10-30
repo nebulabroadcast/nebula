@@ -185,20 +185,22 @@ class Operations(APIRequest):
                         #
 
                         if isinstance(obj, nebula.User):
-                            if not (user.is_admin or obj.id == user.id):
-                                raise nebula.ForbiddenException(  # noqa: TRY301
-                                    "Unable to modify other users"
-                                )
-
+                            # Users edit themselves through REST only
                             if not user.is_admin:
-                                for key in list(operation.data.keys()):
-                                    if key.startswith(("can/", "is_")):
-                                        operation.data.pop(key, None)
-
-                            password = operation.data.pop("password", None)
-                            if password:
-                                assert isinstance(obj, nebula.User)
-                                obj.set_password(password)
+                                raise nebula.ForbiddenException(  # noqa: TRY301
+                                    "Only admins can edit users"
+                                )
+                            # REST's checks (secret and read-only keys,
+                            # password length). They read the user from the
+                            # context: this call's user
+                            context = replace(
+                                get_request_context(), user=user, system=False
+                            )
+                            with request_context(context):
+                                password = operation.data.pop("password", None)
+                                if password:
+                                    obj.change_password(password)
+                                obj.apply_changes(operation.data)
 
                         #
                         # ACL
