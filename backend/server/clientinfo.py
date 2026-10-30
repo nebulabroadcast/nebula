@@ -8,7 +8,7 @@ from pydantic import Field
 
 from nebula import config
 from server.models import APIModel
-from server.utils import is_internal_ip
+from server.utils import get_real_ip, is_internal_ip
 
 
 class LocationInfo(APIModel):
@@ -28,12 +28,6 @@ class ClientInfo(APIModel):
     languages: list[str] = Field(default_factory=list)
     location: LocationInfo | None = Field(None)
     agent: AgentInfo | None = Field(None)
-
-
-def get_real_ip(request: Request) -> str:
-    host_ip = request.client.host if request.client else "127.0.0.1"
-    xff = request.headers.get("x-forwarded-for", host_ip)
-    return xff.split(",")[0].strip()
 
 
 def geo_lookup(ip: str) -> LocationInfo | None:

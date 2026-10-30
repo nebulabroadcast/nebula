@@ -4,6 +4,8 @@ from urllib.parse import urlparse
 
 from fastapi import Request
 
+from nebula.config import config
+
 
 def parse_access_token(authorization: str) -> str | None:
     """Parse an authorization header value.
@@ -38,10 +40,23 @@ def is_internal_ip(ip: str) -> bool:
 
 
 def get_real_ip(request: Request) -> str:
-    if request.client is None:
-        return "127.0.0.1"
-    xff = request.headers.get("x-forwarded-for", request.client.host)
-    return xff.split(",")[0].strip()
+    """Return the IP address of the client.
+
+    Each proxy appends the address it received the request from to
+    X-Forwarded-For, so with N trusted proxies the client is the N-th entry
+    from the end. Entries before it are sent by the client and can be fake.
+    """
+    peer = request.client.host if request.client else "127.0.0.1"
+    hops = config.trusted_proxies
+    xff = request.headers.get("x-forwarded-for")
+    # shortcut: a proxy is recognized by its private address only,
+    # add a list of proxy addresses if one ever connects from a public one
+    if not (xff and hops and is_internal_ip(peer)):
+        return peer
+    chain = [ip.strip() for ip in xff.split(",") if ip.strip()]
+    if not chain:
+        return peer
+    return chain[-hops] if len(chain) >= hops else chain[0]
 
 
 def server_url_from_request(request: Request) -> str:

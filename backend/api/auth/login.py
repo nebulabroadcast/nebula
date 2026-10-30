@@ -4,10 +4,10 @@ from fastapi import Request
 
 import nebula
 from server.auth_cookie import set_auth_cookie
-from server.clientinfo import get_real_ip
 from server.models.login import LoginRequest, LoginResponse
 from server.request import APIRequest
 from server.session import Session
+from server.utils import get_real_ip
 
 
 async def check_failed_login(ip_address: str) -> None:

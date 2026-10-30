@@ -60,6 +60,13 @@ class NebulaConfigModel(ConfigModel):
         "after too many failed login attempts",
     )
 
+    trusted_proxies: int = Field(
+        1,
+        ge=0,
+        description="Number of reverse proxies in front of the server. "
+        "X-Forwarded-For is trusted only from a private address. "
+        "0 never trusts it",
+    )
     geoip_db_path: str | None = Field(
         None,
         description=(
