@@ -1,9 +1,8 @@
 from typing import cast
 
-from nx.utils import coalesce
-
 import nebula
 from nebula.helpers.scheduling import bin_refresh
+from nx.utils import coalesce
 from server.dependencies import CurrentUser
 from server.request import APIRequest
 

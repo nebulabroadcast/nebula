@@ -1,6 +1,8 @@
 import time
+from string.templatelib import Template
 
 import nebula
+from nebula.sql import SQL
 from nebula.utils import slugify
 from server import APIRequest
 from server.dependencies import CurrentUser
@@ -113,40 +115,44 @@ class ManageJobs(APIRequest):
 
         # Return a list of jobs if requested
 
-        conds = []
+        conds: list[Template] = []
         if request.search_query:
             for elm in slugify(request.search_query, make_set=True):
                 assert elm, "Empty search element"
-                conds.append(f"a.id IN (SELECT id FROM ft WHERE value LIKE '{elm}%')")
+                # Inlined: a constant prefix can use the ft index, a parameter not
+                pattern = f"{elm}%"
+                conds.append(
+                    t"a.id IN (SELECT id FROM ft WHERE value LIKE {pattern:literal})"
+                )
 
         if user.is_limited:
             conds.append(
-                f"""
-                (a.meta->>'created_by' = '{user.id}'
-                OR a.meta->'assignees' @> '[{user.id}]'::JSONB)
-                """
+                t"""(a.meta->>'created_by' = {str(user.id)}::text
+                OR a.meta->'assignees' @> {[user.id]}::jsonb)"""
             )
 
         if request.view == "active":
             # Pending, in_progress, restart
-            conds.append(f"(j.status IN (0, 1, 5) OR j.end_time > {time.time() - 30})")
+            since = int(time.time()) - 30  # end_time is an INTEGER column
+            conds.append(t"(j.status IN (0, 1, 5) OR j.end_time > {since})")
         elif request.view == "finished":
             # completed, aborted, skipped
-            conds.append("j.status IN (2, 4, 6)")
+            conds.append(t"j.status IN (2, 4, 6)")
         elif request.view == "failed":
             # failed
-            conds.append("j.status IN (3)")
+            conds.append(t"j.status IN (3)")
         elif request.view is None:
             return ManageJobsResponse()
 
+        # Bound as arrays: an empty list matches nothing (IN () is an error)
         if request.asset_ids is not None:
-            ids = ",".join([str(_id) for _id in request.asset_ids])
-            conds.append(f"j.id_asset IN ({ids})")
+            conds.append(t"j.id_asset = ANY({request.asset_ids}::integer[])")
         if request.ids is not None:
-            ids = ",".join([str(_id) for _id in request.ids])
-            conds.append(f"j.id IN ({ids})")
+            conds.append(t"j.id = ANY({request.ids}::integer[])")
 
-        query = f"""
+        where = t"WHERE {SQL.join(conds, ' AND ')}" if conds else t""
+        query, params = SQL.render(
+            t"""
             SELECT
                 j.id,
                 j.id_action AS id_action,
@@ -172,15 +178,16 @@ class ManageJobs(APIRequest):
         LEFT JOIN services as s ON s.id = j.id_service
         LEFT JOIN users as u ON u.id = j.id_user
         LEFT JOIN actions as ac ON ac.id = j.id_action
-        {("WHERE " + (" AND ".join(conds))) if conds else ""}
+        {where}
         ORDER BY
             j.creation_time DESC,
             j.end_time DESC
         LIMIT 100
         """
+        )
 
         jobs = []
-        async for row in nebula.db.iterate(query):
+        async for row in nebula.db.iterate(query, *params):
             asset_name = row["asset_title"]
             if subtitle := row["asset_subtitle"]:
                 separator = nebula.settings.system.subtitle_separator

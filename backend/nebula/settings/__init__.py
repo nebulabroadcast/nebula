@@ -1,7 +1,6 @@
 from typing import Any
 
 import nx
-
 from nebula.config import config
 from nebula.settings.metatypes import MetaType
 from nebula.settings.models import (
