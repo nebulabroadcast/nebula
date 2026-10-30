@@ -37,6 +37,7 @@ const VirtualRows = ({
     if (height && height !== headerHeight) setHeaderHeight(height);
   });
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const virtualizer = useVirtualizer({
     count: data.length,
     getScrollElement: () => scrollElement,
