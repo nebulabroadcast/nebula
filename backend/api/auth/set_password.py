@@ -59,7 +59,9 @@ class SetPassword(APIRequest):
                 raise nebula.NotFoundException(f"User {request.login} not found")
             target_user = nebula.User.from_row(row)
         else:
-            target_user = user
+            # The session's user has no password hash or API key to save back
+            assert user.id is not None, "Logged-in user without id"
+            target_user = await nebula.User.load(user.id)
 
         if len(request.password) < 8:
             raise nebula.BadRequestException("Password is too short")

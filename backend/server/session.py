@@ -6,11 +6,12 @@ from collections.abc import AsyncGenerator
 from typing import Any
 
 from fastapi import Request
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
 import nebula
 from nebula.common import json_loads
 from nebula.exceptions import LoginFailedException
+from nebula.objects.user import SECRET_KEYS
 from server.clientinfo import ClientInfo, get_client_info
 from server.utils import get_real_ip, is_internal_ip
 
@@ -22,6 +23,19 @@ class SessionModel(BaseModel):
     accessed: float = Field(..., description="Last access timestamp")
     client_info: ClientInfo | None = Field(None, description="Client info")
     transient: bool = False
+
+    # Also validate `session.user = ...`, so secrets never reach redis
+    model_config = ConfigDict(validate_assignment=True)
+
+    @field_validator("user")
+    @classmethod
+    def drop_secrets(cls, user: dict[str, Any]) -> dict[str, Any]:
+        """Password and API key hashes stay in the database.
+
+        Sessions are listed to clients, and the user of a session is never
+        saved back (load it from the database to change it).
+        """
+        return {k: v for k, v in user.items() if k not in SECRET_KEYS}
 
 
 class Session:

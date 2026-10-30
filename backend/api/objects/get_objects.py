@@ -5,6 +5,7 @@ from pydantic import Field
 import nebula
 from nebula.enum import ObjectType
 from nebula.objects.asset import can_view_asset
+from nebula.objects.user import SECRET_KEYS
 from server import APIModel, APIRequest
 from server.dependencies import CurrentUser
 
@@ -76,6 +77,9 @@ class GetObjects(APIRequest):
                 raise nebula.ForbiddenException(
                     "You are not allowed to access this object"
                 )
-            data.append(row["meta"])
+            meta = row["meta"]
+            if request.object_type == ObjectType.USER:
+                meta = {k: v for k, v in meta.items() if k not in SECRET_KEYS}
+            data.append(meta)
 
         return GetObjectsResponse(data=data)
