@@ -5,7 +5,7 @@ from collections.abc import AsyncIterator
 from types import SimpleNamespace
 from typing import Any
 
-import httpx
+import httpx2
 import pytest
 import pytest_asyncio
 from fastapi import FastAPI
@@ -24,7 +24,7 @@ USER_TOKEN = "u" * 64
 
 
 @pytest_asyncio.fixture(loop_scope="session")
-async def client(monkeypatch: pytest.MonkeyPatch) -> AsyncIterator[httpx.AsyncClient]:
+async def client(monkeypatch: pytest.MonkeyPatch) -> AsyncIterator[httpx2.AsyncClient]:
     row = await nebula.db.fetchrow(
         "SELECT meta FROM users WHERE meta->>'is_admin' = 'true' ORDER BY id LIMIT 1"
     )
@@ -48,13 +48,13 @@ async def client(monkeypatch: pytest.MonkeyPatch) -> AsyncIterator[httpx.AsyncCl
 
     default = is_system()
     set_default_system(False)
-    transport = httpx.ASGITransport(app=app)
-    async with httpx.AsyncClient(transport=transport, base_url="http://test") as c:
+    transport = httpx2.ASGITransport(app=app)
+    async with httpx2.AsyncClient(transport=transport, base_url="http://test") as c:
         yield c
     set_default_system(default)
 
 
-async def test_set_without_permission_is_forbidden(client: httpx.AsyncClient) -> None:
+async def test_set_without_permission_is_forbidden(client: httpx2.AsyncClient) -> None:
     row = await nebula.db.fetchrow("SELECT id FROM assets ORDER BY id LIMIT 1")
     if row is None:
         pytest.skip("No assets in the database")
@@ -69,7 +69,7 @@ async def test_set_without_permission_is_forbidden(client: httpx.AsyncClient) ->
     )
 
 
-async def test_set_missing_object_is_not_found(client: httpx.AsyncClient) -> None:
+async def test_set_missing_object_is_not_found(client: httpx2.AsyncClient) -> None:
     response = await client.post(
         "/api/set",
         json={"object_type": "asset", "id": 2_000_000_000, "data": {"title": "x"}},

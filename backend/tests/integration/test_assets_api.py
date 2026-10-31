@@ -4,7 +4,7 @@ from collections.abc import AsyncIterator
 from types import SimpleNamespace
 from typing import Any
 
-import httpx
+import httpx2
 import pytest
 import pytest_asyncio
 from fastapi import FastAPI
@@ -39,7 +39,7 @@ async def folder() -> int:
 @pytest_asyncio.fixture(loop_scope="session")
 async def client(
     monkeypatch: pytest.MonkeyPatch, folder: int
-) -> AsyncIterator[httpx.AsyncClient]:
+) -> AsyncIterator[httpx2.AsyncClient]:
     users = {
         ADMIN_TOKEN: {"id": 1, "login": "admin", "is_admin": True},
         FOLDER_TOKEN: {"id": 2, "login": "viewer", "can/asset_view": [folder]},
@@ -59,8 +59,8 @@ async def client(
 
     default = is_system()
     set_default_system(False)
-    transport = httpx.ASGITransport(app=app)
-    async with httpx.AsyncClient(
+    transport = httpx2.ASGITransport(app=app)
+    async with httpx2.AsyncClient(
         transport=transport,
         base_url="http://test",
         headers={"Authorization": f"Bearer {ADMIN_TOKEN}"},
@@ -76,7 +76,7 @@ async def folder_ids(folder: int) -> list[int]:
     return [row["id"] for row in rows]
 
 
-async def test_list_fields(client: httpx.AsyncClient, folder: int) -> None:
+async def test_list_fields(client: httpx2.AsyncClient, folder: int) -> None:
     params = {"id_folder": folder, "fields": "title,has_aired,__aux", "limit": 1000}
     body = (await client.get(ASSETS, params=params)).json()
     assert [item["id"] for item in body["items"]] == await folder_ids(folder)
@@ -86,7 +86,7 @@ async def test_list_fields(client: httpx.AsyncClient, folder: int) -> None:
         assert isinstance(item["__aux"], list)
 
 
-async def test_default_fields(client: httpx.AsyncClient, folder: int) -> None:
+async def test_default_fields(client: httpx2.AsyncClient, folder: int) -> None:
     body = (await client.get(ASSETS, params={"id_folder": folder, "limit": 1})).json()
     item = body["items"][0]
     row = await nebula.db.fetchrow("SELECT meta FROM assets WHERE id = $1", item["id"])
@@ -95,7 +95,7 @@ async def test_default_fields(client: httpx.AsyncClient, folder: int) -> None:
     assert item == stored
 
 
-async def test_detail_default_fields(client: httpx.AsyncClient, folder: int) -> None:
+async def test_detail_default_fields(client: httpx2.AsyncClient, folder: int) -> None:
     asset_id = (await folder_ids(folder))[0]
     item = (await client.get(f"{ASSETS}/{asset_id}")).json()
     row = await nebula.db.fetchrow("SELECT meta FROM assets WHERE id = $1", asset_id)
@@ -110,7 +110,7 @@ async def test_detail_default_fields(client: httpx.AsyncClient, folder: int) -> 
     assert item == {"id": asset_id}
 
 
-async def test_pagination(client: httpx.AsyncClient, folder: int) -> None:
+async def test_pagination(client: httpx2.AsyncClient, folder: int) -> None:
     ids: list[int] = []
     params: dict[str, Any] = {"id_folder": folder, "limit": 2, "fields": "id"}
     for _ in range(1000):
@@ -123,7 +123,7 @@ async def test_pagination(client: httpx.AsyncClient, folder: int) -> None:
 
 
 @pytest.mark.parametrize("method", ["QUERY", "POST"])
-async def test_query(client: httpx.AsyncClient, method: str, folder: int) -> None:
+async def test_query(client: httpx2.AsyncClient, method: str, folder: int) -> None:
     url = ASSETS if method == "QUERY" else f"{ASSETS}/query"
     payload = {
         "fields": ["id_folder"],
@@ -136,14 +136,14 @@ async def test_query(client: httpx.AsyncClient, method: str, folder: int) -> Non
     assert {item["id_folder"] for item in body["items"]} == {folder}
 
 
-async def test_folder_acl(client: httpx.AsyncClient, folder: int) -> None:
+async def test_folder_acl(client: httpx2.AsyncClient, folder: int) -> None:
     headers = {"Authorization": f"Bearer {FOLDER_TOKEN}"}
     params = {"limit": 1000, "fields": "id_folder"}
     body = (await client.get(ASSETS, params=params, headers=headers)).json()
     assert [item["id"] for item in body["items"]] == await folder_ids(folder)
 
 
-async def test_limited_acl(client: httpx.AsyncClient) -> None:
+async def test_limited_acl(client: httpx2.AsyncClient) -> None:
     headers = {"Authorization": f"Bearer {LIMITED_TOKEN}"}
     body = (await client.get(ASSETS, headers=headers)).json()
     assert body["items"] == []
@@ -160,14 +160,14 @@ async def test_limited_acl(client: httpx.AsyncClient) -> None:
     ],
 )
 async def test_invalid_queries(
-    client: httpx.AsyncClient, params: dict[str, str], status: int, detail: str
+    client: httpx2.AsyncClient, params: dict[str, str], status: int, detail: str
 ) -> None:
     response = await client.get(ASSETS, params=params)
     assert response.status_code == status
     assert detail in response.json()["detail"]
 
 
-async def test_sort_by_indexed_title(client: httpx.AsyncClient) -> None:
+async def test_sort_by_indexed_title(client: httpx2.AsyncClient) -> None:
     indexed = await nebula.db.fetchrow(
         "SELECT 1 FROM pg_indexes WHERE indexname = 'idx_title'"
     )

@@ -4,7 +4,7 @@ from collections.abc import AsyncIterator
 from types import SimpleNamespace
 from typing import Any
 
-import httpx
+import httpx2
 import pytest
 import pytest_asyncio
 from fastapi import FastAPI
@@ -23,7 +23,7 @@ ADMIN_TOKEN = "a" * 64
 
 
 @pytest_asyncio.fixture(loop_scope="session")
-async def client(monkeypatch: pytest.MonkeyPatch) -> AsyncIterator[httpx.AsyncClient]:
+async def client(monkeypatch: pytest.MonkeyPatch) -> AsyncIterator[httpx2.AsyncClient]:
     row = await nebula.db.fetchrow(
         "SELECT meta FROM users WHERE meta->>'is_admin' = 'true' ORDER BY id LIMIT 1"
     )
@@ -43,8 +43,8 @@ async def client(monkeypatch: pytest.MonkeyPatch) -> AsyncIterator[httpx.AsyncCl
 
     default = is_system()
     set_default_system(False)
-    transport = httpx.ASGITransport(app=app)
-    async with httpx.AsyncClient(
+    transport = httpx2.ASGITransport(app=app)
+    async with httpx2.AsyncClient(
         transport=transport,
         base_url="http://test",
         headers={"Authorization": f"Bearer {ADMIN_TOKEN}"},
@@ -58,7 +58,7 @@ async def all_users() -> list[dict[str, Any]]:
     return [dict(row["meta"]) for row in rows]
 
 
-async def test_list(client: httpx.AsyncClient) -> None:
+async def test_list(client: httpx2.AsyncClient) -> None:
     users = await all_users()
     response = await client.get(USERS, params={"sort": "login"})
     assert response.status_code == 200
@@ -72,7 +72,7 @@ async def test_list(client: httpx.AsyncClient) -> None:
         assert "api_key" not in item
 
 
-async def test_list_filters_and_fields(client: httpx.AsyncClient) -> None:
+async def test_list_filters_and_fields(client: httpx2.AsyncClient) -> None:
     users = await all_users()
     admins = sorted(u["id"] for u in users if u.get("is_admin"))
 
@@ -85,7 +85,7 @@ async def test_list_filters_and_fields(client: httpx.AsyncClient) -> None:
     assert body["total"] == len(admins)
 
 
-async def test_missing_flags_count_as_false(client: httpx.AsyncClient) -> None:
+async def test_missing_flags_count_as_false(client: httpx2.AsyncClient) -> None:
     users = await all_users()
     expected = sorted(u["id"] for u in users if not u.get("is_limited"))
     response = await client.get(USERS, params={"is_limited": "false"})
@@ -93,7 +93,7 @@ async def test_missing_flags_count_as_false(client: httpx.AsyncClient) -> None:
 
 
 @pytest.mark.parametrize("method", ["QUERY", "POST"])
-async def test_query(client: httpx.AsyncClient, method: str) -> None:
+async def test_query(client: httpx2.AsyncClient, method: str) -> None:
     users = await all_users()
     login = users[0]["login"]
     url = USERS if method == "QUERY" else f"{USERS}/query"
@@ -105,14 +105,14 @@ async def test_query(client: httpx.AsyncClient, method: str) -> None:
     assert [item["login"] for item in response.json()["items"]] == [login]
 
 
-async def test_search(client: httpx.AsyncClient) -> None:
+async def test_search(client: httpx2.AsyncClient) -> None:
     users = await all_users()
     login = users[0]["login"]
     response = await client.get(USERS, params={"q": login[1:].upper()})
     assert login in [item["login"] for item in response.json()["items"]]
 
 
-async def test_pagination(client: httpx.AsyncClient) -> None:
+async def test_pagination(client: httpx2.AsyncClient) -> None:
     users = await all_users()
     ids: list[int] = []
     params: dict[str, Any] = {"limit": 1, "sort": "-login"}
@@ -136,7 +136,7 @@ async def test_pagination(client: httpx.AsyncClient) -> None:
     ],
 )
 async def test_invalid_queries(
-    client: httpx.AsyncClient, params: dict[str, str], status: int, detail: str
+    client: httpx2.AsyncClient, params: dict[str, str], status: int, detail: str
 ) -> None:
     response = await client.get(USERS, params=params)
     assert response.status_code == status
