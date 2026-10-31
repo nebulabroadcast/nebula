@@ -42,7 +42,7 @@ async def scheduler(  # noqa: C901, PLR0913, PLR0915, PLR0912
     #
 
     if delete and editable:
-        deleted_event_ids = await delete_events(delete)
+        deleted_event_ids = await delete_events(delete, channel.id)
         affected_events.extend(deleted_event_ids)
     #
     # Create / update events
@@ -122,6 +122,8 @@ async def scheduler(  # noqa: C901, PLR0913, PLR0915, PLR0912
         elif event_data.id:
             # Update existing event
             event = await nebula.Event.load(event_data.id)
+            if event["id_channel"] != channel.id:
+                raise nebula.ForbiddenException("Event belongs to another channel")
             event["start"] = event_data.start
             if event_data.run_mode is not None:
                 event["run_mode"] = event_data.run_mode.value

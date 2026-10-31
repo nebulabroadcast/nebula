@@ -25,7 +25,7 @@ async def get_event_at_time(id_channel: int, timestamp: int) -> nebula.Event | N
     return None
 
 
-async def delete_events(ids: list[int], **kwargs: Any) -> list[int]:
+async def delete_events(ids: list[int], id_channel: int, **kwargs: Any) -> list[int]:
     """Delete events from the database.
 
     It also deletes the associated bins and items. Events with
@@ -42,6 +42,9 @@ async def delete_events(ids: list[int], **kwargs: Any) -> list[int]:
     async with nebula.db.transaction() as conn:
         for id_event in ids:
             event = await nebula.Event.load(id_event)
+            # Before the try: its broad except would swallow this
+            if event["id_channel"] != id_channel:
+                raise nebula.ForbiddenException("Event belongs to another channel")
             id_bin = event["id_magic"]
 
             # Each event is deleted in its own savepoint (nested asyncpg

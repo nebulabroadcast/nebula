@@ -13,7 +13,9 @@ from api.items._models import OrderItem, OrderRequest
 from api.items._set_items_order import set_items_order
 from api.objects.delete_objects import DeleteObjects, DeleteObjectsRequest
 from api.objects.operations import Operation, Operations, OperationsRequest
+from api.scheduler._scheduler import scheduler
 from nebula.enum import ObjectType
+from nebula.helpers.create_new_event import EventData
 from nebula.helpers.validators import Validator
 
 pytestmark = pytest.mark.asyncio
@@ -21,6 +23,7 @@ pytestmark = pytest.mark.asyncio
 # Bin 10 is the rundown of an event on channel 1, bin 20 on channel 2
 BIN_CHANNELS = {10: 1, 20: 2}
 ITEMS = {5: 20}  # item id -> bin
+EVENTS = {1: 1, 2: 2}  # event id -> channel
 
 EDITOR = nebula.User(
     meta={
@@ -51,7 +54,10 @@ def saved(monkeypatch: pytest.MonkeyPatch) -> list[Any]:
         return nebula.Item(meta={"id": object_id, "id_bin": ITEMS[object_id]})
 
     async def load_event(_cls: Any, object_id: int, **_: Any) -> nebula.Event:
-        return nebula.Event(meta={"id": object_id, "id_channel": 1})
+        return nebula.Event(meta={"id": object_id, "id_channel": EVENTS[object_id]})
+
+    async def fetchrow(*_: Any) -> None:
+        return None
 
     async def save(self: Any, **_: Any) -> None:
         saves.append(self)
@@ -61,6 +67,7 @@ def saved(monkeypatch: pytest.MonkeyPatch) -> list[Any]:
         yield
 
     monkeypatch.setattr(nebula.db, "fetch", fetch)
+    monkeypatch.setattr(nebula.db, "fetchrow", fetchrow)
     monkeypatch.setattr(nebula.db, "transaction", transaction)
     monkeypatch.setattr(nebula.Item, "load", classmethod(load_item))
     monkeypatch.setattr(nebula.Event, "load", classmethod(load_event))
@@ -130,3 +137,16 @@ async def test_delete_item_in_other_channel() -> None:
     request = DeleteObjectsRequest(object_type=ObjectType.ITEM, ids=[5])
     with pytest.raises(nebula.ForbiddenException):
         await DeleteObjects().handle(request, EDITOR)
+
+
+@pytest.mark.usefixtures("saved")
+async def test_scheduler_delete_other_channel_event() -> None:
+    # Rights on channel 1 don't reach event 2 of channel 2
+    with pytest.raises(nebula.ForbiddenException):
+        await scheduler(1, delete=[2])
+
+
+async def test_scheduler_update_other_channel_event(saved: list[Any]) -> None:
+    with pytest.raises(nebula.ForbiddenException):
+        await scheduler(1, events=[EventData(id=2, start=1620000000)])
+    assert saved == []
