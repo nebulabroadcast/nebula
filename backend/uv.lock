@@ -1213,34 +1213,19 @@ wheels = [
 ]
 
 [[package]]
-name = "nebula"
+name = "nebulabroadcast-core"
 version = "6.1.6"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
-    { name = "aiocache" },
     { name = "aiofiles" },
-    { name = "anyio" },
     { name = "asyncpg" },
-    { name = "authlib" },
-    { name = "email-validator" },
-    { name = "fastapi" },
-    { name = "geoip2" },
-    { name = "gunicorn" },
     { name = "httpx2" },
-    { name = "itsdangerous" },
     { name = "jinja2" },
     { name = "mistune" },
-    { name = "nx-framework" },
+    { name = "nx-framework", extra = ["postgres", "redis"] },
     { name = "pydantic" },
     { name = "python-dotenv" },
-    { name = "redis" },
-    { name = "requests" },
-    { name = "rich" },
-    { name = "shortuuid" },
     { name = "unidecode" },
-    { name = "user-agents" },
-    { name = "uvicorn", extra = ["standard"] },
-    { name = "uvicorn-worker" },
 ]
 
 [package.dev-dependencies]
@@ -1254,33 +1239,35 @@ dev = [
     { name = "types-authlib" },
     { name = "types-requests" },
 ]
+server = [
+    { name = "aiocache" },
+    { name = "anyio" },
+    { name = "authlib" },
+    { name = "email-validator" },
+    { name = "fastapi" },
+    { name = "geoip2" },
+    { name = "gunicorn" },
+    { name = "itsdangerous" },
+    { name = "redis" },
+    { name = "requests" },
+    { name = "rich" },
+    { name = "shortuuid" },
+    { name = "user-agents" },
+    { name = "uvicorn", extra = ["standard"] },
+    { name = "uvicorn-worker" },
+]
 
 [package.metadata]
 requires-dist = [
-    { name = "aiocache", specifier = ">=0.12.3" },
     { name = "aiofiles", specifier = ">=25.1.0" },
-    { name = "anyio", specifier = ">=4.13.0" },
     { name = "asyncpg", specifier = ">=0.31.0" },
-    { name = "authlib", specifier = ">=1.6.6" },
-    { name = "email-validator", specifier = ">=2.3.0" },
-    { name = "fastapi", specifier = ">=0.128.0" },
-    { name = "geoip2", specifier = ">=5.2.0" },
-    { name = "gunicorn", specifier = ">=23.0.0" },
     { name = "httpx2", specifier = ">=2.16.0" },
-    { name = "itsdangerous", specifier = ">=2.2.0" },
     { name = "jinja2", specifier = ">=3.1.6" },
     { name = "mistune", specifier = ">=3.2.0" },
-    { name = "nx-framework", specifier = ">=0.0.9" },
+    { name = "nx-framework", extras = ["postgres", "redis"], specifier = ">=0.0.9" },
     { name = "pydantic", specifier = ">=2.12.5" },
     { name = "python-dotenv", specifier = ">=1.2.1" },
-    { name = "redis", specifier = ">=7.1.0" },
-    { name = "requests", specifier = ">=2.32.5" },
-    { name = "rich", specifier = ">=14.2.0" },
-    { name = "shortuuid", specifier = ">=1.0.13" },
     { name = "unidecode", specifier = ">=1.4.0" },
-    { name = "user-agents", specifier = ">=2.2.0" },
-    { name = "uvicorn", extras = ["standard"], specifier = ">=0.40.0" },
-    { name = "uvicorn-worker", specifier = ">=0.4.0" },
 ]
 
 [package.metadata.requires-dev]
@@ -1293,6 +1280,23 @@ dev = [
     { name = "types-aiofiles", specifier = ">=25.1.0.20251011" },
     { name = "types-authlib", specifier = ">=1.6.6.20260116" },
     { name = "types-requests", specifier = ">=2.32.4.20260107" },
+]
+server = [
+    { name = "aiocache", specifier = ">=0.12.3" },
+    { name = "anyio", specifier = ">=4.13.0" },
+    { name = "authlib", specifier = ">=1.6.6" },
+    { name = "email-validator", specifier = ">=2.3.0" },
+    { name = "fastapi", specifier = ">=0.128.0" },
+    { name = "geoip2", specifier = ">=5.2.0" },
+    { name = "gunicorn", specifier = ">=23.0.0" },
+    { name = "itsdangerous", specifier = ">=2.2.0" },
+    { name = "redis", specifier = ">=7.1.0" },
+    { name = "requests", specifier = ">=2.32.5" },
+    { name = "rich", specifier = ">=14.2.0" },
+    { name = "shortuuid", specifier = ">=1.0.13" },
+    { name = "user-agents", specifier = ">=2.2.0" },
+    { name = "uvicorn", extras = ["standard"], specifier = ">=0.40.0" },
+    { name = "uvicorn-worker", specifier = ">=0.4.0" },
 ]
 
 [[package]]
@@ -1311,6 +1315,14 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/3e/cf/4485463fcbcb645baa11ab60de74f3957e8deaa6d4f0d92df9c0451632f7/nx_framework-0.0.11.tar.gz", hash = "sha256:26e02bcfeb2ca2872f1361bd9ac664d8bd1d77865cb2cc959e5bfe3e38f79000", size = 29103, upload-time = "2026-09-17T19:28:47.475Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/37/d1/2953fc06388861210dcfa0858a99e755739ec597f974b4456e0d76746d8e/nx_framework-0.0.11-py3-none-any.whl", hash = "sha256:bc861b0298c61747f676358f62bbcea3b712c2b84ba23e181dd865f8bd932a04", size = 26950, upload-time = "2026-09-17T19:28:46.298Z" },
+]
+
+[package.optional-dependencies]
+postgres = [
+    { name = "asyncpg" },
+]
+redis = [
+    { name = "redis" },
 ]
 
 [[package]]

@@ -7,3 +7,4 @@ frontend/node_modules
 storage/
 settings/*.py
 /plugins/
+backend/dist/

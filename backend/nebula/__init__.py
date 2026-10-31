@@ -32,6 +32,8 @@ __all__ = [
 ]
 
 import asyncio
+from collections.abc import Coroutine
+from typing import Any
 
 from nx.db import DB, db
 from nx.logging import LogLevel
@@ -74,7 +76,7 @@ def initialize() -> None:
 initialize()
 
 
-def run(entrypoint) -> None:  # type: ignore[no-untyped-def]
+def run(entrypoint: Coroutine[Any, Any, Any]) -> None:
     """Run a coroutine in the event loop.
 
     This function is used to run the main entrypoint of CLI scripts.

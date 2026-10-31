@@ -45,8 +45,11 @@ RUN \
   && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /backend
+COPY --from=ghcr.io/astral-sh/uv:0.9.8 /uv /bin/uv
 COPY ./backend/pyproject.toml /backend/uv.lock .
-RUN pip install --break-system-packages -e .  
+# Dependencies only: the package's and the server group. The code runs
+# from /backend, so the project itself (nebulabroadcast-core) isn't installed.
+RUN uv pip install --system --break-system-packages -r pyproject.toml --group server
 
 COPY ./backend .
 COPY --from=build /frontend/dist/ /frontend

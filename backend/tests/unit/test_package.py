@@ -27,7 +27,8 @@ async def test_email_templates_outside_backend(
     msg = await render_email_template(
         "password-reset", full_name="Alice", reset_link="https://x/reset"
     )
-    assert "Alice" in msg.as_string()
+    for part in msg.get_payload():  # parts may be base64
+        assert "Alice" in part.get_payload(decode=True).decode()
 
 
 def python(*args: str) -> str:
