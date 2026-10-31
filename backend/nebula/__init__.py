@@ -31,15 +31,9 @@ __all__ = [
     "storages",
 ]
 
-import sys
-
-from nebula.version import __version__
-
-if "--version" in sys.argv:
-    sys.stdout.write(__version__)
-    sys.exit(0)
-
 import asyncio
+from collections.abc import Coroutine
+from typing import Any
 
 from nx.db import DB, db
 from nx.logging import LogLevel
@@ -70,6 +64,7 @@ from .objects.user import User
 from .plugins import CLIPlugin
 from .settings import load_settings, settings
 from .storages import Storage, storages
+from .version import __version__
 
 
 def initialize() -> None:
@@ -81,7 +76,7 @@ def initialize() -> None:
 initialize()
 
 
-def run(entrypoint) -> None:  # type: ignore[no-untyped-def]
+def run(entrypoint: Coroutine[Any, Any, Any]) -> None:
     """Run a coroutine in the event loop.
 
     This function is used to run the main entrypoint of CLI scripts.

@@ -45,7 +45,7 @@ def markdown2email(text: str) -> MIMEMultipart | MIMEText:
 
 async def render_email_template(template_name: str, **kwargs: Any) -> MIMEMultipart:
     env = jinja2.Environment(
-        loader=jinja2.FileSystemLoader("assets/email"),
+        loader=jinja2.PackageLoader("nebula", "templates/email"),
         autoescape=jinja2.select_autoescape(["html", "xml"]),
     )
     template = env.get_template(f"{template_name}.jinja2")

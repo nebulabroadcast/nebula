@@ -1,5 +1,6 @@
 IMAGE_NAME=nebulabroadcast/nebula-server:dev
-VERSION=$(shell cd backend && python -c 'import nebula' --version)
+# version.py is the source of the version; check-backend copies it to pyproject
+VERSION=$(shell sed -n 's/^__version__ = "\(.*\)"$$/\1/p' backend/nebula/version.py)
 
 check-backend:
 	cd backend && \
