@@ -57,7 +57,7 @@ interface RundownTableProps {
   setSelectedEvents: (events: Array<number | string>) => void;
   focusedObject: RundownRow | null;
   setFocusedObject: (object: RundownRow | null) => void;
-  rundownMode: string;
+  rundownModes: string[];
   loadRundown: () => void;
   onError: (error: unknown) => void;
 }
@@ -76,7 +76,7 @@ const RundownTable: React.FC<RundownTableProps> = ({
   setSelectedEvents,
   focusedObject,
   setFocusedObject,
-  rundownMode,
+  rundownModes,
   loadRundown,
   onError,
 }) => {
@@ -369,7 +369,7 @@ const RundownTable: React.FC<RundownTableProps> = ({
     if (event.detail === 2) {
       // doubleClick
       if (
-        rundownMode === 'control' &&
+        rundownModes.includes('control') &&
         row.type === 'item' &&
         currentChannelId !== null
       ) {

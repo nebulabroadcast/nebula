@@ -72,14 +72,14 @@ type TimedPlayoutStatus = Partial<PlayoutStatusMessage> & { receivedAt?: number 
 
 interface PlayoutControlsProps {
   playoutStatus: PlayoutStatusMessage | null;
-  rundownMode: string;
+  rundownModes: string[];
   loadRundown: () => void;
   onError: (error: unknown) => void;
 }
 
 const PlayoutControls: React.FC<PlayoutControlsProps> = ({
   playoutStatus,
-  rundownMode,
+  rundownModes,
   loadRundown,
   onError,
 }) => {
@@ -165,68 +165,71 @@ const PlayoutControls: React.FC<PlayoutControlsProps> = ({
 
   return (
     <>
-      <ControlsSection className={clsx(progressClassName)}>
-        <DisplayRow>
-          <DisplayTime ref={dispClkRef}></DisplayTime>
-          <DisplayName ref={dispCurRef}></DisplayName>
-          <DisplayTime ref={dispRemRef}></DisplayTime>
-        </DisplayRow>
+      {/* Playout state and buttons: only when controlling */}
+      {rundownModes.includes('control') && (
+        <>
+          <ControlsSection className={clsx(progressClassName)}>
+            <DisplayRow>
+              <DisplayTime ref={dispClkRef}></DisplayTime>
+              <DisplayName ref={dispCurRef}></DisplayName>
+              <DisplayTime ref={dispRemRef}></DisplayTime>
+            </DisplayRow>
 
-        <DisplayRow>
-          <DisplayTime ref={dispPosRef}></DisplayTime>
-          <DisplayName ref={dispNxtRef}></DisplayName>
-          <DisplayTime ref={dispDurRef}></DisplayTime>
-        </DisplayRow>
+            <DisplayRow>
+              <DisplayTime ref={dispPosRef}></DisplayTime>
+              <DisplayName ref={dispNxtRef}></DisplayName>
+              <DisplayTime ref={dispDurRef}></DisplayTime>
+            </DisplayRow>
 
-        <Progress value={progress} />
-      </ControlsSection>
-      {rundownMode === 'control' && (
-        <ControlsSection>
-          <ButtonRow>
-            <Button
-              label="Take"
-              style={{ border: '1px solid var(--color-green-muted)' }}
-              onClick={() => {
-                onCommand('take');
-              }}
-            />
-            <Button
-              label="Freeze"
-              style={{ border: '1px solid var(--color-red-muted)' }}
-              onClick={() => {
-                onCommand('freeze');
-              }}
-            />
-            <Button
-              label="Retake"
-              onClick={() => {
-                onCommand('retake');
-              }}
-            />
-            <Button
-              label="Abort"
-              onClick={() => {
-                onCommand('abort');
-              }}
-            />
-            <Button label="Loop" onClick={() => toast.error('not implemented')} />
-            <Button
-              label="Cue prev"
-              onClick={() => {
-                onCommand('cue_backward');
-              }}
-            />
-            <Button
-              label="Cue next"
-              onClick={() => {
-                onCommand('cue_forward');
-              }}
-            />
-          </ButtonRow>
-        </ControlsSection>
+            <Progress value={progress} />
+          </ControlsSection>
+          <ControlsSection>
+            <ButtonRow>
+              <Button
+                label="Take"
+                style={{ border: '1px solid var(--color-green-muted)' }}
+                onClick={() => {
+                  onCommand('take');
+                }}
+              />
+              <Button
+                label="Freeze"
+                style={{ border: '1px solid var(--color-red-muted)' }}
+                onClick={() => {
+                  onCommand('freeze');
+                }}
+              />
+              <Button
+                label="Retake"
+                onClick={() => {
+                  onCommand('retake');
+                }}
+              />
+              <Button
+                label="Abort"
+                onClick={() => {
+                  onCommand('abort');
+                }}
+              />
+              <Button label="Loop" onClick={() => toast.error('not implemented')} />
+              <Button
+                label="Cue prev"
+                onClick={() => {
+                  onCommand('cue_backward');
+                }}
+              />
+              <Button
+                label="Cue next"
+                onClick={() => {
+                  onCommand('cue_forward');
+                }}
+              />
+            </ButtonRow>
+          </ControlsSection>
+        </>
       )}
 
-      {rundownMode === 'plugins' && <PlayoutPlugins onError={onError} />}
+      {rundownModes.includes('plugins') && <PlayoutPlugins onError={onError} />}
     </>
   );
 };
