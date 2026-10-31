@@ -3,7 +3,7 @@ import styled from 'styled-components';
 const MonitorWrapper = styled.div`
   background-color: var(--color-surface-01);
   box-shadow: 4px 4px 10px 4px rgba(0, 0, 0, 0.7);
-  z-index: 1;
+  z-index: 100;
 
   position: fixed;
   bottom: 20px;
