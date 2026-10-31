@@ -1,5 +1,6 @@
 import os
 import time
+from dataclasses import dataclass
 
 import aiofiles
 from fastapi import Request
@@ -7,9 +8,31 @@ from starlette.requests import ClientDisconnect
 
 import nebula
 from nebula.enum import MediaType, ObjectStatus
+from nebula.exceptions import BadRequestException
 from nebula.filetypes import FileTypes
 from server.dependencies import AssetInPath, CurrentUser
 from server.request import APIRequest
+
+
+@dataclass(frozen=True)
+class ParsedMediaRequest:
+    extension: str
+
+
+def validate_request(request: Request, asset: nebula.Asset) -> ParsedMediaRequest:
+    asset.ensure_can_edit()
+    if asset["media_type"] != MediaType.FILE:
+        raise BadRequestException("Only file assets can be uploaded")
+
+    extension = request.headers.get("X-nebula-extension")
+
+    if not extension:
+        raise BadRequestException("Missing X-nebula-extension header")
+
+    if FileTypes.get(extension) != asset["content_type"]:
+        raise BadRequestException(f"Invalid file extension: {extension}")
+
+    return ParsedMediaRequest(extension=extension)
 
 
 class UploadMedia(APIRequest):
@@ -23,19 +46,15 @@ class UploadMedia(APIRequest):
     title = "Get objects"
     category = "Asset management"
 
-    async def handle(  # noqa: PLR0915
+    async def handle(
         self,
         request: Request,
         asset: AssetInPath,
         user: CurrentUser,
     ) -> None:
         _ = user  # Required to gate this endpoint behind authentication
-        asset.ensure_can_edit()  # checks the request's user (nebula.context)
-        assert asset["media_type"] == MediaType.FILE, "Only file assets can be uploaded"
-        extension = request.headers.get("X-nebula-extension")
-        assert extension, "Missing X-nebula-extension header"
 
-        assert FileTypes.get(extension) == asset["content_type"], "Invalid content type"
+        parsed_request = validate_request(request, asset)
 
         if nebula.settings.system.upload_storage and nebula.settings.system.upload_dir:
             direct = False
@@ -49,13 +68,18 @@ class UploadMedia(APIRequest):
             except Exception as e:
                 raise nebula.NebulaException("Unable to create upload directory") from e
 
-            target_path = os.path.join(upload_full_dir, f"{base_name}.{extension}")
+            target_path = os.path.join(
+                upload_full_dir, f"{base_name}.{parsed_request.extension}"
+            )
         else:
             direct = True
             storage = nebula.storages[asset["id_storage"]]
-            assert asset.path, f"{asset} does not have path set"
+            if not asset.path:
+                raise nebula.NotFoundException(
+                    f"Asset {asset} does not have a path set"
+                )
             bname = os.path.splitext(asset.path)[0]
-            target_path = f"{bname}.{extension}"
+            target_path = f"{bname}.{parsed_request.extension}"
 
         nebula.log.debug(f"Uploading media file for {asset}")
 
@@ -87,12 +111,14 @@ class UploadMedia(APIRequest):
 
         os.rename(temp_path, target_path)
         if direct:
-            if extension != os.path.splitext(asset["path"])[1][1:]:
+            if parsed_request.extension != os.path.splitext(asset["path"])[1][1:]:
                 nebula.log.warning(
-                    f"Uploaded media file extension {extension} does not match "
+                    f"Uploaded file extension {parsed_request.extension} doesn't match "
                     f"asset extension {os.path.splitext(asset['path'])[1][1:]}"
                 )
-                asset["path"] = os.path.splitext(asset["path"])[0] + "." + extension
+                asset["path"] = (
+                    os.path.splitext(asset["path"])[0] + "." + parsed_request.extension
+                )
                 # TODO: remove old file?
             asset["status"] = ObjectStatus.CREATING
             # The file is complete: meta skips its completion wait
