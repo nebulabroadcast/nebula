@@ -1,6 +1,6 @@
 [project]
 name = "nebulabroadcast-core"
-version = "6.1.6"
+version = "6.1.7"
 description = "Async domain library of the Nebula broadcast automation system"
 readme = "README.md"
 license = "GPL-3.0-or-later"
