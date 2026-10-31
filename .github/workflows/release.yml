@@ -3,16 +3,51 @@ name: Publish a new version
 on:
   push:
     branches: [ "main" ]
+  # Manual release: fast-forward main to develop and release it
+  workflow_dispatch:
 
 jobs:
+  merge:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      sha: ${{ steps.merge.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Fast-forward main to develop
+        id: merge
+        run: |
+          version=$(git show origin/develop:backend/pyproject.toml | sed -n 's/^version = "\(.*\)"$/\1/p')
+          if git rev-parse -q --verify "refs/tags/v$version" > /dev/null; then
+            echo "::error::v$version is already released: bump the version on develop first"
+            exit 1
+          fi
+          if ! git merge --ff-only origin/develop; then
+            echo "::error::main has commits develop doesn't: merge main into develop first"
+            exit 1
+          fi
+          git push origin main
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
   build:
+    needs: merge
+    # merge is skipped on a push to main
+    if: ${{ !failure() && !cancelled() }}
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
-      - uses: docker/setup-buildx-action@v2
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.merge.outputs.sha || github.sha }}
+      - uses: docker/setup-buildx-action@v3
       - name: Login to Docker Hub
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -25,7 +60,7 @@ jobs:
           field: 'project.version'
 
       - name: Build docker image
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v6
         with:
           context: .
           cache-from: type=gha
@@ -39,9 +74,34 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           tag: v${{ steps.get_version.outputs.value }}
+          # on a manual run github.sha is the commit the run started from
+          commit: ${{ needs.merge.outputs.sha || github.sha }}
           name: Nebula ${{ steps.get_version.outputs.value }}
           allowUpdates: true
           draft: false
           prerelease: false
           generateReleaseNotes: true
 
+  pypi:
+    needs: merge
+    if: ${{ !failure() && !cancelled() }}
+    runs-on: ubuntu-latest
+    # Trusted publishing: pypi.org trusts this workflow and environment
+    environment: pypi
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.merge.outputs.sha || github.sha }}
+      - uses: astral-sh/setup-uv@v6
+      - name: Build nebulabroadcast-core
+        working-directory: backend
+        run: uv build
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: backend/dist
+          # every push to main runs this, with or without a version bump
+          skip-existing: true
