@@ -31,14 +31,6 @@ __all__ = [
     "storages",
 ]
 
-import sys
-
-from nebula.version import __version__
-
-if "--version" in sys.argv:
-    sys.stdout.write(__version__)
-    sys.exit(0)
-
 import asyncio
 
 from nx.db import DB, db
@@ -70,6 +62,7 @@ from .objects.user import User
 from .plugins import CLIPlugin
 from .settings import load_settings, settings
 from .storages import Storage, storages
+from .version import __version__
 
 
 def initialize() -> None:
