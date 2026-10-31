@@ -12,6 +12,7 @@ import secrets
 
 import aiofiles
 import aiofiles.os
+import httpx2
 
 import nebula
 
@@ -91,3 +92,26 @@ async def delete_avatar(user: nebula.User) -> None:
     if not await aiofiles.os.path.exists(path):
         raise nebula.NotFoundException("User has no avatar")
     await aiofiles.os.remove(path)
+
+
+async def fetch_avatar(user: nebula.User, url: str) -> None:
+    """Download an image (an SSO profile picture) and save it as the avatar.
+
+    Saves as system: the caller decides whose avatar this is.
+    """
+    # The URL comes from the provider: don't let it reach internal plain-http hosts
+    if not url.startswith("https://"):
+        raise nebula.ValidationException("Avatar URL must use https")
+    data = bytearray()
+    async with (
+        httpx2.AsyncClient(timeout=5) as client,
+        client.stream("GET", url) as response,
+    ):
+        response.raise_for_status()
+        async for chunk in response.aiter_bytes():
+            data.extend(chunk)
+            if len(data) > MAX_AVATAR_BYTES:
+                raise nebula.ValidationException("Avatar file is too large")
+    content_type = response.headers.get("content-type", "").split(";")[0].strip()
+    with nebula.context.system_context():
+        await save_avatar(user, bytes(data), content_type)
