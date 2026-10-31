@@ -1,14 +1,27 @@
 from typing import cast
 
+import aiofiles.os
+import httpx2
 from authlib.common.errors import AuthlibBaseError
 from fastapi import Request
 from fastapi.responses import RedirectResponse
 
 import nebula
+from nebula.helpers.avatars import avatar_path, fetch_avatar
 from server.request import APIRequest
 from server.session import Session
 from server.sso import NebulaSSO
 from server.utils import server_url_from_request
+
+
+async def set_missing_avatar(user: nebula.User, url: str) -> None:
+    """A user without an avatar gets their SSO profile picture."""
+    try:
+        if not await aiofiles.os.path.exists(avatar_path(user)):
+            await fetch_avatar(user, url)
+    except (nebula.NebulaException, httpx2.HTTPError, OSError) as e:
+        # Never fail the login over a picture
+        nebula.log.warning(f"Could not use the SSO picture of {user}: {e}")
 
 
 class SSOLogin(APIRequest):
@@ -39,7 +52,7 @@ class SSOLoginCallback(APIRequest):
     methods = ["GET"]
     category = "Authentication"
 
-    async def handle(self, request: Request, provider: str) -> RedirectResponse:  # noqa: PLR0911
+    async def handle(self, request: Request, provider: str) -> RedirectResponse:  # noqa: C901, PLR0911
         remote = NebulaSSO.client(provider)
         if not remote:
             return RedirectResponse("/?error=Invalid provider")
@@ -83,5 +96,9 @@ class SSOLoginCallback(APIRequest):
             user = await nebula.User.by_email(email)
         except nebula.NotFoundException:
             return RedirectResponse("/?error=User not found")
+
+        # OpenID Connect sends "picture", GitHub "avatar_url"
+        if picture := user_info.get("picture") or user_info.get("avatar_url"):
+            await set_missing_avatar(user, picture)
         session = await Session.create(user, request, transient=True)
         return RedirectResponse(f"/?authorize={session.token}")
