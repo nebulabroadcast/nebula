@@ -15,6 +15,9 @@ ALWAYS_SUBSCRIBE = [
     "server.started",
 ]
 
+# Clients are sent to one by one: a dead connection must not hold up the rest
+SEND_TIMEOUT = 1
+
 
 class Client:
     def __init__(self, sock: WebSocket):
@@ -51,8 +54,11 @@ class Client:
         if not self.is_valid:
             return
         try:
-            await self.sock.send_text(json_dumps(message))
-        except WebSocketDisconnect:
+            await asyncio.wait_for(
+                self.sock.send_text(json_dumps(message)), SEND_TIMEOUT
+            )
+        except WebSocketDisconnect, TimeoutError:
+            # Also skips close() in purge, which would block the same way
             self.disconnected = True
         except Exception as e:
             nebula.log.trace("WS: Error sending message", e)
