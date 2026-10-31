@@ -180,6 +180,9 @@ CREATE TABLE IF NOT EXISTS public.jobs (
   CONSTRAINT jobs_pkey PRIMARY KEY (id)
 );
 
+CREATE INDEX IF NOT EXISTS idx_jobs_asset_action ON jobs(id_asset, id_action);
+
+
 CREATE TABLE IF NOT EXISTS public.aux (
   id SERIAL NOT NULL,
   key VARCHAR(255) NOT NULL,
