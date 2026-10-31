@@ -70,6 +70,12 @@ def build_order(order_by: str) -> str:
     if order_by in nebula.Asset.db_columns:
         return order_by
 
+    if order_by == "duration":
+        # Effective duration (mark_in / mark_out applied), same as
+        # Asset.duration. Defined in schema.sql and indexed there,
+        # so the expression must stay exactly the same.
+        return "asset_duration(a.meta)"
+
     if order_by not in nebula.settings.metatypes:
         return "ctime"
 

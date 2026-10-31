@@ -42,6 +42,10 @@ interface BrowserTabProps {
   isDragging: boolean;
 }
 
+// The listing can't sort by the stored `duration`, only by the computed
+// `effective_duration` (marks applied, as the column shows it)
+const sortKey = (name: string) => (name === 'duration' ? 'effective_duration' : name);
+
 const BrowserTab = ({ tab, view, active, isDragging }: BrowserTabProps) => {
   const { focusedAsset, setFocusedAsset } = useNebula();
   const browser = useBrowser();
@@ -227,12 +231,12 @@ const BrowserTab = ({ tab, view, active, isDragging }: BrowserTabProps) => {
           title: nebula.metaType(name).header,
           formatter: getFormatter(name),
           width: getColumnWidth(name),
-          sortable: !browser.unsortable.includes(name),
+          sortable: !browser.unsortable.includes(sortKey(name)),
         })),
     [view, tab, browser.unsortable]
   );
 
-  const sortBy = tab.sort.replace(/^-/, '');
+  const sortBy = tab.sort.replace(/^-/, '').replace(/^effective_duration$/, 'duration');
   const sortDirection = tab.sort.startsWith('-') ? 'desc' : 'asc';
 
   //
@@ -416,7 +420,8 @@ const BrowserTab = ({ tab, view, active, isDragging }: BrowserTabProps) => {
         sortBy={sortBy}
         sortDirection={sortDirection}
         onSort={(name, direction) => {
-          browser.updateTab(tab.id, { sort: direction === 'desc' ? `-${name}` : name });
+          const key = sortKey(name);
+          browser.updateTab(tab.id, { sort: direction === 'desc' ? `-${key}` : key });
         }}
         onLoadMore={loadMore}
         contextMenu={contextMenu}

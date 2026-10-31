@@ -26,9 +26,8 @@ def metatypes(monkeypatch: pytest.MonkeyPatch) -> None:
 def test_order_by_known_keys() -> None:
     assert build_order("ctime") == "ctime"
     assert build_order("title") == "a.meta->>'title'"
-    assert build_order("duration") == (
-        "COALESCE(CAST(a.meta->>'duration' AS NUMERIC), 0)"
-    )
+    # Effective duration (marks applied), indexed in schema.sql
+    assert build_order("duration") == "asset_duration(a.meta)"
 
 
 def test_order_by_unknown_key_is_not_inlined() -> None:
