@@ -36,3 +36,18 @@ async def test_user_cancels() -> None:
 
 async def test_provider_error() -> None:
     assert await callback("code=x&state=forged") == "/?error=Login%20failed"
+
+
+@pytest.mark.parametrize("verified", [False, "false"])
+async def test_unverified_email(
+    monkeypatch: pytest.MonkeyPatch, verified: bool | str
+) -> None:
+    # Providers with self-registration let anyone claim any email
+    class Remote:
+        async def authorize_access_token(self, _request: Request) -> Any:
+            return {
+                "userinfo": {"email": "admin@example.com", "email_verified": verified}
+            }
+
+    monkeypatch.setattr(NebulaSSO, "client", lambda _provider: Remote())
+    assert await callback("code=x") == "/?error=Email%20not%20verified"

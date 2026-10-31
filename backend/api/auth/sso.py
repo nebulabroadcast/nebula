@@ -39,7 +39,7 @@ class SSOLoginCallback(APIRequest):
     methods = ["GET"]
     category = "Authentication"
 
-    async def handle(self, request: Request, provider: str) -> RedirectResponse:
+    async def handle(self, request: Request, provider: str) -> RedirectResponse:  # noqa: C901, PLR0911
         remote = NebulaSSO.client(provider)
         if not remote:
             return RedirectResponse("/?error=Invalid provider")
@@ -79,6 +79,10 @@ class SSOLoginCallback(APIRequest):
 
         if not email:
             return RedirectResponse("/?error=User email not found")
+
+        # Absent (GitHub) is fine; some providers send it as a string
+        if user_info.get("email_verified") in (False, "false"):
+            return RedirectResponse("/?error=Email not verified")
 
         try:
             user = await nebula.User.by_email(email)
