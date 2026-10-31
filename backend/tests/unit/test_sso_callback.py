@@ -34,6 +34,12 @@ async def test_user_cancels() -> None:
     assert location == "/?error=Invalid%20response%20from%20provider"
 
 
+async def test_id_token_in_url() -> None:
+    # Only the code flow is supported: a bare id_token is not a login
+    location = await callback("id_token=x")
+    assert location == "/?error=Invalid%20response%20from%20provider"
+
+
 async def test_provider_error() -> None:
     assert await callback("code=x&state=forged") == "/?error=Login%20failed"
 

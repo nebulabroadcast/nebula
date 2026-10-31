@@ -39,13 +39,12 @@ class SSOLoginCallback(APIRequest):
     methods = ["GET"]
     category = "Authentication"
 
-    async def handle(self, request: Request, provider: str) -> RedirectResponse:  # noqa: C901, PLR0911
+    async def handle(self, request: Request, provider: str) -> RedirectResponse:  # noqa: PLR0911
         remote = NebulaSSO.client(provider)
         if not remote:
             return RedirectResponse("/?error=Invalid provider")
 
         code = request.query_params.get("code")
-        id_token = request.query_params.get("id_token")
         oauth_verifier = request.query_params.get("oauth_verifier")
 
         user_info = {}
@@ -57,10 +56,6 @@ class SSOLoginCallback(APIRequest):
             if code:
                 token = await remote.authorize_access_token(request)  # type: ignore[no-untyped-call]
                 user_info = token.get("userinfo", {})
-
-            if id_token and not user_info:
-                token = {"id_token": id_token}
-                user_info = await remote.parse_id_token(request, token)
 
             if oauth_verifier and not user_info:
                 token = await remote.authorize_access_token(request)  # type: ignore[no-untyped-call]
