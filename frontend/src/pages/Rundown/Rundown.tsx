@@ -19,6 +19,7 @@ import PlayoutControls from './PlayoutControls';
 import RundownEditTools from './RundownEditTools';
 import RundownNav from './RundownNav';
 import RundownTable from './RundownTable';
+import { allowedModes } from './utils';
 
 import nebula from '@/nebula';
 
@@ -37,7 +38,15 @@ const Rundown: React.FC<RundownProps> = ({ draggedObjects }) => {
   const { currentChannelId } = useNebula();
 
   const [startTime, setStartTime] = useState<Date | null>(null);
-  const [rundownMode, setRundownMode] = useLocalStorage('mam.rundown.mode', 'edit');
+  // Additive toggles: 'edit', 'control', 'plugins'. None on = watch only.
+  const [savedModes, setSavedModes] = useLocalStorage<string[]>(
+    'mam.rundown.modes',
+    []
+  );
+  // Saved toggles the user has no rights for on this channel count as off
+  const rundownModes = savedModes.filter((m) =>
+    allowedModes(currentChannelId).includes(m)
+  );
 
   const [rundown, setRundown] = useState<RundownRow[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -54,7 +63,7 @@ const Rundown: React.FC<RundownProps> = ({ draggedObjects }) => {
   const rundownDataRef = useRef<RundownRow[] | null>(rundown);
   const currentDateRef = useRef<Date | null>(startTime);
   const currentChannelRef = useRef<number | null>(currentChannelId);
-  const rundownModeRef = useRef<string>(rundownMode);
+  const rundownModesRef = useRef<string[]>(rundownModes);
   const eventIdsRef = useRef<Set<number>>(new Set());
   const playoutStatusRef = useRef<PlayoutStatusMessage | null>(playoutStatus);
   const navigate = useNavigate();
@@ -73,8 +82,8 @@ const Rundown: React.FC<RundownProps> = ({ draggedObjects }) => {
   }, [currentChannelId]);
 
   useEffect(() => {
-    rundownModeRef.current = rundownMode;
-  }, [rundownMode]);
+    rundownModesRef.current = rundownModes;
+  }, [rundownModes]);
 
   useEffect(() => {
     playoutStatusRef.current = playoutStatus;
@@ -161,8 +170,8 @@ const Rundown: React.FC<RundownProps> = ({ draggedObjects }) => {
     index: number,
     dropTarget: TableDropTarget | null
   ) => {
-    if (rundownModeRef.current !== 'edit') {
-      toast.error('Rundown is not in edit mode');
+    if (!rundownModesRef.current.includes('edit')) {
+      toast.error('Rundown editing is turned off');
       return;
     }
     const rundown = rundownDataRef.current;
@@ -326,14 +335,14 @@ const Rundown: React.FC<RundownProps> = ({ draggedObjects }) => {
       <RundownNav
         startTime={startTime}
         setStartTime={setStartTime}
-        rundownMode={rundownMode}
-        setRundownMode={setRundownMode}
+        rundownModes={rundownModes}
+        setRundownModes={setSavedModes}
       />
-      {rundownMode === 'edit' && <RundownEditTools />}
-      {rundownMode !== 'edit' && (
+      {rundownModes.includes('edit') && <RundownEditTools />}
+      {(rundownModes.includes('control') || rundownModes.includes('plugins')) && (
         <PlayoutControls
           playoutStatus={playoutStatus}
-          rundownMode={rundownMode}
+          rundownModes={rundownModes}
           loadRundown={loadRundown}
           onError={onError}
         />
@@ -352,7 +361,7 @@ const Rundown: React.FC<RundownProps> = ({ draggedObjects }) => {
         setSelectedEvents={setSelectedEvents}
         focusedObject={focusedObject}
         setFocusedObject={setFocusedObject}
-        rundownMode={rundownMode}
+        rundownModes={rundownModes}
         loadRundown={loadRundown}
         onError={onError}
       />

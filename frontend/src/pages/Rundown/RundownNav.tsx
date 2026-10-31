@@ -1,21 +1,23 @@
-import { Navbar, Spacer, RadioButton } from '@components';
+import { Button, Navbar, Spacer } from '@components';
 import DateNav from '@containers/DateNav';
 import { useNebula } from '@features/Nebula';
 import React, { useMemo } from 'react';
+
+import { MODES, allowedModes } from './utils';
 
 import nebula from '@/nebula';
 
 interface RundownNavProps {
   startTime: Date | null;
   setStartTime: (date: Date) => void;
-  rundownMode: string;
-  setRundownMode: (mode: string) => void;
+  rundownModes: string[];
+  setRundownModes: (update: (modes: string[]) => string[]) => void;
 }
 
 const RundownNav: React.FC<RundownNavProps> = ({
   setStartTime,
-  rundownMode,
-  setRundownMode,
+  rundownModes,
+  setRundownModes,
 }) => {
   const { setPageTitle, currentChannelId } = useNebula();
 
@@ -44,15 +46,29 @@ const RundownNav: React.FC<RundownNavProps> = ({
     <Navbar>
       <DateNav onChange={onDateChange} skipBy={1} />
       <Spacer />
-      <RadioButton
-        options={[
-          { title: 'Edit', value: 'edit' },
-          { title: 'Control', value: 'control' },
-          { title: 'Plugins', value: 'plugins' },
-        ]}
-        value={rundownMode}
-        onChange={setRundownMode}
-      />
+      {/* Toggles, not a radio: styled as a button group */}
+      <div className="nb-radio-button-group">
+        {MODES.filter((m) => allowedModes(currentChannelId).includes(m.value)).map(
+          ({ title, value, description }) => {
+            const active = rundownModes.includes(value);
+            return (
+              <Button
+                key={value}
+                label={title}
+                tooltip={description}
+                active={active}
+                aria-pressed={active}
+                onClick={() => {
+                  // Updates the saved list, keeping toggles not allowed here
+                  setRundownModes((saved) =>
+                    active ? saved.filter((m) => m !== value) : [...saved, value]
+                  );
+                }}
+              />
+            );
+          }
+        )}
+      </div>
       <Spacer />
     </Navbar>
   );

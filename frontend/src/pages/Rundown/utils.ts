@@ -108,3 +108,30 @@ const getRundownColumns = (fps: number): TableColumn[] => {
 };
 
 export { getRunModeOptions, getRundownColumns };
+
+// Each toggle needs a permission on the current channel (the backend checks it too)
+export const MODES = [
+  {
+    title: 'Edit',
+    value: 'edit',
+    description: 'Edit the rundown',
+    permission: 'rundown_edit',
+  },
+  {
+    title: 'Control',
+    value: 'control',
+    description: 'Control the playout',
+    permission: 'mcr',
+  },
+  {
+    title: 'Plugins',
+    value: 'plugins',
+    description: 'Show playout plugins',
+    permission: 'mcr',
+  },
+];
+
+export const allowedModes = (id_channel: number | null): string[] =>
+  id_channel === null
+    ? []
+    : MODES.filter((m) => nebula.can(m.permission, id_channel)).map((m) => m.value);
