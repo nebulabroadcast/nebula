@@ -65,6 +65,14 @@ COMPUTED_FIELDS = [
         ) AS has_aired ON TRUE""",
         sortable=True,
     ),
+    # Duration with mark_in/mark_out applied, as Asset.duration. The stored
+    # `duration` isn't sortable; this is (idx_asset_duration in schema.sql)
+    Field(
+        "effective_duration",
+        FieldKind.NUMBER,
+        t"asset_duration(b.meta)",
+        sortable=True,
+    ),
     Field(
         "__aux",
         FieldKind.LIST,

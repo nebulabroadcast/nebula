@@ -125,6 +125,11 @@ META_TYPES = {
         "ns": "va",
         "type": T.BOOLEAN,
     },
+    # Duration with mark_in/mark_out applied (computed, sortable)
+    "effective_duration": {
+        "ns": "va",
+        "type": T.TIMECODE,
+    },
     "solver": {
         "ns": "ai",
         "type": T.SELECT,
