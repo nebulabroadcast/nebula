@@ -1,5 +1,6 @@
 __all__ = ["Session"]
 
+import hashlib
 import secrets
 import time
 from collections.abc import AsyncGenerator
@@ -16,9 +17,10 @@ from server.clientinfo import ClientInfo, get_client_info
 from server.utils import get_real_ip, is_internal_ip
 
 
-class SessionModel(BaseModel):
+class SessionInfo(BaseModel):
+    """What may be shown about a session: everything but the token"""
+
     user: dict[str, Any] = Field(..., description="User data")
-    token: str = Field(..., description="Access token")
     created: float = Field(..., description="Creation timestamp")
     accessed: float = Field(..., description="Last access timestamp")
     client_info: ClientInfo | None = Field(None, description="Client info")
@@ -38,9 +40,18 @@ class SessionModel(BaseModel):
         return {k: v for k, v in user.items() if k not in SECRET_KEYS}
 
 
+class SessionModel(SessionInfo):
+    token: str = Field(..., description="Access token")
+
+
 class Session:
     ttl = 24 * 3600
     ns = "session"
+
+    @staticmethod
+    def id_of(token: str) -> str:
+        """Public session ID: names a session without granting access to it"""
+        return hashlib.sha256(token.encode()).hexdigest()
 
     @classmethod
     def is_expired(cls, session: SessionModel) -> bool:

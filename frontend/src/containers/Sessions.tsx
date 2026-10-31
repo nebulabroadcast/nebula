@@ -97,13 +97,13 @@ const Sessions: React.FC<SessionsProps> = ({ userId }) => {
   // The server marks the session this page is using
   const otherTokens = sessions
     .filter((session) => !session.current)
-    .map((session) => session.token);
+    .map((session) => session.id);
   // On the admin users page the list usually doesn't contain our own session
   const hasCurrent = otherTokens.length < sessions.length;
 
   const invalidateFormatter = (rowData: TableRowData) => {
     const session = rowData as SessionModel;
-    const token = session.token;
+    const token = session.id;
     if (session.current) {
       return (
         <td className="dim" style={{ textAlign: 'right' }}>

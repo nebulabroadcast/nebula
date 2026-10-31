@@ -1,3 +1,5 @@
+from pydantic import Field
+
 import nebula
 from server import APIModel, APIRequest
 from server.dependencies import CurrentUser
@@ -5,7 +7,9 @@ from server.session import Session
 
 
 class InvalidateSessionRequest(APIModel):
-    token: str
+    token: str = Field(
+        ..., description="Session token, or the session ID from list-sessions"
+    )
 
 
 class InvalidateSession(APIRequest):
@@ -25,8 +29,10 @@ class InvalidateSession(APIRequest):
         payload: InvalidateSessionRequest,
         user: CurrentUser,
     ) -> None:
-        session = await Session.check(payload.token)
-        if session is None:
+        async for session in Session.list():
+            if payload.token in (session.token, Session.id_of(session.token)):
+                break
+        else:
             raise nebula.NotFoundException("Session not found")
 
         if (not user.is_admin) and (session.user["login"] != user["login"]):
@@ -34,4 +40,4 @@ class InvalidateSession(APIRequest):
                 "You are not allowed to invalidate this session"
             )
 
-        await Session.delete(payload.token)
+        await Session.delete(session.token)

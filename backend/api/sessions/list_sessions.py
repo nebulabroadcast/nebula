@@ -4,14 +4,15 @@ from pydantic import Field
 import nebula
 from server import APIModel, APIRequest
 from server.dependencies import CurrentUser
-from server.session import Session, SessionModel
+from server.session import Session, SessionInfo
 
 
 class ListSessionsRequest(APIModel):
     id_user: int
 
 
-class SessionListItem(SessionModel):
+class SessionListItem(SessionInfo):
+    id: str = Field(..., description="Session ID (SHA-256 of its token)")
     current: bool = Field(
         False, description="The session the request was authenticated with"
     )
@@ -46,7 +47,9 @@ class ListSessions(APIRequest):
 
             result.append(
                 SessionListItem(
-                    **session.model_dump(), current=session.token == current_token
+                    **session.model_dump(exclude={"token"}),
+                    id=Session.id_of(session.token),
+                    current=session.token == current_token,
                 )
             )
 

@@ -958,6 +958,8 @@ export type HttpValidationError = {
 export type InvalidateSessionRequest = {
   /**
    * Token
+   *
+   * Session token, or the session ID from list-sessions
    */
   token: string;
 };
@@ -2310,12 +2312,6 @@ export type SessionListItem = {
     [key: string]: unknown;
   };
   /**
-   * Token
-   *
-   * Access token
-   */
-  token: string;
-  /**
    * Created
    *
    * Creation timestamp
@@ -2335,6 +2331,12 @@ export type SessionListItem = {
    * Transient
    */
   transient?: boolean;
+  /**
+   * Id
+   *
+   * Session ID (SHA-256 of its token)
+   */
+  id: string;
   /**
    * Current
    *
