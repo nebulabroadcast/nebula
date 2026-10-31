@@ -25,6 +25,8 @@ class Client:
         self.authorized: bool = False
         self.created_at: float = time.time()
         self.user: nebula.User | None = None
+        self.token: str | None = None
+        self.checked_at: float = 0
 
     @property
     def user_name(self) -> str | None:
@@ -38,6 +40,8 @@ class Client:
             self.topics = [*topics, *ALWAYS_SUBSCRIBE] if "*" not in topics else ["*"]
             self.authorized = True
             self.user = nebula.User(meta=session_data.user)
+            self.token = access_token
+            self.checked_at = time.time()
             return True
         return False
 
@@ -98,6 +102,12 @@ class Messaging(BackgroundTask):
     async def purge(self) -> None:
         to_rm = []
         for client_id, client in list(self.clients.items()):
+            # Logout, password change or deleted user: stop the live feed
+            if client.authorized and time.time() - client.checked_at > 60:
+                client.checked_at = time.time()
+                if client.token and await Session.check(client.token) is None:
+                    # Past is_valid's 3 s grace by now, so it is closed below
+                    client.authorized = False
             if not client.is_valid:
                 if not client.disconnected:
                     with suppress(RuntimeError):
