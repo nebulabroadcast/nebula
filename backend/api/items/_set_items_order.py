@@ -30,7 +30,10 @@ async def set_items_order(request: OrderRequest, user: nebula.User) -> OrderResp
             if obj.type == "item":
                 if not obj.id:
                     # Adding a virtual item (such as placeholder)
-                    item = nebula.Item.from_meta(obj.meta)
+                    # Without the id, save() would update that item in any channel
+                    item = nebula.Item.from_meta(
+                        {k: v for k, v in obj.meta.items() if k != "id"}
+                    )
 
                     assert isinstance(item, nebula.Item)  # mypy
 

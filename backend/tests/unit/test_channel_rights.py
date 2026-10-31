@@ -114,6 +114,17 @@ async def test_order_into_other_channel() -> None:
         await set_items_order(request, EDITOR)
 
 
+async def test_new_item_cannot_take_existing_id(saved: list[Any]) -> None:
+    # Item 5 is in channel 2: a "new" item carrying its id must not update it
+    request = OrderRequest(
+        id_channel=1,
+        id_bin=10,
+        order=[OrderItem(type="item", meta={"id": 5, "title": "Placeholder"})],
+    )
+    await set_items_order(request, EDITOR)
+    assert [item.id for item in saved] == [None]
+
+
 @pytest.mark.usefixtures("saved")
 async def test_delete_item_in_other_channel() -> None:
     request = DeleteObjectsRequest(object_type=ObjectType.ITEM, ids=[5])
