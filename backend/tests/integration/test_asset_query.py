@@ -86,3 +86,21 @@ async def test_query_needs_list_rights() -> None:
             _ = [a async for a in nebula.Asset.iterate()]
     with request_context(RequestContext()), pytest.raises(nebula.UnauthorizedException):
         await nebula.Asset.query()
+
+
+@pytest.mark.parametrize(
+    "meta",
+    [
+        {},
+        {"duration": 60.0},
+        {"duration": 60.0, "mark_in": 10.0},
+        {"duration": 60.0, "mark_out": 30.0},
+        {"duration": 60.0, "mark_in": 10.0, "mark_out": 30.0},
+        {"duration": 60.0, "mark_out": 90.0},  # mark past the end
+        {"duration": 0, "mark_in": 10.0},
+    ],
+)
+async def test_asset_duration_sql(meta: dict[str, float]) -> None:
+    # The sort key (schema.sql) must agree with Asset.duration
+    row = await nebula.db.fetchrow("SELECT asset_duration($1::jsonb) AS d", meta)
+    assert row["d"] == nebula.Asset(meta=meta).duration
