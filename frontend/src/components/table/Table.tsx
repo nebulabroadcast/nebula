@@ -159,7 +159,14 @@ const Table = ({
     const table = tableRef.current;
     if (!measureWidths || frozen || !table) return;
     const names = columnsKey.split(',');
-    const observer = new ResizeObserver(() => {
+    let disconnected = false;
+    const measure = () => {
+      if (disconnected) return;
+      // Icons are wide text until the icon font is loaded
+      if (document.fonts.status === 'loading') {
+        void document.fonts.ready.then(measure);
+        return;
+      }
       if (!table.querySelector('tbody tr[data-index]')) return;
       const widths: Record<string, number> = {};
       table.querySelectorAll('thead th').forEach((cell, idx) => {
@@ -168,24 +175,21 @@ const Table = ({
       });
       if (Object.keys(widths).length !== names.length) return;
       setMeasured({ key: columnsKey, widths });
-    });
+    };
+    const observer = new ResizeObserver(measure);
     observer.observe(table);
     return () => {
+      disconnected = true;
       observer.disconnect();
     };
   }, [measureWidths, frozen, columnsKey]);
 
-  // Columns without a width of their own (title, description...) fill the
-  // remaining space; if there are none, the last column does
-  const fillsSpace = (column: TableColumn, idx: number) =>
-    column.width === undefined ||
-    (idx === columns.length - 1 && columns.every((c) => c.width !== undefined));
-
+  // Only the last column fills the remaining space, so resizing a column
+  // changes that column alone and moves the ones on its right
   const widthOf = (column: TableColumn, idx: number): number | undefined => {
+    if (idx === columns.length - 1) return undefined;
     if (resizing?.name === column.name) return resizing.width;
-    if (columnWidths?.[column.name]) return columnWidths[column.name];
-    if (fillsSpace(column, idx)) return undefined;
-    return frozen?.[column.name];
+    return columnWidths?.[column.name] || frozen?.[column.name];
   };
 
   const colgroup = frozen && (
@@ -196,7 +200,7 @@ const Table = ({
     </colgroup>
   );
 
-  // The columns that fill the space keep at least their measured width
+  // The last column keeps at least its measured width
   const minTableWidth = frozen
     ? columns.reduce(
         (sum, column, idx) => sum + (widthOf(column, idx) ?? frozen[column.name] ?? 0),
