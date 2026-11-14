@@ -59,15 +59,23 @@ const Header = styled.div`
     display: flex;
     align-items: center;
     gap: 6px;
+    box-sizing: border-box; /* min/max width include the padding */
     min-width: 48px;
     max-width: 200px;
     height: 34px;
+    justify-content: space-between;
     padding: 0 4px 0 10px;
     border-radius: 6px 6px 0 0;
     color: var(--color-text-dim);
     white-space: nowrap;
     cursor: pointer;
     user-select: none;
+
+    /* the only tab has no close button: even sides, centered in min-width */
+    &:not(:has(.close)) {
+      justify-content: center;
+      padding-right: 10px;
+    }
 
     .label {
       overflow: hidden;
