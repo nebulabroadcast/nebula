@@ -70,6 +70,8 @@
         /* body rows are position: relative, keep the header above them */
         z-index: 2;
         outline: 2px solid var(--color-surface-02);
+        /* no outline at the bottom: it would cover the top of the first row */
+        clip-path: inset(-2px -2px 0 -2px);
 
         &.sortable div {
           cursor: pointer;
