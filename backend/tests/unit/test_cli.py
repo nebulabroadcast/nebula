@@ -221,3 +221,67 @@ def test_first_site_plugin_of_a_name_wins(monkeypatch: pytest.MonkeyPatch) -> No
     result = runner.invoke(build_app([plugin("first"), plugin("second")]), ["same"])
     assert result.output.strip() == "first"
     assert any("More than one" in warning for warning in warnings)
+
+
+#
+# adduser
+#
+
+
+@pytest.fixture
+def saved_users(monkeypatch: pytest.MonkeyPatch) -> list[dict[str, Any]]:
+    saved: list[dict[str, Any]] = []
+
+    async def save(self: nebula.User, **_: Any) -> None:
+        if self.meta["login"] == "taken":
+            raise nebula.ConflictException("Login 'taken' is taken")
+        self.meta["id"] = 7
+        saved.append(dict(self.meta))
+
+    monkeypatch.setattr(nebula.User, "save", save)
+    return saved
+
+
+def test_adduser_with_arguments(saved_users: list[dict[str, Any]]) -> None:
+    result = runner.invoke(
+        build_app([]),
+        ["adduser", "jane", "--email", "jane@example.test", "--admin"],
+        input="secret-password\nsecret-password\n",
+    )
+    assert result.exit_code == 0, result.output
+    assert "Created administrator 'jane' (id 7)" in result.output
+    [meta] = saved_users
+    assert meta["login"] == "jane"
+    assert meta["email"] == "jane@example.test"
+    assert meta["is_admin"] is True
+    assert meta["password"].startswith("scrypt$")
+    assert "secret-password" not in result.output
+
+
+def test_adduser_asks_for_what_is_missing(saved_users: list[dict[str, Any]]) -> None:
+    result = runner.invoke(
+        build_app([]),
+        ["adduser"],
+        input="joe\n\nn\nsecret-password\nsecret-password\n",
+    )
+    assert result.exit_code == 0, result.output
+    [meta] = saved_users
+    assert meta["login"] == "joe"
+    assert "email" not in meta
+    assert "is_admin" not in meta
+
+
+@pytest.mark.parametrize(
+    ("args", "message"),
+    [
+        (["adduser", "jane", "--no-admin", "--password", "short"], "at least 8"),
+        (["adduser", "taken", "--no-admin", "--password", "long-enough"], "is taken"),
+    ],
+)
+def test_adduser_errors_are_messages(
+    saved_users: list[dict[str, Any]], args: list[str], message: str
+) -> None:
+    result = runner.invoke(build_app([]), args)
+    assert result.exit_code == 1
+    assert message in result.output
+    assert saved_users == []
