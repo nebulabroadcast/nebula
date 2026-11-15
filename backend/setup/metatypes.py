@@ -7,9 +7,18 @@ from nebula import db, log
 from nebula.common import json_loads
 from nebula.sql import SQL
 
+# Postgres cuts identifiers to this many bytes (NAMEDATALEN - 1)
+MAX_IDENTIFIER_BYTES = 63
+
 
 def index_name(key: str) -> str:
-    return "idx_" + key.replace("/", "_")
+    """Name of the index of a metatype, as Postgres stores it.
+
+    A key may have 127 characters. Postgres cuts a longer name itself, so
+    the same cut is made here: the name has to match when it is looked up.
+    """
+    name = "idx_" + key.replace("/", "_")
+    return name.encode()[:MAX_IDENTIFIER_BYTES].decode(errors="ignore")
 
 
 async def index_states(names: list[str]) -> dict[str, bool]:
