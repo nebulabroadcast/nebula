@@ -62,5 +62,8 @@ async def setup_metatypes(meta_types: dict[str, Any], **kwargs: Any) -> None:
         if data.get("index", False):
             idx_name = "idx_" + key.replace("/", "_")
             await db.execute(
-                f"CREATE INDEX IF NOT EXISTS {idx_name} ON assets((meta->>'{key}'))",
+                f"""
+                CREATE INDEX CONCURRENTLY IF NOT EXISTS {idx_name}
+                ON assets((meta->>'{key}'))
+                """
             )
