@@ -55,8 +55,12 @@ def load_overrides() -> None:
                 log.error(f"Invalid settings override: {spath}")
 
 
-async def setup_settings(**kwargs: Any) -> None:  # noqa: C901, PLR0912, PLR0915
-    """Validate and save settings to the database"""
+async def setup_settings(**kwargs: Any) -> list[str]:  # noqa: C901, PLR0912, PLR0915
+    """Validate and save settings to the database.
+
+    Returns the metatype keys whose indexes are built after the commit
+    (see setup.metatypes.check_indexes).
+    """
     # Accepts and ignores a legacy `db`/`connection` keyword argument for
     # backward compatibility: nebula.db tracks the current
     # connection/transaction internally.
@@ -282,7 +286,7 @@ async def setup_settings(**kwargs: Any) -> None:  # noqa: C901, PLR0912, PLR0915
 
     # Setup metatypes
 
-    await setup_metatypes(TEMPLATE["meta_types"])
+    indexed_keys = await setup_metatypes(TEMPLATE["meta_types"])
     log.trace(f"Saved {len(TEMPLATE['meta_types'])} meta types")
 
     # Setup classifications
@@ -317,3 +321,4 @@ async def setup_settings(**kwargs: Any) -> None:  # noqa: C901, PLR0912, PLR0915
                 cs_settings,
             )
     log.trace(f"Saved {len(classifications)} classifications")
+    return indexed_keys

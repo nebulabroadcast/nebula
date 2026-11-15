@@ -8,6 +8,7 @@ from nebula import db, log
 from nebula.config import config
 from nebula.objects.user import User
 from setup.dump import dump_settings
+from setup.metatypes import check_indexes
 from setup.settings import setup_settings
 
 log.user = "setup"
@@ -89,7 +90,12 @@ async def main() -> None:
     await create_default_user()
 
     async with db.transaction():
-        await setup_settings()
+        indexed_keys = await setup_settings()
+
+    # The indexes are built after the commit, where a failure is only logged
+    if failed := await check_indexes(indexed_keys):
+        log.error(f"Indexes not created: {', '.join(failed)}. Run setup again.")
+        sys.exit(1)
 
 
 if __name__ == "__main__":

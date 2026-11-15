@@ -3,11 +3,74 @@ from typing import Any
 
 import aiofiles
 
-from nebula import db
+from nebula import db, log
 from nebula.common import json_loads
+from nebula.sql import SQL
 
 
-async def setup_metatypes(meta_types: dict[str, Any], **kwargs: Any) -> None:
+def index_name(key: str) -> str:
+    return "idx_" + key.replace("/", "_")
+
+
+async def index_states(names: list[str]) -> dict[str, bool]:
+    """Indexes of `names` that exist, with whether they are valid."""
+    rows = await db.fetch(
+        """
+        SELECT c.relname AS name, i.indisvalid AS valid
+        FROM pg_index i
+        JOIN pg_class c ON c.oid = i.indexrelid
+        JOIN pg_namespace n ON n.oid = c.relnamespace
+        WHERE n.nspname = current_schema() AND c.relname = ANY($1::text[])
+        """,
+        names,
+    )
+    return {row["name"]: row["valid"] for row in rows}
+
+
+async def build_indexes(keys: list[str]) -> None:
+    """Create the missing `meta->>'key'` indexes on assets.
+
+    Built concurrently, so writes to assets aren't blocked meanwhile. That
+    can't run in a transaction block: setup calls this after its commit.
+    """
+    states = await index_states([index_name(key) for key in keys])
+    for key in keys:
+        name = index_name(key)
+        if states.get(name):
+            continue
+        try:
+            if name in states:
+                # Left behind by a concurrent build that failed. It is never
+                # used, and IF NOT EXISTS would skip it forever.
+                log.warning(f"Dropping invalid index {name}")
+                query, _ = SQL.render(t"DROP INDEX CONCURRENTLY {name:ident}")
+                await db.execute(query)
+            log.info(f"Creating index {name}")
+            query, _ = SQL.render(
+                t"""
+                CREATE INDEX CONCURRENTLY IF NOT EXISTS {name:ident}
+                ON assets((meta->>{key:literal}))
+                """
+            )
+            await db.execute(query)
+        except Exception:
+            # Reported by check_indexes: the other indexes are still built
+            log.traceback(f"Unable to create index {name}")
+
+
+async def check_indexes(keys: list[str]) -> list[str]:
+    """Names of the indexes of `keys` that are missing or invalid."""
+    names = [index_name(key) for key in keys]
+    states = await index_states(names)
+    return [name for name in names if not states.get(name)]
+
+
+async def setup_metatypes(meta_types: dict[str, Any], **kwargs: Any) -> list[str]:
+    """Save the metatypes. Returns the keys that have `index` set.
+
+    Their indexes are built after the current transaction commits (at once
+    when there is none); check_indexes tells whether that worked.
+    """
     # Accepts and ignores a legacy `db`/`connection` keyword argument for
     # backward compatibility: nebula.db tracks the current
     # connection/transaction internally.
@@ -59,11 +122,7 @@ async def setup_metatypes(meta_types: dict[str, Any], **kwargs: Any) -> None:
             meta_type,
         )
 
-        if data.get("index", False):
-            idx_name = "idx_" + key.replace("/", "_")
-            await db.execute(
-                f"""
-                CREATE INDEX CONCURRENTLY IF NOT EXISTS {idx_name}
-                ON assets((meta->>'{key}'))
-                """
-            )
+    indexed = [key for key, data in meta_types.items() if data.get("index", False)]
+    if indexed:
+        await db.on_commit(lambda: build_indexes(indexed))
+    return indexed
