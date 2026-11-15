@@ -174,6 +174,7 @@ META_TYPES = {
     "path": {
         "ns": "a",
         "fulltext": 5,
+        "index": True,
         "type": T.STRING,
     },
     "subclips": {

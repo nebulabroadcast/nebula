@@ -1265,7 +1265,7 @@ requires-dist = [
     { name = "httpx2", specifier = ">=2.16.0" },
     { name = "jinja2", specifier = ">=3.1.6" },
     { name = "mistune", specifier = ">=3.2.0" },
-    { name = "nx-framework", extras = ["postgres", "redis"], specifier = ">=0.0.9" },
+    { name = "nx-framework", extras = ["postgres", "redis"], specifier = ">=0.0.12" },
     { name = "pydantic", specifier = ">=2.12.5" },
     { name = "python-dotenv", specifier = ">=1.2.1" },
     { name = "unidecode", specifier = ">=1.4.0" },
@@ -1302,7 +1302,7 @@ server = [
 
 [[package]]
 name = "nx-framework"
-version = "0.0.11"
+version = "0.0.12"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiofiles" },
@@ -1313,9 +1313,9 @@ dependencies = [
     { name = "shortuuid" },
     { name = "unidecode" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/3e/cf/4485463fcbcb645baa11ab60de74f3957e8deaa6d4f0d92df9c0451632f7/nx_framework-0.0.11.tar.gz", hash = "sha256:26e02bcfeb2ca2872f1361bd9ac664d8bd1d77865cb2cc959e5bfe3e38f79000", size = 29103, upload-time = "2026-09-17T19:28:47.475Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/19/72/be08f67bcc822d63f31da7901fdb29cc6b0c64dc765b9d54ebdeee0de9a0/nx_framework-0.0.12.tar.gz", hash = "sha256:351076b012f16313588fe51d52eb81b1066d4b2aff7a096c798b675f6fa8e4c5", size = 29752, upload-time = "2026-11-15T16:14:54.987Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/37/d1/2953fc06388861210dcfa0858a99e755739ec597f974b4456e0d76746d8e/nx_framework-0.0.11-py3-none-any.whl", hash = "sha256:bc861b0298c61747f676358f62bbcea3b712c2b84ba23e181dd865f8bd932a04", size = 26950, upload-time = "2026-09-17T19:28:46.298Z" },
+    { url = "https://files.pythonhosted.org/packages/68/48/5277f3c0a34a78e169c096cecf237599ca8f3ef4988f1523d809cf5feed0/nx_framework-0.0.12-py3-none-any.whl", hash = "sha256:c6538cce6e4e517a8563a20e38329c1b998f715ce8387caf91bd80b58c87dc5a", size = 28068, upload-time = "2026-11-15T16:14:53.819Z" },
 ]
 
 [package.optional-dependencies]
