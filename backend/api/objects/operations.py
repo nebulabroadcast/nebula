@@ -1,4 +1,5 @@
 from dataclasses import replace
+from functools import partial
 from typing import TYPE_CHECKING, Annotated, Any
 
 from pydantic import Field
@@ -239,7 +240,11 @@ class Operations(APIRequest):
                             obj.update(operation.data)
                         await obj.save()
                         if password:
-                            await Session.revoke_user(obj.id)
+                            # After the commit: the sessions end only when
+                            # the new password is really stored
+                            await nebula.db.on_commit(
+                                partial(Session.revoke_user, obj.id)
+                            )
 
                         if (
                             isinstance(obj, nebula.Item)
