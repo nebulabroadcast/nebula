@@ -58,6 +58,7 @@ server = [
     "requests >=2.32.5",
     "rich >=14.2.0",
     "shortuuid >=1.0.13",
+    "typer>=0.29.1",
     "user-agents >=2.2.0",
     "uvicorn-worker>=0.4.0",
     "uvicorn[standard] >=0.40.0",
