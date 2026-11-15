@@ -203,3 +203,21 @@ def test_failing_command_exits_1(monkeypatch: pytest.MonkeyPatch) -> None:
 
     result = runner.invoke(build_app([Failing()]), ["failing"])
     assert result.exit_code == 1
+
+
+def test_first_site_plugin_of_a_name_wins(monkeypatch: pytest.MonkeyPatch) -> None:
+    warnings: list[str] = []
+    monkeypatch.setattr(nebula.log, "warning", warnings.append)
+
+    def plugin(output: str) -> CLIPlugin:
+        class Same(CLIPlugin):
+            name = "same"
+
+            async def main(self) -> None:
+                typer.echo(output)
+
+        return Same()
+
+    result = runner.invoke(build_app([plugin("first"), plugin("second")]), ["same"])
+    assert result.output.strip() == "first"
+    assert any("More than one" in warning for warning in warnings)

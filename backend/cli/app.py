@@ -83,6 +83,10 @@ def build_app(site_plugins: Iterable[Any] | None = None) -> typer.Typer:
 
     taken: set[str] = set()
     for plugin in site_plugins:
+        if plugin.name in taken:
+            # As before Typer: the first plugin of a name is the command
+            nebula.log.warning(f"More than one CLI plugin is named '{plugin.name}'")
+            continue
         add_site_plugin(app, plugin)
         taken.add(plugin.name)
     add_builtin_commands(app, taken)
