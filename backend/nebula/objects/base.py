@@ -286,7 +286,9 @@ class BaseObject:
             INSERT INTO {self.object_type}s ({",".join(self.db_columns)}, meta)
             VALUES ({placeholders}) RETURNING id
             """
-        qargs = [self.meta[col] for col in self.db_columns] + [self.meta]
+        # self[col]: a column whose key isn't in meta gets the metatype's
+        # default (e.g. version_of), without storing the key
+        qargs = [self[col] for col in self.db_columns] + [self.meta]
 
         res = await db.fetch(query, *qargs)
         self.meta["id"] = res[0]["id"]
@@ -303,7 +305,7 @@ class BaseObject:
             WHERE id = ${len(self.db_columns) + 2}
             """
 
-        qargs = [self.meta[col] for col in self.db_columns] + [
+        qargs = [self[col] for col in self.db_columns] + [
             self.meta,
             self.id,
         ]
