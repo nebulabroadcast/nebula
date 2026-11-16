@@ -214,6 +214,37 @@ def test_key_value_for_a_positional_argument() -> None:
     assert Typed.calls == [(3, 2, False)]
 
 
+def test_positional_arguments_by_name_in_any_order() -> None:
+    calls: list[tuple[str, str]] = []
+
+    class Copy(CLIPlugin):
+        name = "copy"
+
+        async def main(self, source, target):  # type: ignore[no-untyped-def]
+            calls.append((source, target))
+
+    assert invoke([Copy()], "copy", "target=b", "source=a").exit_code == 0
+    assert invoke([Copy()], "copy", "a", "b").exit_code == 0
+    assert calls == [("a", "b"), ("a", "b")]
+
+
+def test_default_that_is_not_a_simple_value() -> None:
+    calls: list[Any] = []
+
+    class Odd(CLIPlugin):
+        name = "odd"
+
+        async def main(self, ids=(), options=None):  # type: ignore[no-untyped-def]
+            calls.append((ids, options))
+
+    result = invoke([Odd()], "odd")
+    assert result.exit_code == 0, result.output
+    # Not given: the method's own default, not its text
+    assert calls == [((), None)]
+    assert invoke([Odd()], "odd", "ids=1,2", "options=x").exit_code == 0
+    assert calls[1] == ("1,2", "x")
+
+
 @pytest.mark.parametrize("words", [["nope=1"], ["limit=many"], ["--nope"], ["stray"]])
 def test_invalid_arguments_exit_2(words: list[str]) -> None:
     result = invoke([Untyped()], "untyped", *words)
