@@ -178,7 +178,6 @@ def test_get_asset(client: TestClient) -> None:
         "status": 1,
         "content_type": 2,
         "media_type": 0,
-        "version_of": 0,
         "has_aired": False,
         "__aux": [],
     }
