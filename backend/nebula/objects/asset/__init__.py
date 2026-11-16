@@ -67,7 +67,6 @@ class Asset(BaseObject):
         "content_type": ContentType.VIDEO,
         "media_type": MediaType.VIRTUAL,
         "status": ObjectStatus.ONLINE,
-        "version_of": 0,  # NOTE: V5 Compatibility, remove in V6, should be None
     }
 
     #
