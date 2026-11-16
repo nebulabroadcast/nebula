@@ -26,16 +26,6 @@ def _no_settings(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(nebula, "run", run)
 
 
-class Untyped(CLIPlugin):
-    """A plugin without type hints."""
-
-    name = "untyped"
-    calls: list[tuple[Any, ...]] = []
-
-    async def main(self, limit=5, ratio=1.0, dry=False, title="x", target=None):  # type: ignore[no-untyped-def]
-        self.calls.append((limit, ratio, dry, title, target))
-
-
 class Typed(CLIPlugin):
     """A plugin with type hints."""
 
@@ -44,14 +34,6 @@ class Typed(CLIPlugin):
 
     async def main(self, folder: int, limit: int = 5, dry: bool = False) -> None:
         self.calls.append((folder, limit, dry))
-
-
-class AnyArguments(CLIPlugin):
-    name = "any"
-    calls: list[dict[str, Any]] = []
-
-    async def main(self, limit: int = 5, **kwargs: Any) -> None:
-        self.calls.append({"limit": limit, **kwargs})
 
 
 class Group(CLIPlugin):
@@ -76,7 +58,7 @@ class Group(CLIPlugin):
 
 @pytest.fixture(autouse=True)
 def _clear_calls() -> None:
-    for plugin in (Untyped, Typed, AnyArguments, Group):
+    for plugin in (Typed, Group):
         plugin.calls.clear()
 
 
@@ -90,12 +72,12 @@ def invoke(plugins: list[CLIPlugin], *words: str, **kwargs: Any) -> Any:
 
 
 def test_no_command_lists_built_in_and_site_commands() -> None:
-    result = invoke([Untyped(), Group()])
+    result = invoke([Typed(), Group()])
     for expected in (
         "version",
         "adduser",
-        "untyped",
-        "A plugin without type hints.",
+        "typed",
+        "A plugin with type hints.",
         "group",
         "A plugin with sub-commands.",
     ):
@@ -127,7 +109,7 @@ def test_site_plugin_shadows_a_built_in_command(
             typer.echo("site version")
 
     assert invoke([Version()], "version").output.strip() == "site version"
-    assert any("shadowed" in warning for warning in warnings)
+    assert any("More than one" in warning for warning in warnings)
 
 
 def test_first_site_plugin_of_a_name_wins(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -176,95 +158,19 @@ def test_parameter_without_default_is_required() -> None:
     assert "Missing argument" in result.output
 
 
-def test_no_type_hints_take_the_types_of_the_defaults() -> None:
-    result = invoke(
-        [Untyped()],
-        "untyped",
-        "--limit",
-        "10",
-        "--ratio",
-        "2.5",
-        "--dry",
-        "--target",
-        "7",
-    )
-    assert result.exit_code == 0, result.output
-    # `target` has no default type to go by: it stays a string
-    assert Untyped.calls == [(10, 2.5, True, "x", "7")]
-
-
-def test_key_value_words_are_accepted() -> None:
-    result = invoke(
-        [Untyped()], "untyped", "limit=10", "--ratio=2.5", "dry=true", "title=a=b"
-    )
-    assert result.exit_code == 0, result.output
-    assert Untyped.calls == [(10, 2.5, True, "a=b", None)]
-
-
-def test_key_value_booleans() -> None:
-    assert invoke([Untyped()], "untyped", "dry=no").exit_code == 0
-    assert invoke([Untyped()], "untyped", "dry=YES").exit_code == 0
-    assert [call[2] for call in Untyped.calls] == [False, True]
-    assert invoke([Untyped()], "untyped", "dry=maybe").exit_code == 2
-
-
-def test_key_value_for_a_positional_argument() -> None:
-    result = invoke([Typed()], "typed", "folder=3", "limit=2")
-    assert result.exit_code == 0, result.output
-    assert Typed.calls == [(3, 2, False)]
-
-
-def test_positional_arguments_by_name_in_any_order() -> None:
-    calls: list[tuple[str, str]] = []
-
-    class Copy(CLIPlugin):
-        name = "copy"
-
-        async def main(self, source, target):  # type: ignore[no-untyped-def]
-            calls.append((source, target))
-
-    assert invoke([Copy()], "copy", "target=b", "source=a").exit_code == 0
-    assert invoke([Copy()], "copy", "a", "b").exit_code == 0
-    assert calls == [("a", "b"), ("a", "b")]
-
-
-def test_default_that_is_not_a_simple_value() -> None:
-    calls: list[Any] = []
-
-    class Odd(CLIPlugin):
-        name = "odd"
-
-        async def main(self, ids=(), options=None):  # type: ignore[no-untyped-def]
-            calls.append((ids, options))
-
-    result = invoke([Odd()], "odd")
-    assert result.exit_code == 0, result.output
-    # Not given: the method's own default, not its text
-    assert calls == [((), None)]
-    assert invoke([Odd()], "odd", "ids=1,2", "options=x").exit_code == 0
-    assert calls[1] == ("1,2", "x")
-
-
-@pytest.mark.parametrize("words", [["nope=1"], ["limit=many"], ["--nope"], ["stray"]])
+@pytest.mark.parametrize("words", [["--limit", "many"], ["--nope"], ["stray"]])
 def test_invalid_arguments_exit_2(words: list[str]) -> None:
-    result = invoke([Untyped()], "untyped", *words)
+    result = invoke([Typed()], "typed", "3", *words)
     assert result.exit_code == 2
-    assert Untyped.calls == []
+    assert Typed.calls == []
 
 
 def test_help_lists_the_options() -> None:
-    result = invoke([Untyped()], "untyped", "--help")
+    result = invoke([Typed()], "typed", "--help")
     assert result.exit_code == 0
-    assert "A plugin without type hints." in result.output
+    assert "A plugin with type hints." in result.output
     assert "--limit" in result.output
     assert "--dry" in result.output
-
-
-def test_main_with_kwargs_takes_any_key_value() -> None:
-    result = invoke([AnyArguments()], "any", "limit=3", "anything=1", "--other=x")
-    assert result.exit_code == 0, result.output
-    assert AnyArguments.calls == [{"limit": 3, "anything": "1", "other": "x"}]
-    assert invoke([AnyArguments()], "any", "stray").exit_code == 2
 
 
 #
@@ -276,9 +182,8 @@ def test_methods_are_sub_commands() -> None:
     plugins = [Group()]
     result = invoke(plugins, "group", "sync", "--limit", "3", "--retry-failed")
     assert result.exit_code == 0, result.output
-    assert invoke(plugins, "group", "sync", "limit=4").exit_code == 0
     assert invoke(plugins, "group", "status").exit_code == 0
-    assert Group.calls == [("sync", 3, True), ("sync", 4, False), ("status",)]
+    assert Group.calls == [("sync", 3, True), ("status",)]
 
 
 def test_sub_command_list() -> None:

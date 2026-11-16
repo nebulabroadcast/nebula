@@ -2,41 +2,35 @@
 
 Both are `CLIPlugin` classes. A plugin with `async def main(...)` is one
 command. A plugin without `main` is a group: each of its public
-`async def` methods is a sub-command. Arguments come from the method's
-signature (see cli.arguments).
+`async def` methods is a sub-command. Arguments are Typer's own, read
+from the method's signature and type hints.
 """
 
-import importlib
+import functools
 import inspect
-import pkgutil
 from collections.abc import Iterable
 from typing import Any
 
 import typer
 
 import nebula
-from cli import commands
-from cli.arguments import KeyValueCommand, command_function
-from nebula.common import classes_from_module
+from cli.commands import BUILTIN_PLUGINS
+from cli.run import run
 from nebula.plugins import CLIPlugin
 from nebula.plugins.library import plugin_library
 
-ANY_ARGUMENTS = {"allow_extra_args": True, "ignore_unknown_options": True}
 
+def add_method(
+    app: typer.Typer, name: str, method: Any, help_text: str | None = None
+) -> None:
+    # Typer calls an `async def` without awaiting it, so it gets a plain
+    # function. It reads the method's signature, type hints and docstring
+    # through `functools.wraps`.
+    @functools.wraps(method)
+    def function(**kwargs: Any) -> None:
+        run(method(**kwargs))
 
-def help_of(obj: Any) -> str | None:
-    """The docstring of a class or method itself (not an inherited one)."""
-    return inspect.cleandoc(obj.__doc__) if obj.__doc__ else None
-
-
-def add_method(app: typer.Typer, name: str, method: Any, help_text: str | None) -> None:
-    function, takes_any = command_function(method)
-    app.command(
-        name=name,
-        help=help_text,
-        cls=KeyValueCommand,
-        context_settings=ANY_ARGUMENTS if takes_any else None,
-    )(function)
+    app.command(name=name, help=help_text)(function)
 
 
 def sub_commands(plugin: CLIPlugin) -> dict[str, Any]:
@@ -50,7 +44,8 @@ def sub_commands(plugin: CLIPlugin) -> dict[str, Any]:
 
 
 def add_plugin(app: typer.Typer, plugin: CLIPlugin) -> None:
-    plugin_help = help_of(type(plugin))
+    # The docstring of the class itself: a class doesn't inherit `__doc__`
+    plugin_help = type(plugin).__doc__
     if (main := getattr(plugin, "main", None)) is not None:
         add_method(app, plugin.name, main, plugin_help)
         return
@@ -61,22 +56,8 @@ def add_plugin(app: typer.Typer, plugin: CLIPlugin) -> None:
         return
     group = typer.Typer(no_args_is_help=True)
     for name, method in methods.items():
-        add_method(group, name, method, help_of(method))
+        add_method(group, name, method)
     app.add_typer(group, name=plugin.name, help=plugin_help)
-
-
-def builtin_plugins() -> list[CLIPlugin]:
-    """Plugins of the modules in `cli/commands/`."""
-    plugins: list[CLIPlugin] = []
-    for module_info in pkgutil.iter_modules(commands.__path__):
-        module = importlib.import_module(f"{commands.__name__}.{module_info.name}")
-        plugins.extend(
-            plugin_class()
-            for plugin_class in classes_from_module(CLIPlugin, module)
-            # not the classes the module only imports
-            if plugin_class.__module__ == module.__name__
-        )
-    return plugins
 
 
 def build_app(site_plugins: Iterable[CLIPlugin] | None = None) -> typer.Typer:
@@ -96,19 +77,14 @@ def build_app(site_plugins: Iterable[CLIPlugin] | None = None) -> typer.Typer:
     if site_plugins is None:
         site_plugins = plugin_library.plugins.get("cli", [])
 
+    # Site plugins first: of two commands with one name the first is used,
+    # so a site plugin replaces a built-in command
     taken: set[str] = set()
-    for plugin in site_plugins:
-        if plugin.name in taken:
-            # As before Typer: the first plugin of a name is the command
-            nebula.log.warning(f"More than one CLI plugin is named '{plugin.name}'")
-            continue
-        add_plugin(app, plugin)
-        taken.add(plugin.name)
-
-    for plugin in builtin_plugins():
+    for plugin in [*site_plugins, *(cls() for cls in BUILTIN_PLUGINS)]:
         if plugin.name in taken:
             nebula.log.warning(
-                f"Built-in command '{plugin.name}' is shadowed by a site plugin"
+                f"More than one CLI command is named '{plugin.name}': "
+                "the first one is used"
             )
             continue
         add_plugin(app, plugin)
