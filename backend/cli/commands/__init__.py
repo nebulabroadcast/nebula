@@ -1,6 +1,5 @@
 """Built-in commands of `python -m cli`.
 
-A module here is one command, named after the module: it has `command`
-(a function) or `app` (a `typer.Typer` with sub-commands). Coroutine
-commands use `cli.run.run_async`.
+Each module holds `CLIPlugin` classes, written exactly as a site's CLI
+plugins are (see cli.app).
 """

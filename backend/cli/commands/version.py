@@ -1,8 +1,13 @@
 import typer
 
+from nebula.plugins import CLIPlugin
 from nebula.version import __version__
 
 
-def command() -> None:
+class Version(CLIPlugin):
     """Print the Nebula version."""
-    typer.echo(__version__)
+
+    name = "version"
+
+    async def main(self) -> None:
+        typer.echo(__version__)

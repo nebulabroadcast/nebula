@@ -10,8 +10,6 @@ from typer.testing import CliRunner
 
 import nebula
 from cli.app import build_app
-from cli.legacy import ArgumentError, parse_arguments
-from cli.run import run_async
 from nebula.plugins import CLIPlugin
 from nebula.version import __version__
 
@@ -28,63 +26,62 @@ def _no_settings(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(nebula, "run", run)
 
 
-#
-# Arguments of site plugins without a Typer application
-#
+class Untyped(CLIPlugin):
+    """A plugin without type hints."""
+
+    name = "untyped"
+    calls: list[tuple[Any, ...]] = []
+
+    async def main(self, limit=5, ratio=1.0, dry=False, title="x", target=None):  # type: ignore[no-untyped-def]
+        self.calls.append((limit, ratio, dry, title, target))
 
 
-async def main(
-    limit: int = 5,
-    ratio: float = 1.0,
-    dry: bool = False,
-    title: str = "x",
-    target: Any = None,
-) -> None:
-    _ = limit, ratio, dry, title, target
+class Typed(CLIPlugin):
+    """A plugin with type hints."""
+
+    name = "typed"
+    calls: list[tuple[Any, ...]] = []
+
+    async def main(self, folder: int, limit: int = 5, dry: bool = False) -> None:
+        self.calls.append((folder, limit, dry))
 
 
-async def main_any(limit: int = 5, **kwargs: Any) -> None:
-    _ = limit, kwargs
+class AnyArguments(CLIPlugin):
+    name = "any"
+    calls: list[dict[str, Any]] = []
+
+    async def main(self, limit: int = 5, **kwargs: Any) -> None:
+        self.calls.append({"limit": limit, **kwargs})
 
 
-def test_key_value_words_become_keyword_arguments() -> None:
-    assert parse_arguments(main, ["title=abc", "--target=a=b"]) == {
-        "title": "abc",
-        "target": "a=b",
-    }
+class Group(CLIPlugin):
+    """A plugin with sub-commands."""
+
+    name = "group"
+    calls: list[tuple[Any, ...]] = []
+
+    async def sync(self, limit: int = 0, retry_failed: bool = False) -> None:
+        """Make what is missing."""
+        self.calls.append(("sync", limit, retry_failed))
+
+    async def status(self) -> None:
+        self.calls.append(("status",))
+
+    async def _helper(self) -> None:
+        raise AssertionError
+
+    def not_a_command(self) -> None:
+        raise AssertionError
 
 
-def test_values_are_converted_to_the_type_of_the_default() -> None:
-    assert parse_arguments(main, ["limit=10", "ratio=2.5", "--dry=true"]) == {
-        "limit": 10,
-        "ratio": 2.5,
-        "dry": True,
-    }
-    assert parse_arguments(main, ["dry=no"]) == {"dry": False}
-    # No default type to go by: stays a string
-    assert parse_arguments(main, ["target=10"]) == {"target": "10"}
+@pytest.fixture(autouse=True)
+def _clear_calls() -> None:
+    for plugin in (Untyped, Typed, AnyArguments, Group):
+        plugin.calls.clear()
 
 
-@pytest.mark.parametrize(
-    ("words", "message"),
-    [
-        (["limit=many"], "'limit' must be int"),
-        (["dry=maybe"], "'dry' must be bool"),
-        (["nope=1"], "Arguments: limit, ratio, dry, title, target"),
-        (["sync"], "Expected key=value"),
-        (["--flag"], "Expected key=value"),
-    ],
-)
-def test_invalid_arguments(words: list[str], message: str) -> None:
-    with pytest.raises(ArgumentError, match=message):
-        parse_arguments(main, words)
-
-
-def test_main_with_kwargs_accepts_any_key() -> None:
-    assert parse_arguments(main_any, ["limit=3", "anything=1"]) == {
-        "limit": 3,
-        "anything": "1",
-    }
+def invoke(plugins: list[CLIPlugin], *words: str, **kwargs: Any) -> Any:
+    return runner.invoke(build_app(plugins), list(words), **kwargs)
 
 
 #
@@ -92,87 +89,29 @@ def test_main_with_kwargs_accepts_any_key() -> None:
 #
 
 
-class Legacy(CLIPlugin):
-    """An old style plugin."""
-
-    name = "legacy"
-    calls: list[tuple[Any, Any]] = []
-
-    async def main(self, limit: int = 5, dry: bool = False) -> None:
-        self.calls.append((limit, dry))
-
-
-def typer_plugin() -> CLIPlugin:
-    app = typer.Typer()
-
-    @app.command()
-    @run_async
-    async def sync(limit: int = 0, retry_failed: bool = False) -> None:
-        typer.echo(f"sync {limit!r} {retry_failed!r}")
-
-    @app.command()
-    def status() -> None:
-        typer.echo("status")
-
-    class Modern(CLIPlugin):
-        """A plugin with sub-commands."""
-
-        name = "modern"
-
-    plugin = Modern()
-    plugin.app = app
-    return plugin
-
-
 def test_no_command_lists_built_in_and_site_commands() -> None:
-    result = runner.invoke(build_app([Legacy(), typer_plugin()]), [])
-    assert "version" in result.output
-    assert "legacy" in result.output
-    assert "An old style plugin." in result.output
-    assert "modern" in result.output
+    result = invoke([Untyped(), Group()])
+    for expected in (
+        "version",
+        "adduser",
+        "untyped",
+        "A plugin without type hints.",
+        "group",
+        "A plugin with sub-commands.",
+    ):
+        assert expected in result.output
 
 
 def test_built_in_command() -> None:
-    result = runner.invoke(build_app([]), ["version"])
+    result = invoke([], "version")
     assert result.exit_code == 0
     assert result.output.strip() == __version__
 
 
 def test_unknown_command_exits_2() -> None:
-    result = runner.invoke(build_app([]), ["nope"])
+    result = invoke([], "nope")
     assert result.exit_code == 2
     assert "No such command" in result.output
-
-
-def test_site_plugin_gets_converted_key_value_arguments() -> None:
-    Legacy.calls.clear()
-    result = runner.invoke(build_app([Legacy()]), ["legacy", "limit=10", "--dry=true"])
-    assert result.exit_code == 0, result.output
-    assert Legacy.calls == [(10, True)]
-
-
-def test_site_plugin_unknown_argument_names_the_parameters() -> None:
-    Legacy.calls.clear()
-    result = runner.invoke(build_app([Legacy()]), ["legacy", "nope=1"])
-    assert result.exit_code == 2
-    assert "Arguments: limit, dry" in result.output
-    assert Legacy.calls == []
-
-
-def test_site_plugin_help_names_its_arguments() -> None:
-    result = runner.invoke(build_app([Legacy()]), ["legacy", "--help"])
-    assert result.exit_code == 0
-    assert "An old style plugin." in result.output
-    assert "limit, dry" in result.output
-
-
-def test_site_plugin_with_typer_app_is_mounted() -> None:
-    app = build_app([typer_plugin()])
-    result = runner.invoke(app, ["modern", "sync", "--limit", "3", "--retry-failed"])
-    assert result.exit_code == 0, result.output
-    assert result.output.strip() == "sync 3 True"
-    assert runner.invoke(app, ["modern", "status"]).output.strip() == "status"
-    assert runner.invoke(app, ["modern", "sync", "--nope"]).exit_code == 2
 
 
 def test_site_plugin_shadows_a_built_in_command(
@@ -187,22 +126,8 @@ def test_site_plugin_shadows_a_built_in_command(
         async def main(self) -> None:
             typer.echo("site version")
 
-    result = runner.invoke(build_app([Version()]), ["version"])
-    assert result.output.strip() == "site version"
+    assert invoke([Version()], "version").output.strip() == "site version"
     assert any("shadowed" in warning for warning in warnings)
-
-
-def test_failing_command_exits_1(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(nebula.log, "traceback", lambda *_: "")
-
-    class Failing(CLIPlugin):
-        name = "failing"
-
-        async def main(self) -> None:
-            raise RuntimeError("boom")
-
-    result = runner.invoke(build_app([Failing()]), ["failing"])
-    assert result.exit_code == 1
 
 
 def test_first_site_plugin_of_a_name_wins(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -218,9 +143,121 @@ def test_first_site_plugin_of_a_name_wins(monkeypatch: pytest.MonkeyPatch) -> No
 
         return Same()
 
-    result = runner.invoke(build_app([plugin("first"), plugin("second")]), ["same"])
-    assert result.output.strip() == "first"
+    assert invoke([plugin("first"), plugin("second")], "same").output.strip() == "first"
     assert any("More than one" in warning for warning in warnings)
+
+
+def test_failing_command_exits_1(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(nebula.log, "traceback", lambda *_: "")
+
+    class Failing(CLIPlugin):
+        name = "failing"
+
+        async def main(self) -> None:
+            raise RuntimeError("boom")
+
+    assert invoke([Failing()], "failing").exit_code == 1
+
+
+#
+# Arguments
+#
+
+
+def test_type_hints_make_arguments_and_options() -> None:
+    result = invoke([Typed()], "typed", "3", "--limit", "10", "--dry")
+    assert result.exit_code == 0, result.output
+    assert Typed.calls == [(3, 10, True)]
+
+
+def test_parameter_without_default_is_required() -> None:
+    result = invoke([Typed()], "typed")
+    assert result.exit_code == 2
+    assert "Missing argument" in result.output
+
+
+def test_no_type_hints_take_the_types_of_the_defaults() -> None:
+    result = invoke(
+        [Untyped()],
+        "untyped",
+        "--limit",
+        "10",
+        "--ratio",
+        "2.5",
+        "--dry",
+        "--target",
+        "7",
+    )
+    assert result.exit_code == 0, result.output
+    # `target` has no default type to go by: it stays a string
+    assert Untyped.calls == [(10, 2.5, True, "x", "7")]
+
+
+def test_key_value_words_are_accepted() -> None:
+    result = invoke(
+        [Untyped()], "untyped", "limit=10", "--ratio=2.5", "dry=true", "title=a=b"
+    )
+    assert result.exit_code == 0, result.output
+    assert Untyped.calls == [(10, 2.5, True, "a=b", None)]
+
+
+def test_key_value_booleans() -> None:
+    assert invoke([Untyped()], "untyped", "dry=no").exit_code == 0
+    assert invoke([Untyped()], "untyped", "dry=YES").exit_code == 0
+    assert [call[2] for call in Untyped.calls] == [False, True]
+    assert invoke([Untyped()], "untyped", "dry=maybe").exit_code == 2
+
+
+def test_key_value_for_a_positional_argument() -> None:
+    result = invoke([Typed()], "typed", "folder=3", "limit=2")
+    assert result.exit_code == 0, result.output
+    assert Typed.calls == [(3, 2, False)]
+
+
+@pytest.mark.parametrize("words", [["nope=1"], ["limit=many"], ["--nope"], ["stray"]])
+def test_invalid_arguments_exit_2(words: list[str]) -> None:
+    result = invoke([Untyped()], "untyped", *words)
+    assert result.exit_code == 2
+    assert Untyped.calls == []
+
+
+def test_help_lists_the_options() -> None:
+    result = invoke([Untyped()], "untyped", "--help")
+    assert result.exit_code == 0
+    assert "A plugin without type hints." in result.output
+    assert "--limit" in result.output
+    assert "--dry" in result.output
+
+
+def test_main_with_kwargs_takes_any_key_value() -> None:
+    result = invoke([AnyArguments()], "any", "limit=3", "anything=1", "--other=x")
+    assert result.exit_code == 0, result.output
+    assert AnyArguments.calls == [{"limit": 3, "anything": "1", "other": "x"}]
+    assert invoke([AnyArguments()], "any", "stray").exit_code == 2
+
+
+#
+# A plugin without `main`: its methods are sub-commands
+#
+
+
+def test_methods_are_sub_commands() -> None:
+    plugins = [Group()]
+    result = invoke(plugins, "group", "sync", "--limit", "3", "--retry-failed")
+    assert result.exit_code == 0, result.output
+    assert invoke(plugins, "group", "sync", "limit=4").exit_code == 0
+    assert invoke(plugins, "group", "status").exit_code == 0
+    assert Group.calls == [("sync", 3, True), ("sync", 4, False), ("status",)]
+
+
+def test_sub_command_list() -> None:
+    result = invoke([Group()], "group")
+    assert "sync" in result.output
+    assert "Make what is missing." in result.output
+    assert "status" in result.output
+    assert "helper" not in result.output
+    assert "not-a-command" not in result.output
+    assert invoke([Group()], "group", "nope").exit_code == 2
 
 
 #
@@ -243,9 +280,13 @@ def saved_users(monkeypatch: pytest.MonkeyPatch) -> list[dict[str, Any]]:
 
 
 def test_adduser_with_arguments(saved_users: list[dict[str, Any]]) -> None:
-    result = runner.invoke(
-        build_app([]),
-        ["adduser", "jane", "--email", "jane@example.test", "--admin"],
+    result = invoke(
+        [],
+        "adduser",
+        "jane",
+        "--email",
+        "jane@example.test",
+        "--admin",
         input="secret-password\nsecret-password\n",
     )
     assert result.exit_code == 0, result.output
@@ -259,11 +300,7 @@ def test_adduser_with_arguments(saved_users: list[dict[str, Any]]) -> None:
 
 
 def test_adduser_asks_for_what_is_missing(saved_users: list[dict[str, Any]]) -> None:
-    result = runner.invoke(
-        build_app([]),
-        ["adduser"],
-        input="joe\n\nn\nsecret-password\nsecret-password\n",
-    )
+    result = invoke([], "adduser", input="joe\n\nn\nsecret-password\nsecret-password\n")
     assert result.exit_code == 0, result.output
     [meta] = saved_users
     assert meta["login"] == "joe"
@@ -274,14 +311,14 @@ def test_adduser_asks_for_what_is_missing(saved_users: list[dict[str, Any]]) -> 
 @pytest.mark.parametrize(
     ("args", "message"),
     [
-        (["adduser", "jane", "--no-admin", "--password", "short"], "at least 8"),
-        (["adduser", "taken", "--no-admin", "--password", "long-enough"], "is taken"),
+        (["jane", "--no-admin", "--password", "short"], "at least 8"),
+        (["taken", "--no-admin", "--password", "long-enough"], "is taken"),
     ],
 )
 def test_adduser_errors_are_messages(
     saved_users: list[dict[str, Any]], args: list[str], message: str
 ) -> None:
-    result = runner.invoke(build_app([]), args)
+    result = invoke([], "adduser", *args)
     assert result.exit_code == 1
     assert message in result.output
     assert saved_users == []
