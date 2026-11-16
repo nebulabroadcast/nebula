@@ -141,6 +141,24 @@ def test_failing_command_exits_1(monkeypatch: pytest.MonkeyPatch) -> None:
     assert invoke([Failing()], "failing").exit_code == 1
 
 
+def test_aborted_prompt_is_a_message_not_a_traceback(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    tracebacks: list[str] = []
+    monkeypatch.setattr(nebula.log, "traceback", tracebacks.append)
+
+    class Asking(CLIPlugin):
+        name = "asking"
+
+        async def main(self) -> None:
+            raise typer.Abort  # what a prompt raises on Ctrl+C
+
+    result = invoke([Asking()], "asking")
+    assert result.exit_code == 1
+    assert "Aborted" in result.output
+    assert tracebacks == []
+
+
 #
 # Arguments
 #
