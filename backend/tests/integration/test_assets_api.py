@@ -11,6 +11,7 @@ from fastapi import FastAPI
 
 import nebula
 from nebula.context import is_system, set_default_system
+from nebula.objects.asset.query import COMPUTED_KEYS
 from server.errors import REST_PREFIX, install_error_handlers
 from server.middleware.context import RequestContextMiddleware
 from server.rest import install_rest_routers
@@ -101,7 +102,7 @@ async def test_detail_default_fields(client: httpx2.AsyncClient, folder: int) ->
     row = await nebula.db.fetchrow("SELECT meta FROM assets WHERE id = $1", asset_id)
     assert row is not None
     stored = {k: v for k, v in row["meta"].items() if not k.startswith("__")}
-    assert {k: v for k, v in item.items() if k not in ("has_aired", "__aux")} == stored
+    assert {k: v for k, v in item.items() if k not in COMPUTED_KEYS} == stored
     # The computed fields come along by default for a single asset
     assert isinstance(item["has_aired"], bool)
     assert isinstance(item["__aux"], list)
