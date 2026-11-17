@@ -54,12 +54,14 @@ async def sync(
         WHERE h.hash IS NOT NULL AND a.status = $1
           AND (t.hash IS DISTINCT FROM h.hash OR ($2 AND t.status = $3))
         ORDER BY a.id DESC
+        LIMIT $4
         """,  # noqa: S608
         ObjectStatus.ONLINE,
         retry_failed,
         FAILED,
+        limit or None,  # LIMIT NULL: no limit
     )
-    for row in rows[: limit or None]:
+    for row in rows:
         try:
             await make_thumbnail(row["id"], retry_failed=retry_failed)
         except NotFoundException as e:
