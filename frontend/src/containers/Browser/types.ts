@@ -23,7 +23,7 @@ export interface TabSettings {
   sort: string;
   // Columns chosen for this tab; the view's when not set
   columns?: string[] | null;
-  // Thumbnails in the first column; the view's when not set
+  // Thumbnails in the title cell; the view's when not set
   thumbnails?: boolean | null;
 }
 
@@ -34,7 +34,7 @@ export interface BrowserView {
   key: ViewKey;
   name: string;
   columns: string[];
-  // Thumbnails in the first column (site views: off)
+  // Thumbnails in the title cell (site views: off)
   thumbnails?: boolean;
   conditions: Condition[];
   query: string;
