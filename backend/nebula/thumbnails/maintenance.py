@@ -1,4 +1,4 @@
-"""Backfilling and cleaning up thumbnails (`python -m cli thumbnails`)."""
+"""Counting and backfilling thumbnails (`python -m cli thumbnails`)."""
 
 from collections.abc import AsyncIterator
 
@@ -19,10 +19,7 @@ ASSETS = """
 
 
 async def status() -> dict[str, int]:
-    """How many assets can have a thumbnail, and in what state theirs is.
-
-    `orphaned` are stored thumbnails of assets that can't have one now.
-    """
+    """How many assets can have a thumbnail, and in what state theirs is."""
     row = await db.fetchrow(
         f"""
         SELECT
@@ -30,8 +27,7 @@ async def status() -> dict[str, int]:
             count(*) FILTER (WHERE t.hash = h.hash AND t.status = $1) AS ready,
             count(*) FILTER (WHERE t.hash = h.hash AND t.status = $2) AS failed,
             count(*) FILTER (WHERE t.hash <> h.hash) AS stale,
-            count(*) FILTER (WHERE h.hash IS NOT NULL AND t.hash IS NULL) AS missing,
-            count(*) FILTER (WHERE h.hash IS NULL AND t.hash IS NOT NULL) AS orphaned
+            count(*) FILTER (WHERE h.hash IS NOT NULL AND t.hash IS NULL) AS missing
         {ASSETS}
         """,
         READY,
@@ -70,16 +66,3 @@ async def sync(
             yield row["id"], e.detail
         else:
             yield row["id"], None
-
-
-async def prune() -> int:
-    """Delete the thumbnails of assets that can't have one now.
-
-    Stale thumbnails of assets that still can are left: the next request
-    or `sync` replaces them. Returns how many were deleted.
-    """
-    result = await db.execute(
-        f"DELETE FROM thumbnails WHERE id_asset IN (SELECT t.id_asset {ASSETS}"  # noqa: S608
-        " WHERE h.hash IS NULL AND t.hash IS NOT NULL)"
-    )
-    return int(result.split()[-1])

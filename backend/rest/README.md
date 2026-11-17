@@ -523,6 +523,9 @@ unnoticed.
   `private, no-cache`. `ETag` is the hash; `If-None-Match` gives a 304.
 - Making one runs ffmpeg, one at a time per process, behind a bounded
   queue: a full queue or a long wait is a **503** with `Retry-After`.
+- While the file is offline, the last thumbnail made is returned even if
+  it is stale; its `ETag` is the hash it was made for, so it is never
+  cached as the current one.
 - There is no POST or DELETE: a thumbnail follows its asset.
 
 Aux data (`/assets/{id}/aux/{key}`) is a JSON document per key, stored in

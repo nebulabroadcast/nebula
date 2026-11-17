@@ -34,9 +34,9 @@ def stored(state: ThumbnailState, *, retry_failed: bool = False) -> Thumbnail | 
         raise NotFoundException("The asset has no thumbnail")
     if not state.current:
         return None
-    if state.thumbnail is None and not retry_failed:
+    if state.last is None and not retry_failed:
         raise NotFoundException("Unable to make a thumbnail of the asset")
-    return state.thumbnail
+    return state.last
 
 
 def source_path(state: ThumbnailState) -> str:
@@ -50,14 +50,21 @@ def source_path(state: ThumbnailState) -> str:
 async def get_thumbnail(id_asset: int) -> Thumbnail:
     """The asset's current thumbnail, made through the queue when needed.
 
-    NotFoundException: the asset can't have one, has no current one and
-    its file is offline, or making it failed. ThumbnailBusyError: it
-    wasn't made in time; ask again later.
+    While the file is offline, the last stored thumbnail is returned even
+    if it is stale (its hash differs from the asset's): the file is needed
+    for a new one. NotFoundException: the asset can't have one, making it
+    failed, or the file is offline and nothing is stored.
+    ThumbnailBusyError: it wasn't made in time; ask again later.
     """
     state = await load_state(id_asset)
     if (thumbnail := stored(state)) is not None:
         return thumbnail
-    source_path(state)  # offline: 404 without queueing
+    try:
+        source_path(state)
+    except NotFoundException:
+        if state.last is not None:
+            return state.last  # stale, but the best there is
+        raise
 
     global _queue  # noqa: PLW0603
     if _queue is None:

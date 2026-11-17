@@ -41,9 +41,11 @@ async def get_asset_thumbnail(
 ) -> Response:
     """A 320 px wide WebP of the asset's poster frame, or of an image asset.
 
-    Made the first time it is asked for. 404 when the asset can't have one
-    (not a video or image file), its file is offline and there is no
-    current one, or ffmpeg couldn't read the file.
+    Made the first time it is asked for, and again when the file, poster
+    frame or marks change. While the file is offline, the last one made is
+    returned. 404 when the asset can't have one (not a video or image
+    file), ffmpeg couldn't read the file, or the file is offline and none
+    was made before.
     """
     asset = await nebula.Asset.load(asset_id)
     asset.ensure_can_view()

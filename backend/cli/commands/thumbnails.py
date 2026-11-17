@@ -7,7 +7,7 @@ from nebula.thumbnails import maintenance
 
 
 class Thumbnails(CLIPlugin):
-    """Asset thumbnails: counts, backfill and cleanup."""
+    """Asset thumbnails: counts and backfill."""
 
     name = "thumbnails"
 
@@ -36,7 +36,3 @@ class Thumbnails(CLIPlugin):
                 failed += 1
                 typer.echo(f"Asset {id_asset}: {error}", err=True)
         typer.echo(f"Made {made}, failed {failed}")
-
-    async def prune(self) -> None:
-        """Delete thumbnails of assets that can't have one any more."""
-        typer.echo(f"Deleted {await maintenance.prune()}")

@@ -32,7 +32,8 @@ class ThumbnailState:
     position: float
     stored_hash: str | None
     stored_status: str | None
-    thumbnail: Thumbnail | None  # the stored one, when it is current and ready
+    # The stored picture, current or not; None when it failed or there is none
+    last: Thumbnail | None
 
     @property
     def current(self) -> bool:
@@ -44,20 +45,21 @@ async def load_state(id_asset: int) -> ThumbnailState:
         """
         SELECT a.meta, h.hash, asset_thumbnail_position(a.meta) AS position,
             t.hash AS stored_hash, t.status, t.width, t.height, t.mime,
-            CASE WHEN t.hash = h.hash THEN t.data END AS data
+            CASE WHEN t.status = $2 THEN t.data END AS data
         FROM assets a
         CROSS JOIN LATERAL (SELECT asset_thumbnail_hash(a.meta) AS hash) h
         LEFT JOIN thumbnails t ON t.id_asset = a.id
         WHERE a.id = $1
         """,
         id_asset,
+        READY,
     )
     if row is None:
         raise NotFoundException(f"Asset {id_asset} not found")
-    thumbnail = None
+    last = None
     if row["data"] is not None:
-        thumbnail = Thumbnail(
-            row["hash"], row["data"], row["width"], row["height"], row["mime"]
+        last = Thumbnail(
+            row["stored_hash"], row["data"], row["width"], row["height"], row["mime"]
         )
     return ThumbnailState(
         meta=dict(row["meta"]),
@@ -65,7 +67,7 @@ async def load_state(id_asset: int) -> ThumbnailState:
         position=row["position"],
         stored_hash=row["stored_hash"],
         stored_status=row["status"],
-        thumbnail=thumbnail,
+        last=last,
     )
 
 
