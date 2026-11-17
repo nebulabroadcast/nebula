@@ -39,6 +39,9 @@ import type {
   AssetsQueryPostData,
   AssetsQueryPostErrors,
   AssetsQueryPostResponses,
+  AssetsThumbnailGetData,
+  AssetsThumbnailGetErrors,
+  AssetsThumbnailGetResponses,
   AssetsUpdateData,
   AssetsUpdateErrors,
   AssetsUpdateResponses,
@@ -210,398 +213,6 @@ export const loginBackgroundApiLoginBackgroundJpgGet = <
     responseType: 'json',
     url: '/api/login-background.jpg',
     ...options,
-  });
-
-/**
- * Manage Services
- *
- * List and control installed services.
- *
- * This endpoint allows users to list all installed services and control their state.
- * Users can start, stop, or toggle the autostart setting of a service by providing
- * the respective service ID in the request.
- */
-export const services = <ThrowOnError extends boolean = false>(
-  options: Options<ServicesData, ThrowOnError>
-): RequestResult<ServicesResponses, ServicesErrors, ThrowOnError> =>
-  (options.client ?? client).post<ServicesResponses, ServicesErrors, ThrowOnError>({
-    responseType: 'json',
-    url: '/api/services',
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-  });
-
-/**
- * Get Available Actions
- *
- * Get available actions for given list of assets
- *
- * Every action is evaluated for each asset using the `allow_if` condition
- * in the action settings and only returned if the condition is true for all assets.
- *
- * This allows to start jobs on multiple assets at once.
- */
-export const actions = <ThrowOnError extends boolean = false>(
-  options: Options<ActionsData, ThrowOnError>
-): RequestResult<ActionsResponses, ActionsErrors, ThrowOnError> =>
-  (options.client ?? client).post<ActionsResponses, ActionsErrors, ThrowOnError>({
-    responseType: 'json',
-    url: '/api/actions',
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-  });
-
-/**
- * Manage Jobs
- *
- * Get list of jobs, abort or restart them
- */
-export const jobs = <ThrowOnError extends boolean = false>(
-  options: Options<JobsData, ThrowOnError>
-): RequestResult<JobsResponses, JobsErrors, ThrowOnError> =>
-  (options.client ?? client).post<JobsResponses, JobsErrors, ThrowOnError>({
-    responseType: 'json',
-    url: '/api/jobs',
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-  });
-
-/**
- * Send To
- *
- * Create jobs for a given list of assets.
- */
-export const send = <ThrowOnError extends boolean = false>(
-  options: Options<SendData, ThrowOnError>
-): RequestResult<SendResponses, SendErrors, ThrowOnError> =>
-  (options.client ?? client).post<SendResponses, SendErrors, ThrowOnError>({
-    responseType: 'json',
-    url: '/api/send',
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-  });
-
-/**
- * Playout Control
- *
- * Control a playout server
- */
-export const playout = <ThrowOnError extends boolean = false>(
-  options: Options<PlayoutData, ThrowOnError>
-): RequestResult<PlayoutResponses, PlayoutErrors, ThrowOnError> =>
-  (options.client ?? client).post<PlayoutResponses, PlayoutErrors, ThrowOnError>({
-    responseType: 'json',
-    url: '/api/playout',
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-  });
-
-/**
- * Browse Assets
- *
- * Browse the assets database.
- */
-export const browse = <ThrowOnError extends boolean = false>(
-  options: Options<BrowseData, ThrowOnError>
-): RequestResult<BrowseResponses, BrowseErrors, ThrowOnError> =>
-  (options.client ?? client).post<BrowseResponses, BrowseErrors, ThrowOnError>({
-    responseType: 'json',
-    url: '/api/browse',
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-  });
-
-/**
- * Order Items
- *
- * Set the order of items of a rundown
- */
-export const order = <ThrowOnError extends boolean = false>(
-  options: Options<OrderData, ThrowOnError>
-): RequestResult<OrderResponses, OrderErrors, ThrowOnError> =>
-  (options.client ?? client).post<OrderResponses, OrderErrors, ThrowOnError>({
-    responseType: 'json',
-    url: '/api/order',
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-  });
-
-/**
- * Solve Rundown Placeholder
- *
- * Solve a rundown placeholder
- */
-export const solve = <ThrowOnError extends boolean = false>(
-  options: Options<SolveData, ThrowOnError>
-): RequestResult<SolveResponses, SolveErrors, ThrowOnError> =>
-  (options.client ?? client).post<SolveResponses, SolveErrors, ThrowOnError>({
-    responseType: 'json',
-    url: '/api/solve',
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-  });
-
-/**
- * Apply Scheduling Template
- *
- * Apply a template to a channel
- */
-export const applySchedulingTemplate = <ThrowOnError extends boolean = false>(
-  options: Options<ApplySchedulingTemplateData, ThrowOnError>
-): RequestResult<
-  ApplySchedulingTemplateResponses,
-  ApplySchedulingTemplateErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).post<
-    ApplySchedulingTemplateResponses,
-    ApplySchedulingTemplateErrors,
-    ThrowOnError
-  >({
-    responseType: 'json',
-    url: '/api/apply-scheduling-template',
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-  });
-
-/**
- * List Scheduling Templates
- *
- * List available scheduling templates
- */
-export const listSchedulingTemplates = <ThrowOnError extends boolean = false>(
-  options?: Options<ListSchedulingTemplatesData, ThrowOnError>
-): RequestResult<ListSchedulingTemplatesResponses, unknown, ThrowOnError> =>
-  (options?.client ?? client).post<
-    ListSchedulingTemplatesResponses,
-    unknown,
-    ThrowOnError
-  >({
-    responseType: 'json',
-    url: '/api/list-scheduling-templates',
-    ...options,
-  });
-
-/**
- * Scheduler
- *
- * Retrieve or update the schedule for a channel
- *
- * This endpoint handles chanel macro-scheduling,
- * including the creation, modification, and deletion of playout events.
- *
- * Schedule is represented as a list of events, typically for one week.
- */
-export const scheduler = <ThrowOnError extends boolean = false>(
-  options: Options<SchedulerData, ThrowOnError>
-): RequestResult<SchedulerResponses, SchedulerErrors, ThrowOnError> =>
-  (options.client ?? client).post<SchedulerResponses, SchedulerErrors, ThrowOnError>({
-    responseType: 'json',
-    url: '/api/scheduler',
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-  });
-
-/**
- * Delete Objects
- *
- * Delete one or multiple objects from the database
- */
-export const delete_ = <ThrowOnError extends boolean = false>(
-  options: Options<DeleteData, ThrowOnError>
-): RequestResult<DeleteResponses, DeleteErrors, ThrowOnError> =>
-  (options.client ?? client).post<DeleteResponses, DeleteErrors, ThrowOnError>({
-    responseType: 'json',
-    url: '/api/delete',
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-  });
-
-/**
- * Get Objects
- *
- * Get a list of objects
- */
-export const get = <ThrowOnError extends boolean = false>(
-  options: Options<GetData, ThrowOnError>
-): RequestResult<GetResponses, GetErrors, ThrowOnError> =>
-  (options.client ?? client).post<GetResponses, GetErrors, ThrowOnError>({
-    responseType: 'json',
-    url: '/api/get',
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-  });
-
-/**
- * Operations
- *
- * Create or update multiple objects in one requests.
- */
-export const ops = <ThrowOnError extends boolean = false>(
-  options: Options<OpsData, ThrowOnError>
-): RequestResult<OpsResponses, OpsErrors, ThrowOnError> =>
-  (options.client ?? client).post<OpsResponses, OpsErrors, ThrowOnError>({
-    responseType: 'json',
-    url: '/api/ops',
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-  });
-
-/**
- * Set Metadata
- *
- * Create or update an object.
- */
-export const set = <ThrowOnError extends boolean = false>(
-  options: Options<SetData, ThrowOnError>
-): RequestResult<SetResponses, SetErrors, ThrowOnError> =>
-  (options.client ?? client).post<SetResponses, SetErrors, ThrowOnError>({
-    responseType: 'json',
-    url: '/api/set',
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-  });
-
-/**
- * Get User List
- *
- * Get a list of users
- *
- * Deprecated: use `GET /api/v2/users`.
- *
- * @deprecated
- */
-export const listUsers = <ThrowOnError extends boolean = false>(
-  options?: Options<ListUsersData, ThrowOnError>
-): RequestResult<ListUsersResponses, unknown, ThrowOnError> =>
-  (options?.client ?? client).post<ListUsersResponses, unknown, ThrowOnError>({
-    responseType: 'json',
-    url: '/api/list-users',
-    ...options,
-  });
-
-/**
- * Save User
- *
- * Save user data
- *
- * Deprecated: use `POST /api/v2/users` and `PATCH /api/v2/users/{user_id}`.
- *
- * @deprecated
- */
-export const saveUser = <ThrowOnError extends boolean = false>(
-  options: Options<SaveUserData, ThrowOnError>
-): RequestResult<SaveUserResponses, SaveUserErrors, ThrowOnError> =>
-  (options.client ?? client).post<SaveUserResponses, SaveUserErrors, ThrowOnError>({
-    responseType: 'json',
-    url: '/api/save-user',
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-  });
-
-/**
- * Send Invitation Email
- *
- * Handle sending an invitation email to the specified user.
- *
- * Deprecated: use `POST /api/v2/users/{user_id}/send-invitation`.
- *
- * @deprecated
- */
-export const sendInvitationEmail = <ThrowOnError extends boolean = false>(
-  options: Options<SendInvitationEmailData, ThrowOnError>
-): RequestResult<
-  SendInvitationEmailResponses,
-  SendInvitationEmailErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).post<
-    SendInvitationEmailResponses,
-    SendInvitationEmailErrors,
-    ThrowOnError
-  >({
-    responseType: 'json',
-    url: '/api/send-invitation-email',
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-  });
-
-/**
- * Get Rundown
- *
- * Retrieve the rundown for a specified channel and date.
- *
- * The rundown is a list of items scheduled for broadcast on a given day.
- * Items are ordered by their start time and include metadata such as
- * scheduled time and actual broadcast time. During the broadcast, the
- * actual time is updated to reflect the real broadcast time.
- *
- * The rundown also includes non-playable items like blocks, placeholders,
- * and loop markers.
- *
- * The date should be specified in the format YYYY-MM-DD, considering the
- * channel's start time as configured. If no date is specified, the current
- * date is used.
- */
-export const rundown = <ThrowOnError extends boolean = false>(
-  options: Options<RundownData, ThrowOnError>
-): RequestResult<RundownResponses, RundownErrors, ThrowOnError> =>
-  (options.client ?? client).post<RundownResponses, RundownErrors, ThrowOnError>({
-    responseType: 'json',
-    url: '/api/rundown',
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
   });
 
 /**
@@ -779,57 +390,16 @@ export const tokenExchange = <ThrowOnError extends boolean = false>(
   });
 
 /**
- * Get Storage Usage Statistics
+ * Browse Assets
  *
- * Get a list of objects
+ * Browse the assets database.
  */
-export const statsStorages = <ThrowOnError extends boolean = false>(
-  options?: Options<StatsStoragesData, ThrowOnError>
-): RequestResult<StatsStoragesResponses, unknown, ThrowOnError> =>
-  (options?.client ?? client).post<StatsStoragesResponses, unknown, ThrowOnError>({
+export const browse = <ThrowOnError extends boolean = false>(
+  options: Options<BrowseData, ThrowOnError>
+): RequestResult<BrowseResponses, BrowseErrors, ThrowOnError> =>
+  (options.client ?? client).post<BrowseResponses, BrowseErrors, ThrowOnError>({
     responseType: 'json',
-    url: '/api/stats/storages',
-    ...options,
-  });
-
-/**
- * Get Server Info
- *
- * Initial client request to ensure user is logged in.
- *
- * If a valid access token is provided, user information
- * and Nebula settings are returned. If no access token is
- * provided, only the message of the day and OAuth2 options
- * are returned.
- */
-export const init = <ThrowOnError extends boolean = false>(
-  options?: Options<InitData, ThrowOnError>
-): RequestResult<InitResponses, unknown, ThrowOnError> =>
-  (options?.client ?? client).post<InitResponses, unknown, ThrowOnError>({
-    responseType: 'json',
-    url: '/api/init',
-    ...options,
-  });
-
-/**
- * Invalidate Session
- *
- * Invalidate a user session.
- *
- * This endpoint is used to invalidate an user session. It can be used
- * to remotely log out a user. If the user is an admin, it can also be
- * used to log out other users.
- */
-export const invalidateSession = <ThrowOnError extends boolean = false>(
-  options: Options<InvalidateSessionData, ThrowOnError>
-): RequestResult<InvalidateSessionResponses, InvalidateSessionErrors, ThrowOnError> =>
-  (options.client ?? client).post<
-    InvalidateSessionResponses,
-    InvalidateSessionErrors,
-    ThrowOnError
-  >({
-    responseType: 'json',
-    url: '/api/invalidate-session',
+    url: '/api/browse',
     ...options,
     headers: {
       'Content-Type': 'application/json',
@@ -838,20 +408,123 @@ export const invalidateSession = <ThrowOnError extends boolean = false>(
   });
 
 /**
- * List Sessions
+ * Get Rundown
  *
- * List user sessions.
+ * Retrieve the rundown for a specified channel and date.
+ *
+ * The rundown is a list of items scheduled for broadcast on a given day.
+ * Items are ordered by their start time and include metadata such as
+ * scheduled time and actual broadcast time. During the broadcast, the
+ * actual time is updated to reflect the real broadcast time.
+ *
+ * The rundown also includes non-playable items like blocks, placeholders,
+ * and loop markers.
+ *
+ * The date should be specified in the format YYYY-MM-DD, considering the
+ * channel's start time as configured. If no date is specified, the current
+ * date is used.
  */
-export const listSessions = <ThrowOnError extends boolean = false>(
-  options: Options<ListSessionsData, ThrowOnError>
-): RequestResult<ListSessionsResponses, ListSessionsErrors, ThrowOnError> =>
-  (options.client ?? client).post<
-    ListSessionsResponses,
-    ListSessionsErrors,
-    ThrowOnError
-  >({
+export const rundown = <ThrowOnError extends boolean = false>(
+  options: Options<RundownData, ThrowOnError>
+): RequestResult<RundownResponses, RundownErrors, ThrowOnError> =>
+  (options.client ?? client).post<RundownResponses, RundownErrors, ThrowOnError>({
     responseType: 'json',
-    url: '/api/list-sessions',
+    url: '/api/rundown',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+/**
+ * Order Items
+ *
+ * Set the order of items of a rundown
+ */
+export const order = <ThrowOnError extends boolean = false>(
+  options: Options<OrderData, ThrowOnError>
+): RequestResult<OrderResponses, OrderErrors, ThrowOnError> =>
+  (options.client ?? client).post<OrderResponses, OrderErrors, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/order',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+/**
+ * Solve Rundown Placeholder
+ *
+ * Solve a rundown placeholder
+ */
+export const solve = <ThrowOnError extends boolean = false>(
+  options: Options<SolveData, ThrowOnError>
+): RequestResult<SolveResponses, SolveErrors, ThrowOnError> =>
+  (options.client ?? client).post<SolveResponses, SolveErrors, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/solve',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+/**
+ * Get Available Actions
+ *
+ * Get available actions for given list of assets
+ *
+ * Every action is evaluated for each asset using the `allow_if` condition
+ * in the action settings and only returned if the condition is true for all assets.
+ *
+ * This allows to start jobs on multiple assets at once.
+ */
+export const actions = <ThrowOnError extends boolean = false>(
+  options: Options<ActionsData, ThrowOnError>
+): RequestResult<ActionsResponses, ActionsErrors, ThrowOnError> =>
+  (options.client ?? client).post<ActionsResponses, ActionsErrors, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/actions',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+/**
+ * Manage Jobs
+ *
+ * Get list of jobs, abort or restart them
+ */
+export const jobs = <ThrowOnError extends boolean = false>(
+  options: Options<JobsData, ThrowOnError>
+): RequestResult<JobsResponses, JobsErrors, ThrowOnError> =>
+  (options.client ?? client).post<JobsResponses, JobsErrors, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/jobs',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+/**
+ * Send To
+ *
+ * Create jobs for a given list of assets.
+ */
+export const send = <ThrowOnError extends boolean = false>(
+  options: Options<SendData, ThrowOnError>
+): RequestResult<SendResponses, SendErrors, ThrowOnError> =>
+  (options.client ?? client).post<SendResponses, SendErrors, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/send',
     ...options,
     headers: {
       'Content-Type': 'application/json',
@@ -908,6 +581,336 @@ export const upload = <ThrowOnError extends boolean = false>(
     responseType: 'json',
     url: '/upload/{id_asset}',
     ...options,
+  });
+
+/**
+ * Delete Objects
+ *
+ * Delete one or multiple objects from the database
+ */
+export const delete_ = <ThrowOnError extends boolean = false>(
+  options: Options<DeleteData, ThrowOnError>
+): RequestResult<DeleteResponses, DeleteErrors, ThrowOnError> =>
+  (options.client ?? client).post<DeleteResponses, DeleteErrors, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/delete',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+/**
+ * Get Objects
+ *
+ * Get a list of objects
+ */
+export const get = <ThrowOnError extends boolean = false>(
+  options: Options<GetData, ThrowOnError>
+): RequestResult<GetResponses, GetErrors, ThrowOnError> =>
+  (options.client ?? client).post<GetResponses, GetErrors, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/get',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+/**
+ * Operations
+ *
+ * Create or update multiple objects in one requests.
+ */
+export const ops = <ThrowOnError extends boolean = false>(
+  options: Options<OpsData, ThrowOnError>
+): RequestResult<OpsResponses, OpsErrors, ThrowOnError> =>
+  (options.client ?? client).post<OpsResponses, OpsErrors, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/ops',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+/**
+ * Set Metadata
+ *
+ * Create or update an object.
+ */
+export const set = <ThrowOnError extends boolean = false>(
+  options: Options<SetData, ThrowOnError>
+): RequestResult<SetResponses, SetErrors, ThrowOnError> =>
+  (options.client ?? client).post<SetResponses, SetErrors, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/set',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+/**
+ * Playout Control
+ *
+ * Control a playout server
+ */
+export const playout = <ThrowOnError extends boolean = false>(
+  options: Options<PlayoutData, ThrowOnError>
+): RequestResult<PlayoutResponses, PlayoutErrors, ThrowOnError> =>
+  (options.client ?? client).post<PlayoutResponses, PlayoutErrors, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/playout',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+/**
+ * Scheduler
+ *
+ * Retrieve or update the schedule for a channel
+ *
+ * This endpoint handles chanel macro-scheduling,
+ * including the creation, modification, and deletion of playout events.
+ *
+ * Schedule is represented as a list of events, typically for one week.
+ */
+export const scheduler = <ThrowOnError extends boolean = false>(
+  options: Options<SchedulerData, ThrowOnError>
+): RequestResult<SchedulerResponses, SchedulerErrors, ThrowOnError> =>
+  (options.client ?? client).post<SchedulerResponses, SchedulerErrors, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/scheduler',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+/**
+ * Apply Scheduling Template
+ *
+ * Apply a template to a channel
+ */
+export const applySchedulingTemplate = <ThrowOnError extends boolean = false>(
+  options: Options<ApplySchedulingTemplateData, ThrowOnError>
+): RequestResult<
+  ApplySchedulingTemplateResponses,
+  ApplySchedulingTemplateErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    ApplySchedulingTemplateResponses,
+    ApplySchedulingTemplateErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    url: '/api/apply-scheduling-template',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+/**
+ * List Scheduling Templates
+ *
+ * List available scheduling templates
+ */
+export const listSchedulingTemplates = <ThrowOnError extends boolean = false>(
+  options?: Options<ListSchedulingTemplatesData, ThrowOnError>
+): RequestResult<ListSchedulingTemplatesResponses, unknown, ThrowOnError> =>
+  (options?.client ?? client).post<
+    ListSchedulingTemplatesResponses,
+    unknown,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    url: '/api/list-scheduling-templates',
+    ...options,
+  });
+
+/**
+ * Get Server Info
+ *
+ * Initial client request to ensure user is logged in.
+ *
+ * If a valid access token is provided, user information
+ * and Nebula settings are returned. If no access token is
+ * provided, only the message of the day and OAuth2 options
+ * are returned.
+ */
+export const init = <ThrowOnError extends boolean = false>(
+  options?: Options<InitData, ThrowOnError>
+): RequestResult<InitResponses, unknown, ThrowOnError> =>
+  (options?.client ?? client).post<InitResponses, unknown, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/init',
+    ...options,
+  });
+
+/**
+ * Manage Services
+ *
+ * List and control installed services.
+ *
+ * This endpoint allows users to list all installed services and control their state.
+ * Users can start, stop, or toggle the autostart setting of a service by providing
+ * the respective service ID in the request.
+ */
+export const services = <ThrowOnError extends boolean = false>(
+  options: Options<ServicesData, ThrowOnError>
+): RequestResult<ServicesResponses, ServicesErrors, ThrowOnError> =>
+  (options.client ?? client).post<ServicesResponses, ServicesErrors, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/services',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+/**
+ * Invalidate Session
+ *
+ * Invalidate a user session.
+ *
+ * This endpoint is used to invalidate an user session. It can be used
+ * to remotely log out a user. If the user is an admin, it can also be
+ * used to log out other users.
+ */
+export const invalidateSession = <ThrowOnError extends boolean = false>(
+  options: Options<InvalidateSessionData, ThrowOnError>
+): RequestResult<InvalidateSessionResponses, InvalidateSessionErrors, ThrowOnError> =>
+  (options.client ?? client).post<
+    InvalidateSessionResponses,
+    InvalidateSessionErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    url: '/api/invalidate-session',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+/**
+ * List Sessions
+ *
+ * List user sessions.
+ */
+export const listSessions = <ThrowOnError extends boolean = false>(
+  options: Options<ListSessionsData, ThrowOnError>
+): RequestResult<ListSessionsResponses, ListSessionsErrors, ThrowOnError> =>
+  (options.client ?? client).post<
+    ListSessionsResponses,
+    ListSessionsErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    url: '/api/list-sessions',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+/**
+ * Get Storage Usage Statistics
+ *
+ * Get a list of objects
+ */
+export const statsStorages = <ThrowOnError extends boolean = false>(
+  options?: Options<StatsStoragesData, ThrowOnError>
+): RequestResult<StatsStoragesResponses, unknown, ThrowOnError> =>
+  (options?.client ?? client).post<StatsStoragesResponses, unknown, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/stats/storages',
+    ...options,
+  });
+
+/**
+ * Get User List
+ *
+ * Get a list of users
+ *
+ * Deprecated: use `GET /api/v2/users`.
+ *
+ * @deprecated
+ */
+export const listUsers = <ThrowOnError extends boolean = false>(
+  options?: Options<ListUsersData, ThrowOnError>
+): RequestResult<ListUsersResponses, unknown, ThrowOnError> =>
+  (options?.client ?? client).post<ListUsersResponses, unknown, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/list-users',
+    ...options,
+  });
+
+/**
+ * Save User
+ *
+ * Save user data
+ *
+ * Deprecated: use `POST /api/v2/users` and `PATCH /api/v2/users/{user_id}`.
+ *
+ * @deprecated
+ */
+export const saveUser = <ThrowOnError extends boolean = false>(
+  options: Options<SaveUserData, ThrowOnError>
+): RequestResult<SaveUserResponses, SaveUserErrors, ThrowOnError> =>
+  (options.client ?? client).post<SaveUserResponses, SaveUserErrors, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/save-user',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+/**
+ * Send Invitation Email
+ *
+ * Handle sending an invitation email to the specified user.
+ *
+ * Deprecated: use `POST /api/v2/users/{user_id}/send-invitation`.
+ *
+ * @deprecated
+ */
+export const sendInvitationEmail = <ThrowOnError extends boolean = false>(
+  options: Options<SendInvitationEmailData, ThrowOnError>
+): RequestResult<
+  SendInvitationEmailResponses,
+  SendInvitationEmailErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    SendInvitationEmailResponses,
+    SendInvitationEmailErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    url: '/api/send-invitation-email',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
   });
 
 /**
@@ -1085,6 +1088,30 @@ export const assetsAuxPut = <ThrowOnError extends boolean = false>(
       'Content-Type': 'application/json',
       ...options.headers,
     },
+  });
+
+/**
+ * Get the thumbnail of an asset
+ *
+ * A 320 px wide WebP of the asset's poster frame, or of an image asset.
+ *
+ * Made the first time it is asked for, and again when the file, poster
+ * frame or marks change. While the file is offline, the last one made is
+ * returned. 404 when the asset can't have one (not a video or image
+ * file), ffmpeg couldn't read the file, or the file is offline and none
+ * was made before.
+ */
+export const assetsThumbnailGet = <ThrowOnError extends boolean = false>(
+  options: Options<AssetsThumbnailGetData, ThrowOnError>
+): RequestResult<AssetsThumbnailGetResponses, AssetsThumbnailGetErrors, ThrowOnError> =>
+  (options.client ?? client).get<
+    AssetsThumbnailGetResponses,
+    AssetsThumbnailGetErrors,
+    ThrowOnError
+  >({
+    responseType: 'blob',
+    url: '/api/v2/assets/{asset_id}/thumbnail',
+    ...options,
   });
 
 /**

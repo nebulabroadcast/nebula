@@ -24,7 +24,9 @@ register_plugin_type("api", APIRequest)
 def find_api_endpoints() -> list[APIRequest]:
     """Find all built-in API endpoints."""
     result = []
-    for module_fname in os.listdir("api"):
+    # Sorted: the order is the OpenAPI schema's, and so the generated
+    # frontend client's; os.listdir's differs between machines
+    for module_fname in sorted(os.listdir("api")):
         # A module that fails to import is logged and skipped
         if (module := import_plugin_module("api", module_fname)) is None:
             continue
