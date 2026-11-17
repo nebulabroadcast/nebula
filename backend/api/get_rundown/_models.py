@@ -46,6 +46,7 @@ class RundownRow(APIModel):
     id_asset: int | None = None
     id_folder: int | None = None
     asset_mtime: float | None = None
+    thumbnail_hash: str | None = None
     status: ObjectStatus | None = None
     transfer_progress: int | None = None
 

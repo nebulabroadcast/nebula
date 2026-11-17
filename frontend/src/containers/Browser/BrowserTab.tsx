@@ -6,6 +6,7 @@ import { useNebula } from '@features/Nebula';
 import {
   getColumnWidth,
   getFormatter,
+  formatTitleWithThumbnail,
   formatRowHighlightColor,
   formatRowHighlightStyle,
 } from '@lib/tableFormat';
@@ -17,7 +18,13 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import { mergeConditions } from './conditions';
-import { PAGE_SIZE, DEFAULT_SORT, tabColumns, tabRequest } from './query';
+import {
+  PAGE_SIZE,
+  DEFAULT_SORT,
+  tabColumns,
+  tabRequest,
+  tabThumbnails,
+} from './query';
 import type { BrowserView, TabSettings } from './types';
 import { useBrowser } from './useBrowser';
 
@@ -222,19 +229,18 @@ const BrowserTab = ({ tab, view, active, isDragging }: BrowserTabProps) => {
   // Columns
   //
 
-  const columns = useMemo(
-    (): TableColumn[] =>
-      tabColumns(view, tab)
-        .filter((name) => name !== 'subtitle') // shown with the title
-        .map((name) => ({
-          name,
-          title: nebula.metaType(name).header,
-          formatter: getFormatter(name),
-          width: getColumnWidth(name),
-          sortable: !browser.unsortable.includes(sortKey(name)),
-        })),
-    [view, tab, browser.unsortable]
-  );
+  const columns = useMemo((): TableColumn[] => {
+    const names = tabColumns(view, tab).filter((name) => name !== 'subtitle'); // shown with the title
+    const thumbnails = tabThumbnails(view, tab);
+    return names.map((name) => ({
+      name,
+      title: nebula.metaType(name).header,
+      formatter:
+        name === 'title' && thumbnails ? formatTitleWithThumbnail : getFormatter(name),
+      width: getColumnWidth(name),
+      sortable: !browser.unsortable.includes(sortKey(name)),
+    }));
+  }, [view, tab, browser.unsortable]);
 
   const sortBy = tab.sort.replace(/^-/, '').replace(/^effective_duration$/, 'duration');
   const sortDirection = tab.sort.startsWith('-') ? 'desc' : 'asc';

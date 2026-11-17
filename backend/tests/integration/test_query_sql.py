@@ -14,7 +14,7 @@ import pytest_asyncio
 
 import nebula
 from nebula.enum import ObjectTypeId
-from nebula.objects.asset.query import COMPUTED_FIELDS
+from nebula.objects.asset.query import COMPUTED_FIELDS, COMPUTED_KEYS
 from nebula.query import (
     Field,
     FieldKind,
@@ -40,10 +40,15 @@ def asset_fields() -> list[Field]:
         column("status", FieldKind.INTEGER),
         column("ctime", FieldKind.INTEGER),
         column("mtime", FieldKind.INTEGER),
-        # The asset resource's computed fields (has_aired, __aux)
+        # The asset resource's computed fields
         *COMPUTED_FIELDS,
-        # Every metatype; sortable to test paging on every kind of value
-        *(f for ns in sorted(namespaces) for f in meta_namespace(ns, sortable=True)),
+        # Every other metatype; sortable to test paging on every kind of value
+        *(
+            f
+            for ns in sorted(namespaces)
+            for f in meta_namespace(ns, sortable=True)
+            if f.key not in COMPUTED_KEYS
+        ),
     ]
 
 

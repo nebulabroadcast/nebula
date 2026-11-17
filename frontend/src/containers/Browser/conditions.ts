@@ -139,7 +139,8 @@ const ASSET_OBJECT_KEYS = [
 export const assetKeys = (): string[] =>
   Object.keys(nebula.settings?.metatypes || {}).filter((key) => {
     const { ns, type } = nebula.metaType(key);
-    if (type === 'object') return false;
+    // thumbnail_hash: shown by the "Show thumbnails" switch, not a column
+    if (type === 'object' || key === 'thumbnail_hash') return false;
     return ASSET_NAMESPACES.includes(ns ?? '') || ASSET_OBJECT_KEYS.includes(key);
   });
 

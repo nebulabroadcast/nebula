@@ -134,7 +134,7 @@ const ViewList = ({ tab, view, onClose }: ViewListProps) => {
         <button
           className="it changed"
           data-nav
-          title="Save the filters, search, sort and columns into this view"
+          title="Save the filters, search, sort, columns and thumbnails into this view"
           onClick={() => {
             browser.updateUserView(tab.id);
           }}

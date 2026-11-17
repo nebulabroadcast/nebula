@@ -511,6 +511,23 @@ Avatars, and later thumbnails or attachments, follow the proxy pattern:
 - `DELETE` removes the file and returns **204**.
 - A missing file is a 404 (the frontend shows a placeholder).
 
+Thumbnails (`GET /assets/{id}/thumbnail`, spec 011) are the exception to
+the proxy pattern: made by the server on request and stored in the
+`thumbnails` table, not on a storage, so they can't go stale or orphaned
+unnoticed.
+
+- The asset's computed field `thumbnail_hash` says what the thumbnail is
+  made from (file and frame); it is `null` when the asset can't have one.
+  Clients send it back as `?hash=`: with the current hash the response is
+  `Cache-Control: private, max-age=31536000, immutable`, otherwise
+  `private, no-cache`. `ETag` is the hash; `If-None-Match` gives a 304.
+- Making one runs ffmpeg, one at a time per process, behind a bounded
+  queue: a full queue or a long wait is a **503** with `Retry-After`.
+- While the file is offline, the last thumbnail made is returned even if
+  it is stale; its `ETag` is the hash it was made for, so it is never
+  cached as the current one.
+- There is no POST or DELETE: a thumbnail follows its asset.
+
 Aux data (`/assets/{id}/aux/{key}`) is a JSON document per key, stored in
 the `aux` table:
 

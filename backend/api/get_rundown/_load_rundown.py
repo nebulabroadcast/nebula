@@ -29,6 +29,7 @@ async def load_rundown(  # noqa: C901, PLR0915, PLR0912
             i.id AS id_item,
             i.meta AS imeta,
             a.meta AS ameta,
+            asset_thumbnail_hash(a.meta) AS thumbnail_hash,
             ar.latest_start AS as_start,
             ar.latest_stop AS as_stop
         FROM events AS e
@@ -215,6 +216,7 @@ async def load_rundown(  # noqa: C901, PLR0915, PLR0912
             status=istatus,
             transfer_progress=transfer_progress,
             asset_mtime=ameta.get("mtime", 0),
+            thumbnail_hash=record["thumbnail_hash"],
             mark_in=mark_in,
             mark_out=mark_out,
             is_empty=False,

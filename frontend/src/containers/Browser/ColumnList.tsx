@@ -9,8 +9,8 @@ interface ColumnListProps {
   onChange: (columns: string[]) => void;
 }
 
-// The tab's columns in order: drag a row to move it, x hides it (the
-// last one stays)
+// The tab's columns in order: drag a row to move it, x hides it (not the
+// title, see tabColumns)
 const ColumnList = ({ columns, onChange }: ColumnListProps) => {
   const [dragged, setDragged] = useState<number | null>(null);
   // Where the dragged column would go: before this index
@@ -59,7 +59,7 @@ const ColumnList = ({ columns, onChange }: ColumnListProps) => {
           <Icon icon="drag_indicator" />
           <span className="grow">{nebula.metaType(name).title || name}</span>
           <span className="dim">{name}</span>
-          {columns.length > 1 && (
+          {name !== 'title' && (
             <span
               title="Hide"
               onClick={() => {

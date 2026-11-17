@@ -110,6 +110,55 @@ $$;
 
 CREATE INDEX IF NOT EXISTS idx_asset_duration ON assets(asset_duration(meta));
 
+-- THUMBNAILS (spec 011)
+
+-- Position of the thumbnail frame in seconds: the poster frame, else 15 %
+-- into the effective duration, after mark_in. 0 for images.
+CREATE OR REPLACE FUNCTION asset_thumbnail_position(meta JSONB)
+RETURNS DOUBLE PRECISION LANGUAGE SQL IMMUTABLE PARALLEL SAFE AS $$
+  SELECT CASE
+    WHEN (meta->>'content_type')::int = 3 THEN 0
+    ELSE COALESCE(
+      (meta->>'poster_frame')::float,
+      COALESCE((meta->>'mark_in')::float, 0) + 0.15 * asset_duration(meta)
+    )
+  END
+$$;
+
+-- What a thumbnail is made from. NULL when the asset can't have one:
+-- not a file (media_type != 1), not video (2) or image (3), no file/mtime.
+-- The leading number is the thumbnail format version: raise it when size
+-- or quality change, and every stored thumbnail becomes stale.
+CREATE OR REPLACE FUNCTION asset_thumbnail_hash(meta JSONB)
+RETURNS TEXT LANGUAGE SQL IMMUTABLE PARALLEL SAFE AS $$
+  SELECT CASE
+    WHEN (meta->>'media_type')::int = 1
+      AND (meta->>'content_type')::int IN (2, 3)
+      AND meta->>'file/mtime' IS NOT NULL
+    THEN substr(md5(concat_ws(':', '1', meta->>'file/mtime',
+      asset_thumbnail_position(meta)::text)), 1, 16)
+  END
+$$;
+
+-- One row per asset, replaced in place. `hash` is the asset_thumbnail_hash
+-- it was made for: the row is current while they are equal.
+CREATE TABLE IF NOT EXISTS public.thumbnails (
+  id_asset INTEGER NOT NULL REFERENCES public.assets(id) ON DELETE CASCADE,
+  hash VARCHAR(32) NOT NULL,
+  status VARCHAR(16) NOT NULL,          -- 'ready' or 'failed' (no data)
+  file_mtime DOUBLE PRECISION NOT NULL, -- file/mtime it was made from
+  position DOUBLE PRECISION NOT NULL,   -- seconds; 0 for images
+  mime VARCHAR(64),
+  width INTEGER,
+  height INTEGER,
+  data BYTEA,
+  ctime DOUBLE PRECISION NOT NULL,
+  CONSTRAINT thumbnails_pkey PRIMARY KEY (id_asset)
+);
+
+-- WebP doesn't compress: store it out of line, without trying
+ALTER TABLE public.thumbnails ALTER COLUMN data SET STORAGE EXTERNAL;
+
 -- BINS
 
 CREATE TABLE IF NOT EXISTS public.bins (

@@ -42,6 +42,7 @@
   ["source/url"             , "Source URL"             , null                , ""],
   ["subclips"               , "Subclips"               , null                , ""],
   ["rundown_symbol"         , "Rundown symbol"         , ""                  , ""],
+  ["thumbnail_hash"         , "Thumbnail"              , ""                  , ""],
   ["rights/type"            , "Rights type"            , null                , ""],
   ["rights/description"     , "Rights description"     , "Rights desc."      , "A legal document giving official permission to do something with the resource"],
   ["runs/weekly"            , "Runs per week"          , "Runs weelky"       , ""],

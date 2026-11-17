@@ -42,6 +42,7 @@
   ["source/url"             , "URL zdroje"             , "URL"               , ""],
   ["subclips"               , "Subklipy"               , null                , ""],
   ["rundown_symbol"         , "Rundown symbol"         , ""                  , ""],
+  ["thumbnail_hash"         , "Náhled"                 , ""                  , ""],
   ["rights/type"            , "Typ práv"               , null                , ""],
   ["rights/description"     , "Popis licence"          , null                , "Detailní popis licence pořadu, pokud je licence 'vlastní'"],
   ["runs/weekly"            , "Odvysílat týdně"        , null                , "Počet odvysílání, kterého je možné/nutno dosáhnout v kalendářním týdnu."],
