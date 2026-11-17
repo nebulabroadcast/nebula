@@ -5,6 +5,7 @@ from typing import Any
 import pytest
 
 import nebula
+from nebula.thumbnails.maintenance import status
 
 pytestmark = pytest.mark.asyncio(loop_scope="session")
 
@@ -74,3 +75,9 @@ async def test_what_changes_the_hash(
     before = (await thumbnail(VIDEO))[1]
     after = (await thumbnail(VIDEO | changes))[1]
     assert (after != before) is changes_hash
+
+
+async def test_status_adds_up() -> None:
+    counts = await status()
+    in_a_state = counts["ready"] + counts["failed"] + counts["stale"]
+    assert counts["assets"] == in_a_state + counts["missing"]
