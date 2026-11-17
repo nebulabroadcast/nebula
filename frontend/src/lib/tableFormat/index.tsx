@@ -9,12 +9,11 @@ import formatObjectDuration from './formatObjectDuration';
 import formatObjectIdFolder from './formatObjectIdFolder';
 import formatObjectQcState from './formatObjectQcState';
 import formatObjectStatus from './formatObjectStatus';
-import formatObjectTitle from './formatObjectTitle';
+import formatObjectTitle, { formatTitleWithThumbnail } from './formatObjectTitle';
 import formatRundownDifference from './formatRundownDifference';
 import formatRundownRunMode from './formatRundownRunMode';
 import formatRundownSymbol from './formatRundownSymbol';
 import formatRundownTime from './formatRundownTime';
-import formatThumbnail from './formatThumbnail';
 
 import nebula from '@/nebula';
 
@@ -110,8 +109,6 @@ const getFormatter = (key: string): TableCellFormatter => {
       return formatObjectTitle;
     case 'qc/state':
       return formatObjectQcState;
-    case 'thumbnail_hash':
-      return formatThumbnail;
     case 'id_folder':
       return formatObjectIdFolder;
     case 'status':
@@ -138,6 +135,7 @@ const getFormatter = (key: string): TableCellFormatter => {
 
 export {
   formatRundownDifference,
+  formatTitleWithThumbnail,
   getColumnWidth,
   getFormatter,
   formatRowHighlightColor,

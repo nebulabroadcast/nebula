@@ -4,6 +4,7 @@ import {
   formatRundownDifference,
   getColumnWidth,
   getFormatter,
+  formatTitleWithThumbnail,
 } from '@lib/tableFormat';
 
 import { RunMode } from '@/client';
@@ -82,7 +83,6 @@ const getRunModeOptions = (
 
 const RUNDOWN_COLUMNS = [
   'rundown_symbol',
-  'thumbnail_hash',
   'title',
   'id/main',
   'duration',
@@ -103,7 +103,11 @@ const getRundownColumns = (fps: number): TableColumn[] => {
       name: key,
       width: getColumnWidth(key),
       formatter:
-        key === 'rundown_difference' ? formatRundownDifference(fps) : getFormatter(key),
+        key === 'rundown_difference'
+          ? formatRundownDifference(fps)
+          : key === 'title'
+            ? formatTitleWithThumbnail
+            : getFormatter(key),
     };
   });
 };

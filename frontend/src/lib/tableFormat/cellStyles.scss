@@ -75,12 +75,14 @@
   }
 }
 
-// Asset thumbnails (formatThumbnail): a 16:9 box, the picture over the icon
+// Asset thumbnails (in the title cell): a 16:9 box, the picture over the icon
 
 .thumbnail {
   position: relative;
+  flex-shrink: 0;
   width: 36px;
   height: 20px;
+  margin-right: 6px;
   display: flex;
   align-items: center;
   justify-content: center;

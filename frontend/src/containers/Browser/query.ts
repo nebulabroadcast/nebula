@@ -43,7 +43,7 @@ export const resolveView = (
   const userId = userViewId(key);
   if (userId !== null) {
     const view = userViews.find((v) => v.id === userId);
-    return view ? { ...view, key } : null;
+    return view ? { ...view, key, columns: withTitle(view.columns) } : null;
   }
   const view = nebula.settings?.views?.find((v) => siteViewKey(v.id) === key);
   if (!view) return null;
@@ -57,7 +57,7 @@ export const resolveView = (
   return {
     key,
     name: view.name,
-    columns: view.columns?.length ? view.columns : DEFAULT_COLUMNS,
+    columns: view.columns?.length ? withTitle(view.columns) : DEFAULT_COLUMNS,
     conditions,
     query: '',
     sort: DEFAULT_SORT,
@@ -74,8 +74,13 @@ export const viewTab = (view: BrowserView): Omit<TabSettings, 'id'> => ({
   thumbnails: null,
 });
 
+// The title can't be hidden: it names the row, and holds the thumbnail.
+// Site views and tabs saved before may not have it.
+const withTitle = (columns: string[]): string[] =>
+  columns.includes('title') ? columns : ['title', ...columns];
+
 export const tabColumns = (view: BrowserView, tab: TabSettings): string[] =>
-  tab.columns?.length ? tab.columns : view.columns;
+  tab.columns?.length ? withTitle(tab.columns) : view.columns;
 
 export const tabThumbnails = (view: BrowserView, tab: TabSettings): boolean =>
   tab.thumbnails ?? view.thumbnails ?? false;

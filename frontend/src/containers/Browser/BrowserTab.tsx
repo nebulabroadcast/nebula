@@ -6,6 +6,7 @@ import { useNebula } from '@features/Nebula';
 import {
   getColumnWidth,
   getFormatter,
+  formatTitleWithThumbnail,
   formatRowHighlightColor,
   formatRowHighlightStyle,
 } from '@lib/tableFormat';
@@ -230,14 +231,14 @@ const BrowserTab = ({ tab, view, active, isDragging }: BrowserTabProps) => {
 
   const columns = useMemo((): TableColumn[] => {
     const names = tabColumns(view, tab).filter((name) => name !== 'subtitle'); // shown with the title
-    if (tabThumbnails(view, tab)) names.unshift('thumbnail_hash');
+    const thumbnails = tabThumbnails(view, tab);
     return names.map((name) => ({
       name,
       title: nebula.metaType(name).header,
-      formatter: getFormatter(name),
+      formatter:
+        name === 'title' && thumbnails ? formatTitleWithThumbnail : getFormatter(name),
       width: getColumnWidth(name),
-      sortable:
-        name !== 'thumbnail_hash' && !browser.unsortable.includes(sortKey(name)),
+      sortable: !browser.unsortable.includes(sortKey(name)),
     }));
   }, [view, tab, browser.unsortable]);
 
