@@ -79,14 +79,21 @@ async def save(
     try:
         await db.execute(
             """
-            INSERT INTO thumbnails (id_asset, hash, status, file_mtime,
-                position, mime, width, height, data, ctime)
+            INSERT INTO thumbnails
+                (
+                    id_asset, hash, status, file_mtime,
+                    position, mime, width, height, data, ctime
+                )
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
             ON CONFLICT (id_asset) DO UPDATE SET
-                hash = EXCLUDED.hash, status = EXCLUDED.status,
-                file_mtime = EXCLUDED.file_mtime, position = EXCLUDED.position,
-                mime = EXCLUDED.mime, width = EXCLUDED.width,
-                height = EXCLUDED.height, data = EXCLUDED.data,
+                hash = EXCLUDED.hash,
+                status = EXCLUDED.status,
+                file_mtime = EXCLUDED.file_mtime,
+                position = EXCLUDED.position,
+                mime = EXCLUDED.mime,
+                width = EXCLUDED.width,
+                height = EXCLUDED.height,
+                data = EXCLUDED.data,
                 ctime = EXCLUDED.ctime
             """,
             id_asset,
