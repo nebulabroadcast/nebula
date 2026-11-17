@@ -12,6 +12,7 @@ import nebula
 from cli.app import build_app
 from nebula.plugins import CLIPlugin
 from nebula.version import __version__
+from server.session import Session
 
 runner = CliRunner()
 
@@ -262,6 +263,15 @@ def test_adduser_asks_for_what_is_missing(saved_users: list[dict[str, Any]]) -> 
     assert "is_admin" not in meta
 
 
+def test_adduser_with_a_login_does_not_ask_for_the_email(
+    saved_users: list[dict[str, Any]],
+) -> None:
+    result = invoke([], "adduser", "jane", "--no-admin", "--password", "long-enough")
+    assert result.exit_code == 0, result.output
+    assert "E-mail" not in result.output
+    assert "email" not in saved_users[0]
+
+
 @pytest.mark.parametrize(
     ("args", "message"),
     [
@@ -276,3 +286,56 @@ def test_adduser_errors_are_messages(
     assert result.exit_code == 1
     assert message in result.output
     assert saved_users == []
+
+
+#
+# passwd
+#
+
+
+@pytest.fixture
+def jane(monkeypatch: pytest.MonkeyPatch) -> dict[str, Any]:
+    """A stored user `jane`; what passwd saves and whose sessions it revokes."""
+    state: dict[str, Any] = {"saved": [], "revoked": []}
+
+    async def by_login(login: str) -> nebula.User:
+        if login != "jane":
+            raise nebula.NotFoundException(f"User {login} not found")
+        return nebula.User(meta={"id": 7, "login": "jane"})
+
+    async def save(self: nebula.User, **_: Any) -> None:
+        state["saved"].append(dict(self.meta))
+
+    async def revoke_user(user_id: int | None, **_: Any) -> None:
+        state["revoked"].append(user_id)
+
+    monkeypatch.setattr(nebula.User, "by_login", by_login)
+    monkeypatch.setattr(nebula.User, "save", save)
+    monkeypatch.setattr(Session, "revoke_user", revoke_user)
+    return state
+
+
+def test_passwd_asks_for_the_password(jane: dict[str, Any]) -> None:
+    result = invoke([], "passwd", "jane", input="new-password\nnew-password\n")
+    assert result.exit_code == 0, result.output
+    assert "Password of 'jane' changed" in result.output
+    [meta] = jane["saved"]
+    assert meta["password"].startswith("scrypt$")
+    assert jane["revoked"] == [7]
+
+
+@pytest.mark.parametrize(
+    ("args", "message"),
+    [
+        (["nobody", "--password", "long-enough"], "not found"),
+        (["jane", "--password", "short"], "at least 8"),
+    ],
+)
+def test_passwd_errors_are_messages(
+    jane: dict[str, Any], args: list[str], message: str
+) -> None:
+    result = invoke([], "passwd", *args)
+    assert result.exit_code == 1
+    assert message in result.output
+    assert jane["saved"] == []
+    assert jane["revoked"] == []

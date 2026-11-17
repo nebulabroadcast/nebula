@@ -16,7 +16,10 @@ class AddUser(CLIPlugin):
         login: Annotated[
             str | None, typer.Argument(help="Login name. Asked for when not given.")
         ] = None,
-        email: Annotated[str | None, typer.Option(help="E-mail address.")] = None,
+        email: Annotated[
+            str | None,
+            typer.Option(help="E-mail address. Asked for when the login is."),
+        ] = None,
         full_name: Annotated[str | None, typer.Option(help="Full name.")] = None,
         admin: Annotated[
             bool | None,
@@ -32,6 +35,8 @@ class AddUser(CLIPlugin):
     ) -> None:
         if login is None:
             login = typer.prompt("Login")
+            # Only in the interactive form: `adduser jane --no-admin
+            # --password ...` must not stop to ask for an optional value
             if email is None:
                 email = typer.prompt(
                     "E-mail (optional)", default="", show_default=False
