@@ -126,7 +126,7 @@ RETURNS DOUBLE PRECISION LANGUAGE SQL IMMUTABLE PARALLEL SAFE AS $$
 $$;
 
 -- What a thumbnail is made from. NULL when the asset can't have one:
--- not a file (media_type 1), not video (2) or image (3), no file/mtime.
+-- not a file (media_type != 1), not video (2) or image (3), no file/mtime.
 -- The leading number is the thumbnail format version: raise it when size
 -- or quality change, and every stored thumbnail becomes stale.
 CREATE OR REPLACE FUNCTION asset_thumbnail_hash(meta JSONB)
