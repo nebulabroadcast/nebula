@@ -82,6 +82,7 @@ const getRunModeOptions = (
 
 const RUNDOWN_COLUMNS = [
   'rundown_symbol',
+  'thumbnail_hash',
   'title',
   'id/main',
   'duration',

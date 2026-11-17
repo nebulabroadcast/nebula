@@ -1,4 +1,4 @@
-import { Icon } from '@components';
+import { Icon, InputSwitch } from '@components';
 import clsx from 'clsx';
 
 import ColumnList from './ColumnList';
@@ -14,7 +14,7 @@ import {
   type Draft,
 } from './conditions';
 import { Pop } from './popoverStyles';
-import { tabColumns } from './query';
+import { tabColumns, tabThumbnails } from './query';
 import type { TabSettings } from './types';
 import { useBrowser } from './useBrowser';
 import ValueInput from './ValueInput';
@@ -257,6 +257,15 @@ const FilterPopover = ({
             </>
           ) : (
             <>
+              <label className="it">
+                <span className="grow">Show thumbnails</span>
+                <InputSwitch
+                  value={tabThumbnails(view, tab)}
+                  onChange={(thumbnails) => {
+                    browser.updateTab(tab.id, { thumbnails });
+                  }}
+                />
+              </label>
               <div className="hd">Columns, drag to reorder</div>
               <ColumnList columns={columns} onChange={setColumns} />
               <div className="divider" />

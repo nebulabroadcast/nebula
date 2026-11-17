@@ -71,24 +71,41 @@ export const viewTab = (view: BrowserView): Omit<TabSettings, 'id'> => ({
   query: view.query,
   sort: view.sort,
   columns: null,
+  thumbnails: null,
 });
 
 export const tabColumns = (view: BrowserView, tab: TabSettings): string[] =>
   tab.columns?.length ? tab.columns : view.columns;
 
+export const tabThumbnails = (view: BrowserView, tab: TabSettings): boolean =>
+  tab.thumbnails ?? view.thumbnails ?? false;
+
 // What a user view keeps of the tab
 export const userViewSettings = (view: BrowserView, tab: TabSettings) => ({
   columns: tabColumns(view, tab),
+  thumbnails: tabThumbnails(view, tab),
   conditions: tab.conditions,
   query: tab.query,
   sort: tab.sort,
 });
 
 // The tab shows something else than its view (other filters, search,
-// sort or columns)
+// sort, columns or thumbnails)
 export const tabChanged = (view: BrowserView, tab: TabSettings): boolean =>
-  JSON.stringify([tab.conditions, tab.query, tab.sort, tabColumns(view, tab)]) !==
-  JSON.stringify([view.conditions, view.query, view.sort, view.columns]);
+  JSON.stringify([
+    tab.conditions,
+    tab.query,
+    tab.sort,
+    tabColumns(view, tab),
+    tabThumbnails(view, tab),
+  ]) !==
+  JSON.stringify([
+    view.conditions,
+    view.query,
+    view.sort,
+    view.columns,
+    view.thumbnails ?? false,
+  ]);
 
 // The values, and the known values under them
 const withDescendants = (key: string, values: unknown[]): unknown[] => {
@@ -122,6 +139,7 @@ const asFilter = (condition: Condition): FilterCondition | FilterOr | FilterNot 
 
 export const tabRequest = (view: BrowserView, tab: TabSettings): QueryRequest => {
   const fields = new Set([...REQUIRED_FIELDS, ...tabColumns(view, tab)]);
+  if (tabThumbnails(view, tab)) fields.add('thumbnail_hash');
   if (fields.has('duration')) {
     fields.add('mark_in');
     fields.add('mark_out');

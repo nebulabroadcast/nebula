@@ -164,10 +164,14 @@ export const BrowserProvider = ({ children }: { children: React.ReactNode }) => 
       ...userViewSettings(view, tab),
     };
     setUserViews((prev) => [...prev, userView]);
-    updateTab(tabId, { view: userViewKey(userView.id), columns: null });
+    updateTab(tabId, {
+      view: userViewKey(userView.id),
+      columns: null,
+      thumbnails: null,
+    });
   };
 
-  // The tab's filters, search, sort and columns into its user view
+  // The tab's filters, search, sort, columns and thumbnails into its user view
   const updateUserView = (tabId: string) => {
     const tab = tabs.find((t) => t.id === tabId);
     const view = tab && resolveView(tab.view, userViews);
@@ -175,7 +179,7 @@ export const BrowserProvider = ({ children }: { children: React.ReactNode }) => 
     if (!tab || !view || !id) return;
     const settings = userViewSettings(view, tab);
     setUserViews((prev) => prev.map((v) => (v.id === id ? { ...v, ...settings } : v)));
-    updateTab(tabId, { columns: null });
+    updateTab(tabId, { columns: null, thumbnails: null });
   };
 
   const renameUserView = (id: string, name: string) => {
