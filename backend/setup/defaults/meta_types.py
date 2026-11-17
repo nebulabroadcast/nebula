@@ -130,6 +130,11 @@ META_TYPES = {
         "ns": "va",
         "type": T.TIMECODE,
     },
+    # What the asset's thumbnail is made from (computed, spec 011)
+    "thumbnail_hash": {
+        "ns": "va",
+        "type": T.STRING,
+    },
     "solver": {
         "ns": "ai",
         "type": T.SELECT,

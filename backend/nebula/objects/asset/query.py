@@ -72,6 +72,15 @@ COMPUTED_FIELDS = [
         FieldKind.NUMBER,
         t"asset_duration(b.meta)",
         sortable=True,
+        computed=True,
+    ),
+    # What the thumbnail is made from; NULL when the asset can't have one
+    # (spec 011, asset_thumbnail_hash in schema.sql)
+    Field(
+        "thumbnail_hash",
+        FieldKind.STRING,
+        t"asset_thumbnail_hash(b.meta)",
+        computed=True,
     ),
     Field(
         "__aux",

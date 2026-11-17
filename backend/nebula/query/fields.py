@@ -84,6 +84,9 @@ class Field:
     kind: FieldKind
     sql: Template  # typed value, on the base query `b`
     join: Template | None = None  # FROM clause the value needs
+    # Not in the base query's columns (an expression): selected on its own,
+    # as a field with a join is
+    computed: bool = False
     # Sorting by a key without an index sorts every matching row on every
     # page, so it's opt-in
     sortable: bool = False

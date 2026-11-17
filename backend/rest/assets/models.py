@@ -32,6 +32,13 @@ class Asset(APIModel):
         bool | None,
         Field(description="Whether any item of the asset has aired (computed)"),
     ] = None
+    thumbnail_hash: Annotated[
+        str | None,
+        Field(
+            description="What the thumbnail is made from (computed); null when "
+            "the asset can't have one. Send it as `?hash=` to the thumbnail."
+        ),
+    ] = None
     aux_keys: Annotated[
         list[str] | None,
         Field(

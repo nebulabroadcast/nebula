@@ -296,7 +296,8 @@ class ListQuery:
         joined = [
             field
             for key in self.request.fields or []
-            if (field := self.fields.get(key)) is not None and field.join is not None
+            if (field := self.fields.get(key)) is not None
+            and (field.join is not None or field.computed)
         ]
         columns = [
             t"b.*",
@@ -373,8 +374,8 @@ async def fetch_page(
 ) -> Page:
     """One page of the base query's rows, filtered, searched and sorted.
 
-    Rows have the base query's columns, plus a column for each joined field
-    named in `request.fields`.
+    Rows have the base query's columns, plus a column for each joined or
+    computed field named in `request.fields`.
     """
     query = ListQuery(request, fields, base, search)
     sql, params = SQL.render(query.page_sql())

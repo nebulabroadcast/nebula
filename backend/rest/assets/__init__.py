@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter, Depends
 
-from rest.assets import aux, detail, listing
+from rest.assets import aux, detail, listing, thumbnail
 from server.dependencies import current_user
 
 # Every route needs a logged-in user. What they may do is checked by
@@ -14,3 +14,4 @@ router = APIRouter(
 router.include_router(listing.router)  # /query must come before /{asset_id}
 router.include_router(detail.router)
 router.include_router(aux.router)
+router.include_router(thumbnail.router)
