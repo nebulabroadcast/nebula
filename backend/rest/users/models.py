@@ -140,3 +140,10 @@ class ApiKey(APIModel):
 
 class NewPassword(APIModel):
     password: Annotated[str, Field(description="New password")]
+    current_password: Annotated[
+        str | None,
+        Field(
+            description="The current password. Required when users change "
+            "their own password, unless they have none yet."
+        ),
+    ] = None

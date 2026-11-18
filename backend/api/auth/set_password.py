@@ -1,13 +1,16 @@
 from typing import Annotated
 
-from fastapi import Response
+from fastapi import Request, Response
 from pydantic import Field
 
 import nebula
+from nebula.objects.user import WrongPasswordException
 from server.dependencies import CurrentUser
+from server.login_attempts import check_failed_login, set_failed_login
 from server.models import APIModel
 from server.request import APIRequest
 from server.session import Session
+from server.utils import get_real_ip
 
 
 class SetPasswordRequest(APIModel):
@@ -26,6 +29,15 @@ class SetPasswordRequest(APIModel):
             examples=["Password.123"],
         ),
     ]
+
+    current_password: Annotated[
+        str | None,
+        Field(
+            title="Current password",
+            description="Required when users change their own password, "
+            "unless they have none yet",
+        ),
+    ] = None
 
 
 class SetPassword(APIRequest):
@@ -48,7 +60,10 @@ class SetPassword(APIRequest):
         self,
         request: SetPasswordRequest,
         user: CurrentUser,
+        http_request: Request,
     ) -> Response:
+        ip_address = get_real_ip(http_request)
+        await check_failed_login(ip_address)
         if request.login:
             if not user.is_admin:
                 raise nebula.ForbiddenException(
@@ -64,10 +79,13 @@ class SetPassword(APIRequest):
             assert user.id is not None, "Logged-in user without id"
             target_user = await nebula.User.load(user.id)
 
-        if len(request.password) < 8:
-            raise nebula.BadRequestException("Password is too short")
-
-        await target_user.set_password(request.password)
+        try:
+            await target_user.change_password(
+                request.password, request.current_password
+            )
+        except WrongPasswordException:
+            await set_failed_login(ip_address)
+            raise
         await target_user.save()
         await Session.revoke_user(target_user.id)
 
