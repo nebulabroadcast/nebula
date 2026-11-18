@@ -8,7 +8,7 @@ from nebula.context import current_user
 from nebula.enum import ObjectType
 from nebula.exceptions import RequestSettingsReload, ValidationException
 from nebula.helpers.validators import Validator
-from nebula.settings import load_settings
+from nebula.settings import reload_settings_everywhere
 
 if TYPE_CHECKING:
     from nebula.objects.asset import Asset
@@ -75,5 +75,5 @@ async def save_asset_changes(
         await asset.save()
 
     if settings_changed and reload_settings:
-        await load_settings()
+        await reload_settings_everywhere()
     return settings_changed
