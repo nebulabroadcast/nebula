@@ -3,6 +3,7 @@ from collections.abc import Iterable
 from typing import TYPE_CHECKING, Any
 
 import nebula
+from nebula.enum import ContentType, MediaType
 from nebula.utils import datestr2ts, s2time
 
 if TYPE_CHECKING:
@@ -139,21 +140,32 @@ def parse_rundown_date(
     return datestr2ts(date, hh=hh, mm=mm)
 
 
-def can_append(asset: nebula.Asset, conditions: AcceptModel) -> bool:
-    # TODO: raise an exception instead of returning False?
+def rejection(asset: nebula.Asset, conditions: AcceptModel) -> str | None:
+    """Why the asset doesn't meet a channel's conditions (`scheduler_accepts`,
+    `rundown_accepts`), or None when it does."""
     if conditions.folders and asset["id_folder"] not in conditions.folders:
-        nebula.log.warn(f"Folder {asset['id_folder']} not in {conditions.folders}")
-        return False
+        folder = nebula.settings.get_folder(asset["id_folder"])
+        name = folder.name if folder else asset["id_folder"]
+        return f"assets of folder {name} are not accepted"
     if conditions.media_types and asset["media_type"] not in conditions.media_types:
-        nebula.log.warn(
-            f"Media type {asset['media_type']} not in {conditions.media_types}"
-        )
-        return False
+        media_type = MediaType(asset["media_type"]).name.lower()
+        return f"{media_type} assets are not accepted"
     if conditions.content_types and (
         asset["content_type"] not in conditions.content_types
     ):
-        nebula.log.warn(
-            f"Content type {asset['content_type']} not in {conditions.content_types}"
-        )
-        return False
-    return True
+        content_type = ContentType(asset["content_type"]).name.lower()
+        return f"{content_type} assets are not accepted"
+    return None
+
+
+def can_append(asset: nebula.Asset, conditions: AcceptModel) -> bool:
+    if (reason := rejection(asset, conditions)) is None:
+        return True
+    nebula.log.warn(f"{asset} can't be appended: {reason}")
+    return False
+
+
+def ensure_can_schedule(asset: nebula.Asset, channel: PlayoutChannelSettings) -> None:
+    """Raise ValidationException unless the channel's scheduler accepts it."""
+    if (reason := rejection(asset, channel.scheduler_accepts)) is not None:
+        raise nebula.ValidationException(f"Unable to schedule {asset.title}: {reason}")
