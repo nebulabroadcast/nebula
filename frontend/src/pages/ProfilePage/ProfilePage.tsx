@@ -97,8 +97,28 @@ const ProfileForm: React.FC = () => {
 };
 
 const ChangePasswordForm: React.FC = () => {
+  const userId = nebula.user?.id;
+  const [currentPassword, setCurrentPassword] = useState('');
   const [password, setPassword] = useState('');
   const [passwordRepeat, setPasswordRepeat] = useState('');
+  // Users without a password yet (SSO only) set one without the current one
+  const [hasPassword, setHasPassword] = useState(true);
+
+  useEffect(() => {
+    if (!userId) return;
+    nebula
+      .usersGet({
+        path: { user_id: userId },
+        query: { fields: 'has_password' },
+        throwOnError: true,
+      })
+      .then((res) => {
+        setHasPassword(res.data.has_password ?? true);
+      })
+      .catch(() => {
+        // keep asking for the current password
+      });
+  }, [userId]);
 
   const changePassword = () => {
     if (password !== passwordRepeat) {
@@ -106,17 +126,19 @@ const ChangePasswordForm: React.FC = () => {
       return;
     }
 
-    if (!nebula.user?.id) return;
+    if (!userId) return;
     nebula
       .usersSetPassword({
-        path: { user_id: nebula.user.id },
-        body: { password },
+        path: { user_id: userId },
+        body: { password, current_password: hasPassword ? currentPassword : null },
         throwOnError: true,
       })
       .then(() => {
         toast.success('Password changed');
+        setCurrentPassword('');
         setPassword('');
         setPasswordRepeat('');
+        setHasPassword(true);
       })
       .catch((err: unknown) => {
         toast.error(
@@ -132,6 +154,15 @@ const ChangePasswordForm: React.FC = () => {
         Change password
       </PanelHeader>
       <Form>
+        {hasPassword && (
+          <FormRow title="Current password">
+            <InputPassword
+              value={currentPassword}
+              onChange={setCurrentPassword}
+              autoComplete="current-password"
+            />
+          </FormRow>
+        )}
         <FormRow title="New password">
           <InputPassword
             value={password}
@@ -151,7 +182,7 @@ const ChangePasswordForm: React.FC = () => {
         <Button
           label="Change password"
           icon="check"
-          disabled={!password}
+          disabled={!password || (hasPassword && !currentPassword)}
           onClick={changePassword}
         />
       </div>
