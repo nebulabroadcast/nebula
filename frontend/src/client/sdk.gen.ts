@@ -115,6 +115,10 @@ import type {
   SendInvitationEmailErrors,
   SendInvitationEmailResponses,
   SendResponses,
+  ServerReloadSettingsData,
+  ServerReloadSettingsResponses,
+  ServerRestartData,
+  ServerRestartResponses,
   ServicesData,
   ServicesErrors,
   ServicesResponses,
@@ -1111,6 +1115,44 @@ export const assetsThumbnailGet = <ThrowOnError extends boolean = false>(
   >({
     responseType: 'blob',
     url: '/api/v2/assets/{asset_id}/thumbnail',
+    ...options,
+  });
+
+/**
+ * Restart the server
+ *
+ * Every replica gracefully restarts its worker processes, which load
+ * settings, plugins and code again. Requests in progress finish, websocket
+ * connections drop and clients reconnect.
+ *
+ * Returns at once. Without gunicorn (the dev stack) nothing restarts and
+ * a warning is logged.
+ */
+export const serverRestart = <ThrowOnError extends boolean = false>(
+  options?: Options<ServerRestartData, ThrowOnError>
+): RequestResult<ServerRestartResponses, unknown, ThrowOnError> =>
+  (options?.client ?? client).post<ServerRestartResponses, unknown, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/v2/server/restart',
+    ...options,
+  });
+
+/**
+ * Reload the settings
+ *
+ * Every worker of every replica reloads the settings from the database,
+ * without a restart. Plugins and code changes need a restart.
+ */
+export const serverReloadSettings = <ThrowOnError extends boolean = false>(
+  options?: Options<ServerReloadSettingsData, ThrowOnError>
+): RequestResult<ServerReloadSettingsResponses, unknown, ThrowOnError> =>
+  (options?.client ?? client).post<
+    ServerReloadSettingsResponses,
+    unknown,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    url: '/api/v2/server/reload-settings',
     ...options,
   });
 
