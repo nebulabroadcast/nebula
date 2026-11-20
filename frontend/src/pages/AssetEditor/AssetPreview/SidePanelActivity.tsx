@@ -1,13 +1,20 @@
 import { Loader, Navbar, RadioButton, Section, TextArea } from '@components';
 import { useWebSocket, type WebSocketHandler } from '@features/Websocket';
 import { getErrorDetail } from '@lib/utils';
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import {
+  Fragment,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 import { toast } from 'react-toastify';
 import styled from 'styled-components';
 
 import { addComment, fetchActivities, type Activity } from '../assetApi';
 
-import { ActivityItem } from './ActivityItem';
+import { ActivityItem, DaySeparator } from './ActivityItem';
 
 type Filter = 'all' | 'comments' | 'qc' | 'changes';
 
@@ -17,6 +24,9 @@ const FILTERS: Array<{ value: Filter; title: string; kind?: string }> = [
   { value: 'qc', title: 'QC', kind: 'qc' },
   { value: 'changes', title: 'Changes', kind: 'changed,status,uploaded,created' },
 ];
+
+// local calendar day, to put a separator between days
+const dayKey = (timestamp: number) => new Date(timestamp * 1000).toDateString();
 
 // how close to the bottom (px) still counts as "at the bottom"
 const STICK_DISTANCE = 30;
@@ -147,8 +157,14 @@ export const SidePanelActivity = ({ assetId }: { assetId: number }) => {
         <Feed className="contained feed" ref={feedRef} onScroll={onScroll}>
           {loading && !items.length && <Loader />}
           {!loading && !items.length && <div className="empty">No activity yet</div>}
-          {items.toReversed().map((activity) => (
-            <ActivityItem key={activity.id} activity={activity} assetId={assetId} />
+          {items.toReversed().map((activity, idx, oldestFirst) => (
+            <Fragment key={activity.id}>
+              {(idx === 0 ||
+                dayKey(oldestFirst[idx - 1].ctime) !== dayKey(activity.ctime)) && (
+                <DaySeparator timestamp={activity.ctime} />
+              )}
+              <ActivityItem activity={activity} assetId={assetId} />
+            </Fragment>
           ))}
         </Feed>
       </Section>

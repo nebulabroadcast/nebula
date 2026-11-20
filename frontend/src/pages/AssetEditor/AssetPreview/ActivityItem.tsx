@@ -1,4 +1,4 @@
-import { Dropdown, TextArea } from '@components';
+import { Dropdown, Icon, TextArea } from '@components';
 import { useDialog } from '@features/Dialogs';
 import { getFormatter } from '@lib/format';
 import { formatTimeString, getErrorDetail } from '@lib/utils';
@@ -16,25 +16,106 @@ import {
 import { ObjectStatus, type ChangedDetail } from '@/client';
 import nebula from '@/nebula';
 
-const QC_LABELS = ['new', 'auto rejected', 'auto accepted', 'rejected', 'accepted'];
+type CommentActivity = Extract<Activity, { kind: 'comment' }>;
 
-const ItemWrapper = styled.div`
-  padding: 8px 10px;
-  border-bottom: 1px solid var(--color-surface-03);
+const QC_LABELS = ['new', 'auto rejected', 'auto accepted', 'rejected', 'accepted'];
+const QC_COLORS = [
+  undefined,
+  'var(--color-red)',
+  'var(--color-green)',
+  'var(--color-red)',
+  'var(--color-green)',
+];
+
+//
+// Styles
+//
+
+// Events: one dim line with an icon
+const EventRow = styled.div`
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  gap: 6px;
+  align-items: flex-start;
+  padding: 3px 10px;
+  font-size: 0.85em;
+  color: var(--color-text-dim);
+
+  .icon {
+    font-size: 16px;
+    line-height: 18px;
+  }
+
+  .text {
+    flex-grow: 1;
+    min-width: 0;
+    line-height: 18px;
+  }
+
+  .author {
+    color: var(--color-text);
+  }
+
+  .time {
+    flex-shrink: 0;
+    line-height: 18px;
+  }
+
+  .link {
+    cursor: pointer;
+    text-decoration: underline dotted;
+  }
+
+  .deleted {
+    font-style: italic;
+  }
+`;
+
+// Comments: a lighter bubble
+const Bubble = styled.div`
+  margin: 6px 10px;
+  padding: 6px 10px 8px;
+  border-radius: 8px;
+  background-color: var(--color-surface-03);
+
+  &.own {
+    background-color: var(--color-surface-04);
+  }
 
   .header {
     display: flex;
-    gap: 8px;
+    gap: 6px;
     align-items: center;
-    color: var(--color-text-dim);
+    height: 20px;
+    margin-bottom: 4px;
     font-size: 0.85em;
+    color: var(--color-text-dim);
+  }
+
+  .author {
+    color: var(--color-text);
+    font-weight: bold;
+  }
+
+  .avatar {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+
+  .avatar.initials {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    background-color: var(--color-surface-05);
+    color: var(--color-text);
   }
 
   .menu {
-    margin: -6px 0 -6px auto;
+    margin-left: auto;
+    visibility: hidden;
 
     button {
       height: 20px;
@@ -44,23 +125,11 @@ const ItemWrapper = styled.div`
     }
   }
 
-  .hint {
-    font-size: 0.8em;
+  &:hover .menu {
+    visibility: visible;
   }
 
-  .author {
-    color: var(--color-text);
-    font-weight: bold;
-  }
-
-  .line {
-    display: flex;
-    gap: 6px;
-    align-items: center;
-    flex-wrap: wrap;
-  }
-
-  .comment {
+  .text {
     white-space: pre-wrap;
     overflow-wrap: anywhere;
   }
@@ -70,9 +139,8 @@ const ItemWrapper = styled.div`
     font-style: italic;
   }
 
-  .link {
-    cursor: pointer;
-    text-decoration: underline dotted;
+  .hint {
+    font-size: 0.8em;
   }
 `;
 
@@ -80,7 +148,8 @@ const DiffTable = styled.div`
   display: grid;
   grid-template-columns: max-content 1fr;
   gap: 2px 8px;
-  font-size: 0.9em;
+  margin: 2px 10px 6px 32px;
+  font-size: 0.85em;
 
   .key {
     color: var(--color-text-dim);
@@ -103,26 +172,60 @@ const DiffTable = styled.div`
     text-decoration: line-through;
     color: var(--color-text-dim);
   }
+
+  .muted {
+    color: var(--color-text-dim);
+    font-style: italic;
+  }
 `;
 
-const authorName = (id_user: number | null) => {
+const Separator = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 10px 4px;
+  font-size: 0.8em;
+  color: var(--color-text-dim);
+
+  &::before,
+  &::after {
+    content: '';
+    flex-grow: 1;
+    border-top: 1px solid var(--color-surface-04);
+  }
+`;
+
+//
+// Helpers
+//
+
+const userName = (id_user: number | null) => {
   if (id_user === null) return 'System';
   const user = nebula.settings?.users?.find((u) => u.id === id_user);
   return user?.full_name || user?.name || `User ${id_user}`;
 };
 
-const timeAgo = (timestamp: number) => {
-  const seconds = Math.round(timestamp - Date.now() / 1000);
-  const units: Array<[Intl.RelativeTimeFormatUnit, number]> = [
-    ['day', 86400],
-    ['hour', 3600],
-    ['minute', 60],
-  ];
-  const rtf = new Intl.RelativeTimeFormat(nebula.locale, { numeric: 'auto' });
-  for (const [unit, size] of units) {
-    if (Math.abs(seconds) >= size) return rtf.format(Math.round(seconds / size), unit);
-  }
-  return 'just now';
+const clockTime = (timestamp: number) =>
+  new Date(timestamp * 1000).toLocaleTimeString(nebula.locale, {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+
+export const DaySeparator = ({ timestamp }: { timestamp: number }) => {
+  const date = new Date(timestamp * 1000);
+  const today = new Date();
+  const yesterday = new Date();
+  yesterday.setDate(today.getDate() - 1);
+  let label: string;
+  if (date.toDateString() === today.toDateString()) label = 'Today';
+  else if (date.toDateString() === yesterday.toDateString()) label = 'Yesterday';
+  else
+    label = date.toLocaleDateString(nebula.locale, {
+      day: 'numeric',
+      month: 'short',
+      year: date.getFullYear() === today.getFullYear() ? undefined : 'numeric',
+    });
+  return <Separator>{label}</Separator>;
 };
 
 const formatSize = (bytes: number) => {
@@ -147,6 +250,41 @@ const formatValue = (key: string, value: unknown): React.ReactNode => {
   return getFormatter(key)({ [key]: value }, key);
 };
 
+const Time = ({ timestamp }: { timestamp: number }) => (
+  <span className="time" title={formatTimeString(timestamp)}>
+    {clockTime(timestamp)}
+  </span>
+);
+
+//
+// Events
+//
+
+const Event = ({
+  activity,
+  icon,
+  iconColor,
+  children,
+  after,
+}: {
+  activity: Activity;
+  icon: string;
+  iconColor?: string;
+  children: React.ReactNode;
+  after?: React.ReactNode;
+}) => (
+  <>
+    <EventRow>
+      <Icon icon={icon} style={{ color: iconColor }} />
+      <div className="text">
+        <span className="author">{userName(activity.id_user)}</span> {children}
+      </div>
+      <Time timestamp={activity.ctime} />
+    </EventRow>
+    {after}
+  </>
+);
+
 const DiffValue = ({ children }: { children: React.ReactNode }) => {
   const [expanded, setExpanded] = useState(false);
   return (
@@ -162,14 +300,12 @@ const DiffValue = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-const ChangedBody = ({
+const ChangedEvent = ({
+  activity,
   assetId,
-  activityId,
-  keys,
 }: {
+  activity: Extract<Activity, { kind: 'changed' }>;
   assetId: number;
-  activityId: number;
-  keys: string[];
 }) => {
   const [detail, setDetail] = useState<ChangedDetail | null | undefined>(undefined);
   const [open, setOpen] = useState(false);
@@ -177,7 +313,7 @@ const ChangedBody = ({
   const toggle = () => {
     setOpen((o) => !o);
     if (detail !== undefined) return;
-    fetchActivityDetail(assetId, activityId)
+    fetchActivityDetail(assetId, activity.id)
       .then((d) => {
         setDetail(d ?? null);
       })
@@ -187,47 +323,114 @@ const ChangedBody = ({
   };
 
   return (
-    <>
-      <div className="line">
-        changed
-        <span className="link" onClick={toggle}>
-          {keys.map((key) => nebula.metaType(key).title || key).join(', ')}
-        </span>
-      </div>
-      {open && detail && (
-        <DiffTable>
-          {Object.entries(detail.changes).map(([key, [oldValue, newValue]]) => (
-            <div key={key} style={{ display: 'contents' }}>
-              <span className="key">{nebula.metaType(key).title || key}</span>
-              <div>
-                <DiffValue>
-                  <span className="old">{formatValue(key, oldValue)}</span>
-                </DiffValue>
-                <DiffValue>{formatValue(key, newValue)}</DiffValue>
+    <Event
+      activity={activity}
+      icon="edit"
+      after={
+        open &&
+        detail && (
+          <DiffTable>
+            {Object.entries(detail.changes).map(([key, [oldValue, newValue]]) => (
+              <div key={key} style={{ display: 'contents' }}>
+                <span className="key">{nebula.metaType(key).title || key}</span>
+                <div>
+                  <DiffValue>
+                    <span className="old">{formatValue(key, oldValue)}</span>
+                  </DiffValue>
+                  <DiffValue>{formatValue(key, newValue)}</DiffValue>
+                </div>
               </div>
-            </div>
-          ))}
-        </DiffTable>
-      )}
-    </>
+            ))}
+          </DiffTable>
+        )
+      }
+    >
+      changed{' '}
+      <span className="link" onClick={toggle}>
+        {activity.summary.keys
+          .map((key) => nebula.metaType(key).title || key)
+          .join(', ')}
+      </span>
+    </Event>
   );
 };
 
-const statusLine = (
-  old: number | null | undefined,
-  status: number | null | undefined
-) => {
-  if (status === ObjectStatus.TRASHED) return 'moved the asset to trash';
-  if (status === ObjectStatus.ARCHIVED) return 'archived the asset';
-  if (old === ObjectStatus.TRASHED || old === ObjectStatus.ARCHIVED)
-    return 'restored the asset';
-  return <>changed status to {formatValue('status', status)}</>;
+const QcEvent = ({ activity }: { activity: Extract<Activity, { kind: 'qc' }> }) => {
+  const { old, new: state } = activity.summary;
+  const was = old !== null && old !== undefined ? ` (was ${QC_LABELS[old]})` : '';
+  if (state === null || state === undefined)
+    return (
+      <Event activity={activity} icon="flag">
+        cleared QC{was}
+      </Event>
+    );
+  return (
+    <Event activity={activity} icon="flag" iconColor={QC_COLORS[state]}>
+      set QC to <strong style={{ color: QC_COLORS[state] }}>{QC_LABELS[state]}</strong>
+      {was}
+    </Event>
+  );
 };
 
-const useCommentActions = (
-  activity: Extract<Activity, { kind: 'comment' }>,
-  assetId: number
-) => {
+const StatusEvent = ({
+  activity,
+}: {
+  activity: Extract<Activity, { kind: 'status' }>;
+}) => {
+  const { old, new: status } = activity.summary;
+  if (status === ObjectStatus.TRASHED)
+    return (
+      <Event activity={activity} icon="delete">
+        moved the asset to trash
+      </Event>
+    );
+  if (status === ObjectStatus.ARCHIVED)
+    return (
+      <Event activity={activity} icon="inventory_2">
+        archived the asset
+      </Event>
+    );
+  if (old === ObjectStatus.TRASHED || old === ObjectStatus.ARCHIVED)
+    return (
+      <Event activity={activity} icon="restore_from_trash">
+        restored the asset
+      </Event>
+    );
+  return (
+    <Event activity={activity} icon="sync_alt">
+      changed status to {formatValue('status', status)}
+    </Event>
+  );
+};
+
+//
+// Comments
+//
+
+const Avatar = ({ id_user }: { id_user: number | null }) => {
+  const [failed, setFailed] = useState(false);
+  if (id_user === null || failed) {
+    const initials = userName(id_user)
+      .split(/\s+/)
+      .map((part) => part[0])
+      .join('')
+      .slice(0, 2)
+      .toUpperCase();
+    return <span className="avatar initials">{initials}</span>;
+  }
+  return (
+    <img
+      className="avatar"
+      src={`/api/v2/users/${id_user}/avatar`}
+      alt=""
+      onError={() => {
+        setFailed(true);
+      }}
+    />
+  );
+};
+
+const useCommentActions = (activity: CommentActivity, assetId: number) => {
   const showDialog = useDialog();
   const isOwn = activity.id_user === nebula.user?.id;
 
@@ -256,151 +459,28 @@ const useCommentActions = (
     );
   };
 
-  return {
-    canEdit: isOwn && !activity.summary.deleted,
-    canDelete: (isOwn || !!nebula.user?.is_admin) && !activity.summary.deleted,
-    save,
-    remove,
-  };
+  return { isOwn, canDelete: isOwn || !!nebula.user?.is_admin, save, remove };
 };
 
-const CommentBody = ({
-  activity,
-  editing,
-  setEditing,
-  onSave,
-}: {
-  activity: Extract<Activity, { kind: 'comment' }>;
-  editing: string | null;
-  setEditing: (text: string | null) => void;
-  onSave: (text: string) => void;
-}) => {
-  const { text, edited, deleted } = activity.summary;
-
-  if (deleted) return <div className="muted">comment deleted</div>;
-
-  if (editing !== null) {
-    return (
-      <>
-        <TextArea
-          value={editing}
-          onChange={setEditing}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-              e.preventDefault();
-              onSave(editing);
-            }
-            if (e.key === 'Escape') setEditing(null);
-          }}
-          autoFocus
-          style={{ height: 56, minHeight: 56, minWidth: 0 }}
-        />
-        <div className="muted hint">Enter to save, Esc to cancel</div>
-      </>
-    );
-  }
-
-  return (
-    <div className="comment">
-      {text}
-      {edited && (
-        <span className="muted" title={formatTimeString(edited)}>
-          {' '}
-          (edited)
-        </span>
-      )}
-    </div>
-  );
-};
-
-const ActivityBody = ({
+const CommentBubble = ({
   activity,
   assetId,
 }: {
-  activity: Activity;
-  assetId: number;
-}) => {
-  switch (activity.kind) {
-    case 'created':
-      return <div className="line">created the asset</div>;
-    case 'changed':
-      return (
-        <ChangedBody
-          assetId={assetId}
-          activityId={activity.id}
-          keys={activity.summary.keys}
-        />
-      );
-    case 'qc':
-      return (
-        <div className="line">
-          {activity.summary.new === null || activity.summary.new === undefined ? (
-            'cleared QC'
-          ) : (
-            <>
-              set QC to {formatValue('qc/state', activity.summary.new)}
-              <strong>{QC_LABELS[activity.summary.new]}</strong>
-            </>
-          )}
-          {activity.summary.old !== null && activity.summary.old !== undefined && (
-            <span className="muted">(was {QC_LABELS[activity.summary.old]})</span>
-          )}
-        </div>
-      );
-    case 'status':
-      return (
-        <div className="line">
-          {statusLine(activity.summary.old, activity.summary.new)}
-        </div>
-      );
-    case 'uploaded':
-      return (
-        <div className="line">
-          uploaded a file ({formatSize(activity.summary.size)},{' '}
-          {activity.summary.extension})
-        </div>
-      );
-    case 'comment':
-      // rendered by CommentItem
-      return null;
-    default:
-      // a kind from a newer server
-      return <div className="line muted">{(activity as { kind: string }).kind}</div>;
-  }
-};
-
-const ItemHeader = ({
-  activity,
-  menu,
-}: {
-  activity: Activity;
-  menu?: React.ReactNode;
-}) => (
-  <div className="header">
-    <span className="author">{authorName(activity.id_user)}</span>
-    <span title={formatTimeString(activity.ctime)}>{timeAgo(activity.ctime)}</span>
-    {menu && <span className="menu">{menu}</span>}
-  </div>
-);
-
-const CommentItem = ({
-  activity,
-  assetId,
-}: {
-  activity: Extract<Activity, { kind: 'comment' }>;
+  activity: CommentActivity;
   assetId: number;
 }) => {
   const [editing, setEditing] = useState<string | null>(null);
-  const { canEdit, canDelete, save, remove } = useCommentActions(activity, assetId);
+  const { isOwn, canDelete, save, remove } = useCommentActions(activity, assetId);
+  const { text, edited } = activity.summary;
 
   const options = [
-    ...(canEdit
+    ...(isOwn
       ? [
           {
             label: 'Edit',
             icon: 'edit',
             onClick: () => {
-              setEditing(activity.summary.text ?? '');
+              setEditing(text ?? '');
             },
           },
         ]
@@ -409,12 +489,13 @@ const CommentItem = ({
   ];
 
   return (
-    <ItemWrapper>
-      <ItemHeader
-        activity={activity}
-        menu={
-          options.length > 0 &&
-          editing === null && (
+    <Bubble className={isOwn ? 'own' : undefined}>
+      <div className="header">
+        <Avatar id_user={activity.id_user} />
+        <span className="author">{userName(activity.id_user)}</span>
+        <Time timestamp={activity.ctime} />
+        {options.length > 0 && editing === null && (
+          <span className="menu">
             <Dropdown
               icon="more_vert"
               align="right"
@@ -422,22 +503,46 @@ const CommentItem = ({
               // upwards: the newest comments are at the bottom of the scrolled feed
               contentStyle={{ bottom: '100%' }}
             />
-          )
-        }
-      />
-      <CommentBody
-        activity={activity}
-        editing={editing}
-        setEditing={setEditing}
-        onSave={(text) => {
-          save(text, () => {
-            setEditing(null);
-          });
-        }}
-      />
-    </ItemWrapper>
+          </span>
+        )}
+      </div>
+      {editing === null ? (
+        <div className="text">
+          {text}
+          {edited && (
+            <span className="muted" title={formatTimeString(edited)}>
+              {' '}
+              (edited)
+            </span>
+          )}
+        </div>
+      ) : (
+        <>
+          <TextArea
+            value={editing}
+            onChange={setEditing}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                save(editing, () => {
+                  setEditing(null);
+                });
+              }
+              if (e.key === 'Escape') setEditing(null);
+            }}
+            autoFocus
+            style={{ width: '100%', height: 56, minHeight: 56, minWidth: 0 }}
+          />
+          <div className="muted hint">Enter to save, Esc to cancel</div>
+        </>
+      )}
+    </Bubble>
   );
 };
+
+//
+// One row of the feed
+//
 
 export const ActivityItem = ({
   activity,
@@ -445,12 +550,43 @@ export const ActivityItem = ({
 }: {
   activity: Activity;
   assetId: number;
-}) =>
-  activity.kind === 'comment' ? (
-    <CommentItem activity={activity} assetId={assetId} />
-  ) : (
-    <ItemWrapper>
-      <ItemHeader activity={activity} />
-      <ActivityBody activity={activity} assetId={assetId} />
-    </ItemWrapper>
-  );
+}) => {
+  switch (activity.kind) {
+    case 'comment':
+      // a deleted comment is a trace in the timeline, not a bubble
+      return activity.summary.deleted ? (
+        // id_user is the author, not who deleted it
+        <Event activity={activity} icon="speaker_notes_off">
+          commented <span className="deleted">(deleted)</span>
+        </Event>
+      ) : (
+        <CommentBubble activity={activity} assetId={assetId} />
+      );
+    case 'created':
+      return (
+        <Event activity={activity} icon="add_circle">
+          created the asset
+        </Event>
+      );
+    case 'changed':
+      return <ChangedEvent activity={activity} assetId={assetId} />;
+    case 'qc':
+      return <QcEvent activity={activity} />;
+    case 'status':
+      return <StatusEvent activity={activity} />;
+    case 'uploaded':
+      return (
+        <Event activity={activity} icon="upload_file">
+          uploaded a file · {formatSize(activity.summary.size)}{' '}
+          {activity.summary.extension}
+        </Event>
+      );
+    default:
+      // a kind from a newer server
+      return (
+        <Event activity={activity} icon="help">
+          {(activity as { kind: string }).kind}
+        </Event>
+      );
+  }
+};
