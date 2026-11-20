@@ -47,7 +47,15 @@ export interface ServiceStateMessage extends WebSocketMessageBase {
   autostart: boolean;
 }
 
+// a row of an asset's activity feed was added or changed (reload it)
+export interface ActivityMessage extends WebSocketMessageBase {
+  id_asset: number;
+  id: number;
+  kind: string;
+}
+
 export interface WebSocketTopics {
+  activity: ActivityMessage;
   objects_changed: ObjectsChangedMessage;
   playout_status: PlayoutStatusMessage;
   job_progress: WebSocketJobProgressMessage;

@@ -5,13 +5,14 @@ import styled from 'styled-components';
 import type { AuxChanges } from '../assetApi';
 import { usePlayer } from '../playerContext';
 
+import { SidePanelActivity } from './SidePanelActivity';
 import { SidePanelMain } from './SidePanelMain';
 import { SidePanelSubclips } from './SidePanelSubclips';
 import { SidePanelTranscription } from './SidePanelTranscription.tsx';
 import type { AssetData } from './types.ts';
 
 export type EditorMode = 'metadata' | 'preview';
-type SidePanelTab = 'main' | 'subclips' | 'transcription';
+type SidePanelTab = 'main' | 'subclips' | 'transcription' | 'activity';
 
 interface TabOption {
   value: SidePanelTab;
@@ -39,6 +40,12 @@ const TABS: TabOption[] = [
     icon: 'text_ad',
     description: 'View and edit transcriptions',
     needsPlayer: true,
+  },
+  {
+    value: 'activity',
+    icon: 'forum',
+    description: 'Activity: changes and comments',
+    needsPlayer: false,
   },
 ];
 
@@ -80,7 +87,12 @@ export const SidePanel: React.FC<SidePanelProps> = ({
   );
   const frameRate = assetData['video/fps_f'] || 25;
 
-  const tabs = TABS.filter((tab) => editorMode === 'preview' || !tab.needsPlayer);
+  const tabs = TABS.filter(
+    (tab) =>
+      (editorMode === 'preview' || !tab.needsPlayer) &&
+      // a new asset has no activity yet
+      (tab.value !== 'activity' || assetData.id)
+  );
   if (!tabs.length) return null;
 
   const { open, tab: storedTab } = state[editorMode] ?? DEFAULT_STATE[editorMode];
@@ -167,6 +179,10 @@ export const SidePanel: React.FC<SidePanelProps> = ({
           setAux={setAux}
           position={position}
         />
+      )}
+
+      {tab === 'activity' && assetData.id && (
+        <SidePanelActivity assetId={assetData.id as number} />
       )}
     </div>
   );

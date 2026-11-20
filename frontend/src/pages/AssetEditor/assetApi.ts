@@ -1,5 +1,6 @@
 import { isEmpty } from 'lodash';
 
+import type { ActivityPage, ChangedActivity } from '@/client';
 import nebula from '@/nebula';
 
 // Asset metadata as the editor holds it: meta keys, plus the computed
@@ -45,4 +46,59 @@ export const saveAsset = async (
     });
   }
   return assetId;
+};
+
+// Activity feed (spec 010)
+
+export type Activity = ActivityPage['items'][number];
+
+export const fetchActivities = async (
+  assetId: number,
+  kind: string | undefined,
+  cursor: string | undefined
+): Promise<ActivityPage> => {
+  const response = await nebula.assetsActivitiesList({
+    path: { asset_id: assetId },
+    query: { kind, cursor, limit: 50 },
+    throwOnError: true,
+  });
+  return response.data;
+};
+
+export const fetchActivityDetail = async (
+  assetId: number,
+  activityId: number
+): Promise<ChangedActivity['detail']> => {
+  const response = await nebula.assetsActivitiesGet({
+    path: { asset_id: assetId, activity_id: activityId },
+    throwOnError: true,
+  });
+  return response.data.kind === 'changed' ? response.data.detail : null;
+};
+
+export const addComment = async (assetId: number, text: string) => {
+  await nebula.assetsActivitiesComment({
+    path: { asset_id: assetId },
+    body: { text },
+    throwOnError: true,
+  });
+};
+
+export const editComment = async (
+  assetId: number,
+  activityId: number,
+  text: string
+) => {
+  await nebula.assetsActivitiesEdit({
+    path: { asset_id: assetId, activity_id: activityId },
+    body: { text },
+    throwOnError: true,
+  });
+};
+
+export const deleteComment = async (assetId: number, activityId: number) => {
+  await nebula.assetsActivitiesDelete({
+    path: { asset_id: assetId, activity_id: activityId },
+    throwOnError: true,
+  });
 };

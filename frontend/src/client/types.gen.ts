@@ -43,6 +43,39 @@ export type ActionItemModel = {
 };
 
 /**
+ * ActivityPage
+ */
+export type ActivityPage = {
+  /**
+   * Items
+   */
+  items: Array<
+    | CreatedActivity
+    | ChangedActivity
+    | QcActivity
+    | StatusActivity
+    | UploadedActivity
+    | CommentActivity
+  >;
+  /**
+   * Next Cursor
+   *
+   * Pass as `cursor` to get the next page
+   */
+  next_cursor?: string | null;
+  /**
+   * Has More
+   */
+  has_more?: boolean;
+  /**
+   * Total
+   *
+   * Number of matching objects, if requested
+   */
+  total?: number | null;
+};
+
+/**
  * AgentInfo
  */
 export type AgentInfo = {
@@ -443,6 +476,61 @@ export type BrowseAssetsResponse = {
 };
 
 /**
+ * ChangedActivity
+ */
+export type ChangedActivity = {
+  /**
+   * Id
+   */
+  id: number;
+  /**
+   * Id User
+   *
+   * Author, null: system
+   */
+  id_user: number | null;
+  /**
+   * Ctime
+   */
+  ctime: number;
+  /**
+   * Kind
+   */
+  kind: 'changed';
+  summary: ChangedSummary;
+  /**
+   * Only when reading a single row
+   */
+  detail?: ChangedDetail | null;
+};
+
+/**
+ * ChangedDetail
+ */
+export type ChangedDetail = {
+  /**
+   * Changes
+   *
+   * Old and new value of each changed key (null: missing)
+   */
+  changes: {
+    [key: string]: [unknown, unknown];
+  };
+};
+
+/**
+ * ChangedSummary
+ */
+export type ChangedSummary = {
+  /**
+   * Keys
+   *
+   * Changed metadata keys
+   */
+  keys: Array<string>;
+};
+
+/**
  * ClientCSItemModel
  */
 export type ClientCsItemModel = {
@@ -595,6 +683,63 @@ export type ClientSettingsModel = {
 };
 
 /**
+ * CommentActivity
+ */
+export type CommentActivity = {
+  /**
+   * Id
+   */
+  id: number;
+  /**
+   * Id User
+   *
+   * Author, null: system
+   */
+  id_user: number | null;
+  /**
+   * Ctime
+   */
+  ctime: number;
+  /**
+   * Kind
+   */
+  kind: 'comment';
+  summary: CommentSummary;
+};
+
+/**
+ * CommentPayload
+ */
+export type CommentPayload = {
+  /**
+   * Text
+   */
+  text: string;
+};
+
+/**
+ * CommentSummary
+ */
+export type CommentSummary = {
+  /**
+   * Text
+   */
+  text?: string | null;
+  /**
+   * Edited
+   *
+   * Time of the last edit
+   */
+  edited?: number | null;
+  /**
+   * Deleted
+   *
+   * Time of deletion
+   */
+  deleted?: number | null;
+};
+
+/**
  * ConditionModel
  */
 export type ConditionModel = {
@@ -685,6 +830,38 @@ export const ContentType = {
  * ContentType
  */
 export type ContentType = (typeof ContentType)[keyof typeof ContentType];
+
+/**
+ * CreatedActivity
+ */
+export type CreatedActivity = {
+  /**
+   * Id
+   */
+  id: number;
+  /**
+   * Id User
+   *
+   * Author, null: system
+   */
+  id_user: number | null;
+  /**
+   * Ctime
+   */
+  ctime: number;
+  /**
+   * Kind
+   */
+  kind: 'created';
+  summary: CreatedSummary;
+};
+
+/**
+ * CreatedSummary
+ */
+export type CreatedSummary = {
+  [key: string]: unknown;
+};
 
 /**
  * DeleteObjectsRequest
@@ -1813,6 +1990,31 @@ export type ProxyInfo = {
 };
 
 /**
+ * QcActivity
+ */
+export type QcActivity = {
+  /**
+   * Id
+   */
+  id: number;
+  /**
+   * Id User
+   *
+   * Author, null: system
+   */
+  id_user: number | null;
+  /**
+   * Ctime
+   */
+  ctime: number;
+  /**
+   * Kind
+   */
+  kind: 'qc';
+  summary: StateSummary;
+};
+
+/**
  * QueryRequest
  *
  * Query for a list of objects (QUERY /{resource}, POST /{resource}/query).
@@ -2386,6 +2588,45 @@ export type SolveRequest = {
 };
 
 /**
+ * StateSummary
+ */
+export type StateSummary = {
+  /**
+   * Old
+   */
+  old?: number | null;
+  /**
+   * New
+   */
+  new?: number | null;
+};
+
+/**
+ * StatusActivity
+ */
+export type StatusActivity = {
+  /**
+   * Id
+   */
+  id: number;
+  /**
+   * Id User
+   *
+   * Author, null: system
+   */
+  id_user: number | null;
+  /**
+   * Ctime
+   */
+  ctime: number;
+  /**
+   * Kind
+   */
+  kind: 'status';
+  summary: StateSummary;
+};
+
+/**
  * StorageStat
  */
 export type StorageStat = {
@@ -2437,6 +2678,47 @@ export type TokenExchangeRequest = {
    * Access token to be exchanged for a new one
    */
   access_token: string;
+};
+
+/**
+ * UploadedActivity
+ */
+export type UploadedActivity = {
+  /**
+   * Id
+   */
+  id: number;
+  /**
+   * Id User
+   *
+   * Author, null: system
+   */
+  id_user: number | null;
+  /**
+   * Ctime
+   */
+  ctime: number;
+  /**
+   * Kind
+   */
+  kind: 'uploaded';
+  summary: UploadedSummary;
+};
+
+/**
+ * UploadedSummary
+ */
+export type UploadedSummary = {
+  /**
+   * Size
+   *
+   * File size in bytes
+   */
+  size: number;
+  /**
+   * Extension
+   */
+  extension: string;
 };
 
 /**
@@ -4010,6 +4292,271 @@ export type AssetsAuxPutResponses = {
 };
 
 export type AssetsAuxPutResponse = AssetsAuxPutResponses[keyof AssetsAuxPutResponses];
+
+export type AssetsActivitiesListData = {
+  body?: never;
+  path: {
+    /**
+     * Asset Id
+     *
+     * Asset ID
+     */
+    asset_id: number;
+  };
+  query?: {
+    /**
+     * Kind
+     *
+     * Comma-separated kinds (created, changed, qc, status, uploaded, comment)
+     */
+    kind?: string | null;
+    /**
+     * Limit
+     */
+    limit?: number;
+    /**
+     * Cursor
+     *
+     * Value of `next_cursor` from the previous page
+     */
+    cursor?: string | null;
+  };
+  url: '/api/v2/assets/{asset_id}/activities';
+};
+
+export type AssetsActivitiesListErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type AssetsActivitiesListError =
+  AssetsActivitiesListErrors[keyof AssetsActivitiesListErrors];
+
+export type AssetsActivitiesListResponses = {
+  /**
+   * Successful Response
+   */
+  200: ActivityPage;
+};
+
+export type AssetsActivitiesListResponse =
+  AssetsActivitiesListResponses[keyof AssetsActivitiesListResponses];
+
+export type AssetsActivitiesCommentData = {
+  body: CommentPayload;
+  path: {
+    /**
+     * Asset Id
+     *
+     * Asset ID
+     */
+    asset_id: number;
+  };
+  query?: never;
+  url: '/api/v2/assets/{asset_id}/activities';
+};
+
+export type AssetsActivitiesCommentErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type AssetsActivitiesCommentError =
+  AssetsActivitiesCommentErrors[keyof AssetsActivitiesCommentErrors];
+
+export type AssetsActivitiesCommentResponses = {
+  /**
+   * Response Assets Activities Comment
+   *
+   * Successful Response
+   */
+  201:
+    | ({
+        kind: 'created';
+      } & CreatedActivity)
+    | ({
+        kind: 'changed';
+      } & ChangedActivity)
+    | ({
+        kind: 'qc';
+      } & QcActivity)
+    | ({
+        kind: 'status';
+      } & StatusActivity)
+    | ({
+        kind: 'uploaded';
+      } & UploadedActivity)
+    | ({
+        kind: 'comment';
+      } & CommentActivity);
+};
+
+export type AssetsActivitiesCommentResponse =
+  AssetsActivitiesCommentResponses[keyof AssetsActivitiesCommentResponses];
+
+export type AssetsActivitiesDeleteData = {
+  body?: never;
+  path: {
+    /**
+     * Asset Id
+     *
+     * Asset ID
+     */
+    asset_id: number;
+    /**
+     * Activity Id
+     *
+     * Activity ID
+     */
+    activity_id: number;
+  };
+  query?: never;
+  url: '/api/v2/assets/{asset_id}/activities/{activity_id}';
+};
+
+export type AssetsActivitiesDeleteErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type AssetsActivitiesDeleteError =
+  AssetsActivitiesDeleteErrors[keyof AssetsActivitiesDeleteErrors];
+
+export type AssetsActivitiesDeleteResponses = {
+  /**
+   * Successful Response
+   */
+  204: void;
+};
+
+export type AssetsActivitiesDeleteResponse =
+  AssetsActivitiesDeleteResponses[keyof AssetsActivitiesDeleteResponses];
+
+export type AssetsActivitiesGetData = {
+  body?: never;
+  path: {
+    /**
+     * Asset Id
+     *
+     * Asset ID
+     */
+    asset_id: number;
+    /**
+     * Activity Id
+     *
+     * Activity ID
+     */
+    activity_id: number;
+  };
+  query?: never;
+  url: '/api/v2/assets/{asset_id}/activities/{activity_id}';
+};
+
+export type AssetsActivitiesGetErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type AssetsActivitiesGetError =
+  AssetsActivitiesGetErrors[keyof AssetsActivitiesGetErrors];
+
+export type AssetsActivitiesGetResponses = {
+  /**
+   * Response Assets Activities Get
+   *
+   * Successful Response
+   */
+  200:
+    | ({
+        kind: 'created';
+      } & CreatedActivity)
+    | ({
+        kind: 'changed';
+      } & ChangedActivity)
+    | ({
+        kind: 'qc';
+      } & QcActivity)
+    | ({
+        kind: 'status';
+      } & StatusActivity)
+    | ({
+        kind: 'uploaded';
+      } & UploadedActivity)
+    | ({
+        kind: 'comment';
+      } & CommentActivity);
+};
+
+export type AssetsActivitiesGetResponse =
+  AssetsActivitiesGetResponses[keyof AssetsActivitiesGetResponses];
+
+export type AssetsActivitiesEditData = {
+  body: CommentPayload;
+  path: {
+    /**
+     * Asset Id
+     *
+     * Asset ID
+     */
+    asset_id: number;
+    /**
+     * Activity Id
+     *
+     * Activity ID
+     */
+    activity_id: number;
+  };
+  query?: never;
+  url: '/api/v2/assets/{asset_id}/activities/{activity_id}';
+};
+
+export type AssetsActivitiesEditErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type AssetsActivitiesEditError =
+  AssetsActivitiesEditErrors[keyof AssetsActivitiesEditErrors];
+
+export type AssetsActivitiesEditResponses = {
+  /**
+   * Response Assets Activities Edit
+   *
+   * Successful Response
+   */
+  200:
+    | ({
+        kind: 'created';
+      } & CreatedActivity)
+    | ({
+        kind: 'changed';
+      } & ChangedActivity)
+    | ({
+        kind: 'qc';
+      } & QcActivity)
+    | ({
+        kind: 'status';
+      } & StatusActivity)
+    | ({
+        kind: 'uploaded';
+      } & UploadedActivity)
+    | ({
+        kind: 'comment';
+      } & CommentActivity);
+};
+
+export type AssetsActivitiesEditResponse =
+  AssetsActivitiesEditResponses[keyof AssetsActivitiesEditResponses];
 
 export type AssetsThumbnailGetData = {
   body?: never;
