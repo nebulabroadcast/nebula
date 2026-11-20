@@ -2,6 +2,7 @@ import type { ContextMenuOption } from '@components/ContextMenu';
 import type { TableColumn } from '@components/table/types';
 import {
   formatRundownDifference,
+  getColumnClassName,
   getColumnWidth,
   getFormatter,
   formatTitleWithThumbnail,
@@ -102,6 +103,7 @@ const getRundownColumns = (fps: number): TableColumn[] => {
       title: nebula.metaType(key).header,
       name: key,
       width: getColumnWidth(key),
+      className: getColumnClassName(key),
       formatter:
         key === 'rundown_difference'
           ? formatRundownDifference(fps)

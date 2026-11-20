@@ -1,17 +1,13 @@
 import clsx from 'clsx';
-import type { JSX } from 'react/jsx-runtime';
 
 const QC_STATES = ['new', 'auto_rejected', 'auto_accepted', 'rejected', 'accepted'];
 
-const formatObjectQcState = (
-  rowData: Record<string, any>,
-  key: string
-): JSX.Element => {
+const formatObjectQcState = (rowData: Record<string, any>, key: string) => {
   const qcState = QC_STATES[rowData[key] as number];
   return (
-    <td className={clsx('qc-state', qcState)}>
+    <span className={clsx('qc-state', qcState)}>
       <div />
-    </td>
+    </span>
   );
 };
 

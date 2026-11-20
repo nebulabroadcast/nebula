@@ -40,11 +40,7 @@ const RELOAD_DEBOUNCE_MS = 500;
 const formatTitle = (rowData: Record<string, any>, key: string) => {
   const row = rowData as JobListItem;
   const val = row[key as keyof JobListItem] as React.ReactNode;
-  return (
-    <td>
-      <NavLink to={`/mam/editor?asset=${row.id_asset}`}>{val}</NavLink>
-    </td>
-  );
+  return <NavLink to={`/mam/editor?asset=${row.id_asset}`}>{val}</NavLink>;
 };
 
 export interface JobsTableProps {
@@ -114,31 +110,27 @@ export const JobsTable: React.FC<JobsTableProps> = ({
     const row = rowData as JobListItem;
     if (ABORTABLE_STATES.includes(row.status)) {
       return (
-        <td className="action">
-          <Button
-            onClick={() => {
-              abortJob(row.id);
-            }}
-            label="Abort"
-          />
-        </td>
+        <Button
+          onClick={() => {
+            abortJob(row.id);
+          }}
+          label="Abort"
+        />
       );
     } else if (RESTARTABLE_STATES.includes(row.status)) {
       return (
-        <td className="action">
-          <Button
-            onClick={() => {
-              restartJob(row.id);
-            }}
-            disabled={
-              row.service_type ? NOT_RESTARTABLE.includes(row.service_type) : false
-            }
-            label="Restart"
-          />
-        </td>
+        <Button
+          onClick={() => {
+            restartJob(row.id);
+          }}
+          disabled={
+            row.service_type ? NOT_RESTARTABLE.includes(row.service_type) : false
+          }
+          label="Restart"
+        />
       );
     } else {
-      return <td className="action">-</td>;
+      return '-';
     }
   };
 
@@ -163,37 +155,31 @@ export const JobsTable: React.FC<JobsTableProps> = ({
       { label: 'Highest', color: 'var(--color-red)' },
     ];
 
-    if (!enabled) return <td>&nbsp;</td>;
+    if (!enabled) return null;
 
     const currentPriority = (row[key as keyof JobListItem] as number) || 0;
 
     return (
-      <td
+      <span
         onClick={() => {
           setPriority((currentPriority + 1) % 6);
         }}
+        style={{
+          display: 'block',
+          color: PRIORITIES[currentPriority]?.color || 'inherit',
+          fontSize: '0.8rem',
+          userSelect: 'none',
+        }}
       >
-        <span
-          style={{
-            color: PRIORITIES[currentPriority]?.color || 'inherit',
-            fontSize: '0.8rem',
-            userSelect: 'none',
-          }}
-        >
-          {PRIORITIES[currentPriority]?.label || ''}
-        </span>
-      </td>
+        {PRIORITIES[currentPriority]?.label || ''}
+      </span>
     );
   };
 
   const formatMessage = (rowData: Record<string, any>, key: string) => {
     const row = rowData as JobListItem;
     const msg = (row[key as keyof JobListItem] as string) || '';
-    return (
-      <td className="job-message" title={msg}>
-        {msg}
-      </td>
-    );
+    return <span title={msg}>{msg}</span>;
   };
 
   const allColumns = useMemo(
@@ -240,7 +226,7 @@ export const JobsTable: React.FC<JobsTableProps> = ({
       {
         name: 'controls',
         title: 'Action',
-        className: 'job-controls',
+        className: 'action',
         formatter: formatAction,
         width: 100,
       },

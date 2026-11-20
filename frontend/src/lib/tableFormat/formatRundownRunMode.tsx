@@ -12,7 +12,7 @@ const RUN_MODES: Record<RunMode, string> = {
 
 const formatRundownRunMode = (rowData: TableRowData, key: string) => {
   const runMode = RUN_MODES[(rowData[key] as RunMode) || RunMode.RUN_AUTO];
-  return <td className={'run-mode'}>{runMode}</td>;
+  return <span className="run-mode">{runMode}</span>;
 };
 
 export default formatRundownRunMode;

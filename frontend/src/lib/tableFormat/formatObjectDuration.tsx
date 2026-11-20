@@ -2,21 +2,9 @@ import { TableRowData } from '@components/table/types';
 import { Timecode } from '@wfoxall/timeframe';
 
 const formatObjectDuration = (rowData: TableRowData, key: string) => {
-  if (rowData.run_mode === 4) {
-    return (
-      <td>
-        <hr />
-      </td>
-    );
-  }
-
-  if (rowData.item_role === 'lead_in' || rowData.item_role === 'lead_out') {
-    return (
-      <td>
-        <hr />
-      </td>
-    );
-  }
+  if (rowData.run_mode === 4) return <hr />;
+  if (rowData.item_role === 'lead_in' || rowData.item_role === 'lead_out')
+    return <hr />;
 
   const fps = (rowData['video/fps_f'] as number) || 25;
   let duration = (rowData[key] as number) || 0;
@@ -29,10 +17,10 @@ const formatObjectDuration = (rowData: TableRowData, key: string) => {
     trimmed &&
     `Original duration ${new Timecode(originalDuration * fps, fps).toString()}`;
   return (
-    <td title={title || ''}>
+    <span title={title || ''}>
       {timecode.toString().substring(0, 11)}
       {trimmed && '*'}
-    </td>
+    </span>
   );
 };
 
