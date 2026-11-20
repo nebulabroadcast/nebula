@@ -28,6 +28,10 @@ class CommentPayload(BaseModel):
     ]
 
 
+class ActivityPage(QueryResponse[Activity]):
+    pass
+
+
 async def viewable(asset_id: int) -> None:
     asset = await nebula.Asset.load(asset_id)
     asset.ensure_can_view()
@@ -53,13 +57,13 @@ async def list_activities(
     cursor: Annotated[
         str | None, Query(description="Value of `next_cursor` from the previous page")
     ] = None,
-) -> QueryResponse[Activity]:
+) -> ActivityPage:
     """Newest first. Rows have no `detail`; read a single row for it."""
     await viewable(asset_id)
     rows, next_cursor = await activity.list_activity(
         asset_id, kinds=split_list(kind), limit=limit, cursor=cursor
     )
-    return QueryResponse[Activity](
+    return ActivityPage(
         items=[as_activity(row) for row in rows],
         next_cursor=next_cursor,
         has_more=next_cursor is not None,
