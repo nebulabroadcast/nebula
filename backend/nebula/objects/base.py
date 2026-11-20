@@ -1,3 +1,4 @@
+import copy
 import time
 from typing import Any, Self, TypeVar, cast
 
@@ -49,6 +50,16 @@ def create_ft_index(meta: dict[str, Any]) -> dict[str, float]:  # noqa: C901, PL
     return ft
 
 
+def snapshot(meta: dict[str, Any]) -> dict[str, Any]:
+    """A copy of meta that later changes of nested values don't reach."""
+    # deepcopy only the nested values: most are scalars, and objects are
+    # loaded by the thousand in listings
+    return {
+        key: copy.deepcopy(value) if isinstance(value, dict | list) else value
+        for key, value in meta.items()
+    }
+
+
 class BaseObject:
     object_type: str
     meta: dict[str, Any] = {}
@@ -73,6 +84,9 @@ class BaseObject:
         if meta is None:
             meta = {}
         self.meta = self.defaults | meta
+        # Stored values as this copy loaded them (empty for a new object),
+        # see changed_keys()
+        self._stored: dict[str, Any] = {}
 
     def __repr__(self) -> str:
         return f"<{self.__str__().capitalize()}>"
@@ -143,6 +157,25 @@ class BaseObject:
         for key, value in meta.items():
             self[key] = value
 
+    def changed_keys(self) -> dict[str, tuple[Any, Any]]:
+        """Keys whose value differs from the stored one: {key: (old, new)}.
+
+        Compared with what this copy loaded, so every way of changing
+        `meta` counts. None stands for a missing key. A new object has
+        every key changed.
+        """
+        changes = {}
+        for key in self.meta.keys() | self._stored.keys():
+            old, new = self._stored.get(key), self.meta.get(key)
+            if old != new:
+                changes[key] = (old, new)
+        return changes
+
+    def mark_stored(self) -> Self:
+        """Take the current values as the stored ones (after a load or save)."""
+        self._stored = snapshot(self.meta)
+        return self
+
     #
     # Factory methods
     #
@@ -163,7 +196,7 @@ class BaseObject:
             raise NotFoundException(
                 f"{cls.object_type.capitalize()} ID {object_id} not found"
             )
-        return cls(meta=res[0]["meta"], connection=connection)
+        return cls(meta=res[0]["meta"], connection=connection).mark_stored()
 
     @classmethod
     def from_row(
@@ -179,7 +212,7 @@ class BaseObject:
         Do not use with untrusted data.
         """
         _ = kwargs  # legacy `username` argument, see BaseObject.__init__
-        return cls(meta=dict(row["meta"]), connection=connection)
+        return cls(meta=dict(row["meta"]), connection=connection).mark_stored()
 
     @classmethod
     def from_meta(
@@ -194,7 +227,7 @@ class BaseObject:
         Do not use with untrusted data.
         """
         _ = kwargs  # legacy `username` argument, see BaseObject.__init__
-        return cls(meta=meta, connection=connection)
+        return cls(meta=meta, connection=connection).mark_stored()
 
     @classmethod
     def from_untrusted(
@@ -276,6 +309,7 @@ class BaseObject:
             ft_payloads,
         )
         await self._update()
+        self.mark_stored()
 
     async def _insert(self) -> None:
         self.meta["ctime"] = self.meta["mtime"] = time.time()
