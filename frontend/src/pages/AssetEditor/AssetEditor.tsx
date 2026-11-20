@@ -18,8 +18,9 @@ import styled from 'styled-components';
 
 import { fetchAsset, saveAsset, type AuxChanges } from './assetApi';
 import AssetMainProps from './AssetMainProps';
-import { AssetPreview } from './AssetPreview';
+import { AssetPreview, SidePanel } from './AssetPreview';
 import AssetEditorNav from './EditorNav';
+import { PlayerProvider } from './PlayerProvider';
 import type { EnabledActions } from './types';
 
 import nebula from '@/nebula';
@@ -545,12 +546,7 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
       case 'preview':
         return (
           <div className="grow row">
-            <AssetPreview
-              assetData={assetData}
-              setAssetData={setAssetData}
-              auxChanges={auxChanges}
-              setAux={setAux}
-            />
+            <AssetPreview assetData={assetData} />
           </div>
         );
 
@@ -590,39 +586,53 @@ const AssetEditor: React.FC<AssetEditorProps> = () => {
   };
 
   return (
-    <div className="grow column">
-      <AssetEditorNav
-        assetData={assetData}
-        onNewAsset={onNewAsset}
-        onCloneAsset={onCloneAsset}
-        onRevert={onRevert}
-        onSave={onSave}
-        setMeta={setMeta}
-        editorMode={editorMode}
-        setEditorMode={setEditorMode}
-        enabledActions={enabledActions as EnabledActions}
-        showJobs={showJobs}
-        setShowJobs={setShowJobs}
-      />
-      {Object.keys(assetData || {}).length > 0 &&
-        (assetData?.id && showJobs ? (
-          <JobsSplitterContainer>
-            <Splitter
-              direction={SplitDirection.Vertical}
-              onResizeStarted={onJobsResizeStart}
-              onResizeFinished={onJobsResizeEnd}
-              initialSizes={jobsSplitterSizes || [75, 25]}
-            >
-              {mainComponent()}
-              <Section className="grow">
-                <JobsTable assetId={assetData.id} className="contained" />
-              </Section>
-            </Splitter>
-          </JobsSplitterContainer>
-        ) : (
-          mainComponent()
-        ))}
-    </div>
+    <PlayerProvider>
+      <div className="grow column">
+        <AssetEditorNav
+          assetData={assetData}
+          onNewAsset={onNewAsset}
+          onCloneAsset={onCloneAsset}
+          onRevert={onRevert}
+          onSave={onSave}
+          setMeta={setMeta}
+          editorMode={editorMode}
+          setEditorMode={setEditorMode}
+          enabledActions={enabledActions as EnabledActions}
+          showJobs={showJobs}
+          setShowJobs={setShowJobs}
+        />
+        {Object.keys(assetData || {}).length > 0 && (
+          <div className="grow row" style={{ minHeight: 0 }}>
+            <div className="grow column" style={{ minWidth: 0 }}>
+              {assetData?.id && showJobs ? (
+                <JobsSplitterContainer>
+                  <Splitter
+                    direction={SplitDirection.Vertical}
+                    onResizeStarted={onJobsResizeStart}
+                    onResizeFinished={onJobsResizeEnd}
+                    initialSizes={jobsSplitterSizes || [75, 25]}
+                  >
+                    {mainComponent()}
+                    <Section className="grow">
+                      <JobsTable assetId={assetData.id} className="contained" />
+                    </Section>
+                  </Splitter>
+                </JobsSplitterContainer>
+              ) : (
+                mainComponent()
+              )}
+            </div>
+            <SidePanel
+              editorMode={editorMode}
+              assetData={assetData}
+              setAssetData={setAssetData}
+              auxChanges={auxChanges}
+              setAux={setAux}
+            />
+          </div>
+        )}
+      </div>
+    </PlayerProvider>
   );
 };
 

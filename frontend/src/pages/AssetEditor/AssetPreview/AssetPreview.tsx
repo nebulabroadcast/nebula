@@ -1,12 +1,10 @@
 import VideoPlayer from '@containers/VideoPlayer';
-import { VideoPlayerRef } from '@containers/VideoPlayer/types';
 import type { WebSocketHandler } from '@features/Websocket';
 import { useWebSocket } from '@features/Websocket';
-import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 
-import type { AuxChanges } from '../assetApi';
+import { usePlayer } from '../playerContext';
 
-import { SidePanel } from './SidePanel';
 import type { AssetData, ProxyInfo } from './types';
 
 import { JobState } from '@/client';
@@ -14,26 +12,11 @@ import nebula from '@/nebula';
 
 interface PreviewProps {
   assetData: AssetData;
-  setAssetData: React.Dispatch<React.SetStateAction<AssetData>>;
-  auxChanges: AuxChanges;
-  setAux: (key: string, data: unknown) => void;
 }
 
-export const AssetPreview: React.FC<PreviewProps> = ({
-  assetData,
-  setAssetData,
-  auxChanges,
-  setAux,
-}) => {
-  const videoPlayerRef = useRef<VideoPlayerRef>(null);
+export const AssetPreview: React.FC<PreviewProps> = ({ assetData }) => {
+  const { videoPlayerRef, setPosition, selection, setSelection } = usePlayer();
 
-  // Current active selection
-  const [selection, setSelection] = useState<{
-    mark_in: number | null;
-    mark_out: number | null;
-  }>({ mark_in: null, mark_out: null });
-
-  const [position, setPosition] = useState(0);
   const [proxyInfo, setProxyInfo] = useState<ProxyInfo | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -44,7 +27,7 @@ export const AssetPreview: React.FC<PreviewProps> = ({
       mark_in: assetData.mark_in ?? null,
       mark_out: assetData.mark_out ?? null,
     });
-  }, [assetData?.id]); //eslint-disable-line
+  }, [assetData?.id, setSelection]); //eslint-disable-line
 
   const setMarkIn = (mark_in: number | null) => {
     setSelection((s) => {
@@ -163,17 +146,6 @@ export const AssetPreview: React.FC<PreviewProps> = ({
           warning={warning}
         />
       </div>
-
-      <SidePanel
-        assetData={assetData}
-        setAssetData={setAssetData}
-        auxChanges={auxChanges}
-        setAux={setAux}
-        videoPlayerRef={videoPlayerRef}
-        position={position}
-        selection={selection}
-        setSelection={setSelection}
-      />
     </div>
   );
 };
