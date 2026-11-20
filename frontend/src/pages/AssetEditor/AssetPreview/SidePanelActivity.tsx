@@ -1,4 +1,4 @@
-import { Button, Loader, RadioButton, TextArea } from '@components';
+import { Loader, Navbar, RadioButton, Section, TextArea } from '@components';
 import { useWebSocket, type WebSocketHandler } from '@features/Websocket';
 import { getErrorDetail } from '@lib/utils';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
@@ -21,41 +21,17 @@ const FILTERS: Array<{ value: Filter; title: string; kind?: string }> = [
 // how close to the bottom (px) still counts as "at the bottom"
 const STICK_DISTANCE = 30;
 
-const Wrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-  min-height: 0;
-
-  .filter {
-    padding: 6px 10px;
-    border-bottom: 1px solid var(--color-surface-03);
-  }
-
-  .feed {
-    flex-grow: 1;
-    overflow-y: auto;
-  }
+const Feed = styled.div`
+  overflow-y: auto;
 
   .empty {
     padding: 16px 10px;
     color: var(--color-text-dim);
   }
+`;
 
-  .composer {
-    display: flex;
-    gap: 4px;
-    align-items: flex-end;
-    padding: 8px 10px;
-    border-top: 1px solid var(--color-surface-03);
-
-    textarea {
-      flex-grow: 1;
-      height: 56px;
-      min-height: 56px;
-      resize: vertical;
-    }
-  }
+const Composer = styled(Section)`
+  padding: 6px;
 `;
 
 // Newest first, as the API lists them; rows of `page` replace older copies
@@ -157,8 +133,8 @@ export const SidePanelActivity = ({ assetId }: { assetId: number }) => {
   };
 
   return (
-    <Wrapper>
-      <div className="filter">
+    <>
+      <Navbar>
         <RadioButton
           options={FILTERS.map((f) => ({ value: f.value, title: f.title }))}
           value={filter}
@@ -166,19 +142,22 @@ export const SidePanelActivity = ({ assetId }: { assetId: number }) => {
             setFilter(value as Filter);
           }}
         />
-      </div>
-      <div className="feed" ref={feedRef} onScroll={onScroll}>
-        {loading && !items.length && <Loader />}
-        {!loading && !items.length && <div className="empty">No activity yet</div>}
-        {items.toReversed().map((activity) => (
-          <ActivityItem key={activity.id} activity={activity} assetId={assetId} />
-        ))}
-      </div>
-      <div className="composer">
+      </Navbar>
+      <Section className="grow" style={{ padding: 0 }}>
+        <Feed className="contained feed" ref={feedRef} onScroll={onScroll}>
+          {loading && !items.length && <Loader />}
+          {!loading && !items.length && <div className="empty">No activity yet</div>}
+          {items.toReversed().map((activity) => (
+            <ActivityItem key={activity.id} activity={activity} assetId={assetId} />
+          ))}
+        </Feed>
+      </Section>
+      <Composer>
         <TextArea
           value={text}
           onChange={setText}
           placeholder="Write a comment... (Enter to send, Shift+Enter for a new line)"
+          style={{ flexGrow: 1, height: 56, minHeight: 56, minWidth: 0 }}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
               e.preventDefault();
@@ -186,13 +165,7 @@ export const SidePanelActivity = ({ assetId }: { assetId: number }) => {
             }
           }}
         />
-        <Button
-          icon="send"
-          tooltip="Send comment"
-          disabled={!text.trim()}
-          onClick={onPost}
-        />
-      </div>
-    </Wrapper>
+      </Composer>
+    </>
   );
 };

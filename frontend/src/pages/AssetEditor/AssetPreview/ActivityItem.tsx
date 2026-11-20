@@ -1,4 +1,4 @@
-import { Button, TextArea } from '@components';
+import { Dropdown, TextArea } from '@components';
 import { useDialog } from '@features/Dialogs';
 import { getFormatter } from '@lib/format';
 import { formatTimeString, getErrorDetail } from '@lib/utils';
@@ -28,9 +28,24 @@ const ItemWrapper = styled.div`
   .header {
     display: flex;
     gap: 8px;
-    align-items: baseline;
+    align-items: center;
     color: var(--color-text-dim);
     font-size: 0.85em;
+  }
+
+  .menu {
+    margin: -6px 0 -6px auto;
+
+    button {
+      height: 20px;
+      min-width: 20px;
+      padding: 0;
+      background: none;
+    }
+  }
+
+  .hint {
+    font-size: 0.8em;
   }
 
   .author {
@@ -53,12 +68,6 @@ const ItemWrapper = styled.div`
   .muted {
     color: var(--color-text-dim);
     font-style: italic;
-  }
-
-  .actions {
-    display: flex;
-    gap: 4px;
-    justify-content: flex-end;
   }
 
   .link {
@@ -215,32 +224,23 @@ const statusLine = (
   return <>changed status to {formatValue('status', status)}</>;
 };
 
-const CommentBody = ({
-  activity,
-  assetId,
-}: {
-  activity: Extract<Activity, { kind: 'comment' }>;
-  assetId: number;
-}) => {
+const useCommentActions = (
+  activity: Extract<Activity, { kind: 'comment' }>,
+  assetId: number
+) => {
   const showDialog = useDialog();
-  const [editing, setEditing] = useState<string | null>(null);
-  const { text, edited, deleted } = activity.summary;
   const isOwn = activity.id_user === nebula.user?.id;
 
-  if (deleted) return <div className="muted">comment deleted</div>;
-
-  const onSave = () => {
-    if (!editing?.trim()) return;
-    editComment(assetId, activity.id, editing)
-      .then(() => {
-        setEditing(null);
-      })
+  const save = (text: string, done: () => void) => {
+    if (!text.trim()) return;
+    editComment(assetId, activity.id, text)
+      .then(done)
       .catch((error: unknown) => {
         toast.error(getErrorDetail(error));
       });
   };
 
-  const onDelete = () => {
+  const remove = () => {
     showDialog('confirm', 'Delete comment', {
       message: 'Do you want to delete this comment?',
       confirmLabel: 'Delete',
@@ -256,6 +256,29 @@ const CommentBody = ({
     );
   };
 
+  return {
+    canEdit: isOwn && !activity.summary.deleted,
+    canDelete: (isOwn || !!nebula.user?.is_admin) && !activity.summary.deleted,
+    save,
+    remove,
+  };
+};
+
+const CommentBody = ({
+  activity,
+  editing,
+  setEditing,
+  onSave,
+}: {
+  activity: Extract<Activity, { kind: 'comment' }>;
+  editing: string | null;
+  setEditing: (text: string | null) => void;
+  onSave: (text: string) => void;
+}) => {
+  const { text, edited, deleted } = activity.summary;
+
+  if (deleted) return <div className="muted">comment deleted</div>;
+
   if (editing !== null) {
     return (
       <>
@@ -263,51 +286,30 @@ const CommentBody = ({
           value={editing}
           onChange={setEditing}
           onKeyDown={(e) => {
-            if (e.key === 'Enter' && e.ctrlKey) onSave();
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              onSave(editing);
+            }
             if (e.key === 'Escape') setEditing(null);
           }}
           autoFocus
-          rows={3}
+          style={{ height: 56, minHeight: 56, minWidth: 0 }}
         />
-        <div className="actions">
-          <Button
-            label="Cancel"
-            onClick={() => {
-              setEditing(null);
-            }}
-          />
-          <Button label="Save" icon="check" onClick={onSave} />
-        </div>
+        <div className="muted hint">Enter to save, Esc to cancel</div>
       </>
     );
   }
 
   return (
-    <>
-      <div className="comment">
-        {text}
-        {edited && (
-          <span className="muted" title={formatTimeString(edited)}>
-            {' '}
-            (edited)
-          </span>
-        )}
-      </div>
-      {(isOwn || nebula.user?.is_admin) && (
-        <div className="actions">
-          {isOwn && (
-            <Button
-              icon="edit"
-              tooltip="Edit"
-              onClick={() => {
-                setEditing(text ?? '');
-              }}
-            />
-          )}
-          <Button icon="delete" tooltip="Delete" onClick={onDelete} />
-        </div>
+    <div className="comment">
+      {text}
+      {edited && (
+        <span className="muted" title={formatTimeString(edited)}>
+          {' '}
+          (edited)
+        </span>
       )}
-    </>
+    </div>
   );
 };
 
@@ -359,11 +361,82 @@ const ActivityBody = ({
         </div>
       );
     case 'comment':
-      return <CommentBody activity={activity} assetId={assetId} />;
+      // rendered by CommentItem
+      return null;
     default:
       // a kind from a newer server
       return <div className="line muted">{(activity as { kind: string }).kind}</div>;
   }
+};
+
+const ItemHeader = ({
+  activity,
+  menu,
+}: {
+  activity: Activity;
+  menu?: React.ReactNode;
+}) => (
+  <div className="header">
+    <span className="author">{authorName(activity.id_user)}</span>
+    <span title={formatTimeString(activity.ctime)}>{timeAgo(activity.ctime)}</span>
+    {menu && <span className="menu">{menu}</span>}
+  </div>
+);
+
+const CommentItem = ({
+  activity,
+  assetId,
+}: {
+  activity: Extract<Activity, { kind: 'comment' }>;
+  assetId: number;
+}) => {
+  const [editing, setEditing] = useState<string | null>(null);
+  const { canEdit, canDelete, save, remove } = useCommentActions(activity, assetId);
+
+  const options = [
+    ...(canEdit
+      ? [
+          {
+            label: 'Edit',
+            icon: 'edit',
+            onClick: () => {
+              setEditing(activity.summary.text ?? '');
+            },
+          },
+        ]
+      : []),
+    ...(canDelete ? [{ label: 'Delete', icon: 'delete', onClick: remove }] : []),
+  ];
+
+  return (
+    <ItemWrapper>
+      <ItemHeader
+        activity={activity}
+        menu={
+          options.length > 0 &&
+          editing === null && (
+            <Dropdown
+              icon="more_vert"
+              align="right"
+              options={options}
+              // upwards: the newest comments are at the bottom of the scrolled feed
+              contentStyle={{ bottom: '100%' }}
+            />
+          )
+        }
+      />
+      <CommentBody
+        activity={activity}
+        editing={editing}
+        setEditing={setEditing}
+        onSave={(text) => {
+          save(text, () => {
+            setEditing(null);
+          });
+        }}
+      />
+    </ItemWrapper>
+  );
 };
 
 export const ActivityItem = ({
@@ -372,12 +445,12 @@ export const ActivityItem = ({
 }: {
   activity: Activity;
   assetId: number;
-}) => (
-  <ItemWrapper>
-    <div className="header">
-      <span className="author">{authorName(activity.id_user)}</span>
-      <span title={formatTimeString(activity.ctime)}>{timeAgo(activity.ctime)}</span>
-    </div>
-    <ActivityBody activity={activity} assetId={assetId} />
-  </ItemWrapper>
-);
+}) =>
+  activity.kind === 'comment' ? (
+    <CommentItem activity={activity} assetId={assetId} />
+  ) : (
+    <ItemWrapper>
+      <ItemHeader activity={activity} />
+      <ActivityBody activity={activity} assetId={assetId} />
+    </ItemWrapper>
+  );
