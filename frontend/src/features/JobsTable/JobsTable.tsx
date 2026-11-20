@@ -1,6 +1,6 @@
 import { Table, Button } from '@components';
 import { useWebSocket, type WebSocketHandler } from '@features/Websocket';
-import formatMetaDatetime from '@lib/tableFormat/formatMetaDatetime';
+import formatMetaDatetime from '@lib/format/formatMetaDatetime';
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { NavLink } from 'react-router';
 

@@ -1,6 +1,6 @@
 import { Button, TextArea } from '@components';
 import { useDialog } from '@features/Dialogs';
-import { getFormatter } from '@lib/tableFormat';
+import { getFormatter } from '@lib/format';
 import { formatTimeString, getErrorDetail } from '@lib/utils';
 import { useState } from 'react';
 import { toast } from 'react-toastify';

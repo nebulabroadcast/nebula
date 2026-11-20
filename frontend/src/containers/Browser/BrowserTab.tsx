@@ -9,7 +9,7 @@ import {
   formatTitleWithThumbnail,
   formatRowHighlightColor,
   formatRowHighlightStyle,
-} from '@lib/tableFormat';
+} from '@lib/format';
 import { getErrorDetail } from '@lib/utils';
 import { AxiosError } from 'axios';
 import clsx from 'clsx';

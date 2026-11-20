@@ -6,7 +6,7 @@ import type {
 } from '@components/table/types';
 import { showEventDialog, useDialog } from '@features/Dialogs';
 import { useNebula } from '@features/Nebula';
-import { formatRowHighlightColor, formatRowHighlightStyle } from '@lib/tableFormat';
+import { formatRowHighlightColor, formatRowHighlightStyle } from '@lib/format';
 import React, { useMemo, useRef, useEffect } from 'react';
 import { useSearchParams, useLocation } from 'react-router';
 import styled from 'styled-components';

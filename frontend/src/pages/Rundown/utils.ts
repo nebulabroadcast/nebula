@@ -6,7 +6,7 @@ import {
   getColumnWidth,
   getFormatter,
   formatTitleWithThumbnail,
-} from '@lib/tableFormat';
+} from '@lib/format';
 
 import { RunMode } from '@/client';
 import nebula from '@/nebula';
