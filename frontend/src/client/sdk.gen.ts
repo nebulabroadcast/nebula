@@ -1172,7 +1172,7 @@ export const assetsActivitiesDelete = <ThrowOnError extends boolean = false>(
 /**
  * Get an activity row with its detail
  *
- * `detail` holds the full old and new values of a `changed` row.
+ * `detail` holds the full old and new values of a `meta` row.
  */
 export const assetsActivitiesGet = <ThrowOnError extends boolean = false>(
   options: Options<AssetsActivitiesGetData, ThrowOnError>

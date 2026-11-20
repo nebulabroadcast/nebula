@@ -1,6 +1,6 @@
 import { isEmpty } from 'lodash';
 
-import type { ActivityPage, ChangedActivity } from '@/client';
+import type { ActivityPage, MetaActivity } from '@/client';
 import nebula from '@/nebula';
 
 // Asset metadata as the editor holds it: meta keys, plus the computed
@@ -68,12 +68,12 @@ export const fetchActivities = async (
 export const fetchActivityDetail = async (
   assetId: number,
   activityId: number
-): Promise<ChangedActivity['detail']> => {
+): Promise<MetaActivity['detail']> => {
   const response = await nebula.assetsActivitiesGet({
     path: { asset_id: assetId, activity_id: activityId },
     throwOnError: true,
   });
-  return response.data.kind === 'changed' ? response.data.detail : null;
+  return response.data.kind === 'meta' ? response.data.detail : null;
 };
 
 export const addComment = async (assetId: number, text: string) => {

@@ -22,7 +22,7 @@ const FILTERS: Array<{ value: Filter; title: string; kind?: string }> = [
   { value: 'all', title: 'All' },
   { value: 'comments', title: 'Comments', kind: 'comment' },
   { value: 'qc', title: 'QC', kind: 'qc' },
-  { value: 'changes', title: 'Changes', kind: 'changed,status,uploaded,created' },
+  { value: 'changes', title: 'Changes', kind: 'meta,status,upload,new' },
 ];
 
 // local calendar day, to put a separator between days

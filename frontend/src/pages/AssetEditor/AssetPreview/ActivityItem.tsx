@@ -13,7 +13,7 @@ import {
   type Activity,
 } from '../assetApi';
 
-import { ObjectStatus, type ChangedDetail } from '@/client';
+import { ObjectStatus, type MetaDetail } from '@/client';
 import nebula from '@/nebula';
 
 type CommentActivity = Extract<Activity, { kind: 'comment' }>;
@@ -300,14 +300,14 @@ const DiffValue = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-const ChangedEvent = ({
+const MetaEvent = ({
   activity,
   assetId,
 }: {
-  activity: Extract<Activity, { kind: 'changed' }>;
+  activity: Extract<Activity, { kind: 'meta' }>;
   assetId: number;
 }) => {
-  const [detail, setDetail] = useState<ChangedDetail | null | undefined>(undefined);
+  const [detail, setDetail] = useState<MetaDetail | null | undefined>(undefined);
   const [open, setOpen] = useState(false);
 
   const toggle = () => {
@@ -471,7 +471,8 @@ const CommentBubble = ({
 }) => {
   const [editing, setEditing] = useState<string | null>(null);
   const { isOwn, canDelete, save, remove } = useCommentActions(activity, assetId);
-  const { text, edited } = activity.summary;
+  const { text } = activity.summary;
+  const edited = activity.mtime;
 
   const options = [
     ...(isOwn
@@ -562,19 +563,19 @@ export const ActivityItem = ({
       ) : (
         <CommentBubble activity={activity} assetId={assetId} />
       );
-    case 'created':
+    case 'new':
       return (
         <Event activity={activity} icon="add_circle">
           created the asset
         </Event>
       );
-    case 'changed':
-      return <ChangedEvent activity={activity} assetId={assetId} />;
+    case 'meta':
+      return <MetaEvent activity={activity} assetId={assetId} />;
     case 'qc':
       return <QcEvent activity={activity} />;
     case 'status':
       return <StatusEvent activity={activity} />;
-    case 'uploaded':
+    case 'upload':
       return (
         <Event activity={activity} icon="upload_file">
           uploaded a file · {formatSize(activity.summary.size)}{' '}

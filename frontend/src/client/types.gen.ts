@@ -50,11 +50,11 @@ export type ActivityPage = {
    * Items
    */
   items: Array<
-    | CreatedActivity
-    | ChangedActivity
+    | NewActivity
+    | MetaActivity
     | QcActivity
     | StatusActivity
-    | UploadedActivity
+    | UploadActivity
     | CommentActivity
   >;
   /**
@@ -476,61 +476,6 @@ export type BrowseAssetsResponse = {
 };
 
 /**
- * ChangedActivity
- */
-export type ChangedActivity = {
-  /**
-   * Id
-   */
-  id: number;
-  /**
-   * Id User
-   *
-   * Author, null: system
-   */
-  id_user: number | null;
-  /**
-   * Ctime
-   */
-  ctime: number;
-  /**
-   * Kind
-   */
-  kind: 'changed';
-  summary: ChangedSummary;
-  /**
-   * Only when reading a single row
-   */
-  detail?: ChangedDetail | null;
-};
-
-/**
- * ChangedDetail
- */
-export type ChangedDetail = {
-  /**
-   * Changes
-   *
-   * Old and new value of each changed key (null: missing)
-   */
-  changes: {
-    [key: string]: [unknown, unknown];
-  };
-};
-
-/**
- * ChangedSummary
- */
-export type ChangedSummary = {
-  /**
-   * Keys
-   *
-   * Changed metadata keys
-   */
-  keys: Array<string>;
-};
-
-/**
  * ClientCSItemModel
  */
 export type ClientCsItemModel = {
@@ -701,6 +646,12 @@ export type CommentActivity = {
    */
   ctime: number;
   /**
+   * Mtime
+   *
+   * Last change of the row (comments), null: never
+   */
+  mtime?: number | null;
+  /**
    * Kind
    */
   kind: 'comment';
@@ -726,17 +677,11 @@ export type CommentSummary = {
    */
   text?: string | null;
   /**
-   * Edited
-   *
-   * Time of the last edit
-   */
-  edited?: number | null;
-  /**
    * Deleted
    *
-   * Time of deletion
+   * Deleted (at `mtime`), the text is gone
    */
-  deleted?: number | null;
+  deleted?: boolean;
 };
 
 /**
@@ -830,38 +775,6 @@ export const ContentType = {
  * ContentType
  */
 export type ContentType = (typeof ContentType)[keyof typeof ContentType];
-
-/**
- * CreatedActivity
- */
-export type CreatedActivity = {
-  /**
-   * Id
-   */
-  id: number;
-  /**
-   * Id User
-   *
-   * Author, null: system
-   */
-  id_user: number | null;
-  /**
-   * Ctime
-   */
-  ctime: number;
-  /**
-   * Kind
-   */
-  kind: 'created';
-  summary: CreatedSummary;
-};
-
-/**
- * CreatedSummary
- */
-export type CreatedSummary = {
-  [key: string]: unknown;
-};
 
 /**
  * DeleteObjectsRequest
@@ -1481,6 +1394,67 @@ export const MediaType = {
 export type MediaType = (typeof MediaType)[keyof typeof MediaType];
 
 /**
+ * MetaActivity
+ */
+export type MetaActivity = {
+  /**
+   * Id
+   */
+  id: number;
+  /**
+   * Id User
+   *
+   * Author, null: system
+   */
+  id_user: number | null;
+  /**
+   * Ctime
+   */
+  ctime: number;
+  /**
+   * Mtime
+   *
+   * Last change of the row (comments), null: never
+   */
+  mtime?: number | null;
+  /**
+   * Kind
+   */
+  kind: 'meta';
+  summary: MetaSummary;
+  /**
+   * Only when reading a single row
+   */
+  detail?: MetaDetail | null;
+};
+
+/**
+ * MetaDetail
+ */
+export type MetaDetail = {
+  /**
+   * Changes
+   *
+   * Old and new value of each changed key (null: missing)
+   */
+  changes: {
+    [key: string]: [unknown, unknown];
+  };
+};
+
+/**
+ * MetaSummary
+ */
+export type MetaSummary = {
+  /**
+   * Keys
+   *
+   * Changed metadata keys
+   */
+  keys: Array<string>;
+};
+
+/**
  * NebulaStorageUsage
  */
 export type NebulaStorageUsage = {
@@ -1513,6 +1487,37 @@ export type NebulaStoragesUsage = {
 };
 
 /**
+ * NewActivity
+ */
+export type NewActivity = {
+  /**
+   * Id
+   */
+  id: number;
+  /**
+   * Id User
+   *
+   * Author, null: system
+   */
+  id_user: number | null;
+  /**
+   * Ctime
+   */
+  ctime: number;
+  /**
+   * Mtime
+   *
+   * Last change of the row (comments), null: never
+   */
+  mtime?: number | null;
+  /**
+   * Kind
+   */
+  kind: 'new';
+  summary: NewSummary;
+};
+
+/**
  * NewPassword
  */
 export type NewPassword = {
@@ -1522,6 +1527,13 @@ export type NewPassword = {
    * New password
    */
   password: string;
+};
+
+/**
+ * NewSummary
+ */
+export type NewSummary = {
+  [key: string]: unknown;
 };
 
 /**
@@ -2007,6 +2019,12 @@ export type QcActivity = {
    * Ctime
    */
   ctime: number;
+  /**
+   * Mtime
+   *
+   * Last change of the row (comments), null: never
+   */
+  mtime?: number | null;
   /**
    * Kind
    */
@@ -2620,6 +2638,12 @@ export type StatusActivity = {
    */
   ctime: number;
   /**
+   * Mtime
+   *
+   * Last change of the row (comments), null: never
+   */
+  mtime?: number | null;
+  /**
    * Kind
    */
   kind: 'status';
@@ -2681,9 +2705,9 @@ export type TokenExchangeRequest = {
 };
 
 /**
- * UploadedActivity
+ * UploadActivity
  */
-export type UploadedActivity = {
+export type UploadActivity = {
   /**
    * Id
    */
@@ -2699,16 +2723,22 @@ export type UploadedActivity = {
    */
   ctime: number;
   /**
+   * Mtime
+   *
+   * Last change of the row (comments), null: never
+   */
+  mtime?: number | null;
+  /**
    * Kind
    */
-  kind: 'uploaded';
-  summary: UploadedSummary;
+  kind: 'upload';
+  summary: UploadSummary;
 };
 
 /**
- * UploadedSummary
+ * UploadSummary
  */
-export type UploadedSummary = {
+export type UploadSummary = {
   /**
    * Size
    *
@@ -4307,7 +4337,7 @@ export type AssetsActivitiesListData = {
     /**
      * Kind
      *
-     * Comma-separated kinds (created, changed, qc, status, uploaded, comment)
+     * Comma-separated kinds (new, meta, qc, status, upload, comment)
      */
     kind?: string | null;
     /**
@@ -4376,11 +4406,11 @@ export type AssetsActivitiesCommentResponses = {
    */
   201:
     | ({
-        kind: 'created';
-      } & CreatedActivity)
+        kind: 'new';
+      } & NewActivity)
     | ({
-        kind: 'changed';
-      } & ChangedActivity)
+        kind: 'meta';
+      } & MetaActivity)
     | ({
         kind: 'qc';
       } & QcActivity)
@@ -4388,8 +4418,8 @@ export type AssetsActivitiesCommentResponses = {
         kind: 'status';
       } & StatusActivity)
     | ({
-        kind: 'uploaded';
-      } & UploadedActivity)
+        kind: 'upload';
+      } & UploadActivity)
     | ({
         kind: 'comment';
       } & CommentActivity);
@@ -4476,11 +4506,11 @@ export type AssetsActivitiesGetResponses = {
    */
   200:
     | ({
-        kind: 'created';
-      } & CreatedActivity)
+        kind: 'new';
+      } & NewActivity)
     | ({
-        kind: 'changed';
-      } & ChangedActivity)
+        kind: 'meta';
+      } & MetaActivity)
     | ({
         kind: 'qc';
       } & QcActivity)
@@ -4488,8 +4518,8 @@ export type AssetsActivitiesGetResponses = {
         kind: 'status';
       } & StatusActivity)
     | ({
-        kind: 'uploaded';
-      } & UploadedActivity)
+        kind: 'upload';
+      } & UploadActivity)
     | ({
         kind: 'comment';
       } & CommentActivity);
@@ -4536,11 +4566,11 @@ export type AssetsActivitiesEditResponses = {
    */
   200:
     | ({
-        kind: 'created';
-      } & CreatedActivity)
+        kind: 'new';
+      } & NewActivity)
     | ({
-        kind: 'changed';
-      } & ChangedActivity)
+        kind: 'meta';
+      } & MetaActivity)
     | ({
         kind: 'qc';
       } & QcActivity)
@@ -4548,8 +4578,8 @@ export type AssetsActivitiesEditResponses = {
         kind: 'status';
       } & StatusActivity)
     | ({
-        kind: 'uploaded';
-      } & UploadedActivity)
+        kind: 'upload';
+      } & UploadActivity)
     | ({
         kind: 'comment';
       } & CommentActivity);
