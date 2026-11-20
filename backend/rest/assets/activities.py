@@ -77,7 +77,7 @@ async def list_activities(
     response_model_exclude_unset=True,
 )
 async def get_activity(asset_id: AssetId, activity_id: ActivityId) -> Activity:
-    """`detail` holds the full old and new values of a `changed` row."""
+    """`detail` holds the full old and new values of a `meta` row."""
     await ensure_can_view_asset(asset_id)
     return activity_response(await activity.get_activity(asset_id, activity_id))
 

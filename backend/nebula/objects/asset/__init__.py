@@ -167,7 +167,7 @@ class Asset(BaseObject):
     ) -> None:
         """Save the asset and write its activity in the same transaction.
 
-        `activity_kind` names the row instead of the changes (`uploaded`
+        `activity_kind` names the row instead of the changes (`upload`
         with `activity_summary`); the row then stands for every change.
         """
         is_new = self.id is None

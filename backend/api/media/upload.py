@@ -126,14 +126,14 @@ class UploadMedia(APIRequest):
             # if the file still has the uploaded size
             asset["__file/written"] = i
             await asset.save(
-                activity_kind="uploaded",
+                activity_kind="upload",
                 activity_summary={"size": i, "extension": parsed_request.extension},
             )
         else:
             # the worker imports the file later; the asset isn't saved here
             await add_activity(
                 asset["id"],
-                "uploaded",
+                "upload",
                 {"size": i, "extension": parsed_request.extension},
             )
         nebula.log.info(f"Uploaded media file for {asset}")

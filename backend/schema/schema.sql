@@ -286,6 +286,7 @@ CREATE TABLE IF NOT EXISTS public.activity (
   kind VARCHAR(32) NOT NULL,
   id_user INTEGER REFERENCES public.users(id) ON DELETE SET NULL,
   ctime DOUBLE PRECISION NOT NULL,
+  mtime DOUBLE PRECISION,
   summary JSONB NOT NULL DEFAULT '{}'::jsonb,
   detail JSONB,
   CONSTRAINT activity_pkey PRIMARY KEY (id)

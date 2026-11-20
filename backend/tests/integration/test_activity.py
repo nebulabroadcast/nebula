@@ -60,7 +60,7 @@ async def test_save_writes_rows_and_rollback_drops_them(published: list[Any]) ->
             await asset.save()
             assert asset.changed_keys() == {}
             rows = await kinds_since(asset.id, before)
-            assert [r["kind"] for r in rows] == ["changed", "qc"]
+            assert [r["kind"] for r in rows] == ["meta", "qc"]
             assert rows[0]["summary"] == {"keys": ["title"]}
             assert "title" in rows[0]["detail"]["changes"]
 
@@ -75,7 +75,7 @@ async def test_save_writes_rows_and_rollback_drops_them(published: list[Any]) ->
     assert published == []
 
 
-async def test_new_asset_saved_twice_is_one_created_row(published: list[Any]) -> None:
+async def test_new_asset_saved_twice_is_one_new_row(published: list[Any]) -> None:
     folder = await nebula.db.fetchrow("SELECT id FROM folders ORDER BY id LIMIT 1")
     if folder is None:
         pytest.skip("No folders")
@@ -88,7 +88,7 @@ async def test_new_asset_saved_twice_is_one_created_row(published: list[Any]) ->
             asset["path"] = "media.dir/test.mxf"
             await asset.save()  # a validator completing the new asset
             rows = await kinds_since(asset.id, 0)
-            assert [r["kind"] for r in rows] == ["created"]
+            assert [r["kind"] for r in rows] == ["new"]
             raise Rollback
 
     with pytest.raises(Rollback):

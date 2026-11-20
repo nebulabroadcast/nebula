@@ -11,11 +11,11 @@ def test_untracked_keys_write_nothing() -> None:
     assert activities_from_changes(changes) == []
 
 
-def test_changed() -> None:
+def test_meta() -> None:
     rows = activities_from_changes({"title": ("A", "B"), "subtitle": (None, "S")})
     assert rows == [
         (
-            "changed",
+            "meta",
             {"keys": ["subtitle", "title"]},
             {"changes": {"title": ["A", "B"], "subtitle": [None, "S"]}},
         )
@@ -26,7 +26,7 @@ def test_own_kinds_are_split_off() -> None:
     rows = activities_from_changes(
         {"title": ("A", "B"), "qc/state": (None, 4), "status": (1, 3)}
     )
-    assert [r[0] for r in rows] == ["changed", "qc", "status"]
+    assert [r[0] for r in rows] == ["meta", "qc", "status"]
     assert rows[0][1] == {"keys": ["title"]}
     assert rows[1] == ("qc", {"old": None, "new": 4}, None)
     assert rows[2] == ("status", {"old": 1, "new": 3}, None)

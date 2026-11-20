@@ -1,7 +1,7 @@
 """Activity feed of assets: changes, QC and status changes, uploads, comments.
 
 One row per kind a save touches (spec 010). Each kind has a summary model
-(what the feed lists and renders) and only `changed` has a detail (the full
+(what the feed lists and renders) and only `meta` has a detail (the full
 old and new values). Rows are written by `Asset.save()` and by comments;
 they are deleted with the asset (foreign key cascade).
 """
@@ -37,11 +37,11 @@ def _sql(query: Template) -> list[Any]:
 #
 
 
-class CreatedSummary(BaseModel):
+class NewSummary(BaseModel):
     pass
 
 
-class ChangedSummary(BaseModel):
+class MetaSummary(BaseModel):
     keys: Annotated[list[str], Field(description="Changed metadata keys")]
 
 
@@ -50,18 +50,19 @@ class StateSummary(BaseModel):
     new: int | None = None
 
 
-class UploadedSummary(BaseModel):
+class UploadSummary(BaseModel):
     size: Annotated[int, Field(description="File size in bytes")]
     extension: str
 
 
 class CommentSummary(BaseModel):
     text: str | None = None
-    edited: Annotated[float | None, Field(description="Time of the last edit")] = None
-    deleted: Annotated[float | None, Field(description="Time of deletion")] = None
+    deleted: Annotated[
+        bool, Field(description="Deleted (at `mtime`), the text is gone")
+    ] = False
 
 
-class ChangedDetail(BaseModel):
+class MetaDetail(BaseModel):
     changes: Annotated[
         dict[str, tuple[Any, Any]],
         Field(description="Old and new value of each changed key (null: missing)"),
@@ -69,11 +70,11 @@ class ChangedDetail(BaseModel):
 
 
 SUMMARY_MODELS: dict[str, type[BaseModel]] = {
-    "created": CreatedSummary,
-    "changed": ChangedSummary,
+    "new": NewSummary,
+    "meta": MetaSummary,
     "qc": StateSummary,
     "status": StateSummary,
-    "uploaded": UploadedSummary,
+    "upload": UploadSummary,
     "comment": CommentSummary,
 }
 KINDS = list(SUMMARY_MODELS)
@@ -87,18 +88,22 @@ class ActivityBase(BaseModel):
     id: int
     id_user: Annotated[int | None, Field(description="Author, null: system")]
     ctime: float
+    mtime: Annotated[
+        float | None,
+        Field(description="Last change of the row (comments), null: never"),
+    ] = None
 
 
-class CreatedActivity(ActivityBase):
-    kind: Literal["created"]
-    summary: CreatedSummary
+class NewActivity(ActivityBase):
+    kind: Literal["new"]
+    summary: NewSummary
 
 
-class ChangedActivity(ActivityBase):
-    kind: Literal["changed"]
-    summary: ChangedSummary
+class MetaActivity(ActivityBase):
+    kind: Literal["meta"]
+    summary: MetaSummary
     detail: Annotated[
-        ChangedDetail | None, Field(description="Only when reading a single row")
+        MetaDetail | None, Field(description="Only when reading a single row")
     ] = None
 
 
@@ -112,9 +117,9 @@ class StatusActivity(ActivityBase):
     summary: StateSummary
 
 
-class UploadedActivity(ActivityBase):
-    kind: Literal["uploaded"]
-    summary: UploadedSummary
+class UploadActivity(ActivityBase):
+    kind: Literal["upload"]
+    summary: UploadSummary
 
 
 class CommentActivity(ActivityBase):
@@ -123,11 +128,11 @@ class CommentActivity(ActivityBase):
 
 
 Activity = Annotated[
-    CreatedActivity
-    | ChangedActivity
+    NewActivity
+    | MetaActivity
     | QcActivity
     | StatusActivity
-    | UploadedActivity
+    | UploadActivity
     | CommentActivity,
     Field(discriminator="kind"),
 ]
@@ -136,7 +141,7 @@ Activity = Annotated[
 # Writing rows
 #
 
-# Keys with a kind of their own; the other tracked keys are `changed`
+# Keys with a kind of their own; the other tracked keys are `meta`
 KEYS_WITH_OWN_KIND = {"qc/state": "qc", "status": "status"}
 UNTRACKED_KEYS = {"id", "mtime", "ctime", "updated_by"}
 
@@ -155,7 +160,7 @@ def activities_from_changes(changes: dict[str, tuple[Any, Any]]) -> list[Activit
     if tracked:
         rows.append(
             (
-                "changed",
+                "meta",
                 {"keys": sorted(tracked)},
                 {"changes": {k: list(v) for k, v in tracked.items()}},
             )
@@ -201,14 +206,14 @@ async def add_save_activities(
 ) -> None:
     """Write the activity rows of one asset save, inside its transaction.
 
-    A caller-named kind (`uploaded`) is one row that takes every change
-    with it. Otherwise a new asset gets `created`, a saved one a row per
+    A caller-named kind (`upload`) is one row that takes every change
+    with it. Otherwise a new asset gets `new`, a saved one a row per
     kind its changes touch, or none.
     """
     if kind:
         rows: list[ActivityRow] = [(kind, summary or {}, None)]
     elif is_new:
-        rows = [("created", {}, None)]
+        rows = [("new", {}, None)]
     else:
         rows = activities_from_changes(changes)
     now = time.time()
@@ -244,7 +249,7 @@ async def list_activities(
         [after] = decode_cursor(cursor, qhash, 1)
         conds.append(t"id < {int(after)}")
     query = t"""
-        SELECT id, kind, id_user, ctime, summary FROM activity
+        SELECT id, kind, id_user, ctime, mtime, summary FROM activity
         WHERE {SQL.join(conds, " AND ")}
         ORDER BY id DESC LIMIT {limit + 1}
     """
@@ -259,7 +264,7 @@ async def list_activities(
 async def get_activity(id_asset: int, id_activity: int) -> dict[str, Any]:
     """One activity row with its detail (the `detail` key only if there is one)."""
     query = t"""
-        SELECT id, kind, id_user, ctime, summary, detail FROM activity
+        SELECT id, kind, id_user, ctime, mtime, summary, detail FROM activity
         WHERE id = {id_activity} AND id_asset = {id_asset}
     """
     row = await db.fetchrow(*_sql(query))
@@ -290,7 +295,11 @@ async def _get_comment(id_asset: int, id_activity: int) -> dict[str, Any]:
 
 
 async def _save_comment(id_asset: int, row: dict[str, Any]) -> None:
-    query = t"UPDATE activity SET summary = {row['summary']} WHERE id = {row['id']}"
+    row["mtime"] = time.time()
+    query = t"""
+        UPDATE activity SET summary = {row["summary"]}, mtime = {row["mtime"]}
+        WHERE id = {row["id"]}
+    """
     await db.execute(*_sql(query))
     await msg("activity", id_asset=id_asset, id=row["id"], kind="comment")
 
@@ -299,10 +308,10 @@ async def edit_comment(id_asset: int, id_activity: int, text: str) -> dict[str, 
     """Only the author edits a comment (a deleted one can't be)."""
     row = await _get_comment(id_asset, id_activity)
     require_access(
-        lambda u: u.id == row["id_user"] and "deleted" not in row["summary"],
+        lambda u: u.id == row["id_user"] and not row["summary"].get("deleted"),
         "You can edit only your own comments",
     )
-    row["summary"] = {**row["summary"], "text": text, "edited": time.time()}
+    row["summary"] = {**row["summary"], "text": text}
     await _save_comment(id_asset, row)
     return row
 
@@ -314,7 +323,7 @@ async def delete_comment(id_asset: int, id_activity: int) -> None:
         lambda u: u.is_admin or u.id == row["id_user"],
         "You can delete only your own comments",
     )
-    if "deleted" in row["summary"]:
+    if row["summary"].get("deleted"):
         return
-    row["summary"] = {"deleted": time.time()}
+    row["summary"] = {"deleted": True}
     await _save_comment(id_asset, row)
