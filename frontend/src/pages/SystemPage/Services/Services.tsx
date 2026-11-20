@@ -44,17 +44,17 @@ const formatStatus = (rowData: ExtendedServiceItem) => {
   const status = rowData.status;
   switch (status) {
     case ServiceState.STOPPED:
-      return <td>Stopped</td>;
+      return 'Stopped';
     case ServiceState.STARTED:
-      return <td>Running</td>;
+      return 'Running';
     case ServiceState.STARTING:
-      return <td>Starting</td>;
+      return 'Starting';
     case ServiceState.STOPPING:
-      return <td>Stopping</td>;
+      return 'Stopping';
     case ServiceState.KILL:
-      return <td>Killing</td>;
+      return 'Killing';
     default:
-      return <td>Unknown</td>;
+      return 'Unknown';
   }
 };
 
@@ -69,14 +69,14 @@ const formatLastSeen = (rowData: ExtendedServiceItem) => {
         : Duration.fromObject({ seconds: lastSeen }).rescale().toHuman() + ' ago';
 
   return (
-    <td>
+    <>
       <BlinkIcon
         key={rowData.last_updated || 0}
         icon="circle"
         className={`status-${rowData.status}`}
       />
       {when}
-    </td>
+    </>
   );
 };
 
@@ -123,11 +123,9 @@ const ServicesPage: React.FC = () => {
     };
 
     return (
-      <td style={{ textAlign: 'center' }}>
-        <Spacer>
-          <InputSwitch value={autoStart} onChange={onChange} className="small" />
-        </Spacer>
-      </td>
+      <Spacer>
+        <InputSwitch value={autoStart} onChange={onChange} className="small" />
+      </Spacer>
     );
   };
 
@@ -168,7 +166,7 @@ const ServicesPage: React.FC = () => {
       default:
         b = <Button disabled={true} label="Please wait..." />;
     }
-    return <td className="action">{b}</td>;
+    return b;
   };
 
   const columns = useMemo(
@@ -190,8 +188,15 @@ const ServicesPage: React.FC = () => {
           title: 'Auto start',
           width: 70,
           formatter: formatAutoStart,
+          style: { textAlign: 'center' },
         },
-        { name: 'action', title: 'Action', width: 100, formatter: formatAction },
+        {
+          name: 'action',
+          title: 'Action',
+          width: 100,
+          formatter: formatAction,
+          className: 'action',
+        },
       ] as TableColumn[],
     []
   );

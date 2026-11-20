@@ -7,18 +7,10 @@ const formatRundownTime = (rowData: TableRowData, key: string) => {
     rowData.item_role === 'lead_in' ||
     rowData.item_role === 'lead_out'
   ) {
-    return (
-      <td>
-        <hr />
-      </td>
-    );
+    return <hr />;
   }
 
-  return (
-    <td>
-      <Timestamp timestamp={rowData[key] as number} mode="time" />
-    </td>
-  );
+  return <Timestamp timestamp={rowData[key] as number} mode="time" />;
 };
 
 export default formatRundownTime;

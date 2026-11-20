@@ -7,17 +7,8 @@ const formatMetaDatetime = (
   mode: 'date' | 'time' | 'datetime' = 'datetime'
 ) => {
   const timestamp = rowData[key];
-  if (!timestamp)
-    return (
-      <td>
-        <hr />
-      </td>
-    );
-  return (
-    <td>
-      <Timestamp timestamp={timestamp as number} mode={mode} />
-    </td>
-  );
+  if (!timestamp) return <hr />;
+  return <Timestamp timestamp={timestamp as number} mode={mode} />;
 };
 
 export default formatMetaDatetime;

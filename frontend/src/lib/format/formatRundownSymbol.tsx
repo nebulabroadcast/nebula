@@ -35,14 +35,10 @@ const formatRundownSymbol = (rowData: TableRowData) => {
       icon = 'question_mark';
     }
   } else {
-    return <td></td>;
+    return null;
   }
 
-  return (
-    <td style={{ padding: 0 }}>
-      <Icon style={style} icon={icon} />
-    </td>
-  );
+  return <Icon style={style} icon={icon} />;
 };
 
 export default formatRundownSymbol;

@@ -277,3 +277,19 @@ CREATE TABLE IF NOT EXISTS public.asrun (
 CREATE INDEX IF NOT EXISTS asrun_start_idx ON asrun(start);
 CREATE INDEX IF NOT EXISTS asrun_channel_idx ON asrun(id_channel);
 CREATE INDEX IF NOT EXISTS asrun_item_idx ON asrun(id_item);
+
+-- Activity feed of assets (changes, QC, uploads, comments). `summary` is
+-- what the feed lists, `detail` the full record (changed values).
+CREATE TABLE IF NOT EXISTS public.activity (
+  id BIGSERIAL NOT NULL,
+  id_asset INTEGER NOT NULL REFERENCES public.assets(id) ON DELETE CASCADE,
+  kind VARCHAR(32) NOT NULL,
+  id_user INTEGER REFERENCES public.users(id) ON DELETE SET NULL,
+  ctime DOUBLE PRECISION NOT NULL,
+  mtime DOUBLE PRECISION,
+  summary JSONB NOT NULL DEFAULT '{}'::jsonb,
+  detail JSONB,
+  CONSTRAINT activity_pkey PRIMARY KEY (id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_activity_asset ON activity(id_asset, id DESC);

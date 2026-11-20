@@ -2,6 +2,7 @@ import type { ItemRole } from '@/client';
 
 export type TableSortDirection = 'asc' | 'desc';
 export type TableRowData = Record<string, unknown>;
+// The content of a cell; the table renders the <td> around it
 export type TableCellFormatter = (
   rowData: TableRowData,
   columnName: string
@@ -12,6 +13,9 @@ export interface TableColumn {
   width?: string | number;
   title?: React.ReactNode;
   formatter?: TableCellFormatter;
+  // applied to the <td> of every cell of the column
+  className?: string;
+  style?: React.CSSProperties;
   // false: the header can't be clicked to sort by this column
   sortable?: boolean;
 }

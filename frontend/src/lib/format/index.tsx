@@ -53,10 +53,14 @@ const formatRowHighlightStyle = (rowData: TableRowData) => {
   }
 };
 
-// Column width
+// Column width and cell class
 
 const getColumnWidth = (key: string) => {
   if (!['title', 'subtitle', 'description'].includes(key)) return '1px';
+};
+
+const getColumnClassName = (key: string) => {
+  if (key === 'rundown_symbol') return 'symbol';
 };
 
 // Field formatters
@@ -65,7 +69,7 @@ const getDefaultFormatter = (key: string): TableCellFormatter => {
   const metaType = nebula.metaType(key);
   switch (metaType.type) {
     case 'boolean':
-      return (rowData, key) => <td>{rowData[key] ? '✓' : ''}</td>;
+      return (rowData, key) => (rowData[key] ? '✓' : '');
 
     case 'datetime':
       return (rowData, key) =>
@@ -76,33 +80,33 @@ const getDefaultFormatter = (key: string): TableCellFormatter => {
 
     case 'select':
       return (rowData, key) => {
-        if (!metaType.cs) return <td>{rowData[key] as string}</td>;
+        if (!metaType.cs) return rowData[key] as string;
 
         const option = nebula
           .csOptions(metaType.cs)
           .find((opt) => opt.value === rowData[key]);
 
-        return <td>{option?.title}</td>;
+        return option?.title;
       };
 
     case 'list':
       return (rowData, key) => {
         const values = (rowData[key] as string[]) || [];
-        if (!metaType.cs) return <td>{values.join(', ')}</td>;
+        if (!metaType.cs) return values.join(', ');
         const options = nebula
           .csOptions(metaType.cs)
           .filter((opt) => values.includes(opt.value));
-        return <td>{options.map((opt) => opt.title).join(', ')}</td>;
+        return options.map((opt) => opt.title).join(', ');
       };
 
     default:
-      return (rowData, key) => <td>{rowData[key] as React.ReactNode}</td>;
+      return (rowData, key) => rowData[key] as React.ReactNode;
   } // switch metaType
 };
 
 const getFormatter = (key: string): TableCellFormatter => {
   if (['subtitle', 'description'].includes(key))
-    return (rowData, key) => <td>{rowData[key] as React.ReactNode}</td>;
+    return (rowData, key) => rowData[key] as React.ReactNode;
 
   switch (key) {
     case 'title':
@@ -136,6 +140,7 @@ const getFormatter = (key: string): TableCellFormatter => {
 export {
   formatRundownDifference,
   formatTitleWithThumbnail,
+  getColumnClassName,
   getColumnWidth,
   getFormatter,
   formatRowHighlightColor,

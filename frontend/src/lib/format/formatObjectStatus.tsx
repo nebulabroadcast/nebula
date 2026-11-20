@@ -21,10 +21,10 @@ const STATUSES: Record<ObjectStatus, string> = {
 const formatObjectStatus = (rowData: TableRowData, key: string) => {
   //
   // virtual rundown items don't have status
-  if (rowData.item_role) return <td></td>;
+  if (rowData.item_role) return null;
 
   const status = STATUSES[rowData[key] as ObjectStatus];
-  return <td className={clsx('status', status)}>{status}</td>;
+  return <span className={clsx('status', status)}>{status}</span>;
 };
 
 export default formatObjectStatus;

@@ -21,31 +21,25 @@ const FormattedClient = (rowData: TableRowData) => {
   const agent = session.client_info?.agent;
   const label = [agent?.platform, agent?.client].filter(Boolean).join(' ') || 'Unknown';
   return (
-    <td>
-      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-        <Icon
-          icon={clientIcon(session)}
-          style={{ fontSize: 18, color: 'var(--color-text-dim)' }}
-        />
-        {label}
-      </span>
-    </td>
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+      <Icon
+        icon={clientIcon(session)}
+        style={{ fontSize: 18, color: 'var(--color-text-dim)' }}
+      />
+      {label}
+    </span>
   );
 };
 
 const FormattedIp = (rowData: TableRowData) => {
   const session = rowData as SessionModel;
-  return <td className="monospace">{session.client_info?.ip || 'Unknown'}</td>;
+  return <span className="monospace">{session.client_info?.ip || 'Unknown'}</span>;
 };
 
 const FormattedTimestamp = (rowData: TableRowData) => {
   const session = rowData as SessionModel;
   const timestamp = session.accessed;
-  return (
-    <td>
-      <Timestamp timestamp={timestamp} />
-    </td>
-  );
+  return <Timestamp timestamp={timestamp} />;
 };
 
 interface SessionsProps {
@@ -106,22 +100,20 @@ const Sessions: React.FC<SessionsProps> = ({ userId }) => {
     const token = session.id;
     if (session.current) {
       return (
-        <td className="dim" style={{ textAlign: 'right' }}>
+        <span style={{ fontSize: '0.8em', color: 'var(--color-text-dim)' }}>
           This session
-        </td>
+        </span>
       );
     }
     return (
-      <td style={{ textAlign: 'right' }}>
-        <Button
-          icon="logout"
-          label="Invalidate"
-          style={{ background: 'none' }}
-          onClick={() => {
-            invalidateSessions([token]);
-          }}
-        />
-      </td>
+      <Button
+        icon="logout"
+        label="Invalidate"
+        style={{ background: 'none' }}
+        onClick={() => {
+          invalidateSessions([token]);
+        }}
+      />
     );
   };
 
@@ -141,7 +133,7 @@ const Sessions: React.FC<SessionsProps> = ({ userId }) => {
           data={sessions}
           loading={loading}
           className="contained"
-          keyField="token"
+          keyField="id"
           rowHighlightColor={(rowData) =>
             (rowData as SessionModel).current ? 'var(--color-cyan)' : undefined
           }
@@ -168,6 +160,7 @@ const Sessions: React.FC<SessionsProps> = ({ userId }) => {
               title: '',
               width: 110,
               formatter: invalidateFormatter,
+              style: { textAlign: 'right' },
             },
           ]}
         />
