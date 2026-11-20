@@ -32,12 +32,12 @@ class ActivityPage(QueryResponse[Activity]):
     pass
 
 
-async def viewable(asset_id: int) -> None:
+async def ensure_can_view_asset(asset_id: int) -> None:
     asset = await nebula.Asset.load(asset_id)
     asset.ensure_can_view()
 
 
-def as_activity(row: dict[str, Any]) -> Activity:
+def activity_response(row: dict[str, Any]) -> Activity:
     return ACTIVITY.validate_python(row)
 
 
@@ -59,12 +59,12 @@ async def list_activities(
     ] = None,
 ) -> ActivityPage:
     """Newest first. Rows have no `detail`; read a single row for it."""
-    await viewable(asset_id)
-    rows, next_cursor = await activity.list_activity(
+    await ensure_can_view_asset(asset_id)
+    rows, next_cursor = await activity.list_activities(
         asset_id, kinds=split_list(kind), limit=limit, cursor=cursor
     )
     return ActivityPage(
-        items=[as_activity(row) for row in rows],
+        items=[activity_response(row) for row in rows],
         next_cursor=next_cursor,
         has_more=next_cursor is not None,
     )
@@ -78,8 +78,8 @@ async def list_activities(
 )
 async def get_activity(asset_id: AssetId, activity_id: ActivityId) -> Activity:
     """`detail` holds the full old and new values of a `changed` row."""
-    await viewable(asset_id)
-    return as_activity(await activity.get_activity(asset_id, activity_id))
+    await ensure_can_view_asset(asset_id)
+    return activity_response(await activity.get_activity(asset_id, activity_id))
 
 
 @router.post(
@@ -90,8 +90,8 @@ async def get_activity(asset_id: AssetId, activity_id: ActivityId) -> Activity:
     response_model_exclude_unset=True,
 )
 async def add_comment(asset_id: AssetId, payload: CommentPayload) -> Activity:
-    await viewable(asset_id)
-    return as_activity(await activity.add_comment(asset_id, payload.text))
+    await ensure_can_view_asset(asset_id)
+    return activity_response(await activity.add_comment(asset_id, payload.text))
 
 
 @router.patch(
@@ -104,9 +104,9 @@ async def edit_comment(
     asset_id: AssetId, activity_id: ActivityId, payload: CommentPayload
 ) -> Activity:
     """Only the author edits a comment. Other kinds can't be changed."""
-    await viewable(asset_id)
+    await ensure_can_view_asset(asset_id)
     row = await activity.edit_comment(asset_id, activity_id, payload.text)
-    return as_activity(row)
+    return activity_response(row)
 
 
 @router.delete(
@@ -117,5 +117,5 @@ async def edit_comment(
 )
 async def delete_comment(asset_id: AssetId, activity_id: ActivityId) -> None:
     """The author or an admin. The row stays, without its text."""
-    await viewable(asset_id)
+    await ensure_can_view_asset(asset_id)
     await activity.delete_comment(asset_id, activity_id)

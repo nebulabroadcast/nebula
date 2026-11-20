@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING, Any, cast
 import asyncpg
 from nx.db import db
 
-from nebula.activity import record_save
+from nebula.activity import add_save_activities
 from nebula.context import require_access
 from nebula.enum import ContentType, MediaType, ObjectStatus, ObjectTypeId
 from nebula.exceptions import ConflictException
@@ -182,7 +182,7 @@ class Asset(BaseObject):
                 # saved again in the transaction that created it (a
                 # validator needing the id): part of `created`
                 return
-            await record_save(
+            await add_save_activities(
                 self.id,
                 changes,
                 is_new=is_new,

@@ -7,7 +7,7 @@ from fastapi import Request
 from starlette.requests import ClientDisconnect
 
 import nebula
-from nebula.activity import record
+from nebula.activity import add_activity
 from nebula.enum import MediaType, ObjectStatus
 from nebula.exceptions import BadRequestException
 from nebula.filetypes import FileTypes
@@ -131,7 +131,7 @@ class UploadMedia(APIRequest):
             )
         else:
             # the worker imports the file later; the asset isn't saved here
-            await record(
+            await add_activity(
                 asset["id"],
                 "uploaded",
                 {"size": i, "extension": parsed_request.extension},

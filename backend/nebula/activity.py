@@ -1,6 +1,6 @@
 """Activity feed of assets: changes, QC and status changes, uploads, comments.
 
-One row per kind a save touches (specs 010). Each kind has a summary model
+One row per kind a save touches (spec 010). Each kind has a summary model
 (what the feed lists and renders) and only `changed` has a detail (the full
 old and new values). Rows are written by `Asset.save()` and by comments;
 they are deleted with the asset (foreign key cascade).
@@ -137,21 +137,21 @@ Activity = Annotated[
 #
 
 # Keys with a kind of their own; the other tracked keys are `changed`
-KIND_KEYS = {"qc/state": "qc", "status": "status"}
+KEYS_WITH_OWN_KIND = {"qc/state": "qc", "status": "status"}
 UNTRACKED_KEYS = {"id", "mtime", "ctime", "updated_by"}
 
-Row = tuple[str, dict[str, Any], dict[str, Any] | None]
+ActivityRow = tuple[str, dict[str, Any], dict[str, Any] | None]
 
 
-def is_tracked(key: str) -> bool:
+def is_tracked_key(key: str) -> bool:
     return key not in UNTRACKED_KEYS and not key.startswith("__")
 
 
-def split_changes(changes: dict[str, tuple[Any, Any]]) -> list[Row]:
-    """Rows (kind, summary, detail) for the changes of one save."""
-    tracked = {k: v for k, v in changes.items() if is_tracked(k)}
-    special = {k: tracked.pop(k) for k in KIND_KEYS if k in tracked}
-    rows: list[Row] = []
+def activities_from_changes(changes: dict[str, tuple[Any, Any]]) -> list[ActivityRow]:
+    """Activity rows (kind, summary, detail) for the changes of one save."""
+    tracked = {k: v for k, v in changes.items() if is_tracked_key(k)}
+    special = {k: tracked.pop(k) for k in KEYS_WITH_OWN_KIND if k in tracked}
+    rows: list[ActivityRow] = []
     if tracked:
         rows.append(
             (
@@ -161,11 +161,11 @@ def split_changes(changes: dict[str, tuple[Any, Any]]) -> list[Row]:
             )
         )
     for key, (old, new) in special.items():
-        rows.append((KIND_KEYS[key], {"old": old, "new": new}, None))
+        rows.append((KEYS_WITH_OWN_KIND[key], {"old": old, "new": new}, None))
     return rows
 
 
-async def record(
+async def add_activity(
     id_asset: int,
     kind: str,
     summary: dict[str, Any] | None = None,
@@ -173,7 +173,7 @@ async def record(
     *,
     ctime: float | None = None,
 ) -> int:
-    """Insert a row by the current user and tell clients (after the commit)."""
+    """Insert an activity row by the current user and tell clients after commit."""
     model = SUMMARY_MODELS[kind]
     summary = model.model_validate(summary or {}).model_dump(exclude_unset=True)
     user = current_user()
@@ -191,7 +191,7 @@ async def record(
     return id_activity
 
 
-async def record_save(
+async def add_save_activities(
     id_asset: int,
     changes: dict[str, tuple[Any, Any]],
     *,
@@ -199,21 +199,21 @@ async def record_save(
     kind: str | None = None,
     summary: dict[str, Any] | None = None,
 ) -> None:
-    """The rows of one asset save, inside its transaction.
+    """Write the activity rows of one asset save, inside its transaction.
 
     A caller-named kind (`uploaded`) is one row that takes every change
     with it. Otherwise a new asset gets `created`, a saved one a row per
     kind its changes touch, or none.
     """
     if kind:
-        rows: list[Row] = [(kind, summary or {}, None)]
+        rows: list[ActivityRow] = [(kind, summary or {}, None)]
     elif is_new:
         rows = [("created", {}, None)]
     else:
-        rows = split_changes(changes)
+        rows = activities_from_changes(changes)
     now = time.time()
     for row_kind, row_summary, row_detail in rows:
-        await record(id_asset, row_kind, row_summary, row_detail, ctime=now)
+        await add_activity(id_asset, row_kind, row_summary, row_detail, ctime=now)
 
 
 #
@@ -221,22 +221,22 @@ async def record_save(
 #
 
 
-def kinds_hash(kinds: list[str] | None) -> str:
+def _kinds_hash(kinds: list[str] | None) -> str:
     data = json_dumps(sorted(kinds or []))
     return hashlib.sha256(data.encode()).hexdigest()[:16]
 
 
-async def list_activity(
+async def list_activities(
     id_asset: int,
     *,
     kinds: list[str] | None = None,
     limit: int = 50,
     cursor: str | None = None,
 ) -> tuple[list[dict[str, Any]], str | None]:
-    """A page of the asset's rows, newest first, without details."""
+    """A page of the asset's activity rows, newest first, without details."""
     if unknown := set(kinds or []) - set(KINDS):
         raise ValidationException(f"Unknown kind: {', '.join(sorted(unknown))}")
-    qhash = kinds_hash(kinds)
+    qhash = _kinds_hash(kinds)
     conds = [t"id_asset = {id_asset}"]
     if kinds:
         conds.append(t"kind = ANY({kinds})")
@@ -257,7 +257,7 @@ async def list_activity(
 
 
 async def get_activity(id_asset: int, id_activity: int) -> dict[str, Any]:
-    """One row with its detail (the `detail` key only when there is one)."""
+    """One activity row with its detail (the `detail` key only if there is one)."""
     query = t"""
         SELECT id, kind, id_user, ctime, summary, detail FROM activity
         WHERE id = {id_activity} AND id_asset = {id_asset}
@@ -277,7 +277,7 @@ async def get_activity(id_asset: int, id_activity: int) -> dict[str, Any]:
 
 
 async def add_comment(id_asset: int, text: str) -> dict[str, Any]:
-    id_activity = await record(id_asset, "comment", {"text": text})
+    id_activity = await add_activity(id_asset, "comment", {"text": text})
     return await get_activity(id_asset, id_activity)
 
 
