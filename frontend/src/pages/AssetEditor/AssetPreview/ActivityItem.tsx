@@ -63,6 +63,11 @@ const EventRow = styled.div`
   .link {
     cursor: pointer;
     text-decoration: underline dotted;
+    background: none;
+    border: 0;
+    padding: 0;
+    color: inherit;
+    font: inherit;
   }
 
   .deleted {
@@ -115,7 +120,8 @@ const Bubble = styled.div`
 
   .menu {
     margin-left: auto;
-    visibility: hidden;
+    // opacity, not visibility: a hidden button can't be reached with Tab
+    opacity: 0;
 
     button {
       height: 20px;
@@ -125,8 +131,9 @@ const Bubble = styled.div`
     }
   }
 
-  &:hover .menu {
-    visibility: visible;
+  &:hover .menu,
+  &:focus-within .menu {
+    opacity: 1;
   }
 
   .text {
@@ -291,8 +298,17 @@ const DiffValue = ({ children }: { children: React.ReactNode }) => {
     <div
       className={expanded ? 'value' : 'value clamped'}
       title={expanded ? undefined : 'Click to show all'}
+      role={expanded ? undefined : 'button'}
+      tabIndex={expanded ? undefined : 0}
+      aria-expanded={expanded}
       onClick={() => {
         setExpanded(true);
+      }}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          setExpanded(true);
+        }
       }}
     >
       {children}
@@ -346,11 +362,11 @@ const MetaEvent = ({
       }
     >
       changed{' '}
-      <span className="link" onClick={toggle}>
+      <button type="button" className="link" aria-expanded={open} onClick={toggle}>
         {activity.summary.keys
           .map((key) => nebula.metaType(key).title || key)
           .join(', ')}
-      </span>
+      </button>
     </Event>
   );
 };

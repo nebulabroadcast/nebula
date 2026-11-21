@@ -180,7 +180,7 @@ class Asset(BaseObject):
                 await db.on_commit(self._end_creating)
             elif self._creating:
                 # saved again in the transaction that created it (a
-                # validator needing the id): part of `created`
+                # validator needing the id): part of `new`
                 return
             await add_save_activities(
                 self.id,
