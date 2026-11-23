@@ -1,19 +1,17 @@
 import functools
 import os
-from typing import cast, get_args
 
 import fastapi
 
 import nebula
 from nebula.plugins.frontend import get_frontend_plugins
 from nebula.settings import load_settings
-from nebula.settings.common import LanguageCode
 from server import APIRequest, UserModel
+from server.client_settings import get_user_client_settings
 from server.context import server_context
 from server.dependencies import CurrentUserOptional
 from server.sso import NebulaSSO
 
-from ._client_settings import get_client_settings
 from ._models import ServerInfoResponse
 
 
@@ -61,20 +59,7 @@ class GetServerInfo(APIRequest):
                 background=is_login_background_enabled(),
             )
 
-        # User preferred language
-
-        lang: LanguageCode = "en"
-        accept_language = request.headers.get("Accept-Language", "en")
-        preferred_language = accept_language.split(",")[0].strip().lower()
-        if len(preferred_language) > 2:
-            preferred_language = preferred_language[:2]
-        if preferred_language in get_args(LanguageCode):
-            lang = cast("LanguageCode", user.meta.get("language")) or preferred_language
-
-        # Construct client settings
-
-        client_settings = await get_client_settings(lang)
-        client_settings.server_url = f"{request.url.scheme}://{request.url.netloc}"
+        client_settings = await get_user_client_settings(request, user)
         plugins = get_frontend_plugins()
 
         # Return response

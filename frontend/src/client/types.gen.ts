@@ -4065,6 +4065,37 @@ export type AssetsThumbnailGetResponses = {
   200: unknown;
 };
 
+export type ServerRestartData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: '/api/v2/server/restart';
+};
+
+export type ServerRestartResponses = {
+  /**
+   * Successful Response
+   */
+  202: unknown;
+};
+
+export type ServerReloadSettingsData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: '/api/v2/server/reload-settings';
+};
+
+export type ServerReloadSettingsResponses = {
+  /**
+   * Successful Response
+   */
+  200: ClientSettingsModel;
+};
+
+export type ServerReloadSettingsResponse =
+  ServerReloadSettingsResponses[keyof ServerReloadSettingsResponses];
+
 export type UsersListData = {
   body?: never;
   path?: never;

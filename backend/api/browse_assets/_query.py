@@ -13,9 +13,9 @@ from ._models import BrowseAssetsRequest, ConditionModel
 
 
 def sanitize_value(value: SerializableValue) -> str:
-    if isinstance(value, str):
-        value = value.replace("'", "''")
-    return str(value)
+    # Coerce first, then escape: non-str values (list/dict from LIST and
+    # OBJECT metatypes) must have their embedded quotes escaped too.
+    return str(value).replace("'", "''")
 
 
 def build_conditions(conditions: list[ConditionModel]) -> list[str]:

@@ -96,6 +96,15 @@ async def get_server_settings() -> ServerSettings:
     return ServerSettings(**result)
 
 
+async def reload_settings_everywhere() -> None:
+    """Reload the settings here, and tell every other worker and replica to
+    (`server.reload_settings`, handled by the server's messaging)."""
+    from nebula.messaging import msg  # noqa: PLC0415
+
+    await load_settings()
+    await msg("server.reload_settings")
+
+
 async def load_settings() -> None:
     """Load settings from database.
 
