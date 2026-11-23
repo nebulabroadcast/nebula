@@ -8,7 +8,9 @@ from fastapi.websockets import WebSocket, WebSocketDisconnect
 
 import nebula
 from nebula.common import json_dumps, json_loads
+from nebula.settings import load_settings
 from server.background import BackgroundTask
+from server.restart import restart_replica
 from server.session import Session
 
 ALWAYS_SUBSCRIBE = [
@@ -153,10 +155,7 @@ class Messaging(BackgroundTask):
                         "data": data[4],
                     }
 
-                if message["topic"] == "log":
-                    assert isinstance(message["data"], dict)
-                    if message["data"].get("level", 0) > 3:
-                        self.handle_error_log()
+                await self.handle_server_topics(message)
 
                 clients = list(self.clients.values())
                 for client in clients:
@@ -171,6 +170,21 @@ class Messaging(BackgroundTask):
                 await asyncio.sleep(0.5)
 
         nebula.log.warn("Stopping redis2ws")
+
+    async def handle_server_topics(self, message: dict[str, Any]) -> None:
+        """Messages for the server itself (every worker of every replica)."""
+        data = message.get("data")
+        match message["topic"]:
+            case "log":
+                assert isinstance(data, dict)
+                if data.get("level", 0) > 3:
+                    self.handle_error_log()
+            case "server.reload_settings":
+                await load_settings()
+            case "server.restart":
+                restart_replica(
+                    str(data.get("id", "")) if isinstance(data, dict) else ""
+                )
 
     def handle_error_log(self) -> None:
         """When an error log is received, we want to keep error rate"""

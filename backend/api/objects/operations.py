@@ -11,7 +11,7 @@ from nebula.helpers.scheduling import bin_refresh
 from nebula.helpers.validators import Validator
 from nebula.objects.asset.changes import save_asset_changes
 from nebula.objects.utils import get_object_class_by_name
-from nebula.settings import load_settings
+from nebula.settings import reload_settings_everywhere
 from server import APIModel, APIRequest
 from server.dependencies import CurrentUser
 from server.session import Session
@@ -272,7 +272,7 @@ class Operations(APIRequest):
             await bin_refresh(affected_bins)
 
         if reload_settings:
-            await load_settings()
+            await reload_settings_everywhere()
 
         overall_success = all(x.success for x in result)
         return OperationsResponse(operations=result, success=overall_success)

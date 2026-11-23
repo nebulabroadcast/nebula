@@ -1,9 +1,10 @@
 import MainNavbar from '@containers/MainNavbar';
 import { DialogProvider } from '@features/Dialogs';
 import { MediaUploadProvider, MediaUploadMonitor } from '@features/MediaUpload';
+import { useNebula } from '@features/Nebula';
 import { WebSocketProvider } from '@features/Websocket';
 import { AxiosError } from 'axios';
-import { useState, useEffect, useMemo, Suspense } from 'react';
+import { Fragment, useState, useEffect, useMemo, Suspense } from 'react';
 import { Outlet, useLocation } from 'react-router';
 
 import type { InitResponse } from './client';
@@ -32,6 +33,9 @@ const App = () => {
   const [errorCode, setErrorCode] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [initData, setInitData] = useState<InitResponse | null>(null);
+  // Reloaded settings remount the pages (not the websocket or uploads),
+  // so everything reads nebula.settings again
+  const { settingsVersion } = useNebula();
 
   const wsAddress = useMemo(() => {
     const proto = window.location.protocol.replace('http', 'ws');
@@ -109,8 +113,10 @@ const App = () => {
       <WebSocketProvider url={wsAddress}>
         <DialogProvider>
           <MediaUploadProvider>
-            <MainNavbar />
-            <Outlet />
+            <Fragment key={settingsVersion}>
+              <MainNavbar />
+              <Outlet />
+            </Fragment>
             <MediaUploadMonitor />
           </MediaUploadProvider>
         </DialogProvider>

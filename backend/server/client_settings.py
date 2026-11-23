@@ -1,5 +1,6 @@
-from typing import Any
+from typing import Any, cast, get_args
 
+import fastapi
 from pydantic import Field
 
 import nebula
@@ -211,3 +212,20 @@ async def get_client_settings(lang: LanguageCode) -> ClientSettingsModel:
         filetypes=filetypes,
         server_url=None,
     )
+
+
+async def get_user_client_settings(
+    request: fastapi.Request, user: nebula.User
+) -> ClientSettingsModel:
+    """Client settings in the user's preferred language"""
+    lang: LanguageCode = "en"
+    accept_language = request.headers.get("Accept-Language", "en")
+    preferred_language = accept_language.split(",")[0].strip().lower()
+    if len(preferred_language) > 2:
+        preferred_language = preferred_language[:2]
+    if preferred_language in get_args(LanguageCode):
+        lang = cast("LanguageCode", user.meta.get("language")) or preferred_language
+
+    client_settings = await get_client_settings(lang)
+    client_settings.server_url = f"{request.url.scheme}://{request.url.netloc}"
+    return client_settings
