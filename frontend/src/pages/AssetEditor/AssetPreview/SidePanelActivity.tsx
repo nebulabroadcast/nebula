@@ -1,4 +1,4 @@
-import { Loader, Navbar, RadioButton, Section, TextArea } from '@components';
+import { Loader, Section, TextArea } from '@components';
 import { useWebSocket, type WebSocketHandler } from '@features/Websocket';
 import { getErrorDetail } from '@lib/utils';
 import {
@@ -52,7 +52,6 @@ const merge = (current: Activity[], page: Activity[]) => {
 };
 
 export const SidePanelActivity = ({ assetId }: { assetId: number }) => {
-  const [filter, setFilter] = useState<Filter>('all');
   // newest first; rendered in reverse, the newest at the bottom
   const [items, setItems] = useState<Activity[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
@@ -68,7 +67,8 @@ export const SidePanelActivity = ({ assetId }: { assetId: number }) => {
   // scroll height before older rows were added above, to keep the view still
   const olderFromRef = useRef<number | null>(null);
 
-  const kind = FILTERS.find((f) => f.value === filter)?.kind;
+  // Add filter switchel later
+  const kind = FILTERS.find((f) => f.value === 'all')?.kind;
 
   const load = useCallback(
     (cursor?: string) => {
@@ -142,8 +142,9 @@ export const SidePanelActivity = ({ assetId }: { assetId: number }) => {
       });
   };
 
-  return (
-    <>
+  /*
+    * If we ever decide to have kind switching.... 
+    *
       <Navbar>
         <RadioButton
           options={FILTERS.map((f) => ({ value: f.value, title: f.title }))}
@@ -153,6 +154,10 @@ export const SidePanelActivity = ({ assetId }: { assetId: number }) => {
           }}
         />
       </Navbar>
+  */
+
+  return (
+    <>
       <Section className="grow" style={{ padding: 0 }}>
         <Feed className="contained feed" ref={feedRef} onScroll={onScroll}>
           {loading && !items.length && <Loader />}
