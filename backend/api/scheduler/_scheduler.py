@@ -2,7 +2,7 @@ from typing import Any
 
 import nebula
 from nebula.helpers.create_new_event import EventData, create_new_event
-from nebula.helpers.scheduling import parse_rundown_date
+from nebula.helpers.scheduling import ensure_can_schedule, parse_rundown_date
 
 from ._models import SchedulerResponse
 from ._utils import delete_events, get_event_at_time, get_events_in_range
@@ -71,7 +71,7 @@ async def scheduler(  # noqa: C901, PLR0913, PLR0915, PLR0912
                     continue
 
                 asset = await nebula.Asset.load(event_data.id_asset)
-                assert asset
+                ensure_can_schedule(asset, channel)
 
                 # load the existing bin
                 ex_bin = await nebula.Bin.load(event_at_position["id_magic"])
@@ -135,6 +135,10 @@ async def scheduler(  # noqa: C901, PLR0913, PLR0915, PLR0912
 
         else:
             # create new event
+            if event_data.id_asset:
+                ensure_can_schedule(
+                    await nebula.Asset.load(event_data.id_asset), channel
+                )
             await create_new_event(channel, event_data)
 
     # Return existing events

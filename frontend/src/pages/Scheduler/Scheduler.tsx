@@ -9,6 +9,7 @@ import {
 } from '@containers/Calendar/types';
 import { showEventDialog, useDialog } from '@features/Dialogs';
 import { useWebSocket, type WebSocketHandler } from '@features/Websocket';
+import { getErrorDetail } from '@lib/utils';
 import { DateTime } from 'luxon';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { toast } from 'react-toastify';
@@ -79,7 +80,8 @@ const Scheduler: React.FC<SchedulerProps> = ({ draggedObjects }) => {
 
   const onError = (error: unknown) => {
     setLoading(false);
-    toast.error('Scheduler API error');
+    // e.g. an asset the channel's scheduler doesn't accept
+    toast.error(getErrorDetail(error, 'Scheduler API error'));
     console.log('Scheduler API error', error);
   };
 
