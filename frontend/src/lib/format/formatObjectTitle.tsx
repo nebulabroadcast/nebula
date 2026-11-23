@@ -33,20 +33,18 @@ const formatObjectTitle = (
   const tstyle: React.CSSProperties = {};
   if (rowData.is_primary) tstyle.fontWeight = 'bold';
   return (
-    <td>
-      <div>
-        {withThumbnail && thumbnail(rowData)}
-        <span style={tstyle}>{title}</span>
-        {subtitle && (
-          <span style={{ color: 'var(--color-text-dim)' }}>
-            {nebula.settings?.system?.subtitle_separator}
-            {subtitle}
-          </span>
-        )}
-        {note && <Spacer />}
-        {note && <TitleNote>{note}</TitleNote>}
-      </div>
-    </td>
+    <div>
+      {withThumbnail && thumbnail(rowData)}
+      <span style={tstyle}>{title}</span>
+      {subtitle && (
+        <span style={{ color: 'var(--color-text-dim)' }}>
+          {nebula.settings?.system?.subtitle_separator}
+          {subtitle}
+        </span>
+      )}
+      {note && <Spacer />}
+      {note && <TitleNote>{note}</TitleNote>}
+    </div>
   );
 };
 

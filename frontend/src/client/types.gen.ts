@@ -43,6 +43,39 @@ export type ActionItemModel = {
 };
 
 /**
+ * ActivityPage
+ */
+export type ActivityPage = {
+  /**
+   * Items
+   */
+  items: Array<
+    | NewActivity
+    | MetaActivity
+    | QcActivity
+    | StatusActivity
+    | UploadActivity
+    | CommentActivity
+  >;
+  /**
+   * Next Cursor
+   *
+   * Pass as `cursor` to get the next page
+   */
+  next_cursor?: string | null;
+  /**
+   * Has More
+   */
+  has_more?: boolean;
+  /**
+   * Total
+   *
+   * Number of matching objects, if requested
+   */
+  total?: number | null;
+};
+
+/**
  * AgentInfo
  */
 export type AgentInfo = {
@@ -592,6 +625,63 @@ export type ClientSettingsModel = {
    * Server URL
    */
   server_url?: string | null;
+};
+
+/**
+ * CommentActivity
+ */
+export type CommentActivity = {
+  /**
+   * Id
+   */
+  id: number;
+  /**
+   * Id User
+   *
+   * Author, null: system
+   */
+  id_user: number | null;
+  /**
+   * Ctime
+   */
+  ctime: number;
+  /**
+   * Mtime
+   *
+   * Last change of the row (comments), null: never
+   */
+  mtime?: number | null;
+  /**
+   * Kind
+   */
+  kind: 'comment';
+  summary: CommentSummary;
+};
+
+/**
+ * CommentPayload
+ */
+export type CommentPayload = {
+  /**
+   * Text
+   */
+  text: string;
+};
+
+/**
+ * CommentSummary
+ */
+export type CommentSummary = {
+  /**
+   * Text
+   */
+  text?: string | null;
+  /**
+   * Deleted
+   *
+   * Deleted (at `mtime`), the text is gone
+   */
+  deleted?: boolean;
 };
 
 /**
@@ -1304,6 +1394,67 @@ export const MediaType = {
 export type MediaType = (typeof MediaType)[keyof typeof MediaType];
 
 /**
+ * MetaActivity
+ */
+export type MetaActivity = {
+  /**
+   * Id
+   */
+  id: number;
+  /**
+   * Id User
+   *
+   * Author, null: system
+   */
+  id_user: number | null;
+  /**
+   * Ctime
+   */
+  ctime: number;
+  /**
+   * Mtime
+   *
+   * Last change of the row (comments), null: never
+   */
+  mtime?: number | null;
+  /**
+   * Kind
+   */
+  kind: 'meta';
+  summary: MetaSummary;
+  /**
+   * Only when reading a single row
+   */
+  detail?: MetaDetail | null;
+};
+
+/**
+ * MetaDetail
+ */
+export type MetaDetail = {
+  /**
+   * Changes
+   *
+   * Old and new value of each changed key (null: missing)
+   */
+  changes: {
+    [key: string]: [unknown, unknown];
+  };
+};
+
+/**
+ * MetaSummary
+ */
+export type MetaSummary = {
+  /**
+   * Keys
+   *
+   * Changed metadata keys
+   */
+  keys: Array<string>;
+};
+
+/**
  * NebulaStorageUsage
  */
 export type NebulaStorageUsage = {
@@ -1336,6 +1487,37 @@ export type NebulaStoragesUsage = {
 };
 
 /**
+ * NewActivity
+ */
+export type NewActivity = {
+  /**
+   * Id
+   */
+  id: number;
+  /**
+   * Id User
+   *
+   * Author, null: system
+   */
+  id_user: number | null;
+  /**
+   * Ctime
+   */
+  ctime: number;
+  /**
+   * Mtime
+   *
+   * Last change of the row (comments), null: never
+   */
+  mtime?: number | null;
+  /**
+   * Kind
+   */
+  kind: 'new';
+  summary: NewSummary;
+};
+
+/**
  * NewPassword
  */
 export type NewPassword = {
@@ -1345,6 +1527,13 @@ export type NewPassword = {
    * New password
    */
   password: string;
+};
+
+/**
+ * NewSummary
+ */
+export type NewSummary = {
+  [key: string]: unknown;
 };
 
 /**
@@ -1810,6 +1999,37 @@ export type ProxyInfo = {
    * Timestamp
    */
   timestamp: number | null;
+};
+
+/**
+ * QcActivity
+ */
+export type QcActivity = {
+  /**
+   * Id
+   */
+  id: number;
+  /**
+   * Id User
+   *
+   * Author, null: system
+   */
+  id_user: number | null;
+  /**
+   * Ctime
+   */
+  ctime: number;
+  /**
+   * Mtime
+   *
+   * Last change of the row (comments), null: never
+   */
+  mtime?: number | null;
+  /**
+   * Kind
+   */
+  kind: 'qc';
+  summary: StateSummary;
 };
 
 /**
@@ -2386,6 +2606,51 @@ export type SolveRequest = {
 };
 
 /**
+ * StateSummary
+ */
+export type StateSummary = {
+  /**
+   * Old
+   */
+  old?: number | null;
+  /**
+   * New
+   */
+  new?: number | null;
+};
+
+/**
+ * StatusActivity
+ */
+export type StatusActivity = {
+  /**
+   * Id
+   */
+  id: number;
+  /**
+   * Id User
+   *
+   * Author, null: system
+   */
+  id_user: number | null;
+  /**
+   * Ctime
+   */
+  ctime: number;
+  /**
+   * Mtime
+   *
+   * Last change of the row (comments), null: never
+   */
+  mtime?: number | null;
+  /**
+   * Kind
+   */
+  kind: 'status';
+  summary: StateSummary;
+};
+
+/**
  * StorageStat
  */
 export type StorageStat = {
@@ -2437,6 +2702,53 @@ export type TokenExchangeRequest = {
    * Access token to be exchanged for a new one
    */
   access_token: string;
+};
+
+/**
+ * UploadActivity
+ */
+export type UploadActivity = {
+  /**
+   * Id
+   */
+  id: number;
+  /**
+   * Id User
+   *
+   * Author, null: system
+   */
+  id_user: number | null;
+  /**
+   * Ctime
+   */
+  ctime: number;
+  /**
+   * Mtime
+   *
+   * Last change of the row (comments), null: never
+   */
+  mtime?: number | null;
+  /**
+   * Kind
+   */
+  kind: 'upload';
+  summary: UploadSummary;
+};
+
+/**
+ * UploadSummary
+ */
+export type UploadSummary = {
+  /**
+   * Size
+   *
+   * File size in bytes
+   */
+  size: number;
+  /**
+   * Extension
+   */
+  extension: string;
 };
 
 /**
@@ -4010,6 +4322,271 @@ export type AssetsAuxPutResponses = {
 };
 
 export type AssetsAuxPutResponse = AssetsAuxPutResponses[keyof AssetsAuxPutResponses];
+
+export type AssetsActivitiesListData = {
+  body?: never;
+  path: {
+    /**
+     * Asset Id
+     *
+     * Asset ID
+     */
+    asset_id: number;
+  };
+  query?: {
+    /**
+     * Kind
+     *
+     * Comma-separated kinds (new, meta, qc, status, upload, comment)
+     */
+    kind?: string | null;
+    /**
+     * Limit
+     */
+    limit?: number;
+    /**
+     * Cursor
+     *
+     * Value of `next_cursor` from the previous page
+     */
+    cursor?: string | null;
+  };
+  url: '/api/v2/assets/{asset_id}/activities';
+};
+
+export type AssetsActivitiesListErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type AssetsActivitiesListError =
+  AssetsActivitiesListErrors[keyof AssetsActivitiesListErrors];
+
+export type AssetsActivitiesListResponses = {
+  /**
+   * Successful Response
+   */
+  200: ActivityPage;
+};
+
+export type AssetsActivitiesListResponse =
+  AssetsActivitiesListResponses[keyof AssetsActivitiesListResponses];
+
+export type AssetsActivitiesCommentData = {
+  body: CommentPayload;
+  path: {
+    /**
+     * Asset Id
+     *
+     * Asset ID
+     */
+    asset_id: number;
+  };
+  query?: never;
+  url: '/api/v2/assets/{asset_id}/activities';
+};
+
+export type AssetsActivitiesCommentErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type AssetsActivitiesCommentError =
+  AssetsActivitiesCommentErrors[keyof AssetsActivitiesCommentErrors];
+
+export type AssetsActivitiesCommentResponses = {
+  /**
+   * Response Assets Activities Comment
+   *
+   * Successful Response
+   */
+  201:
+    | ({
+        kind: 'new';
+      } & NewActivity)
+    | ({
+        kind: 'meta';
+      } & MetaActivity)
+    | ({
+        kind: 'qc';
+      } & QcActivity)
+    | ({
+        kind: 'status';
+      } & StatusActivity)
+    | ({
+        kind: 'upload';
+      } & UploadActivity)
+    | ({
+        kind: 'comment';
+      } & CommentActivity);
+};
+
+export type AssetsActivitiesCommentResponse =
+  AssetsActivitiesCommentResponses[keyof AssetsActivitiesCommentResponses];
+
+export type AssetsActivitiesDeleteData = {
+  body?: never;
+  path: {
+    /**
+     * Asset Id
+     *
+     * Asset ID
+     */
+    asset_id: number;
+    /**
+     * Activity Id
+     *
+     * Activity ID
+     */
+    activity_id: number;
+  };
+  query?: never;
+  url: '/api/v2/assets/{asset_id}/activities/{activity_id}';
+};
+
+export type AssetsActivitiesDeleteErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type AssetsActivitiesDeleteError =
+  AssetsActivitiesDeleteErrors[keyof AssetsActivitiesDeleteErrors];
+
+export type AssetsActivitiesDeleteResponses = {
+  /**
+   * Successful Response
+   */
+  204: void;
+};
+
+export type AssetsActivitiesDeleteResponse =
+  AssetsActivitiesDeleteResponses[keyof AssetsActivitiesDeleteResponses];
+
+export type AssetsActivitiesGetData = {
+  body?: never;
+  path: {
+    /**
+     * Asset Id
+     *
+     * Asset ID
+     */
+    asset_id: number;
+    /**
+     * Activity Id
+     *
+     * Activity ID
+     */
+    activity_id: number;
+  };
+  query?: never;
+  url: '/api/v2/assets/{asset_id}/activities/{activity_id}';
+};
+
+export type AssetsActivitiesGetErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type AssetsActivitiesGetError =
+  AssetsActivitiesGetErrors[keyof AssetsActivitiesGetErrors];
+
+export type AssetsActivitiesGetResponses = {
+  /**
+   * Response Assets Activities Get
+   *
+   * Successful Response
+   */
+  200:
+    | ({
+        kind: 'new';
+      } & NewActivity)
+    | ({
+        kind: 'meta';
+      } & MetaActivity)
+    | ({
+        kind: 'qc';
+      } & QcActivity)
+    | ({
+        kind: 'status';
+      } & StatusActivity)
+    | ({
+        kind: 'upload';
+      } & UploadActivity)
+    | ({
+        kind: 'comment';
+      } & CommentActivity);
+};
+
+export type AssetsActivitiesGetResponse =
+  AssetsActivitiesGetResponses[keyof AssetsActivitiesGetResponses];
+
+export type AssetsActivitiesEditData = {
+  body: CommentPayload;
+  path: {
+    /**
+     * Asset Id
+     *
+     * Asset ID
+     */
+    asset_id: number;
+    /**
+     * Activity Id
+     *
+     * Activity ID
+     */
+    activity_id: number;
+  };
+  query?: never;
+  url: '/api/v2/assets/{asset_id}/activities/{activity_id}';
+};
+
+export type AssetsActivitiesEditErrors = {
+  /**
+   * Validation Error
+   */
+  422: HttpValidationError;
+};
+
+export type AssetsActivitiesEditError =
+  AssetsActivitiesEditErrors[keyof AssetsActivitiesEditErrors];
+
+export type AssetsActivitiesEditResponses = {
+  /**
+   * Response Assets Activities Edit
+   *
+   * Successful Response
+   */
+  200:
+    | ({
+        kind: 'new';
+      } & NewActivity)
+    | ({
+        kind: 'meta';
+      } & MetaActivity)
+    | ({
+        kind: 'qc';
+      } & QcActivity)
+    | ({
+        kind: 'status';
+      } & StatusActivity)
+    | ({
+        kind: 'upload';
+      } & UploadActivity)
+    | ({
+        kind: 'comment';
+      } & CommentActivity);
+};
+
+export type AssetsActivitiesEditResponse =
+  AssetsActivitiesEditResponses[keyof AssetsActivitiesEditResponses];
 
 export type AssetsThumbnailGetData = {
   body?: never;

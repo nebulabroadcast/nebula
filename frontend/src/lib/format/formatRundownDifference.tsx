@@ -17,7 +17,7 @@ const formatRundownDifference =
     if (diff > 0) style.color = 'red';
     else style.color = 'green';
 
-    return <td style={style}>{formattedDiff}</td>;
+    return <span style={style}>{formattedDiff}</span>;
   };
 
 export default formatRundownDifference;

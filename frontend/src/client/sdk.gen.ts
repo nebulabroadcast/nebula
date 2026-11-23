@@ -15,6 +15,21 @@ import type {
   ApplySchedulingTemplateData,
   ApplySchedulingTemplateErrors,
   ApplySchedulingTemplateResponses,
+  AssetsActivitiesCommentData,
+  AssetsActivitiesCommentErrors,
+  AssetsActivitiesCommentResponses,
+  AssetsActivitiesDeleteData,
+  AssetsActivitiesDeleteErrors,
+  AssetsActivitiesDeleteResponses,
+  AssetsActivitiesEditData,
+  AssetsActivitiesEditErrors,
+  AssetsActivitiesEditResponses,
+  AssetsActivitiesGetData,
+  AssetsActivitiesGetErrors,
+  AssetsActivitiesGetResponses,
+  AssetsActivitiesListData,
+  AssetsActivitiesListErrors,
+  AssetsActivitiesListResponses,
   AssetsAuxDeleteData,
   AssetsAuxDeleteErrors,
   AssetsAuxDeleteResponses,
@@ -1087,6 +1102,118 @@ export const assetsAuxPut = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     url: '/api/v2/assets/{asset_id}/aux/{key}',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+/**
+ * List the activity of an asset
+ *
+ * Newest first. Rows have no `detail`; read a single row for it.
+ */
+export const assetsActivitiesList = <ThrowOnError extends boolean = false>(
+  options: Options<AssetsActivitiesListData, ThrowOnError>
+): RequestResult<
+  AssetsActivitiesListResponses,
+  AssetsActivitiesListErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).get<
+    AssetsActivitiesListResponses,
+    AssetsActivitiesListErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    url: '/api/v2/assets/{asset_id}/activities',
+    ...options,
+  });
+
+/**
+ * Comment on an asset
+ */
+export const assetsActivitiesComment = <ThrowOnError extends boolean = false>(
+  options: Options<AssetsActivitiesCommentData, ThrowOnError>
+): RequestResult<
+  AssetsActivitiesCommentResponses,
+  AssetsActivitiesCommentErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    AssetsActivitiesCommentResponses,
+    AssetsActivitiesCommentErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    url: '/api/v2/assets/{asset_id}/activities',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+/**
+ * Delete a comment
+ *
+ * The author or an admin. The row stays, without its text.
+ */
+export const assetsActivitiesDelete = <ThrowOnError extends boolean = false>(
+  options: Options<AssetsActivitiesDeleteData, ThrowOnError>
+): RequestResult<
+  AssetsActivitiesDeleteResponses,
+  AssetsActivitiesDeleteErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).delete<
+    AssetsActivitiesDeleteResponses,
+    AssetsActivitiesDeleteErrors,
+    ThrowOnError
+  >({ url: '/api/v2/assets/{asset_id}/activities/{activity_id}', ...options });
+
+/**
+ * Get an activity row with its detail
+ *
+ * `detail` holds the full old and new values of a `meta` row.
+ */
+export const assetsActivitiesGet = <ThrowOnError extends boolean = false>(
+  options: Options<AssetsActivitiesGetData, ThrowOnError>
+): RequestResult<
+  AssetsActivitiesGetResponses,
+  AssetsActivitiesGetErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).get<
+    AssetsActivitiesGetResponses,
+    AssetsActivitiesGetErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    url: '/api/v2/assets/{asset_id}/activities/{activity_id}',
+    ...options,
+  });
+
+/**
+ * Edit your comment
+ *
+ * Only the author edits a comment. Other kinds can't be changed.
+ */
+export const assetsActivitiesEdit = <ThrowOnError extends boolean = false>(
+  options: Options<AssetsActivitiesEditData, ThrowOnError>
+): RequestResult<
+  AssetsActivitiesEditResponses,
+  AssetsActivitiesEditErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).patch<
+    AssetsActivitiesEditResponses,
+    AssetsActivitiesEditErrors,
+    ThrowOnError
+  >({
+    responseType: 'json',
+    url: '/api/v2/assets/{asset_id}/activities/{activity_id}',
     ...options,
     headers: {
       'Content-Type': 'application/json',

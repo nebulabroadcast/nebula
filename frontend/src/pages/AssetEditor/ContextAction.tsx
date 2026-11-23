@@ -1,6 +1,6 @@
 import { Dialog, Table, Button, Icon } from '@components';
 import type { TableColumn, TableRowData } from '@components/table/types';
-import formatMetaDatetime from '@lib/tableFormat/formatMetaDatetime';
+import formatMetaDatetime from '@lib/format/formatMetaDatetime';
 import { formatTimeString } from '@lib/utils';
 import React, { AnchorHTMLAttributes } from 'react';
 import ReactMarkdown from 'react-markdown';

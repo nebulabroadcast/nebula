@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING, Any, cast
 import asyncpg
 from nx.db import db
 
+from nebula.activity import add_save_activities
 from nebula.context import require_access
 from nebula.enum import ContentType, MediaType, ObjectStatus, ObjectTypeId
 from nebula.exceptions import ConflictException
@@ -62,6 +63,9 @@ class Asset(BaseObject):
         "ctime",
         "mtime",
     ]
+
+    # True from the first save until its transaction commits
+    _creating: bool = False
 
     defaults = {
         "content_type": ContentType.VIDEO,
@@ -148,6 +152,46 @@ class Asset(BaseObject):
             cls, filter, q=q, sort=sort, page_size=page_size
         ):
             yield asset
+
+    #
+    # Saving
+    #
+
+    async def save(
+        self,
+        notify: bool = True,
+        *,
+        activity_kind: str | None = None,
+        activity_summary: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> None:
+        """Save the asset and write its activity in the same transaction.
+
+        `activity_kind` names the row instead of the changes (`upload`
+        with `activity_summary`); the row then stands for every change.
+        """
+        is_new = self.id is None
+        changes = self.changed_keys()
+        async with db.transaction():
+            await super().save(notify, **kwargs)
+            assert self.id is not None
+            if is_new:
+                self._creating = True
+                await db.on_commit(self._end_creating)
+            elif self._creating:
+                # saved again in the transaction that created it (a
+                # validator needing the id): part of `new`
+                return
+            await add_save_activities(
+                self.id,
+                changes,
+                is_new=is_new,
+                kind=activity_kind,
+                summary=activity_summary,
+            )
+
+    async def _end_creating(self) -> None:
+        self._creating = False
 
     #
     # Deleting

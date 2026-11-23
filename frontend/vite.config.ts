@@ -45,9 +45,11 @@ export default ({ mode }: ConfigEnv) => {
         '/ws': {
           ws: true,
           target: SERVER_URL,
-          // Keep Host: the server compares it with Origin before it accepts
-          // the session cookie on the websocket handshake
-          changeOrigin: false,
+          // changeOrigin sets Host (and TLS SNI) to the target; the server
+          // checks Origin against Host before it accepts the session cookie
+          // on the handshake, so Origin must be rewritten to match
+          changeOrigin: true,
+          rewriteWsOrigin: true,
         },
       },
     },

@@ -1,3 +1,9 @@
+// Cells without padding (an icon filling the cell)
+
+.nb-table td.symbol {
+  padding: 0;
+}
+
 // Coloring stuff
 
 .qc-state {
