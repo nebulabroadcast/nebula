@@ -6,7 +6,7 @@ from pydantic import Field
 import nebula
 from nebula.objects.user import WrongPasswordException
 from server.dependencies import CurrentUser
-from server.login_attempts import check_failed_login, set_failed_login
+from server.login_attempts import check_failed_login, clear_failed_login, set_failed_login
 from server.models import APIModel
 from server.request import APIRequest
 from server.session import Session
@@ -86,6 +86,8 @@ class SetPassword(APIRequest):
         except WrongPasswordException:
             await set_failed_login(ip_address)
             raise
+
+        await clear_failed_login(ip_address)
         await target_user.save()
         await Session.revoke_user(target_user.id)
 

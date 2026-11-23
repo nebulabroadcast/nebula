@@ -301,7 +301,9 @@ class User(BaseObject):
         self.update(changes)
 
     async def change_password(
-        self, password: str, current_password: str | None = None
+        self,
+        password: str,
+        current_password: str | None = None,
     ) -> None:
         """Set a new password: edit rights and length are checked.
 

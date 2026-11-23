@@ -15,7 +15,11 @@ from rest.users.models import (
     UserPatch,
 )
 from server.errors import REST_PREFIX
-from server.login_attempts import check_failed_login, set_failed_login
+from server.login_attempts import (
+    check_failed_login,
+    clear_failed_login,
+    set_failed_login,
+)
 from server.query.params import split_list
 from server.session import Session
 from server.utils import get_real_ip, server_url_from_request
@@ -103,6 +107,7 @@ async def set_password(user_id: UserId, payload: NewPassword, request: Request) 
     except WrongPasswordException:
         await set_failed_login(ip_address)
         raise
+    await clear_failed_login(ip_address)
     await user.save()
     await Session.revoke_user(user.id)
 
