@@ -12,18 +12,9 @@ import {
 import { toast } from 'react-toastify';
 import styled from 'styled-components';
 
-import { addComment, fetchActivities, type Activity } from '../assetApi';
+import { addComment, fetchActivities, fetchActivity, type Activity } from '../assetApi';
 
 import { ActivityItem, DaySeparator } from './ActivityItem';
-
-type Filter = 'all' | 'comments' | 'qc' | 'changes';
-
-const FILTERS: Array<{ value: Filter; title: string; kind?: string }> = [
-  { value: 'all', title: 'All' },
-  { value: 'comments', title: 'Comments', kind: 'comment' },
-  { value: 'qc', title: 'QC', kind: 'qc' },
-  { value: 'changes', title: 'Changes', kind: 'meta,status,upload,new' },
-];
 
 // local calendar day, to put a separator between days
 const dayKey = (timestamp: number) => new Date(timestamp * 1000).toDateString();
@@ -60,28 +51,22 @@ export const SidePanelActivity = ({ assetId }: { assetId: number }) => {
   const { subscribe } = useWebSocket();
 
   const feedRef = useRef<HTMLDivElement>(null);
-  // drop responses of an earlier asset or filter
+  // drop responses of an earlier asset
   const generationRef = useRef(0);
   // follow new rows while the feed is scrolled to the bottom
   const stickRef = useRef(true);
   // scroll height before older rows were added above, to keep the view still
   const olderFromRef = useRef<number | null>(null);
 
-  // Add filter switchel later
-  const kind = FILTERS.find((f) => f.value === 'all')?.kind;
-
   const load = useCallback(
     (cursor?: string) => {
       const generation = generationRef.current;
       setLoading(true);
-      fetchActivities(assetId, kind, cursor)
+      fetchActivities(assetId, undefined, cursor)
         .then((page) => {
           if (generation !== generationRef.current) return;
           setItems((current) => merge(current, page.items));
-          // a reload of the first page keeps the cursor of older pages already loaded
-          setNextCursor((current) =>
-            cursor || current === null ? (page.next_cursor ?? null) : current
-          );
+          setNextCursor(page.next_cursor ?? null);
         })
         .catch((error: unknown) => {
           toast.error(getErrorDetail(error));
@@ -90,10 +75,10 @@ export const SidePanelActivity = ({ assetId }: { assetId: number }) => {
           if (generation === generationRef.current) setLoading(false);
         });
     },
-    [assetId, kind]
+    [assetId]
   );
 
-  // A new asset or filter starts over
+  // A new asset starts over
   useEffect(() => {
     generationRef.current++;
     stickRef.current = true;
@@ -104,10 +89,20 @@ export const SidePanelActivity = ({ assetId }: { assetId: number }) => {
 
   useEffect(() => {
     const onActivity: WebSocketHandler<'activity'> = (_topic, message) => {
-      if (message.id_asset === assetId) load();
+      if (message.id_asset !== assetId) return;
+      // only the row the message names: new, or an edited or deleted comment
+      const generation = generationRef.current;
+      fetchActivity(assetId, message.id)
+        .then((activity) => {
+          if (generation === generationRef.current)
+            setItems((current) => merge(current, [activity]));
+        })
+        .catch((error: unknown) => {
+          toast.error(getErrorDetail(error));
+        });
     };
     return subscribe('activity', onActivity);
-  }, [subscribe, assetId, load]);
+  }, [subscribe, assetId]);
 
   useLayoutEffect(() => {
     const el = feedRef.current;
@@ -131,30 +126,16 @@ export const SidePanelActivity = ({ assetId }: { assetId: number }) => {
   };
 
   const onPost = () => {
-    if (!text.trim()) return;
+    const posted = text;
+    if (!posted.trim()) return;
+    // cleared at once so a second Enter has nothing to send
+    setText('');
     stickRef.current = true;
-    addComment(assetId, text)
-      .then(() => {
-        setText('');
-      })
-      .catch((error: unknown) => {
-        toast.error(getErrorDetail(error));
-      });
+    addComment(assetId, posted).catch((error: unknown) => {
+      setText(posted);
+      toast.error(getErrorDetail(error));
+    });
   };
-
-  /*
-    * If we ever decide to have kind switching.... 
-    *
-      <Navbar>
-        <RadioButton
-          options={FILTERS.map((f) => ({ value: f.value, title: f.title }))}
-          value={filter}
-          onChange={(value) => {
-            setFilter(value as Filter);
-          }}
-        />
-      </Navbar>
-  */
 
   return (
     <>

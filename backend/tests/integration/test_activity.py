@@ -9,7 +9,8 @@ from typing import Any
 import pytest
 
 import nebula
-from nebula import messaging
+from nebula import activity, messaging
+from nebula.context import RequestContext, request_context
 
 pytestmark = pytest.mark.asyncio(loop_scope="session")
 
@@ -93,4 +94,46 @@ async def test_new_asset_saved_twice_is_one_new_row(published: list[Any]) -> Non
 
     with pytest.raises(Rollback):
         await create_and_roll_back()
+    assert published == []
+
+
+async def test_comment_permissions(published: list[Any]) -> None:
+    asset_row = await nebula.db.fetchrow("SELECT id FROM assets ORDER BY id LIMIT 1")
+    user_row = await nebula.db.fetchrow("SELECT id FROM users ORDER BY id LIMIT 1")
+    if asset_row is None or user_row is None:
+        pytest.skip("No assets or users")
+    id_asset = asset_row["id"]
+    # only the author is written (id_user references users); the others act
+    author = nebula.User(meta={"id": user_row["id"], "login": "author"})
+    other = nebula.User(meta={"id": -1, "login": "other"})
+    admin = nebula.User(meta={"id": -2, "login": "admin", "is_admin": True})
+
+    def acting(user: nebula.User) -> Any:
+        return request_context(RequestContext(user=user))
+
+    async def check_and_roll_back() -> None:
+        async with nebula.db.transaction():
+            with acting(author):
+                comment = await activity.add_comment(id_asset, "hello")
+                await activity.add_activity(id_asset, "meta", {"keys": ["title"]})
+                meta = (await activity.list_activities(id_asset, limit=1))[0][0]
+                assert meta["kind"] == "meta"
+            with acting(other), pytest.raises(nebula.ForbiddenException):
+                await activity.edit_comment(id_asset, comment["id"], "hijacked")
+            with acting(other), pytest.raises(nebula.ForbiddenException):
+                await activity.delete_comment(id_asset, comment["id"])
+            with acting(author), pytest.raises(nebula.ForbiddenException):
+                await activity.edit_comment(id_asset, meta["id"], "rewritten")
+            with acting(admin), pytest.raises(nebula.ForbiddenException):
+                await activity.edit_comment(id_asset, comment["id"], "admin text")
+            with acting(admin):
+                await activity.delete_comment(id_asset, comment["id"])
+            with acting(author), pytest.raises(nebula.ForbiddenException):
+                await activity.edit_comment(id_asset, comment["id"], "undeleted")
+            row = await activity.get_activity(id_asset, comment["id"])
+            assert row["summary"] == {"deleted": True}
+            raise Rollback
+
+    with pytest.raises(Rollback):
+        await check_and_roll_back()
     assert published == []
