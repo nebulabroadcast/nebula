@@ -65,15 +65,23 @@ export const fetchActivities = async (
   return response.data;
 };
 
-export const fetchActivityDetail = async (
+export const fetchActivity = async (
   assetId: number,
   activityId: number
-): Promise<MetaActivity['detail']> => {
+): Promise<Activity> => {
   const response = await nebula.assetsActivitiesGet({
     path: { asset_id: assetId, activity_id: activityId },
     throwOnError: true,
   });
-  return response.data.kind === 'meta' ? response.data.detail : null;
+  return response.data;
+};
+
+export const fetchActivityDetail = async (
+  assetId: number,
+  activityId: number
+): Promise<MetaActivity['detail']> => {
+  const activity = await fetchActivity(assetId, activityId);
+  return activity.kind === 'meta' ? activity.detail : null;
 };
 
 export const addComment = async (assetId: number, text: string) => {
