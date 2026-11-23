@@ -382,7 +382,7 @@ const QcEvent = ({ activity }: { activity: Extract<Activity, { kind: 'qc' }> }) 
     );
   return (
     <Event activity={activity} icon="flag" iconColor={QC_COLORS[state]}>
-      set QC to <strong style={{ color: QC_COLORS[state] }}>{QC_LABELS[state]}</strong>
+      <strong style={{ color: QC_COLORS[state] }}>{QC_LABELS[state]}</strong> the asset
       {was}
     </Event>
   );
