@@ -311,6 +311,7 @@ export {
   type SendToResponse,
   type ServerInfoResponse,
   type ServerReloadSettingsData,
+  type ServerReloadSettingsResponse,
   type ServerReloadSettingsResponses,
   type ServerRestartData,
   type ServerRestartResponses,

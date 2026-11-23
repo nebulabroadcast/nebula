@@ -1142,6 +1142,10 @@ export const serverRestart = <ThrowOnError extends boolean = false>(
  *
  * Every worker of every replica reloads the settings from the database,
  * without a restart. Plugins and code changes need a restart.
+ *
+ * The worker serving this request reloads before it responds, and returns
+ * the new client settings (what `init` returns as `settings`), so the
+ * client doesn't have to ask again and risk a worker that's still reloading.
  */
 export const serverReloadSettings = <ThrowOnError extends boolean = false>(
   options?: Options<ServerReloadSettingsData, ThrowOnError>

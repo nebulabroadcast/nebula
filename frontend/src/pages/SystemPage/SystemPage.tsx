@@ -1,5 +1,6 @@
 import { Navbar, Spacer, Button } from '@components';
 import { useDialog } from '@features/Dialogs';
+import { useNebula } from '@features/Nebula';
 import { getErrorDetail } from '@lib/utils';
 import { useMemo } from 'react';
 import { useParams, NavLink } from 'react-router';
@@ -11,12 +12,9 @@ import Users from './Users';
 
 import nebula from '@/nebula';
 
-// The server reloads when every worker gets the message: give them a moment
-// before asking for the new settings
-const SETTINGS_RELOAD_DELAY_MS = 1000;
-
 const SystemNav = () => {
   const showDialog = useDialog();
+  const { applySettings } = useNebula();
 
   const restartServer = () => {
     showDialog('confirm', 'Restart server', {
@@ -38,14 +36,12 @@ const SystemNav = () => {
   };
 
   const reloadSettings = () => {
+    // The response comes once the serving worker has reloaded, and carries
+    // the new settings
     nebula
       .serverReloadSettings({ throwOnError: true })
-      .then(
-        () => new Promise((resolve) => setTimeout(resolve, SETTINGS_RELOAD_DELAY_MS))
-      )
-      .then(() => nebula.init({ throwOnError: true }))
       .then((response) => {
-        nebula.settings = response.data.settings || undefined;
+        applySettings(response.data);
         toast.success('Settings reloaded');
       })
       .catch((err: unknown) => {
@@ -59,8 +55,12 @@ const SystemNav = () => {
       <NavLink to="/system/storages">Storages</NavLink>
       <NavLink to="/system/users">Users</NavLink>
       <Spacer />
-      <Button label="Reload settings" icon="sync" onClick={reloadSettings} />
-      <Button label="Restart server" icon="refresh" onClick={restartServer} />
+      {nebula.user?.is_admin && (
+        <>
+          <Button label="Reload settings" icon="sync" onClick={reloadSettings} />
+          <Button label="Restart server" icon="refresh" onClick={restartServer} />
+        </>
+      )}
     </Navbar>
   );
 };

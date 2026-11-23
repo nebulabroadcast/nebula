@@ -2,11 +2,13 @@
 
 import secrets
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 
 import nebula
 from nebula.context import require_access
-from server.dependencies import current_user
+from nebula.settings import reload_settings_everywhere
+from server.client_settings import ClientSettingsModel, get_user_client_settings
+from server.dependencies import CurrentUser, current_user
 
 router = APIRouter(
     prefix="/server",
@@ -39,13 +41,17 @@ async def restart() -> None:
 
 @router.post(
     "/reload-settings",
-    status_code=202,
     operation_id="server_reload_settings",
     summary="Reload the settings",
 )
-async def reload_settings() -> None:
+async def reload_settings(request: Request, user: CurrentUser) -> ClientSettingsModel:
     """Every worker of every replica reloads the settings from the database,
     without a restart. Plugins and code changes need a restart.
+
+    The worker serving this request reloads before it responds, and returns
+    the new client settings (what `init` returns as `settings`), so the
+    client doesn't have to ask again and risk a worker that's still reloading.
     """
     ensure_admin()
-    await nebula.msg("server.reload_settings")
+    await reload_settings_everywhere()
+    return await get_user_client_settings(request, user)

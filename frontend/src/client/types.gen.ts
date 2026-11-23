@@ -4078,8 +4078,11 @@ export type ServerReloadSettingsResponses = {
   /**
    * Successful Response
    */
-  202: unknown;
+  200: ClientSettingsModel;
 };
+
+export type ServerReloadSettingsResponse =
+  ServerReloadSettingsResponses[keyof ServerReloadSettingsResponses];
 
 export type UsersListData = {
   body?: never;

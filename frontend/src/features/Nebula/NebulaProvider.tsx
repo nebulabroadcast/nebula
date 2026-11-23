@@ -3,6 +3,9 @@ import React, { useState, useCallback } from 'react';
 import { NebulaContext } from './context';
 import type { NebulaContextType, NebulaState } from './types';
 
+import type { ClientSettingsModel } from '@/client';
+import nebula from '@/nebula';
+
 const LS_KEY_CURRENT_CHANNEL = 'mam.currentChannelId';
 
 const DEFAULT_NEBULA_CONTEXT: NebulaState = {
@@ -10,6 +13,7 @@ const DEFAULT_NEBULA_CONTEXT: NebulaState = {
   currentChannelId: JSON.parse(localStorage.getItem(LS_KEY_CURRENT_CHANNEL) || 'null'),
   focusedAsset: null,
   selectedAssets: [],
+  settingsVersion: 0,
 };
 
 interface NebulaProviderProps {
@@ -42,12 +46,18 @@ export const NebulaProvider: React.FC<NebulaProviderProps> = ({
     setNebulaState((prev) => ({ ...prev, currentChannelId: channelId }));
   }, []);
 
+  const applySettings = useCallback((settings: ClientSettingsModel) => {
+    nebula.settings = settings;
+    setNebulaState((prev) => ({ ...prev, settingsVersion: prev.settingsVersion + 1 }));
+  }, []);
+
   const contextValue: NebulaContextType = {
     ...nebulaState,
     setSelectedAssets,
     setFocusedAsset,
     setPageTitle,
     setCurrentChannel,
+    applySettings,
   };
 
   return (

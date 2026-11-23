@@ -4,10 +4,9 @@ from pydantic import Field
 
 from nebula.plugins.frontend import PluginItemModel
 from server import APIModel, UserModel
+from server.client_settings import ClientSettingsModel
 from server.context import ScopedEndpoint
 from server.sso import SSOOption
-
-from ._client_settings import ClientSettingsModel
 
 
 class ServerInfoResponse(APIModel):
