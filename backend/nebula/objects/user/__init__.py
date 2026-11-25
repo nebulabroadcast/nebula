@@ -9,9 +9,10 @@ from typing import Any, cast
 import asyncpg
 from nx.db import db
 
-from nebula.context import require_access
+from nebula.context import current_user, is_system, require_access
 from nebula.exceptions import (
     ConflictException,
+    ForbiddenException,
     LoginFailedException,
     NebulaException,
     NotFoundException,
@@ -22,6 +23,13 @@ from nebula.settings import settings
 from nebula.settings.common import LanguageCode
 
 MIN_PASSWORD_LENGTH = 8
+
+
+class WrongPasswordException(ForbiddenException):
+    """The current password given to change one's own password is wrong."""
+
+    detail = "The current password is wrong"
+
 
 API_KEY_ALPHABET = string.ascii_letters + string.digits + "_"
 
@@ -292,12 +300,38 @@ class User(BaseObject):
             self.ensure_can_edit()
         self.update(changes)
 
-    async def change_password(self, password: str) -> None:
+    async def change_password(
+        self,
+        password: str,
+        current_password: str | None = None,
+    ) -> None:
+        """Set a new password: edit rights and length are checked.
+
+        Users changing their own password must give the current one, so a
+        session left open can't take the account over. Not needed when an
+        admin sets another user's password, for a user without a password
+        yet (SSO only), or in system code (CLI). A wrong one raises
+        WrongPasswordException.
+        """
         self.ensure_can_edit()
         if len(password) < MIN_PASSWORD_LENGTH:
             raise ValidationException(
                 f"Password must have at least {MIN_PASSWORD_LENGTH} characters"
             )
+        user = current_user()
+        if (
+            not is_system()
+            and user is not None
+            and self._is_acting_user(user)
+            and self.has_password
+        ):
+            if not current_password:
+                raise ValidationException(
+                    "The current password is required", key="current_password"
+                )
+            stored = self["password"]
+            if not await asyncio.to_thread(verify_password, current_password, stored):
+                raise WrongPasswordException
         await self.set_password(password)
 
     def regenerate_api_key(self) -> str:

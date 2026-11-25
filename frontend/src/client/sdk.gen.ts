@@ -1394,6 +1394,10 @@ export const usersUpdate = <ThrowOnError extends boolean = false>(
  * Set a user's password
  *
  * Admins can set any user's password, users can set their own.
+ *
+ * Users changing their own password give the current one as well
+ * (`current_password`), unless they have none yet. A wrong one is a 403,
+ * counted like a failed login.
  */
 export const usersSetPassword = <ThrowOnError extends boolean = false>(
   options: Options<UsersSetPasswordData, ThrowOnError>

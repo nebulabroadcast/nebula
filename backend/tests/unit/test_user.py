@@ -18,6 +18,7 @@ from nebula.context import (
 )
 from nebula.enum import MetaClass
 from nebula.objects.user import (
+    WrongPasswordException,
     generate_api_key,
     hash_api_key,
     hash_password,
@@ -147,6 +148,32 @@ async def test_change_password() -> None:
             await user.change_password("short")
     with acting(BOB), pytest.raises(nebula.ForbiddenException):
         await user.change_password("long enough")
+
+
+@pytest.mark.asyncio
+async def test_own_password_change_needs_the_current_one() -> None:
+    user = alice()
+    user["password"] = hash_password("old password")
+    with acting(ALICE):
+        with pytest.raises(nebula.ValidationException, match="current password"):
+            await user.change_password("new password")
+        with pytest.raises(WrongPasswordException):
+            await user.change_password("new password", "guess")
+        assert verify_password("old password", user["password"])
+        await user.change_password("new password", "old password")
+        assert verify_password("new password", user["password"])
+
+
+@pytest.mark.asyncio
+async def test_current_password_not_needed() -> None:
+    user = alice()
+    user["password"] = hash_password("old password")
+    with acting(ADMIN):  # another user's password
+        await user.change_password("by the admin")
+    with system_context():  # the CLI
+        await user.change_password("by the cli")
+    assert verify_password("by the cli", user["password"])
+    # A user without a password yet (SSO only): see test_change_password
 
 
 def test_hash_password() -> None:

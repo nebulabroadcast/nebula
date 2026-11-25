@@ -17,9 +17,10 @@ import nebula
 import nebula.helpers.avatars
 import nebula.helpers.email
 import rest.users.avatar
+import rest.users.detail
 from nebula.context import is_system, set_default_system
 from nebula.enum import MetaClass
-from nebula.objects.user import hash_api_key, verify_password
+from nebula.objects.user import hash_api_key, hash_password, verify_password
 from nebula.settings.metatypes import MetaType
 from server.errors import REST_PREFIX, install_error_handlers
 from server.middleware.context import RequestContextMiddleware
@@ -56,6 +57,8 @@ class FakeUsers:
             },
         }
         self.refreshed: list[int] = []
+        # IP addresses of failed password checks
+        self.failed_logins: list[str] = []
         # Stored sessions: token -> user id. Alice is logged in twice
         self.sessions = {token_for(1): 1, token_for(2): 2, "other" * 13: 2}
 
@@ -103,8 +106,17 @@ def users(monkeypatch: pytest.MonkeyPatch) -> Iterator[FakeUsers]:  # noqa: C901
     monkeypatch.setattr(Session, "list", list_sessions)
     monkeypatch.setattr(Session, "delete", delete)
     monkeypatch.setattr(Session, "refresh_user", refresh_user)
+
+    async def check_failed_login(_ip_address: str) -> None:
+        pass
+
+    async def set_failed_login(ip_address: str) -> None:
+        fake.failed_logins.append(ip_address)
+
     monkeypatch.setattr(nebula.User, "load", classmethod(load))
     monkeypatch.setattr(nebula.User, "save", save)
+    monkeypatch.setattr(rest.users.detail, "check_failed_login", check_failed_login)
+    monkeypatch.setattr(rest.users.detail, "set_failed_login", set_failed_login)
     monkeypatch.setattr(
         nebula.settings,
         "metatypes",
@@ -344,6 +356,39 @@ def test_set_password(client: TestClient, users: FakeUsers) -> None:
         f"{USERS}/1/password", headers=ALICE, json={"password": "long enough"}
     )
     assert response.status_code == 403
+
+
+def test_own_password_needs_the_current_one(
+    client: TestClient, users: FakeUsers
+) -> None:
+    users.rows[2]["password"] = hash_password("old password")
+    url = f"{USERS}/2/password"
+
+    response = client.post(url, headers=ALICE, json={"password": "new password"})
+    assert response.status_code == 422
+
+    wrong = {"password": "new password", "current_password": "guess"}
+    response = client.post(url, headers=ALICE, json=wrong)
+    assert response.status_code == 403
+    assert len(users.failed_logins) == 1
+    assert verify_password("old password", users.rows[2]["password"])
+
+    right = {"password": "new password", "current_password": "old password"}
+    response = client.post(url, headers=ALICE, json=right)
+    assert response.status_code == 204
+    assert verify_password("new password", users.rows[2]["password"])
+    assert len(users.failed_logins) == 1
+
+
+def test_admin_sets_another_password_without_the_current_one(
+    client: TestClient, users: FakeUsers
+) -> None:
+    users.rows[2]["password"] = hash_password("old password")
+    response = client.post(
+        f"{USERS}/2/password", headers=ADMIN, json={"password": "new password"}
+    )
+    assert response.status_code == 204
+    assert verify_password("new password", users.rows[2]["password"])
 
 
 def test_regenerate_api_key(client: TestClient, users: FakeUsers) -> None:

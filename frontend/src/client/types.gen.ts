@@ -1527,6 +1527,12 @@ export type NewPassword = {
    * New password
    */
   password: string;
+  /**
+   * Current Password
+   *
+   * The current password. Required when users change their own password, unless they have none yet.
+   */
+  current_password?: string | null;
 };
 
 /**
@@ -2587,6 +2593,12 @@ export type SetPasswordRequest = {
    * Password
    */
   password: string;
+  /**
+   * Current password
+   *
+   * Required when users change their own password, unless they have none yet
+   */
+  current_password?: string | null;
 };
 
 /**

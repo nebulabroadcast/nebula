@@ -4,6 +4,7 @@ from fastapi import APIRouter, Query, Request, Response
 
 import nebula
 from nebula.helpers.email import send_invitation_email
+from nebula.objects.user import WrongPasswordException
 from rest.users.common import PREFIX, UserId
 from rest.users.fields import response_keys, user_response
 from rest.users.models import (
@@ -14,9 +15,14 @@ from rest.users.models import (
     UserPatch,
 )
 from server.errors import REST_PREFIX
+from server.login_attempts import (
+    check_failed_login,
+    clear_failed_login,
+    set_failed_login,
+)
 from server.query.params import split_list
 from server.session import Session
-from server.utils import server_url_from_request
+from server.utils import get_real_ip, server_url_from_request
 
 router = APIRouter(prefix=PREFIX)
 
@@ -86,10 +92,22 @@ async def update_user(user_id: UserId, payload: UserPatch) -> User:
     operation_id="users_set_password",
     summary="Set a user's password",
 )
-async def set_password(user_id: UserId, payload: NewPassword) -> None:
-    """Admins can set any user's password, users can set their own."""
+async def set_password(user_id: UserId, payload: NewPassword, request: Request) -> None:
+    """Admins can set any user's password, users can set their own.
+
+    Users changing their own password give the current one as well
+    (`current_password`), unless they have none yet. A wrong one is a 403,
+    counted like a failed login.
+    """
+    ip_address = get_real_ip(request)
+    await check_failed_login(ip_address)
     user = await nebula.User.load(user_id)
-    await user.change_password(payload.password)
+    try:
+        await user.change_password(payload.password, payload.current_password)
+    except WrongPasswordException:
+        await set_failed_login(ip_address)
+        raise
+    await clear_failed_login(ip_address)
     await user.save()
     await Session.revoke_user(user.id)
 
